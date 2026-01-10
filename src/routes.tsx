@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import MainLayout from "./components/common/mainLayout";
 import { NotFound } from "./pages/NotFound";
 import { LeadDetails } from "./components/lead/LeadDetails";
+import { CreateCampaign } from "./components/campaigns/CreateCampaign";
 
 export const router = createBrowserRouter([
     {
@@ -29,6 +30,10 @@ export const router = createBrowserRouter([
             {
                 path: "/leads/:id",
                 Component: LeadDetails
+            },
+            {
+                path: "/campaigns/new",
+                Component: CreateCampaign
             },
             {
                 path: "*", //Si no coincide con nada más.
