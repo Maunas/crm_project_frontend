@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
 import { useParams } from "react-router-dom"
-import { getLead, getLeadSections } from "./leadService.ts"
+import { getLead, getFieldSections } from "./leadService.ts"
 import { Accordion, AccordionDetails, AccordionSummary, Box, Chip, Container, Divider, Grid, Paper, Typography } from "@mui/material"
 import type { Lead, LeadFieldSection, LeadFieldValue } from "../../types/leads.ts"
 import { getFieldType } from "../../generalService.ts"
@@ -91,7 +91,7 @@ export const LeadFieldSections = ({ fields }: LeadFieldSectionsProps) => {
     const [leadSections, setLeadSections] = useState<LeadFieldSection[] | []>([])
 
     useEffect(() => {
-        getLeadSections().then(setLeadSections)
+        getFieldSections().then(setLeadSections)
         return () => setLeadSections([])
     }, [])
 
