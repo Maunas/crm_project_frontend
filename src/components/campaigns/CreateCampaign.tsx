@@ -1,7 +1,7 @@
 import { Autocomplete, Container, Paper, TextField, Typography, Button, Grid } from "@mui/material"
 import { useEffect, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
-import type { Workspace } from "../../types/leads"
+import type { Campaign, Workspace } from "../../types/leads"
 import { createCampaign, getWorkspaces } from "./campaignServices"
 import { CreateLeadFields } from "./CreateLeadFields"
 
@@ -24,7 +24,7 @@ export const CampaignForm = () => {
 
     const { register, handleSubmit, control } = useForm()
     const [workspaces, setWorkspaces] = useState<Workspace[] | []>([])
-    const [campaignId, setCampaignId] = useState<number | null>(null)
+    const [newCampaign, setNewCampaign] = useState<Campaign | null>(null)
 
     useEffect(() => {
         getWorkspaces().then(setWorkspaces)
@@ -32,14 +32,14 @@ export const CampaignForm = () => {
 
     const submit = (data) => {
         //createCampaign(data).then((res) => {
-        //    console.log(res)
+        //    setNewCampaign(res)
         //}).catch((e) => console.error(e))
-        setCampaignId(1)
+        setNewCampaign({id: 6, name: "Campaña 6"})
     }
 
     return (
         <>
-            {!campaignId ?
+            {!newCampaign ?
                 <form onSubmit={handleSubmit(submit)}>
                     <Grid container spacing={2} sx={{
                         justifyContent: "center",
@@ -75,7 +75,7 @@ export const CampaignForm = () => {
                     </Button>
                 </form>
                 :
-                <CreateLeadFields campaignId={campaignId} />
+                <CreateLeadFields newCampaign={newCampaign} />
             }
         </>
     )
