@@ -7,6 +7,11 @@ export const getWorkspaces = async () : Promise<Workspace[]> => {
     return wksp.data.items
 }
 
+export const getCampaign = async (id: number) : Promise<Campaign> => {
+    const campaign = await axios.get(`${API_BASE_URL}/campaigns/${id}`)
+    return campaign.data
+}
+
 export const createCampaign = async (body: Campaign) : Promise<Campaign> => {
     const campaign = await axios.post(`${API_BASE_URL}/campaigns`, body)
     return campaign.data
@@ -31,4 +36,9 @@ export const getNomenclators = async () : Promise<any[]> => {
 export const createLeadField = async(body: LeadField) : Promise<LeadField> => {
     const leadField = await axios.post(`${API_BASE_URL}/lead_fields`, body)
     return leadField.data
+}
+
+export const getFieldsFromCampaign = async(campaign_id: number) : Promise<LeadField[]> => {
+    const leadField = await axios.get(`${API_BASE_URL}/lead_fields?campaign_id=${campaign_id}&detailed=true`)
+    return leadField.data.items
 }

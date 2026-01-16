@@ -3,6 +3,8 @@ import MainLayout from "./components/common/mainLayout";
 import { NotFound } from "./pages/NotFound";
 import { LeadDetails } from "./components/lead/LeadDetails";
 import { CreateCampaign } from "./components/campaigns/CreateCampaign";
+import { CampaignDetails } from "./components/campaigns/CampaignDetails";
+import { CreateLeadFields } from "./components/campaigns/CreateLeadFields";
 
 export const router = createBrowserRouter([
     {
@@ -30,6 +32,14 @@ export const router = createBrowserRouter([
             {
                 path: "/leads/:id",
                 Component: LeadDetails
+            },
+            {
+                path: "/campaigns/:id",
+                Component: CampaignDetails
+            },
+            {
+                path: "/campaigns/:id/new",
+                Component: CreateLeadFields
             },
             {
                 path: "/campaigns/new",

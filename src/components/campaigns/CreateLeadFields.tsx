@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react"
 import { createLeadField, getFieldTemplates, getFieldTypes, getNomenclators } from "./campaignServices"
-import { Autocomplete, Divider, TextField, Button, Grid, FormControlLabel, FormGroup, Checkbox, Avatar, useTheme, IconButton, Typography, RadioGroup } from "@mui/material"
+import { Autocomplete, Divider, TextField, Button, Grid, FormControlLabel, FormGroup, Checkbox, Typography, RadioGroup, Container, Paper } from "@mui/material"
 import { getFieldSections } from "../lead/leadService"
-import { Controller, useFieldArray, useForm } from "react-hook-form"
-import DeleteIcon from '@mui/icons-material/Delete';
+import { Controller, useForm } from "react-hook-form"
 import { Radio } from "@mui/icons-material"
+import { useParams } from "react-router-dom"
 
-export const CreateLeadFields = ({ newCampaign }) => {
+export const CreateLeadFields = () => {
+
+  const { campaignId } = useParams()
 
   const [fieldTemplates, setFieldTemplates] = useState<any[]>([])
   const [fieldSections, setFieldSections] = useState<any[]>([])
@@ -15,77 +17,53 @@ export const CreateLeadFields = ({ newCampaign }) => {
 
   const { register, control, handleSubmit } = useForm()
 
-  const { append, fields, remove } = useFieldArray({ name: "user_fields", control })
-
   useEffect(() => {
     getFieldTemplates().then(setFieldTemplates)
     getFieldSections().then(setFieldSections)
     getFieldTypes().then(setFieldTypes)
     getNomenclators().then(setNomenclators)
     return () => setFieldTemplates([])
-  }, [newCampaign])
-
-  useEffect(() => {
-    append({})
-    return () => remove()
-  }, [])
+  }, [campaignId])
 
   const submit = (data) => {
-    Promise.all(data.user_fields.map((i) => createLeadField({ ...i, campaign_id: newCampaign.id })))
+    createLeadField({ ...data, campaign_id: campaignId })
       .then(res => console.log(res))
+      .catch(e=>console.log(data))
   }
 
   return (
-    <form>
-      <Typography variant="h3" color="initial">{newCampaign.name}</Typography>
-      {fieldSections?.length > 0 && fieldTemplates.length > 0 &&
-        nomenclators.length > 0 && fieldTypes.length > 0 &&
-        <>
-          {fields?.length > 0 &&
-            fields.map((field, idx) =>
-              <LeadField templates={fieldTemplates} sections={fieldSections} key={field.id} idx={idx} register={register} remove={remove}
-                types={fieldTypes} control={control}
-                nomenclators={nomenclators} />
-            )
-          }
+    <Container >
+      <Paper sx={{ padding: 2 }}>
+        <form>
+          <Typography variant="h3" color="initial">{campaignId}</Typography>
+          <LeadField templates={fieldTemplates} sections={fieldSections} register={register}
+            types={fieldTypes} control={control}
+            nomenclators={nomenclators} />
           <Button variant="contained" onClick={handleSubmit(submit)}>
             Guardar
           </Button>
-          <Button variant="contained" onClick={() => append({})}>
-            Agregar Campo
-          </Button>
-        </>
-      }
-    </form>
+      </form>
+    </Paper>
+    </Container >
   )
 }
-const LeadField = ({ templates, sections, types, nomenclators, idx, register, remove, control }) => {
+const LeadField = ({ templates, sections, types, nomenclators, register, control }) => {
 
   return (
     <>
       <Divider sx={{ marginBlock: ".5rem" }} />
       <Grid container spacing={2} justifyContent="center">
-        <Grid size={1} justifyContent="center" alignContent="center" minWidth="40px">
-          <TextField
-            disabled
-            id=""
-            label="Orden"
-            fullWidth
-            value={idx + 1}
-            {...register(`user_fields.${idx}.order`)}
-          />
-        </Grid>
         <Grid size="grow" container minWidth="20rem">
           <Grid size="grow" minWidth="15rem">
             <TextField
               id=""
               label="Nombre del Campo"
               fullWidth
-              {...register(`user_fields.${idx}.name`)}
+              {...register(`name`)}
             />
           </Grid>
           <Grid size="grow" minWidth="15rem" justifyContent="center">
-            <Controller name={`user_fields.${idx}.lead_field_section_id`} control={control} render={({ field }) =>
+            <Controller name={`lead_field_section_id`} control={control} render={({ field }) =>
               <Autocomplete
                 {...field}
                 disablePortal
@@ -102,9 +80,9 @@ const LeadField = ({ templates, sections, types, nomenclators, idx, register, re
           </Grid>
           <Grid size="grow" minWidth="20rem" justifyContent="center">
             <FormGroup row>
-              <FormControlLabel control={<Checkbox />} label="Obligatorio" {...register(`user_fields.${idx}.required`)} />
-              <FormControlLabel control={<Checkbox />} label="Único" {...register(`user_fields.${idx}.is_primary`)} />
-              <FormControlLabel control={<Checkbox />} label="Visible" {...register(`user_fields.${idx}.is_visible`)} />
+              <FormControlLabel control={<Checkbox />} label="Obligatorio" {...register(`required`)} />
+              <FormControlLabel control={<Checkbox />} label="Único" {...register(`is_primary`)} />
+              <FormControlLabel control={<Checkbox />} label="Visible" {...register(`is_visible`)} />
             </FormGroup>
           </Grid>
           <Grid size="grow" minWidth="20rem" justifyContent="center">
@@ -119,7 +97,7 @@ const LeadField = ({ templates, sections, types, nomenclators, idx, register, re
             </RadioGroup>
           </Grid>
           <Grid size="grow" minWidth="20rem" justifyContent="center">
-            <Controller name={`user_fields.${idx}.field_type_code`} control={control} render={({ field }) =>
+            <Controller name={`field_type_code`} control={control} render={({ field }) =>
               <Autocomplete
                 {...field}
                 disablePortal
@@ -134,7 +112,7 @@ const LeadField = ({ templates, sections, types, nomenclators, idx, register, re
             </Controller>
           </Grid>
           <Grid size="grow" minWidth="20rem" justifyContent="center">
-            <Controller name={`user_fields.${idx}.field_template_code`} control={control} render={({ field }) =>
+            <Controller name={`field_template_code`} control={control} render={({ field }) =>
               <Autocomplete
                 {...field}
                 disablePortal
@@ -150,7 +128,7 @@ const LeadField = ({ templates, sections, types, nomenclators, idx, register, re
             </Controller>
           </Grid>
           <Grid size="grow" minWidth="20rem" justifyContent="center">
-            <Controller name={`user_fields.${idx}.nomenclator_id`} control={control} render={({ field }) =>
+            <Controller name={`nomenclator_id`} control={control} render={({ field }) =>
               <Autocomplete
                 {...field}
                 disablePortal
@@ -170,15 +148,11 @@ const LeadField = ({ templates, sections, types, nomenclators, idx, register, re
               id=""
               label="Valor por Defecto"
               fullWidth
-              {...register(`user_fields.${idx}.default_value`)}
+              {...register(`default_value`)}
             />
           </Grid>
         </Grid>
-        <Grid size={1} justifyContent="center" alignContent="center" minWidth="40px">
-          <IconButton aria-label="delete" onClick={() => remove(idx)}>
-            <DeleteIcon />
-          </IconButton>
-        </Grid>
+
       </Grid>
       <Divider sx={{ marginBlock: ".5rem" }} />
     </>
