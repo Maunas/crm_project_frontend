@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { Link, Router, useParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
 import type { Campaign, LeadField } from '../../types/leads'
 import { getCampaign, getFieldsFromCampaign } from './campaignServices'
 import { Button, Chip, Container, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material'
@@ -12,7 +12,6 @@ export const CampaignDetails = () => {
     useEffect(() => {
         if (id) getCampaign(parseInt(id)).then((res) => {
             setCampaign(res)
-            console.log(id)
             getFieldsFromCampaign(parseInt(id)).then(res => setFields(res))
         })
         return () => setCampaign(null)
@@ -23,7 +22,8 @@ export const CampaignDetails = () => {
     return (
         <Container>
             <Paper sx={{ padding: 2 }}>
-                <Button component={Link} to="/campaigns/new">Crear Campaña</Button>
+                <Button component={Link} to="/campaigns" variant='outlined'>Volver</Button>
+
                 {campaign &&
                     <>
                         <Typography variant="h1" color="initial">{campaign.name}</Typography>

@@ -2,8 +2,8 @@ import axios from "axios"
 import type { Campaign, LeadField, Workspace } from "../../types/leads"
 import { API_BASE_URL } from "../../generalService"
 
-export const getWorkspaces = async () : Promise<Workspace[]> => {
-    const wksp = await axios.get(`${API_BASE_URL}/workspaces`)
+export const getWorkspaces = async (detailed: boolean) : Promise<Workspace[]> => {
+    const wksp = await axios.get(`${API_BASE_URL}/workspaces?${detailed && "detailed=true"}`)
     return wksp.data.items
 }
 

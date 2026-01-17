@@ -1,0 +1,39 @@
+import React, { useEffect, useState } from 'react'
+import { getWorkspaces } from './campaignServices'
+import { Button, Typography } from '@mui/material'
+import { Link } from 'react-router-dom'
+
+export const WorkspaceList = () => {
+    const [workspaces, setWorkspaces] = useState([])
+
+    useEffect(() => {
+        getWorkspaces(true).then(setWorkspaces)
+
+    }, [])
+
+    return (
+        <>
+            <Button component={Link} to="/campaigns/new" variant='contained'>Crear Campaña</Button>
+
+            {workspaces?.length > 0 &&
+                workspaces.map((item) =>
+                    <>
+                        <Typography color="initial">{item.name}</Typography>
+                        <CampaignList campaigns={item.campaigns} />
+                    </>
+                )}
+        </>
+    )
+}
+
+export const CampaignList = ({ campaigns }) => {
+    if (campaigns?.length > 0) return (
+        <>
+            {campaigns.map((item) =>
+                <Button variant="text" component={Link} to={`/campaigns/${item.id}`}>
+                    <Typography component="p">{item.name}</Typography>
+                </Button>
+            )}
+        </>
+    )
+}

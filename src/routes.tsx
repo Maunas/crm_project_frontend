@@ -5,6 +5,7 @@ import { LeadDetails } from "./components/lead/LeadDetails";
 import { CreateCampaign } from "./components/campaigns/CreateCampaign";
 import { CampaignDetails } from "./components/campaigns/CampaignDetails";
 import { CreateLeadFields } from "./components/campaigns/CreateLeadFields";
+import { WorkspaceList } from "./components/campaigns/CampaignList";
 
 export const router = createBrowserRouter([
     {
@@ -32,6 +33,10 @@ export const router = createBrowserRouter([
             {
                 path: "/leads/:id",
                 Component: LeadDetails
+            },
+            {
+                path: "/campaigns/",
+                Component: WorkspaceList
             },
             {
                 path: "/campaigns/:id",
