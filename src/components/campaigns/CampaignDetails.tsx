@@ -17,8 +17,6 @@ export const CampaignDetails = () => {
         return () => setCampaign(null)
     }, [id])
 
-    console.log(fields)
-
     return (
         <Container>
             <Paper sx={{ padding: 2 }}>
@@ -45,8 +43,7 @@ export const CampaignDetails = () => {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {fields?.filter(i => i.campaign_id === parseInt(id))
-                                        .sort((a: LeadField, b: LeadField) => a.order - b.order)
+                                    {fields?.sort((a: LeadField, b: LeadField) => a.order - b.order)
                                         .map((row) => (
                                             <TableRow
                                                 key={row.id}

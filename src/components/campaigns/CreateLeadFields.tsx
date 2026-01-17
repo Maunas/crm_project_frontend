@@ -1,21 +1,21 @@
 import { useEffect, useState } from "react"
 import { createLeadField, getFieldTemplates, getFieldTypes, getNomenclators } from "./campaignServices"
-import { Autocomplete, Divider, TextField, Button, Grid, FormControlLabel, FormGroup, Checkbox, Typography, RadioGroup, Container, Paper } from "@mui/material"
+import { Autocomplete, Divider, TextField, Button, Grid, FormControlLabel, FormGroup, Checkbox, Typography, RadioGroup, Container, Paper, Radio } from "@mui/material"
 import { getFieldSections } from "../lead/leadService"
 import { Controller, useForm } from "react-hook-form"
-import { Radio } from "@mui/icons-material"
-import { useParams } from "react-router-dom"
+import { Link, useNavigate, useParams } from "react-router-dom"
 
 export const CreateLeadFields = () => {
-
-  const { campaignId } = useParams()
 
   const [fieldTemplates, setFieldTemplates] = useState<any[]>([])
   const [fieldSections, setFieldSections] = useState<any[]>([])
   const [fieldTypes, setFieldTypes] = useState<any[]>([])
   const [nomenclators, setNomenclators] = useState<any[]>([])
 
-  const { register, control, handleSubmit } = useForm()
+  const { id } = useParams()
+  const nav = useNavigate()
+
+  const { register, control, handleSubmit, watch, reset } = useForm()
 
   useEffect(() => {
     getFieldTemplates().then(setFieldTemplates)
@@ -23,32 +23,53 @@ export const CreateLeadFields = () => {
     getFieldTypes().then(setFieldTypes)
     getNomenclators().then(setNomenclators)
     return () => setFieldTemplates([])
-  }, [campaignId])
+  }, [id])
 
   const submit = (data) => {
-    createLeadField({ ...data, campaign_id: campaignId })
-      .then(res => console.log(res))
-      .catch(e=>console.log(data))
+    createLeadField({ ...data, campaign_id: id, order: 2 })
+      .then(res => nav(`/campaigns/${id}`))
+      .catch(e => console.log(data))
   }
 
-  return (
-    <Container >
-      <Paper sx={{ padding: 2 }}>
-        <form>
-          <Typography variant="h3" color="initial">{campaignId}</Typography>
-          <LeadField templates={fieldTemplates} sections={fieldSections} register={register}
-            types={fieldTypes} control={control}
-            nomenclators={nomenclators} />
-          <Button variant="contained" onClick={handleSubmit(submit)}>
-            Guardar
-          </Button>
+  const submitAndReset = (data) => {
+    createLeadField({ ...data, campaign_id: id, order: 2 })
+      .then(() => {alert("Creado"); reset()})
+      .catch (e => console.log(data))
+  }
+
+const fieldType = watch("field_type_code")
+
+return (
+  <Container >
+    <Paper sx={{ padding: 2 }}>
+      <Typography variant="h1" color="initial">Crear Campo</Typography>
+      <form>
+        <Typography variant="h3" color="initial">Campaña {id}</Typography>
+        <LeadField templates={fieldTemplates} sections={fieldSections} register={register}
+          types={fieldTypes} control={control} fieldType={fieldType}
+          nomenclators={nomenclators} />
+                  <Button variant="outlined" component={Link} to={`/campaigns/${id}`}>
+          Volver
+        </Button>
+        <Button variant="contained" onClick={handleSubmit(submit)}>
+          Guardar
+        </Button>
+                <Button variant="contained" onClick={handleSubmit(submitAndReset)}>
+          Guardar y crear otro
+        </Button>
       </form>
     </Paper>
-    </Container >
-  )
+  </Container >
+)
 }
-const LeadField = ({ templates, sections, types, nomenclators, register, control }) => {
+const LeadField = ({ templates, sections, types, nomenclators, register, control, fieldType }) => {
 
+  const [fieldMethod, setFieldMethod] = useState<string | null>("Por Plantilla")
+
+  const changeFieldMethod = (e, data) => {
+    setFieldMethod(data)
+  }
+  console.log(fieldType)
   return (
     <>
       <Divider sx={{ marginBlock: ".5rem" }} />
@@ -88,61 +109,69 @@ const LeadField = ({ templates, sections, types, nomenclators, register, control
           <Grid size="grow" minWidth="20rem" justifyContent="center">
             <RadioGroup row
               aria-labelledby="demo-radio-buttons-group-label"
-              defaultValue="female"
+              defaultValue="Por Plantilla"
               name="radio-buttons-group"
+              onChange={changeFieldMethod}
             >
-              <FormControlLabel value="female" control={<Radio />} label="Female" />
-              <FormControlLabel value="male" control={<Radio />} label="Male" />
-              <FormControlLabel value="other" control={<Radio />} label="Other" />
+              <FormControlLabel value="Por Plantilla" defaultChecked control={<Radio />} label="Por Plantilla" />
+              <FormControlLabel value="Manual" control={<Radio />} label="Manual" />
             </RadioGroup>
           </Grid>
-          <Grid size="grow" minWidth="20rem" justifyContent="center">
-            <Controller name={`field_type_code`} control={control} render={({ field }) =>
-              <Autocomplete
-                {...field}
-                disablePortal
-                options={types}
-                renderInput={(params) => <TextField {...params} label="Tipos" />}
-                getOptionLabel={(option) => `${option.code} - ${option.description}`}
-                getOptionKey={(option) => option.code}
-                onChange={(e, data) => field.onChange(data.code)}
-                value={field.value}
-              />
-            }>
-            </Controller>
-          </Grid>
-          <Grid size="grow" minWidth="20rem" justifyContent="center">
-            <Controller name={`field_template_code`} control={control} render={({ field }) =>
-              <Autocomplete
-                {...field}
-                disablePortal
-                options={templates}
-                renderInput={(params) => <TextField {...params} label="Plantillas" />}
-                getOptionLabel={(option) => option.name}
-                getOptionKey={(option) => option.code}
-                onChange={(e, data) => field.onChange(data.code)}
-                value={field.value}
-              />
-            }>
+          {fieldMethod === "Por Plantilla" ?
 
-            </Controller>
-          </Grid>
-          <Grid size="grow" minWidth="20rem" justifyContent="center">
-            <Controller name={`nomenclator_id`} control={control} render={({ field }) =>
-              <Autocomplete
-                {...field}
-                disablePortal
-                options={nomenclators}
-                renderInput={(params) => <TextField {...params} label="Selectores" />}
-                getOptionLabel={(option) => option.name}
-                getOptionKey={(option) => option.id}
-                onChange={(e, data) => field.onChange(data.id)}
-                value={field.value}
-              />
-            }>
+            <Grid size="grow" minWidth="20rem" justifyContent="center">
+              <Controller name={`field_template_code`} control={control} render={({ field }) =>
+                <Autocomplete
+                  {...field}
+                  disablePortal
+                  options={templates}
+                  renderInput={(params) => <TextField {...params} label="Plantillas" />}
+                  getOptionLabel={(option) => option.name}
+                  getOptionKey={(option) => option.code}
+                  onChange={(e, data) => field.onChange(data.code)}
+                  value={field.value}
+                />
+              }>
 
-            </Controller>
-          </Grid>
+              </Controller>
+            </Grid>
+            :
+            <>
+              <Grid size="grow" minWidth="20rem" justifyContent="center">
+                <Controller name={`field_type_code`} control={control} render={({ field }) =>
+                  <Autocomplete
+                    {...field}
+                    disablePortal
+                    options={types}
+                    renderInput={(params) => <TextField {...params} label="Tipos" />}
+                    getOptionLabel={(option) => `${option.code} - ${option.description}`}
+                    getOptionKey={(option) => option.code}
+                    onChange={(e, data) => field.onChange(data.code)}
+                    value={field.value}
+                  />
+                }>
+                </Controller>
+              </Grid>
+              {fieldType === "NOMENCLATOR" &&
+                <Grid size="grow" minWidth="20rem" justifyContent="center">
+                  <Controller name={`nomenclator_id`} control={control} render={({ field }) =>
+                    <Autocomplete
+                      {...field}
+                      disablePortal
+                      options={nomenclators}
+                      renderInput={(params) => <TextField {...params} label="Selector" />}
+                      getOptionLabel={(option) => option.name}
+                      getOptionKey={(option) => option.id}
+                      onChange={(e, data) => field.onChange(data.id)}
+                      value={field.value}
+                    />
+                  }>
+
+                  </Controller>
+                </Grid>
+              }
+            </>
+          }
           <Grid size="grow" minWidth="20rem">
             <TextField
               id=""

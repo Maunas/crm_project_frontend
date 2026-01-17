@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { getWorkspaces } from './campaignServices'
-import { Button, Typography } from '@mui/material'
+import { Button, Container, Paper, Typography } from '@mui/material'
 import { Link } from 'react-router-dom'
 
 export const WorkspaceList = () => {
@@ -12,17 +12,19 @@ export const WorkspaceList = () => {
     }, [])
 
     return (
-        <>
-            <Button component={Link} to="/campaigns/new" variant='contained'>Crear Campaña</Button>
+        <Container>
+            <Paper sx={{ padding: 2 }}>
+                <Button component={Link} to="/campaigns/new" variant='contained'>Crear Campaña</Button>
 
-            {workspaces?.length > 0 &&
-                workspaces.map((item) =>
-                    <>
-                        <Typography color="initial">{item.name}</Typography>
-                        <CampaignList campaigns={item.campaigns} />
-                    </>
-                )}
-        </>
+                {workspaces?.length > 0 &&
+                    workspaces.map((item) =>
+                        <>
+                            <Typography color="initial">{item.name}</Typography>
+                            <CampaignList campaigns={item.campaigns} />
+                        </>
+                    )}
+            </Paper>
+        </Container>
     )
 }
 

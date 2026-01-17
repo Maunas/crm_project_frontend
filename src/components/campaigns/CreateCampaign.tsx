@@ -66,7 +66,7 @@ export const CampaignForm = () => {
                         </Controller>
                     </Grid>
                 </Grid>
-                <Button component={Link} to="/campaigns/1">
+                <Button component={Link} to="/campaigns">
                     Cancelar
                 </Button>
                 <Button variant="contained" onClick={handleSubmit(submit)} sx={{ marginBlock: "1rem" }}>
