@@ -24,9 +24,9 @@ export interface LeadFieldValue {
 }
 
 export interface LeadField {
-    "id": number,
-    "name": string,
-    "field_type_code": string,
+    "id"?: number,
+    "name"?: string,
+    "field_type_code"?: string,
     "required": boolean,
     "default_value"?: string | null,
     "is_primary": boolean,
@@ -34,12 +34,13 @@ export interface LeadField {
 
     "field_template_code"?: string | null,
     "is_visible": boolean,
-    "order": number,
-    "campaign_id": number
+    "order"?: number,
+    "campaign_id"?: number,
     "nomenclator_id"?: Nomenclator | null,
     "nomenclator"?: Nomenclator | null,
 
-    "lead_field_section": LeadFieldSection
+    "lead_field_section"?: LeadFieldSection,
+    "lead_field_section_id"?: number
 
     "created_at"?: string,
     "created_by"?: number,
