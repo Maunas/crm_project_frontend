@@ -15,6 +15,7 @@ export const WorkspaceList = () => {
         <Container>
             <Paper sx={{ padding: 2 }}>
                 <Button component={Link} to="/campaigns/new" variant='contained'>Crear Campaña</Button>
+                <Button component={Link} to="/workspaces/new" variant='contained'>Crear Espacio de Trabajo</Button>
 
                 {workspaces?.length > 0 &&
                     workspaces.map((item) =>

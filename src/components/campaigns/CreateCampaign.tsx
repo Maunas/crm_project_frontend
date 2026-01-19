@@ -2,7 +2,7 @@ import { Autocomplete, Container, Paper, TextField, Typography, Button, Grid } f
 import { useEffect, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import type { Workspace } from "../../types/leads"
-import { createCampaign, getWorkspaces } from "./campaignServices"
+import { createCampaign, createWorkspace, createWorkspacen, getWorkspaces } from "./campaignServices"
 import { Link, useNavigate } from "react-router-dom"
 
 export const CreateCampaign = () => {
@@ -71,6 +71,42 @@ export const CampaignForm = () => {
                 </Button>
                 <Button variant="contained" onClick={handleSubmit(submit)} sx={{ marginBlock: "1rem" }}>
                     Guardar Campaña
+                </Button>
+            </form>
+    )
+}
+
+export const WorkspaceForm = () => {
+
+    const { register, handleSubmit } = useForm()
+    const nav = useNavigate()
+
+    const submit = (data) => {
+        createWorkspace(data).then((res) => {
+            nav(`/campaigns`)
+        }).catch((e) => console.error(e))
+    }
+
+    return (
+            <form onSubmit={handleSubmit(submit)}>
+                <Grid container spacing={2} sx={{
+                    justifyContent: "center",
+                    alignItems: "center",
+                    margin: "1rem"
+                }}>
+                    <Grid size="grow" minWidth={"20rem"}>
+                        <TextField {...register("name")} label="Nombre" fullWidth />
+                    </Grid>
+                    <Grid size="grow" minWidth={"20rem"}>
+                        <TextField {...register("description")} label="Descripción" fullWidth />
+                    </Grid>
+                    
+                </Grid>
+                <Button component={Link} to="/campaigns">
+                    Cancelar
+                </Button>
+                <Button variant="contained" onClick={handleSubmit(submit)} sx={{ marginBlock: "1rem" }}>
+                    Guardar Espacio de Trabajo
                 </Button>
             </form>
     )

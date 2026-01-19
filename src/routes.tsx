@@ -2,10 +2,11 @@ import { createBrowserRouter } from "react-router-dom";
 import MainLayout from "./components/common/mainLayout";
 import { NotFound } from "./pages/NotFound";
 import { LeadDetails } from "./components/lead/LeadDetails";
-import { CreateCampaign } from "./components/campaigns/CreateCampaign";
+import { CreateCampaign, WorkspaceForm } from "./components/campaigns/CreateCampaign";
 import { CampaignDetails } from "./components/campaigns/CampaignDetails";
 import { CreateLeadFields } from "./components/campaigns/CreateLeadFields";
 import { WorkspaceList } from "./components/campaigns/CampaignList";
+import { createWorkspace } from "./components/campaigns/campaignServices";
 
 export const router = createBrowserRouter([
     {
@@ -49,6 +50,10 @@ export const router = createBrowserRouter([
             {
                 path: "/campaigns/new",
                 Component: CreateCampaign
+            },
+            {
+                path: "/workspaces/new",
+                Component: WorkspaceForm
             },
             {
                 path: "*", //Si no coincide con nada más.

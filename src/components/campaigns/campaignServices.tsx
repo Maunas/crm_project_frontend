@@ -7,6 +7,11 @@ export const getWorkspaces = async (detailed: boolean) : Promise<Workspace[]> =>
     return wksp.data.items
 }
 
+export const createWorkspace = async (body: Campaign) : Promise<Workspace> => {
+    const wksp = await axios.post(`${API_BASE_URL}/workspaces`, body)
+    return wksp.data
+}
+
 export const getCampaign = async (id: number) : Promise<Campaign> => {
     const campaign = await axios.get(`${API_BASE_URL}/campaigns/${id}`)
     return campaign.data
@@ -19,7 +24,7 @@ export const createCampaign = async (body: Campaign) : Promise<Campaign> => {
 
 
 export const getFieldTemplates = async () : Promise<any> => {
-    const tmp = await axios.get(`${API_BASE_URL}/lead_fields/templates`)
+    const tmp = await axios.get(`${API_BASE_URL}/templates/lead_fields`)
     return tmp.data
 }
 
