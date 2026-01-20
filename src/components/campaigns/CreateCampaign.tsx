@@ -1,9 +1,10 @@
-import { Autocomplete, Container, Paper, TextField, Typography, Button, Grid } from "@mui/material"
+import { Container, Paper, TextField, Typography, Button, Grid } from "@mui/material"
 import { useEffect, useState } from "react"
-import { Controller, useForm } from "react-hook-form"
-import type { LeadField, Workspace } from "../../types/leads"
-import { createCampaign, createLeadField, createWorkspace, createWorkspacen, getWorkspaces } from "./campaignServices"
+import { useForm } from "react-hook-form"
+import type { Campaign, LeadField, Workspace } from "../../types/leads"
+import { createCampaign, createLeadField, createWorkspace, getWorkspaces } from "./campaignServices"
 import { Link, useNavigate } from "react-router-dom"
+import { CustomAutocomplete } from "../common/forms/CustomAutocomplete"
 
 export const CreateCampaign = () => {
 
@@ -49,10 +50,10 @@ export const CampaignForm = () => {
         }
     ]
 
-    const submit = (data) => {
+    const submit = (data: Campaign) => {
         createCampaign(data)
             .then((res) =>
-                Promise.all(requiredFields.map((field) => createLeadField({...field, campaign_id: res.id})))
+                Promise.all(requiredFields.map((field) => createLeadField({ ...field, campaign_id: res.id })))
                     .then(() => nav(`/campaigns/${res.id}`))
                     .catch((e) => console.error(e))
             )
@@ -73,20 +74,9 @@ export const CampaignForm = () => {
                     <TextField {...register("description")} label="Descripción" fullWidth />
                 </Grid>
                 <Grid size="grow" minWidth={"20rem"}>
-                    <Controller name="workspace_id" control={control}
-                        render={({ field, ...props }) => (
-                            <Autocomplete
-                                {...props}
-                                disablePortal
-                                options={workspaces}
-                                renderInput={(params) => <TextField {...params} label="Workspace" />}
-                                getOptionLabel={(option) => option.name}
-                                getOptionKey={(option) => option.id}
-                                onChange={(_, value) => field.onChange(value?.id)}
-                            />
-                        )}
-                    >
-                    </Controller>
+                    <CustomAutocomplete control={control} label="Espacio de Trabajo" name="workspace_id"
+                        getOptionLabel={(option) => option.name} getOptionKey={(option) => option.id}
+                        optionList={workspaces} />
                 </Grid>
             </Grid>
             <Button component={Link} to="/campaigns">
@@ -104,8 +94,8 @@ export const WorkspaceForm = () => {
     const { register, handleSubmit } = useForm()
     const nav = useNavigate()
 
-    const submit = (data) => {
-        createWorkspace(data).then((res) => {
+    const submit = (data: Workspace) => {
+        createWorkspace(data).then((_) => {
             nav(`/campaigns`)
         }).catch((e) => console.error(e))
     }

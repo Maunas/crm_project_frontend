@@ -2,12 +2,12 @@ import axios from "axios"
 import type { Campaign, LeadField, Workspace } from "../../types/leads"
 import { API_BASE_URL } from "../../generalService"
 
-export const getWorkspaces = async (detailed: boolean) : Promise<Workspace[]> => {
+export const getWorkspaces = async (detailed = false) : Promise<Workspace[]> => {
     const wksp = await axios.get(`${API_BASE_URL}/workspaces?${detailed && "detailed=true"}`)
     return wksp.data.items
 }
 
-export const createWorkspace = async (body: Campaign) : Promise<Workspace> => {
+export const createWorkspace = async (body: Workspace) : Promise<Workspace> => {
     const wksp = await axios.post(`${API_BASE_URL}/workspaces`, body)
     return wksp.data
 }
