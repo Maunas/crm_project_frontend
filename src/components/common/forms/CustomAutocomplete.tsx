@@ -6,8 +6,8 @@ optionList: object[],
 label: string, 
 name: string, 
 control: Control, 
-getOptionLabel: (option: any) => string, 
-getOptionKey: (option: any)=> string, 
+getOptionLabel: (option: object) => string, 
+getOptionKey: (option: object)=> string, 
 returnField?: string | null, 
 sx?: object | null
 }

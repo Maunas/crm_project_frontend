@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { getWorkspaces } from './campaignServices'
 import { Button, Container, Paper, Typography } from '@mui/material'
 import { Link } from 'react-router-dom'
+import type { Campaign, Workspace } from '../../types/leads'
 
 export const WorkspaceList = () => {
-    const [workspaces, setWorkspaces] = useState([])
+    const [workspaces, setWorkspaces] = useState<Workspace[] | []>([])
 
     useEffect(() => {
         getWorkspaces(true).then(setWorkspaces)
@@ -29,7 +30,11 @@ export const WorkspaceList = () => {
     )
 }
 
-export const CampaignList = ({ campaigns }) => {
+interface CampaignListProps {
+    campaigns?: Campaign[]
+}
+
+export const CampaignList = ({ campaigns = [] }: CampaignListProps) => {
     if (campaigns?.length > 0) return (
         <>
             {campaigns.map((item) =>
