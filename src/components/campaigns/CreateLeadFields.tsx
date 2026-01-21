@@ -170,6 +170,16 @@ const LeadField = ({ templates, sections, types, nomenclators, campaigns, regist
                   />
                 </Grid>
               }
+              {fieldType === "CALCULATED" &&
+                <Grid size="grow" minWidth="20rem" justifyContent="center">
+                  <TextField
+                    id=""
+                    label="Fórmula"
+                    fullWidth
+                    {...register(`calculation_expression`)}
+                  />
+                </Grid>
+              }
             </>
           }
           <Grid size="grow" minWidth="20rem">
