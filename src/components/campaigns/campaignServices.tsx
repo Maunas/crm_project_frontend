@@ -29,7 +29,7 @@ export const getFieldTemplates = async () : Promise<any> => {
 }
 
 export const getFieldTypes = async () : Promise<any> => {
-    const tmp = await axios.get(`${API_BASE_URL}/lead_field_types`)
+    const tmp = await axios.get(`${API_BASE_URL}/lead_field_types?detailed=true`)
     return tmp.data.items
 }
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { createLeadField, getFieldTemplates, getFieldTypes, getNomenclators } from "./campaignServices"
 import { Divider, TextField, Button, Grid, FormControlLabel, FormGroup, Checkbox, Typography, RadioGroup, Container, Paper, Radio } from "@mui/material"
 import { getFieldSections } from "../lead/leadService"
@@ -17,7 +17,14 @@ export const CreateLeadFields = () => {
   const { id } = useParams()
   const nav = useNavigate()
 
-  const { register, control, handleSubmit, watch, reset } = useForm()
+  const { register, control, handleSubmit, watch, reset } = useForm({
+    defaultValues: {
+      required: false,
+      is_primary: false,
+      is_visible: false,
+      default_value: null
+    }
+  })
 
   useEffect(() => {
     getFieldTemplates().then(setFieldTemplates)
@@ -59,8 +66,8 @@ export const CreateLeadFields = () => {
           <Button variant="contained" onClick={handleSubmit(submitAndReset)}>
             Guardar y crear otro
           </Button>
-      </form>
-    </Paper>
+        </form>
+      </Paper>
     </Container >
   )
 }
@@ -71,6 +78,8 @@ const LeadField = ({ templates, sections, types, nomenclators, register, control
   const changeFieldMethod = (e, data) => {
     setFieldMethod(data)
   }
+
+  const fieldTypeObject = useMemo(() => types ? types?.find(i => i.code === fieldType) : null, [types, fieldType])
 
   return (
     <>
@@ -122,14 +131,22 @@ const LeadField = ({ templates, sections, types, nomenclators, register, control
               <Grid size="grow" minWidth="20rem" justifyContent="center">
                 <ControlledAutocomplete name="field_type_code" label="Tipo de Dato"
                   control={control} optionList={types} returnField="code"
-                  getOptionKey={(option) => option.code} getOptionLabel={(option) => option.description}
+                  getOptionKey={(option) => option.code} getOptionLabel={(option) => `${option.code} - ${option.description}`}
                 />
               </Grid>
-              {fieldType === "NOMENCLATOR" &&
+              {(fieldType === "SELECTOR" || fieldType === "CHECKBOX") &&
                 <Grid size="grow" minWidth="20rem" justifyContent="center">
-                  <ControlledAutocomplete name="nomenclator_id" label="Selector"
+                  <ControlledAutocomplete name="nomenclator_id" label="Lista de Opciones"
                     control={control} optionList={nomenclators} returnField="id"
                     getOptionKey={(option) => option.id} getOptionLabel={(option) => option.name}
+                  />
+                </Grid>
+              }
+              {fieldTypeObject?.subtypes?.length > 0 &&
+                <Grid size="grow" minWidth="20rem" justifyContent="center">
+                  <ControlledAutocomplete name="field_subtype_code" label="Subtipo de Campo"
+                    control={control} optionList={fieldTypeObject?.subtypes} returnField="code"
+                    getOptionKey={(option) => option.id} getOptionLabel={(option) => `${option.code} - ${option.description}`}
                   />
                 </Grid>
               }

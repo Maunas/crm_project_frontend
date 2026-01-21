@@ -26,7 +26,7 @@ export const ControlledAutocomplete = ({ optionList, label, name, control, getOp
                     onChange={(_, value) => {
                         //Si se especifica el returnField, se devuelve un campo específico, si no, devuelve el objeto entero
                         if (returnField === null) field.onChange(value ?? null)
-                        else field.onChange(value[returnField] ?? null)
+                        else field.onChange(value ? value[returnField] : null)
                     }}
                     value={
                         //Si se especifica el returnField, se devuelve un campo específico, si no, devuelve el objeto entero
