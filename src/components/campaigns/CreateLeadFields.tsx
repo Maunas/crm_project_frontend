@@ -182,14 +182,18 @@ const LeadField = ({ templates, sections, types, nomenclators, campaigns, regist
               }
             </>
           }
-          <Grid size="grow" minWidth="20rem">
-            <TextField
-              id=""
-              label="Valor por Defecto"
-              fullWidth
-              {...register(`default_value`)}
-            />
-          </Grid>
+          {(fieldMethod === "Por Plantilla" || ["NUMBER", "INT", "STRING", "BOOL"].includes(fieldType)) &&
+
+            <Grid size="grow" minWidth="20rem">
+              <TextField
+                id=""
+                label="Valor por Defecto"
+                fullWidth
+                {...register(`default_value`)}
+              />
+            </Grid>
+          }
+
         </Grid>
 
       </Grid>
