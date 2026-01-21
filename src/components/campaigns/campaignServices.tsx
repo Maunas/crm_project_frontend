@@ -12,6 +12,11 @@ export const createWorkspace = async (body: Workspace) : Promise<Workspace> => {
     return wksp.data
 }
 
+export const getCampaigns = async () : Promise<Campaign[]> => {
+    const campaigns = await axios.get(`${API_BASE_URL}/campaigns`)
+    return campaigns.data.items
+}
+
 export const getCampaign = async (id: number) : Promise<Campaign> => {
     const campaign = await axios.get(`${API_BASE_URL}/campaigns/${id}`)
     return campaign.data

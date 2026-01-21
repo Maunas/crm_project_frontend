@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
-import { createLeadField, getFieldTemplates, getFieldTypes, getNomenclators } from "./campaignServices"
+import { createLeadField, getCampaigns, getFieldTemplates, getFieldTypes, getNomenclators } from "./campaignServices"
 import { Divider, TextField, Button, Grid, FormControlLabel, FormGroup, Checkbox, Typography, RadioGroup, Container, Paper, Radio } from "@mui/material"
 import { getFieldSections } from "../lead/leadService"
 import { useForm } from "react-hook-form"
@@ -13,6 +13,7 @@ export const CreateLeadFields = () => {
   const [fieldSections, setFieldSections] = useState<any[]>([])
   const [fieldTypes, setFieldTypes] = useState<any[]>([])
   const [nomenclators, setNomenclators] = useState<any[]>([])
+  const [campaigns, setCampaigns] = useState<any[]>([])
 
   const { id } = useParams()
   const nav = useNavigate()
@@ -31,6 +32,7 @@ export const CreateLeadFields = () => {
     getFieldSections().then(setFieldSections)
     getFieldTypes().then(setFieldTypes)
     getNomenclators().then(setNomenclators)
+    getCampaigns().then(setCampaigns)
     return () => setFieldTemplates([])
   }, [id])
 
@@ -56,7 +58,7 @@ export const CreateLeadFields = () => {
           <Typography variant="h3" color="initial">Campaña {id}</Typography>
           <LeadField templates={fieldTemplates} sections={fieldSections} register={register}
             types={fieldTypes} control={control} fieldType={fieldType}
-            nomenclators={nomenclators} />
+            nomenclators={nomenclators} campaigns={campaigns} />
           <Button variant="outlined" component={Link} to={`/campaigns/${id}`}>
             Volver
           </Button>
@@ -71,7 +73,7 @@ export const CreateLeadFields = () => {
     </Container >
   )
 }
-const LeadField = ({ templates, sections, types, nomenclators, register, control, fieldType }) => {
+const LeadField = ({ templates, sections, types, nomenclators, campaigns, register, control, fieldType }) => {
 
   const [fieldMethod, setFieldMethod] = useState<string | null>("Por Plantilla")
 
@@ -157,6 +159,14 @@ const LeadField = ({ templates, sections, types, nomenclators, register, control
                     label="Máscara de Input"
                     fullWidth
                     {...register(`input_mask`)}
+                  />
+                </Grid>
+              }
+              {(fieldType === "LEAD") &&
+                <Grid size="grow" minWidth="20rem" justifyContent="center">
+                  <ControlledAutocomplete name="related_campaign_id" label="Campaña del Lead Relacionado"
+                    control={control} optionList={campaigns} returnField="id"
+                    getOptionKey={(option) => option.id} getOptionLabel={(option) => option.name}
                   />
                 </Grid>
               }
