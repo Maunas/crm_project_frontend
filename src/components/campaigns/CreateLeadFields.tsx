@@ -4,7 +4,8 @@ import { Divider, TextField, Button, Grid, FormControlLabel, FormGroup, Checkbox
 import { getFieldSections } from "../lead/leadService"
 import { useForm } from "react-hook-form"
 import { Link, useNavigate, useParams } from "react-router-dom"
-import { CustomAutocomplete } from "../common/forms/CustomAutocomplete"
+import { ControlledAutocomplete } from "../common/forms/ControlledAutocomplete"
+import { ControlledCheckbox } from "../common/forms/ControlledCheckbox"
 
 export const CreateLeadFields = () => {
 
@@ -27,13 +28,13 @@ export const CreateLeadFields = () => {
   }, [id])
 
   const submit = (data) => {
-    createLeadField({ ...data, campaign_id: id, order: 2 })
+    createLeadField({ ...data, campaign_id: id })
       .then(res => nav(`/campaigns/${id}`))
       .catch(e => console.log(data))
   }
 
   const submitAndReset = (data) => {
-    createLeadField({ ...data, campaign_id: id, order: 2 })
+    createLeadField({ ...data, campaign_id: id })
       .then(() => { alert("Creado"); reset() })
       .catch(e => console.log(data))
   }
@@ -58,8 +59,8 @@ export const CreateLeadFields = () => {
           <Button variant="contained" onClick={handleSubmit(submitAndReset)}>
             Guardar y crear otro
           </Button>
-        </form>
-      </Paper>
+      </form>
+    </Paper>
     </Container >
   )
 }
@@ -70,7 +71,7 @@ const LeadField = ({ templates, sections, types, nomenclators, register, control
   const changeFieldMethod = (e, data) => {
     setFieldMethod(data)
   }
-  console.log(fieldType)
+
   return (
     <>
       <Divider sx={{ marginBlock: ".5rem" }} />
@@ -85,16 +86,16 @@ const LeadField = ({ templates, sections, types, nomenclators, register, control
             />
           </Grid>
           <Grid size="grow" minWidth="15rem" justifyContent="center">
-            <CustomAutocomplete name="lead_field_section_id" label="Sección"
+            <ControlledAutocomplete name="lead_field_section_id" label="Sección"
               control={control} optionList={sections} returnField="id"
               getOptionKey={(option) => option.id} getOptionLabel={(option) => option.name}
             />
           </Grid>
           <Grid size="grow" minWidth="20rem" justifyContent="center">
             <FormGroup row>
-              <FormControlLabel control={<Checkbox />} label="Obligatorio" {...register(`required`)} />
-              <FormControlLabel control={<Checkbox />} label="Único" {...register(`is_primary`)} />
-              <FormControlLabel control={<Checkbox />} label="Visible" {...register(`is_visible`)} />
+              <FormControlLabel control={<ControlledCheckbox control={control} name="required" />} label="Obligatorio" />
+              <FormControlLabel control={<ControlledCheckbox control={control} name="is_primary" />} label="Único" />
+              <FormControlLabel control={<ControlledCheckbox control={control} name="is_visible" />} label="Visible" />
             </FormGroup>
           </Grid>
           <Grid size="grow" minWidth="20rem" justifyContent="center">
@@ -111,7 +112,7 @@ const LeadField = ({ templates, sections, types, nomenclators, register, control
           {fieldMethod === "Por Plantilla" ?
 
             <Grid size="grow" minWidth="20rem" justifyContent="center">
-              <CustomAutocomplete name="field_template_code" label="Plantillas"
+              <ControlledAutocomplete name="field_template_code" label="Plantillas"
                 control={control} optionList={templates} returnField="code"
                 getOptionKey={(option) => option.code} getOptionLabel={(option) => option.name}
               />
@@ -119,16 +120,26 @@ const LeadField = ({ templates, sections, types, nomenclators, register, control
             :
             <>
               <Grid size="grow" minWidth="20rem" justifyContent="center">
-                <CustomAutocomplete name="field_type_code" label="Tipo de Dato"
+                <ControlledAutocomplete name="field_type_code" label="Tipo de Dato"
                   control={control} optionList={types} returnField="code"
                   getOptionKey={(option) => option.code} getOptionLabel={(option) => option.description}
                 />
               </Grid>
               {fieldType === "NOMENCLATOR" &&
                 <Grid size="grow" minWidth="20rem" justifyContent="center">
-                  <CustomAutocomplete name="nomenclator_id" label="Selector"
+                  <ControlledAutocomplete name="nomenclator_id" label="Selector"
                     control={control} optionList={nomenclators} returnField="id"
                     getOptionKey={(option) => option.id} getOptionLabel={(option) => option.name}
+                  />
+                </Grid>
+              }
+              {fieldType === "STRING" &&
+                <Grid size="grow" minWidth="20rem" justifyContent="center">
+                  <TextField
+                    id=""
+                    label="Máscara de Input"
+                    fullWidth
+                    {...register(`input_mask`)}
                   />
                 </Grid>
               }

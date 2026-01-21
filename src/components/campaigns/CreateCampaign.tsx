@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form"
 import type { Campaign, LeadField, Workspace } from "../../types/leads"
 import { createCampaign, createLeadField, createWorkspace, getWorkspaces } from "./campaignServices"
 import { Link, useNavigate } from "react-router-dom"
-import { CustomAutocomplete } from "../common/forms/CustomAutocomplete"
+import { ControlledAutocomplete } from "../common/forms/ControlledAutocomplete"
 
 export const CreateCampaign = () => {
 
@@ -74,7 +74,7 @@ export const CampaignForm = () => {
                     <TextField {...register("description")} label="Descripción" fullWidth />
                 </Grid>
                 <Grid size="grow" minWidth={"20rem"}>
-                    <CustomAutocomplete control={control} label="Espacio de Trabajo" name="workspace_id"
+                    <ControlledAutocomplete control={control} label="Espacio de Trabajo" name="workspace_id"
                         getOptionLabel={(option) => option.name} getOptionKey={(option) => option.id}
                         optionList={workspaces} />
                 </Grid>
