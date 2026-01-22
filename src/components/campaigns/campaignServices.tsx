@@ -52,3 +52,13 @@ export const getFieldsFromCampaign = async(campaign_id: number) : Promise<LeadFi
     const leadField = await axios.get(`${API_BASE_URL}/lead_fields?campaign_id=${campaign_id}&detailed=true`)
     return leadField.data.items
 }
+
+export const getValidationTemplates = async() : Promise<any[]> => {
+    const val = await axios.get(`${API_BASE_URL}/templates/validation_rules`)
+    return val.data
+}
+
+export const createValidation = async(body) : Promise<any[]> => {
+    const val = await axios.post(`${API_BASE_URL}/validation_rules`, body)
+    return val.data
+}

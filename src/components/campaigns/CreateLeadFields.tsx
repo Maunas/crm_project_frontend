@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react"
-import { createLeadField, getCampaigns, getFieldTemplates, getFieldTypes, getNomenclators } from "./campaignServices"
+import { createLeadField, createValidation, getCampaigns, getFieldTemplates, getFieldTypes, getNomenclators } from "./campaignServices"
 import { Divider, TextField, Button, Grid, FormControlLabel, FormGroup, Checkbox, Typography, RadioGroup, Container, Paper, Radio } from "@mui/material"
 import { getFieldSections } from "../lead/leadService"
-import { useForm } from "react-hook-form"
+import { useFieldArray, useForm } from "react-hook-form"
 import { Link, useNavigate, useParams } from "react-router-dom"
 import { ControlledAutocomplete } from "../common/forms/ControlledAutocomplete"
 import { ControlledCheckbox } from "../common/forms/ControlledCheckbox"
+import { ValidationRuleForm } from "./ValidationRuleForm"
 
 export const CreateLeadFields = () => {
 
@@ -18,7 +19,7 @@ export const CreateLeadFields = () => {
   const { id } = useParams()
   const nav = useNavigate()
 
-  const { register, control, handleSubmit, watch, reset } = useForm({
+  const { register, control, handleSubmit, watch, reset, setValue } = useForm({
     defaultValues: {
       required: false,
       is_primary: false,
@@ -38,14 +39,24 @@ export const CreateLeadFields = () => {
 
   const submit = (data) => {
     createLeadField({ ...data, campaign_id: id })
-      .then(res => nav(`/campaigns/${id}`))
-      .catch(e => console.log(data))
+      .then(res => {
+        Promise.all(data?.validation_rules.map(i => createValidation({ ...i, "field_id": res.id })))
+          .then(() => nav(`/campaigns/${id}`))
+          .catch(e => console.log(e))
+      })
+      .catch(e => console.log(e))
   }
 
   const submitAndReset = (data) => {
     createLeadField({ ...data, campaign_id: id })
-      .then(() => { alert("Creado"); reset() })
-      .catch(e => console.log(data))
+      .then(res => {
+        Promise.all(data?.validation_rules.map(i => createValidation({ ...i, "field_id": res.id })))
+          .then(() => {
+            alert("Creado"); reset()
+          })
+          .catch(e => console.log(e))
+      })
+      .catch(e => console.log(e))
   }
 
   const fieldType = watch("field_type_code")
@@ -59,6 +70,8 @@ export const CreateLeadFields = () => {
           <LeadField templates={fieldTemplates} sections={fieldSections} register={register}
             types={fieldTypes} control={control} fieldType={fieldType}
             nomenclators={nomenclators} campaigns={campaigns} />
+
+          <ValidationRuleForm control={control} register={register} watch={watch} setValue={setValue} />
           <Button variant="outlined" component={Link} to={`/campaigns/${id}`}>
             Volver
           </Button>
