@@ -22,6 +22,11 @@ export const createLeadField = async(body: LeadField) : Promise<LeadField> => {
     return leadField.data
 }
 
+export const getLeadFieldsByCampaign = async(campaignId) : Promise<LeadField[]> => {
+    const leadField = await axios.get(`${API_BASE_URL}/lead_fields?campaign_id=${campaignId}`)
+    return leadField.data.items
+}
+
 export const getFieldsFromCampaign = async(campaign_id: number) : Promise<LeadField[]> => {
     const leadField = await axios.get(`${API_BASE_URL}/lead_fields?campaign_id=${campaign_id}&detailed=true`)
     return leadField.data.items

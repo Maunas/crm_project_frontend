@@ -7,6 +7,7 @@ import { CampaignDetails } from "./components/campaigns/CampaignDetails";
 import { CreateLeadFields } from "./components/leadFields/CreateLeadFields";
 import { WorkspaceList } from "./components/campaigns/CampaignList";
 import { createWorkspace } from "./components/campaigns/campaignServices";
+import { LeadForm } from "./components/lead/LeadForm";
 
 export const router = createBrowserRouter([
     {
@@ -30,6 +31,10 @@ export const router = createBrowserRouter([
             {
                 path: "/",
                 element: <div>Home Test</div>
+            },
+            {
+                path: "/leads/new",
+                Component: LeadForm
             },
             {
                 path: "/leads/:id",
