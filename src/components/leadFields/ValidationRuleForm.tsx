@@ -1,7 +1,7 @@
 import { Divider, Typography, Button, Grid, TextField, RadioGroup, FormControlLabel, Radio } from '@mui/material'
 import { useEffect, useMemo, useState } from 'react'
 import { useFieldArray } from 'react-hook-form'
-import { getValidationTemplates } from './campaignServices'
+import { getValidationTemplates } from '../leadFields/leadFieldServices'
 import { ControlledAutocomplete } from '../common/forms/ControlledAutocomplete'
 
 export const ValidationRuleForm = ({ control, register, watch, setValue }) => {

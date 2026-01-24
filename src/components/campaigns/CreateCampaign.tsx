@@ -2,9 +2,10 @@ import { Container, Paper, TextField, Typography, Button, Grid } from "@mui/mate
 import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import type { Campaign, LeadField, Workspace } from "../../types/leads"
-import { createCampaign, createLeadField, createWorkspace, getWorkspaces } from "./campaignServices"
+import { createCampaign, createWorkspace, getWorkspaces } from "./campaignServices"
 import { Link, useNavigate } from "react-router-dom"
 import { ControlledAutocomplete } from "../common/forms/ControlledAutocomplete"
+import { createLeadField } from "../leadFields/leadFieldServices"
 
 export const CreateCampaign = () => {
 

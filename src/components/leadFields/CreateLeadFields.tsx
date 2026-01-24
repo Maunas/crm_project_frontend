@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react"
-import { createLeadField, createValidation, getCampaigns, getFieldTemplates, getFieldTypes, getNomenclators } from "./campaignServices"
-import { Divider, TextField, Button, Grid, FormControlLabel, FormGroup, Checkbox, Typography, RadioGroup, Container, Paper, Radio } from "@mui/material"
+import { getCampaigns } from "../campaigns/campaignServices"
+import { createLeadField, createValidation, getFieldTemplates, getFieldTypes, getNomenclators } from "../leadFields/leadFieldServices"
+import { Divider, TextField, Button, Grid, FormControlLabel, FormGroup, Typography, RadioGroup, Container, Paper, Radio } from "@mui/material"
 import { getFieldSections } from "../lead/leadService"
-import { useFieldArray, useForm } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { Link, useNavigate, useParams } from "react-router-dom"
 import { ControlledAutocomplete } from "../common/forms/ControlledAutocomplete"
 import { ControlledCheckbox } from "../common/forms/ControlledCheckbox"
@@ -37,26 +38,26 @@ export const CreateLeadFields = () => {
     return () => setFieldTemplates([])
   }, [id])
 
-  const submit = (data) => {
-    createLeadField({ ...data, campaign_id: id })
-      .then(res => {
-        Promise.all(data?.validation_rules.map(i => createValidation({ ...i, "field_id": res.id })))
-          .then(() => nav(`/campaigns/${id}`))
-          .catch(e => console.log(e))
-      })
-      .catch(e => console.log(e))
+  const saveLeadField = async (data) => {
+    try {
+      const newLeadField = await createLeadField({ ...data, campaign_id: id })
+      const newValidationList = await Promise.all(data?.validation_rules.map(validation => createValidation({ ...validation, "field_id": newLeadField.id })))
+      return { ...newLeadField, validation_rules: newValidationList }
+    } catch (e) {
+      console.log(e)
+      throw e
+    }
   }
 
-  const submitAndReset = (data) => {
-    createLeadField({ ...data, campaign_id: id })
-      .then(res => {
-        Promise.all(data?.validation_rules.map(i => createValidation({ ...i, "field_id": res.id })))
-          .then(() => {
-            alert("Creado"); reset()
-          })
-          .catch(e => console.log(e))
-      })
-      .catch(e => console.log(e))
+  const submit = async (data) => {
+    await saveLeadField(data)
+    nav(`/campaigns/${id}`)
+  }
+
+  const submitAndReset = async (data) => {
+    await saveLeadField(data)
+    alert("Creado")
+    reset()
   }
 
   const fieldType = watch("field_type_code")
