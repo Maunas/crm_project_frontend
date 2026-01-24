@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { useParams } from "react-router-dom"
 import { getLead, getFieldSections } from "./leadService.ts"
-import { Accordion, AccordionDetails, AccordionSummary, Box, Chip, Container, Divider, Grid, Paper, Typography } from "@mui/material"
+import { Accordion, AccordionDetails, AccordionSummary, Box, Chip, Container, Divider, Grid, Link, Paper, Typography } from "@mui/material"
 import type { Lead, LeadFieldSection, LeadFieldValue } from "../../types/leads.ts"
 import { getFieldType } from "../../generalService.ts"
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
@@ -63,28 +63,6 @@ export const LeadDetails = () => {
     )
 }
 
-interface LeadFieldProps {
-    fieldName: string,
-    value: string | number | boolean,
-    type: string
-}
-
-export const LeadField = ({ fieldName, value, type }: LeadFieldProps) => {
-
-    const fieldValue = useMemo(() => getFieldType(type, value), [type, value])
-
-    if (type === "BOOL" && fieldValue) {
-        return <Chip color="success" label={fieldName} sx={{ marginBottom: ".5rem", fontWeight: "bold" }} />
-    }
-
-    return (
-        <>
-            <Typography sx={{ fontWeight: "bold" }} component="h3">{fieldName}:</Typography>
-            <Typography sx={{ paddingLeft: ".5rem" }}>{value}</Typography>
-        </>
-    )
-}
-
 interface LeadFieldSectionsProps {
     fields: LeadFieldValue[]
 }
@@ -92,12 +70,24 @@ interface LeadFieldSectionsProps {
 //TO DO Optimizar componentes
 export const LeadFieldSections = ({ fields }: LeadFieldSectionsProps) => {
 
-    const [leadSections, setLeadSections] = useState<LeadFieldSection[] | []>([])
+    const leadSections = useMemo(() => {
+        const sections = new Map()
+        fields?.forEach((field) => {
+            if (!field.value || !field.field.is_visible) return
+            const section = field.field.lead_field_section
+            if (sections.has(section.id)) {
+                const currentSection = sections.get(section.id)
+                const fields = [...sections.get(section.id).fields, field]
+                sections.set(section.id, { ...currentSection, fields: fields })
+            } else {
+                sections.set(section.id, { name: section.name, fields: [field] })
+            }
+        })
 
-    useEffect(() => {
-        getFieldSections().then(setLeadSections)
-        return () => setLeadSections([])
-    }, [])
+        return Array.from(sections.values())
+    }, [fields])
+
+    console.log(leadSections)
 
     return (
         <>
@@ -113,16 +103,63 @@ export const LeadFieldSections = ({ fields }: LeadFieldSectionsProps) => {
                         </AccordionSummary>
                         <AccordionDetails sx={{ paddingTop: 0 }}>
                             <Divider sx={{ marginBottom: "1rem" }} ></Divider>
-                            {fields.map((field, idx) => {
-                                    if (field.field.lead_field_section.id === sect.id)
-                                        return <LeadField fieldName={field.field.name} type={field.field.field_type_code} value={field.value} key={idx} />
-                                }
-                                )}
+                            {sect.fields.map((field, idx) =>
+
+                                <LeadField fieldName={field.field.name} type={field.field.field_type_code}
+                                    value={field.value} template={field.field.field_template_code} key={idx} />
+                            )}
 
                         </AccordionDetails>
                     </Accordion>
                 )
             }
+        </>
+    )
+}
+
+interface LeadFieldProps {
+    fieldName: string,
+    value: string | number | boolean,
+    type: string,
+    template: string | null
+}
+
+export const LeadField = ({ fieldName, value, type, template = null }: LeadFieldProps) => {
+
+    const fieldValue = useMemo(() => getFieldType(type, value), [type, value])
+
+    if (type === "BOOL" && fieldValue) {
+        return <Chip color="success" label={fieldName} sx={{ marginBottom: ".5rem", fontWeight: "bold" }} />
+    }
+
+    return (
+        <>
+            <Typography sx={{ fontWeight: "bold" }} component="h3">{fieldName}:</Typography>
+
+            {template && template === "INSTAGRAM_USER" &&
+                <Link sx={{ paddingLeft: ".5rem" }} href={`instagram.com/${value?.substring(1)}`} target="_blank" rel="noopener">
+                    {value}
+                </Link>
+            }
+
+            {template && template === "WEBSITE_URL" &&
+                <Link sx={{ paddingLeft: ".5rem" }} href={value} target="_blank" rel="noopener">
+                    {value}
+                </Link>
+            }
+
+            {template && template === "EMAIL" &&
+                <Link sx={{ paddingLeft: ".5rem" }} href={`mailto:${value}`} target="_blank" rel="noopener">
+                    {value}
+                </Link>
+            }
+
+            {(!template || !["INSTAGRAM_USER","WEBSITE_URL","EMAIL"].includes(template)) &&
+                <Typography sx={{ paddingLeft: ".5rem" }}>
+                {template && template === "SALARY_EXPECTATION" && "$"}
+                {value}
+            </Typography>}
+
         </>
     )
 }

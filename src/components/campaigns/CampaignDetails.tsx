@@ -50,7 +50,7 @@ export const CampaignDetails = () => {
                                                 key={row.id}
                                                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                                             >
-                                                <TableCell component="th">{row.name}</TableCell>
+                                                <TableCell component="th">{row.id} - {row.name}</TableCell>
                                                 <TableCell align="right">{row.field_type_code}</TableCell>
                                                 <TableCell align="right">{row.input_mask || "Sin máscara"}</TableCell>
                                                 <TableCell align="right">{row.field_template_code || row.nomenclator?.name || "Dato manual"}</TableCell>
