@@ -16,6 +16,10 @@ export const LeadDetails = () => {
         return () => setLead(null)
     }, [id])
 
+    const fieldValues = useMemo(() =>
+        lead?.field_values.sort((a, b) => a.field.order - b.field.order)
+        , [lead])
+
     return (
         <Container maxWidth={false}>
             <Grid container spacing={3}>
@@ -25,14 +29,14 @@ export const LeadDetails = () => {
                         <Box>
                             <Paper sx={{ minHeight: "100%", p: 2, borderRadius: "1em", marginBottom: "1rem" }}>
                                 <Box sx={{ display: "flex", justifyContent: "end", alignItems: "center", flexWrap: "wrap" }}>
-                                    <Typography variant="h1" sx={{ flexGrow: 1, minWidth: "fit" }}>{lead?.field_values[0].value} {lead?.field_values[1].value}</Typography>
+                                    <Typography variant="h1" sx={{ flexGrow: 1, minWidth: "fit" }}>{fieldValues[0].value} {fieldValues[1].value}</Typography>
                                     <Chip label={lead?.active ? "Habilitado" : "Deshabilitado"} color={lead?.active ? "success" : "error"} sx={{ justifySelf: "end" }} />
                                 </Box>
                             </Paper>
-                            <Paper  sx={{ p: 1, borderRadius: "1em" }}>
-                                <LeadFieldSections fields={lead.field_values} />
+                            <Paper sx={{ p: 1, borderRadius: "1em" }}>
+                                <LeadFieldSections fields={fieldValues} />
 
-                                <Accordion disableGutters sx={{boxShadow:"none"}}>
+                                <Accordion disableGutters sx={{ boxShadow: "none" }}>
                                     <AccordionSummary sx={{ height: "64px" }}
                                         expandIcon={<ArrowDropDownIcon />}
                                         aria-controls="panel2-content" id="panel2-header"
@@ -100,7 +104,7 @@ export const LeadFieldSections = ({ fields }: LeadFieldSectionsProps) => {
             {
                 leadSections?.length > 0 &&
                 leadSections.map((sect, idx) =>
-                    <Accordion key={idx} defaultExpanded={idx === 0} disableGutters sx={{boxShadow:"none"}}>
+                    <Accordion key={idx} defaultExpanded={idx === 0} disableGutters sx={{ boxShadow: "none" }}>
                         <AccordionSummary sx={{ height: "64px" }}
                             expandIcon={<ArrowDropDownIcon />}
                             aria-controls="panel2-content" id="panel2-header"
@@ -110,10 +114,10 @@ export const LeadFieldSections = ({ fields }: LeadFieldSectionsProps) => {
                         <AccordionDetails sx={{ paddingTop: 0 }}>
                             <Divider sx={{ marginBottom: "1rem" }} ></Divider>
                             {fields.map((field, idx) => {
-                                if (field.field.lead_field_section.id === sect.id)
-                                    return <LeadField fieldName={field.field.name} type={field.field.field_type_code} value={field.value} key={idx} />
-                            }
-                            )}
+                                    if (field.field.lead_field_section.id === sect.id)
+                                        return <LeadField fieldName={field.field.name} type={field.field.field_type_code} value={field.value} key={idx} />
+                                }
+                                )}
 
                         </AccordionDetails>
                     </Accordion>

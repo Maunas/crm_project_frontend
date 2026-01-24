@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import type { Campaign, LeadField } from '../../types/leads'
-import { getCampaign, getFieldsFromCampaign } from './campaignServices'
+import { getCampaign } from './campaignServices'
 import { Button, Chip, Container, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material'
+import { getFieldsFromCampaign } from '../leadFields/leadFieldServices'
 
 export const CampaignDetails = () => {
     const { id } = useParams()
