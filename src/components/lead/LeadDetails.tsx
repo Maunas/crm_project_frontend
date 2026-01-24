@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { useParams } from "react-router-dom"
 import { getLead, getFieldSections } from "./leadService.ts"
-import { Accordion, AccordionDetails, AccordionSummary, Box, Chip, Container, Divider, Grid, Paper, Typography } from "@mui/material"
+import { Accordion, AccordionDetails, AccordionSummary, Box, Chip, Container, Divider, Grid, Link, Paper, Typography } from "@mui/material"
 import type { Lead, LeadFieldSection, LeadFieldValue } from "../../types/leads.ts"
 import { getFieldType } from "../../generalService.ts"
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
@@ -16,6 +16,10 @@ export const LeadDetails = () => {
         return () => setLead(null)
     }, [id])
 
+    const fieldValues = useMemo(() =>
+        lead?.field_values.sort((a, b) => a.field.order - b.field.order)
+        , [lead])
+
     return (
         <Container maxWidth={false}>
             <Grid container spacing={3}>
@@ -25,14 +29,14 @@ export const LeadDetails = () => {
                         <Box>
                             <Paper sx={{ minHeight: "100%", p: 2, borderRadius: "1em", marginBottom: "1rem" }}>
                                 <Box sx={{ display: "flex", justifyContent: "end", alignItems: "center", flexWrap: "wrap" }}>
-                                    <Typography variant="h1" sx={{ flexGrow: 1, minWidth: "fit" }}>{lead?.field_values[0].value} {lead?.field_values[1].value}</Typography>
+                                    <Typography variant="h1" sx={{ flexGrow: 1, minWidth: "fit" }}>{fieldValues[0].value} {fieldValues[1].value}</Typography>
                                     <Chip label={lead?.active ? "Habilitado" : "Deshabilitado"} color={lead?.active ? "success" : "error"} sx={{ justifySelf: "end" }} />
                                 </Box>
                             </Paper>
-                            <Paper  sx={{ p: 1, borderRadius: "1em" }}>
-                                <LeadFieldSections fields={lead.field_values} />
+                            <Paper sx={{ p: 1, borderRadius: "1em" }}>
+                                <LeadFieldSections fields={fieldValues} />
 
-                                <Accordion disableGutters sx={{boxShadow:"none"}}>
+                                <Accordion disableGutters sx={{ boxShadow: "none" }}>
                                     <AccordionSummary sx={{ height: "64px" }}
                                         expandIcon={<ArrowDropDownIcon />}
                                         aria-controls="panel2-content" id="panel2-header"
@@ -59,13 +63,68 @@ export const LeadDetails = () => {
     )
 }
 
+interface LeadFieldSectionsProps {
+    fields: LeadFieldValue[]
+}
+
+//TO DO Optimizar componentes
+export const LeadFieldSections = ({ fields }: LeadFieldSectionsProps) => {
+
+    const leadSections = useMemo(() => {
+        const sections = new Map()
+        fields?.forEach((field) => {
+            if (!field.value || !field.field.is_visible) return
+            const section = field.field.lead_field_section
+            if (sections.has(section.id)) {
+                const currentSection = sections.get(section.id)
+                const fields = [...sections.get(section.id).fields, field]
+                sections.set(section.id, { ...currentSection, fields: fields })
+            } else {
+                sections.set(section.id, { name: section.name, fields: [field] })
+            }
+        })
+
+        return Array.from(sections.values())
+    }, [fields])
+
+    console.log(leadSections)
+
+    return (
+        <>
+            {
+                leadSections?.length > 0 &&
+                leadSections.map((sect, idx) =>
+                    <Accordion key={idx} defaultExpanded={idx === 0} disableGutters sx={{ boxShadow: "none" }}>
+                        <AccordionSummary sx={{ height: "64px" }}
+                            expandIcon={<ArrowDropDownIcon />}
+                            aria-controls="panel2-content" id="panel2-header"
+                        >
+                            <Typography variant="h2">{sect.name}</Typography>
+                        </AccordionSummary>
+                        <AccordionDetails sx={{ paddingTop: 0 }}>
+                            <Divider sx={{ marginBottom: "1rem" }} ></Divider>
+                            {sect.fields.map((field, idx) =>
+
+                                <LeadField fieldName={field.field.name} type={field.field.field_type_code}
+                                    value={field.value} template={field.field.field_template_code} key={idx} />
+                            )}
+
+                        </AccordionDetails>
+                    </Accordion>
+                )
+            }
+        </>
+    )
+}
+
 interface LeadFieldProps {
     fieldName: string,
     value: string | number | boolean,
-    type: string
+    type: string,
+    template: string | null
 }
 
-export const LeadField = ({ fieldName, value, type }: LeadFieldProps) => {
+export const LeadField = ({ fieldName, value, type, template = null }: LeadFieldProps) => {
 
     const fieldValue = useMemo(() => getFieldType(type, value), [type, value])
 
@@ -76,49 +135,31 @@ export const LeadField = ({ fieldName, value, type }: LeadFieldProps) => {
     return (
         <>
             <Typography sx={{ fontWeight: "bold" }} component="h3">{fieldName}:</Typography>
-            <Typography sx={{ paddingLeft: ".5rem" }}>{value}</Typography>
-        </>
-    )
-}
 
-interface LeadFieldSectionsProps {
-    fields: LeadFieldValue[]
-}
-
-//TO DO Optimizar componentes
-export const LeadFieldSections = ({ fields }: LeadFieldSectionsProps) => {
-
-    const [leadSections, setLeadSections] = useState<LeadFieldSection[] | []>([])
-
-    useEffect(() => {
-        getFieldSections().then(setLeadSections)
-        return () => setLeadSections([])
-    }, [])
-
-    return (
-        <>
-            {
-                leadSections?.length > 0 &&
-                leadSections.map((sect, idx) =>
-                    <Accordion key={idx} defaultExpanded={idx === 0} disableGutters sx={{boxShadow:"none"}}>
-                        <AccordionSummary sx={{ height: "64px" }}
-                            expandIcon={<ArrowDropDownIcon />}
-                            aria-controls="panel2-content" id="panel2-header"
-                        >
-                            <Typography variant="h2">{sect.name}</Typography>
-                        </AccordionSummary>
-                        <AccordionDetails sx={{ paddingTop: 0 }}>
-                            <Divider sx={{ marginBottom: "1rem" }} ></Divider>
-                            {fields.map((field, idx) => {
-                                if (field.field.lead_field_section.id === sect.id)
-                                    return <LeadField fieldName={field.field.name} type={field.field.field_type_code} value={field.value} key={idx} />
-                            }
-                            )}
-
-                        </AccordionDetails>
-                    </Accordion>
-                )
+            {template && template === "INSTAGRAM_USER" &&
+                <Link sx={{ paddingLeft: ".5rem" }} href={`instagram.com/${value?.substring(1)}`} target="_blank" rel="noopener">
+                    {value}
+                </Link>
             }
+
+            {template && template === "WEBSITE_URL" &&
+                <Link sx={{ paddingLeft: ".5rem" }} href={value} target="_blank" rel="noopener">
+                    {value}
+                </Link>
+            }
+
+            {template && template === "EMAIL" &&
+                <Link sx={{ paddingLeft: ".5rem" }} href={`mailto:${value}`} target="_blank" rel="noopener">
+                    {value}
+                </Link>
+            }
+
+            {(!template || !["INSTAGRAM_USER","WEBSITE_URL","EMAIL"].includes(template)) &&
+                <Typography sx={{ paddingLeft: ".5rem" }}>
+                {template && template === "SALARY_EXPECTATION" && "$"}
+                {value}
+            </Typography>}
+
         </>
     )
 }

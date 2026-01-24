@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import type { Campaign, LeadField } from '../../types/leads'
-import { getCampaign, getFieldsFromCampaign } from './campaignServices'
+import { getCampaign } from './campaignServices'
 import { Button, Chip, Container, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material'
+import { getFieldsFromCampaign } from '../leadFields/leadFieldServices'
 
 export const CampaignDetails = () => {
     const { id } = useParams()
@@ -49,7 +50,7 @@ export const CampaignDetails = () => {
                                                 key={row.id}
                                                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                                             >
-                                                <TableCell component="th">{row.name}</TableCell>
+                                                <TableCell component="th">{row.id} - {row.name}</TableCell>
                                                 <TableCell align="right">{row.field_type_code}</TableCell>
                                                 <TableCell align="right">{row.input_mask || "Sin máscara"}</TableCell>
                                                 <TableCell align="right">{row.field_template_code || row.nomenclator?.name || "Dato manual"}</TableCell>

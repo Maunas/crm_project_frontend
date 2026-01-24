@@ -77,7 +77,7 @@ export const CampaignForm = () => {
                 <Grid size="grow" minWidth={"20rem"}>
                     <ControlledAutocomplete control={control} label="Espacio de Trabajo" name="workspace_id"
                         getOptionLabel={(option) => option.name} getOptionKey={(option) => option.id}
-                        optionList={workspaces} />
+                        optionList={workspaces} returnField="id"/>
                 </Grid>
             </Grid>
             <Button component={Link} to="/campaigns">
