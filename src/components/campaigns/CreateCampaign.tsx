@@ -15,7 +15,7 @@ export const CampaignForm = () => {
     const nav = useNavigate()
 
     useEffect(() => {
-        getWorkspaces().then(setWorkspaces)
+        getWorkspaces({}).then(setWorkspaces)
     }, [])
 
     const requiredFields: LeadField[] = [
