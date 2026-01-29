@@ -80,31 +80,7 @@ export interface NomenclatorItem {
     "parent_item_id": number
 }
 
-export interface Campaign {
-    "id": number,
-    "name": string,
-    "description": string
-    "workspace_id": number
-    //Detailed
-    "active"?: boolean,
-    "created_at"?: string,
-    "created_by"?: number,
-    "updated_at"?: string,
-}
-
 export interface LeadFieldSection {
     "id": number,
     "name": string
-}
-
-export interface Workspace {
-    "id"?: number,
-    "name": string,
-    "description"?: string
-    //Detailed
-    "active"?: boolean,
-    "created_at"?: string,
-    "created_by"?: number,
-    "updated_at"?: string,
-    "campaigns"?: Campaign[]
 }
