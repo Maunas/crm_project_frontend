@@ -98,7 +98,7 @@ export interface LeadFieldSection {
 }
 
 export interface Workspace {
-    "id": number,
+    "id"?: number,
     "name": string,
     "description"?: string
     //Detailed

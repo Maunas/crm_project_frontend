@@ -2,10 +2,11 @@ import { Container, Paper, TextField, Typography, Button, Grid } from "@mui/mate
 import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import type { Campaign, LeadField, Workspace } from "../../types/leads"
-import { createCampaign, createWorkspace, getWorkspaces } from "./campaignServices"
+import { createCampaign, createWorkspace, getOrganizations, getWorkspaces } from "./campaignServices"
 import { Link, useNavigate } from "react-router-dom"
 import { ControlledAutocomplete } from "../common/forms/ControlledAutocomplete"
 import { createLeadField } from "../leadFields/leadFieldServices"
+import type { Organization } from "../../types/campaigns"
 
 export const CreateCampaign = () => {
 
@@ -92,8 +93,13 @@ export const CampaignForm = () => {
 
 export const WorkspaceForm = () => {
 
-    const { register, handleSubmit } = useForm()
+    const { register, handleSubmit, control} = useForm()
     const nav = useNavigate()
+    const [organizations, setOrganizations] = useState<Organization[] | []>([])
+
+    useEffect(() => {
+        getOrganizations().then(setOrganizations)
+    }, [])
 
     const submit = (data: Workspace) => {
         createWorkspace(data).then(() => {
@@ -102,17 +108,23 @@ export const WorkspaceForm = () => {
     }
 
     return (
-        <form onSubmit={handleSubmit(submit)}>
+        <form>
             <Grid container spacing={2} sx={{
                 justifyContent: "center",
                 alignItems: "center",
                 margin: "1rem"
             }}>
                 <Grid size="grow" minWidth={"20rem"}>
-                    <TextField {...register("name")} label="Nombre" fullWidth />
+                    <TextField {...register("name")} required label="Nombre" fullWidth />
                 </Grid>
                 <Grid size="grow" minWidth={"20rem"}>
                     <TextField {...register("description")} label="Descripción" fullWidth />
+                </Grid>
+                
+                <Grid size="grow" minWidth={"20rem"}>
+                    <ControlledAutocomplete control={control} name="organization_id" label="Organización"
+                    getOptionKey={option=>option.id} getOptionLabel={option=>option.name} optionList={organizations} 
+                    returnField="id"/>
                 </Grid>
 
             </Grid>
