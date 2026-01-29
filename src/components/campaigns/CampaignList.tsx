@@ -19,14 +19,16 @@ export const OrganizationList = () => {
     }
 
     const detailedOrgs: OrganizationFull[] = useMemo(() => {
-        if (!(workspaces || organizations)) return []
+        if (!(workspaces?.length > 0 && organizations?.length > 0)) return []
+
         const detailedOrgs = new Map()
+
         organizations.forEach((org) => {
-            detailedOrgs.set(org.id, org)
+            detailedOrgs.set(org.id, { ...org, workspaces: [] })
         })
         workspaces.forEach((workspace) => {
             const org = detailedOrgs.get(workspace.organization_id)
-            detailedOrgs.set(org.id, { ...org, workspaces: [...org.workspaces ?? [], workspace] })
+            org.workspaces.push(workspace)
         })
         return Array.from(detailedOrgs.values())
     }, [workspaces, organizations])
