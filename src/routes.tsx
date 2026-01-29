@@ -7,6 +7,7 @@ import { CampaignDetails } from "./components/campaigns/CampaignDetails";
 import { CreateLeadFields } from "./components/leadFields/CreateLeadFields";
 import { WorkspaceList } from "./components/campaigns/CampaignList";
 import { createWorkspace } from "./components/campaigns/campaignServices";
+import { OrganizationForm } from "./components/campaigns/CreateOrganization";
 
 export const router = createBrowserRouter([
     {
@@ -54,6 +55,10 @@ export const router = createBrowserRouter([
             {
                 path: "/workspaces/new",
                 Component: WorkspaceForm
+            },
+            {
+                path: "/organizations/new",
+                Component: OrganizationForm
             },
             {
                 path: "*", //Si no coincide con nada más.

@@ -96,7 +96,7 @@ export const WorkspaceForm = () => {
     const nav = useNavigate()
 
     const submit = (data: Workspace) => {
-        createWorkspace(data).then((_) => {
+        createWorkspace(data).then(() => {
             nav(`/campaigns`)
         }).catch((e) => console.error(e))
     }
