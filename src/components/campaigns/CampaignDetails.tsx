@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import type { LeadField } from '../../types/leads'
+import type { LeadFieldDetailed } from '../../types/leads'
 import { getCampaign } from './campaignServices'
 import { Button, Chip, Container, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material'
 import { getFieldsFromCampaign } from '../leadFields/leadFieldServices'
@@ -9,12 +9,12 @@ import type { Campaign } from '../../types/campaigns'
 export const CampaignDetails = () => {
     const { id } = useParams()
     const [campaign, setCampaign] = useState<Campaign | null>(null)
-    const [fields, setFields] = useState<LeadField[] | []>([])
+    const [fields, setFields] = useState<LeadFieldDetailed[] | []>([])
 
     useEffect(() => {
         if (id) getCampaign(parseInt(id)).then((res) => {
             setCampaign(res)
-            getFieldsFromCampaign(parseInt(id)).then(res => setFields(res))
+            getFieldsFromCampaign({ detailed: true, campaign_id: parseInt(id) }).then(res => setFields(res))
         })
         return () => setCampaign(null)
     }, [id])
@@ -46,7 +46,7 @@ export const CampaignDetails = () => {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {fields?.sort((a: LeadField, b: LeadField) => a.order - b.order)
+                                    {fields?.sort((a, b) => a.order - b.order)
                                         .map((row) => (
                                             <TableRow
                                                 key={row.id}
