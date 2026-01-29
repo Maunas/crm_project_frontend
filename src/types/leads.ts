@@ -3,8 +3,8 @@ export interface Lead {
     "campaign_id": number,
     "field_values": LeadFieldValue[]
     //If detailed=true
-    "created_at"?: string,
-    "updated_at"?: string,
+    "created_at": string,
+    "updated_at": string,
     "active"?: boolean,
 
 }
@@ -25,8 +25,8 @@ export interface LeadFieldValue {
 
 export interface LeadField {
     "id"?: number,
-    "name"?: string,
-    "field_type_code"?: string,
+    "name": string,
+    "field_type_code": string,
     "required": boolean,
     "default_value"?: string | null,
     "is_primary": boolean,
@@ -34,7 +34,7 @@ export interface LeadField {
 
     "field_template_code"?: string | null,
     "is_visible": boolean,
-    "order"?: number,
+    "order": number,
     "campaign_id"?: number,
     "nomenclator_id"?: Nomenclator | null,
     "nomenclator"?: Nomenclator | null,
