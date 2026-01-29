@@ -1,3 +1,6 @@
+import type { Campaign } from "./campaigns"
+import type { Metadata } from "./common"
+
 export interface Lead {
     "id": number,
     "campaign_id": number,
@@ -22,31 +25,41 @@ export interface LeadFieldValue {
     "updated_at"?: string,
     "active"?: boolean,
 }
-
-export interface LeadField {
-    "id"?: number,
-    "name": string,
-    "field_type_code": string,
+export interface LeadFieldPost {
+    "name"?: string,
+    "campaign_id": number,
+    "order"?: number,
     "required": boolean,
-    "default_value"?: string | null,
     "is_primary": boolean,
-    "input_mask"?: string | null,
-
-    "field_template_code"?: string | null,
     "is_visible": boolean,
-    "order": number,
-    "campaign_id"?: number,
-    "nomenclator_id"?: Nomenclator | null,
-    "nomenclator"?: Nomenclator | null,
+    "lead_field_section_id": number
 
-    "lead_field_section"?: LeadFieldSection,
-    "lead_field_section_id"?: number
+    "field_template_code"?: string,
 
-    "created_at"?: string,
-    "created_by"?: number,
-    "updated_at"?: string,
-    "active"?: boolean,
-    "validation_rules"?: ValidationRule[],
+    "field_type_code"?: string,
+    "field_subtype_code"?: string,
+    "default_value"?: string,
+    "input_mask"?: string,
+
+    "nomenclator_id"?: number,
+
+    "related_campaign_id"?: number,
+
+    "calculation_expression"?: string,
+}
+
+export interface LeadField extends LeadFieldPost {
+    "id": number,
+    "configuration"?: string,
+    "lead_field_section": LeadFieldSection,
+    "organization_id":number,
+}
+
+export interface LeadFieldDetailed extends LeadField, Metadata  {
+    "validation_rules": ValidationRule[],
+    "nomenclator": Nomenclator
+    "lead_field_section": LeadFieldSectionDetailed,
+    "related_campaign": Campaign
 }
 
 export interface ValidationRule {
@@ -80,7 +93,11 @@ export interface NomenclatorItem {
     "parent_item_id": number
 }
 
-export interface LeadFieldSection {
-    "id": number,
-    "name": string
+export interface LeadFieldSectionPost {
+    "name": string,
+    "organization_id":number
 }
+export interface LeadFieldSection extends LeadFieldSectionPost {
+    "id": number,
+}
+export interface LeadFieldSectionDetailed extends LeadFieldSection, Metadata {}

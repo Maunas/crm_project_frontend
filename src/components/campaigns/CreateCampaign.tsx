@@ -1,7 +1,7 @@
 import { TextField, Typography, Button, Grid } from "@mui/material"
-import { useEffect, useState } from "react"
-import { useForm } from "react-hook-form"
-import type { LeadField } from "../../types/leads"
+import { useEffect, useMemo, useState } from "react"
+import { useForm, useWatch } from "react-hook-form"
+import type { LeadFieldPost } from "../../types/leads"
 import { createCampaign, createOrganization, createWorkspace, getOrganizations, getWorkspaces } from "./campaignServices"
 import { Link, useNavigate } from "react-router-dom"
 import { ControlledAutocomplete } from "../common/forms/ControlledAutocomplete"
@@ -10,15 +10,28 @@ import type { CampaignPost, Organization, OrganizationPost, Workspace, Workspace
 
 export const CampaignForm = () => {
 
-    const { register, handleSubmit, control } = useForm()
     const [workspaces, setWorkspaces] = useState<Workspace[] | []>([])
+    const [organizations, setOrganizations] = useState<Organization[] | []>([])
     const nav = useNavigate()
 
     useEffect(() => {
-        getWorkspaces({}).then(setWorkspaces)
+        getWorkspaces().then(setWorkspaces)
+        getOrganizations().then(setOrganizations)
     }, [])
 
-    const requiredFields: LeadField[] = [
+    const { register, handleSubmit, control } = useForm<CampaignPost & { organization_id?: number }>()
+
+    const selectedOrg = useWatch({
+        control,
+        name: "organization_id",
+    });
+
+    const filteredWorkspaces = useMemo(() => {
+        if (!selectedOrg) return []
+        return workspaces.filter(workspace => workspace.organization_id === selectedOrg)
+    }, [selectedOrg, workspaces])
+
+    const requiredFields: Omit<LeadFieldPost, "campaign_id">[] = [
         {
             "order": 1,
             "required": true,
@@ -37,7 +50,8 @@ export const CampaignForm = () => {
         }
     ]
 
-    const submit = (data: CampaignPost) => {
+    const submit = (data: CampaignPost & { organization_id?: number }) => {
+        delete data.organization_id
         createCampaign(data)
             .then((res) =>
                 Promise.all(requiredFields.map((field) => createLeadField({ ...field, campaign_id: res.id })))
@@ -55,17 +69,28 @@ export const CampaignForm = () => {
                 alignItems: "center",
                 margin: "1rem"
             }}>
-                <Grid size="grow" minWidth={"20rem"}>
-                    <TextField {...register("name")} label="Nombre" fullWidth required />
+                <Grid container spacing={2} size={12}>
+                    <Grid size="grow" minWidth={"20rem"}>
+                        <TextField {...register("name")} label="Nombre" fullWidth required />
+                    </Grid>
+                    <Grid size="grow" minWidth={"20rem"}>
+                        <TextField {...register("description")} label="Descripción" fullWidth />
+                    </Grid>
                 </Grid>
-                <Grid size="grow" minWidth={"20rem"}>
-                    <TextField {...register("description")} label="Descripción" fullWidth />
+                <Grid container spacing={2} size={12}>
+
+                    <Grid size="grow" minWidth={"20rem"}>
+                        <ControlledAutocomplete control={control} label="Organización" name="organization_id"
+                            getOptionLabel={(option) => option.name} getOptionKey={(option) => option.id}
+                            optionList={organizations} returnField="id" />
+                    </Grid>
+                    <Grid size="grow" minWidth={"20rem"}>
+                        <ControlledAutocomplete control={control} label="Espacio de Trabajo" name="workspace_id"
+                            getOptionLabel={(option) => option.name} getOptionKey={(option) => option.id}
+                            optionList={filteredWorkspaces} returnField="id" disabled={!selectedOrg} />
+                    </Grid>
                 </Grid>
-                <Grid size="grow" minWidth={"20rem"}>
-                    <ControlledAutocomplete control={control} label="Espacio de Trabajo" name="workspace_id"
-                        getOptionLabel={(option) => option.name} getOptionKey={(option) => option.id}
-                        optionList={workspaces} returnField="id" />
-                </Grid>
+
             </Grid>
             <Button component={Link} to="/campaigns">
                 Cancelar
@@ -79,7 +104,7 @@ export const CampaignForm = () => {
 
 export const WorkspaceForm = () => {
 
-    const { register, handleSubmit, control } = useForm()
+    const { register, handleSubmit, control } = useForm<WorkspacePost>()
     const nav = useNavigate()
 
     const [organizations, setOrganizations] = useState<Organization[] | []>([])
@@ -128,7 +153,7 @@ export const WorkspaceForm = () => {
 
 export const OrganizationForm = () => {
 
-    const { register, handleSubmit } = useForm()
+    const { register, handleSubmit } = useForm<WorkspacePost>()
     const nav = useNavigate()
 
     const submit = (data: OrganizationPost) => {

@@ -1,5 +1,5 @@
 import axios from "axios"
-import type { LeadField } from "../../types/leads"
+import type { LeadField, LeadFieldPost } from "../../types/leads"
 import { API_BASE_URL } from "../../generalService"
 
 export const getFieldTemplates = async () : Promise<any> => {
@@ -17,7 +17,7 @@ export const getNomenclators = async () : Promise<any[]> => {
     return wksp.data.items
 }
 
-export const createLeadField = async(body: LeadField) : Promise<LeadField> => {
+export const createLeadField = async(body: LeadFieldPost) : Promise<LeadField> => {
     const leadField = await axios.post(`${API_BASE_URL}/lead_fields`, body)
     return leadField.data
 }
