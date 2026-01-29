@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import type { Campaign, LeadField } from '../../types/leads'
+import type { LeadField } from '../../types/leads'
 import { getCampaign } from './campaignServices'
 import { Button, Chip, Container, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material'
 import { getFieldsFromCampaign } from '../leadFields/leadFieldServices'
+import type { Campaign } from '../../types/campaigns'
 
 export const CampaignDetails = () => {
     const { id } = useParams()
     const [campaign, setCampaign] = useState<Campaign | null>(null)
-    const [fields, setFields] = useState<LeadField | []>([])
+    const [fields, setFields] = useState<LeadField[] | []>([])
 
     useEffect(() => {
         if (id) getCampaign(parseInt(id)).then((res) => {
@@ -34,6 +35,7 @@ export const CampaignDetails = () => {
                                     <TableRow>
                                         <TableCell>Nombre</TableCell>
                                         <TableCell align="right">Tipo de Dato</TableCell>
+                                        <TableCell align="right">Subtipo de Dato</TableCell>
                                         <TableCell align="right">Máscara</TableCell>
                                         <TableCell align="right">Plantilla/Nomenclador</TableCell>
                                         <TableCell align="right">Obligatorio</TableCell>
@@ -52,6 +54,7 @@ export const CampaignDetails = () => {
                                             >
                                                 <TableCell component="th">{row.id} - {row.name}</TableCell>
                                                 <TableCell align="right">{row.field_type_code}</TableCell>
+                                                <TableCell align="right">{row.field_subtype_code ?? "Sin subtipo"}</TableCell>
                                                 <TableCell align="right">{row.input_mask || "Sin máscara"}</TableCell>
                                                 <TableCell align="right">{row.field_template_code || row.nomenclator?.name || "Dato manual"}</TableCell>
                                                 <TableCell align="right">{row.required ? <Chip color='success' label="Obligatorio" /> : <Chip color='error' label="Opcional" />}</TableCell>
