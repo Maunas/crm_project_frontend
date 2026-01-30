@@ -10,10 +10,11 @@ interface ControlledACProps {
     getOptionKey: (option: object) => string,
     returnField?: string | null,
     sx?: object | null,
-    disabled?: boolean
+    disabled?: boolean,
+    required?: boolean
 }
 
-export const ControlledAutocomplete = ({ optionList, label, name, control, getOptionLabel, getOptionKey, returnField = null, sx = {}, disabled=false }: ControlledACProps) => {
+export const ControlledAutocomplete = ({ optionList, label, name, control, getOptionLabel, getOptionKey, returnField = null, sx = {}, disabled = false, required = false }: ControlledACProps) => {
     return (
         <Controller name={name} control={control} disabled={disabled}
             render={({ field }) => (
@@ -21,7 +22,9 @@ export const ControlledAutocomplete = ({ optionList, label, name, control, getOp
                     {...field}
                     disablePortal
                     options={optionList}
-                    renderInput={(params) => <TextField {...params} label={label} sx={sx} />}
+                    renderInput={(params) =>
+                        <TextField {...params} label={label} sx={sx} required={required} />
+                    }
                     getOptionLabel={getOptionLabel}
                     getOptionKey={getOptionKey}
                     onChange={(_, value) => {

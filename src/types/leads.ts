@@ -79,7 +79,7 @@ export interface LeadFieldType {
   description: string;
 }
 
-export interface LeadFieldTypeDetailed extends LeadField, Metadata {
+export interface LeadFieldTypeDetailed extends LeadFieldType, Metadata {
   subtypes: (LeadFieldType & { lead_field_type_code: string })[];
 }
 
