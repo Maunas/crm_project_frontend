@@ -23,17 +23,17 @@ export const ControlledCheckbox = ({ control, name }: ControlledCheckboxProps) =
 interface ControlledRadioProps {
     control: Control,
     name: string,
+    row?: boolean,
     options: {
         label: string,
         value: string
     }[]
 }
-export const ControlledRadio = ({ control, name, options }: ControlledRadioProps) => {
+export const ControlledRadio = ({ control, name, row = true, options }: ControlledRadioProps) => {
     return (
         <Controller control={control} name={name}
             render={({ field }) =>
-                <RadioGroup row
-                    aria-labelledby="demo-radio-buttons-group-label"
+                <RadioGroup row={row}
                     {...field}
                 >
                     {options?.length > 0 &&

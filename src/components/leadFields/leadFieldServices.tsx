@@ -1,5 +1,5 @@
 import axios from "axios"
-import type { LeadField, LeadFieldDetailed, LeadFieldPost, LeadFieldType, LeadFieldTypeDetailed, LeadFieldTemplate, Nomenclator, LeadFieldSection, LeadFieldSectionDetailed, NomenclatorDetailed, FieldValidationRule } from "../../types/leads"
+import type { LeadField, LeadFieldDetailed, LeadFieldPost, LeadFieldType, LeadFieldTypeDetailed, LeadFieldTemplate, Nomenclator, LeadFieldSection, LeadFieldSectionDetailed, NomenclatorDetailed, FieldValidationRule, FieldValidationRuleTemplate } from "../../types/leads"
 import { API_BASE_URL } from "../../generalService"
 
 interface Params {
@@ -74,7 +74,7 @@ export const getFieldsFromCampaign = async<T extends Params>(params?: T):
     return leadField.data.items
 }
 
-export const getValidationTemplates = async (): Promise<FieldValidationRule[]> => {
+export const getValidationTemplates = async (): Promise<FieldValidationRuleTemplate[]> => {
     const val = await axios.get(`${API_BASE_URL}/templates/validation_rules`)
     return val.data
 }

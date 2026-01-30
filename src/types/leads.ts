@@ -83,16 +83,24 @@ export interface LeadFieldTypeDetailed extends LeadFieldType, Metadata {
   subtypes: (LeadFieldType & { lead_field_type_code: string })[];
 }
 
-export interface FieldValidationRule {
-  id: number;
+export interface FieldValidationRulePost {
   name: string;
   expression?: string;
   error_message: string;
   template_code?: string | null;
   template_params?: object | null;
-  field_id: number;
+  field_id?: number;
 }
-
+export interface FieldValidationRule extends FieldValidationRulePost {
+  id: number;
+}
+export interface FieldValidationRuleTemplate {
+  name: string;
+  code: string;
+  error_message: string;
+  description?: string;
+  required_params: string[];
+}
 export interface Nomenclator {
   id: number;
   name: string;

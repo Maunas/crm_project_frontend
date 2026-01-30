@@ -1,18 +1,18 @@
 import { useEffect, useMemo, useState } from "react"
 import { getCampaigns } from "../campaigns/campaignServices"
-import { createLeadField, createValidation, getFieldDataByType, getFieldSections, getFieldTemplates, getFieldTypes, getNomenclators } from "../leadFields/leadFieldServices"
+import { createLeadField, createValidation, getFieldSections, getFieldTemplates, getFieldTypes, getNomenclators } from "../leadFields/leadFieldServices"
 import { Divider, TextField, Button, Grid, FormControlLabel, FormGroup, Typography } from "@mui/material"
 import { useForm, useWatch, type Control, type UseFormRegister } from "react-hook-form"
 import { Link, useNavigate, useParams } from "react-router-dom"
 import { ControlledAutocomplete } from "../common/forms/ControlledAutocomplete"
-import { ControlledCheckbox, ControlledRadio } from "../common/forms/ControlledCheckbox"
+import { ControlledCheckbox, ControlledRadio } from "../common/forms/ControlledInputs"
 import { ValidationRuleForm } from "./ValidationRuleForm"
 import type { FieldValidationRule, LeadFieldPost, LeadFieldSection, LeadFieldTemplate, LeadFieldTypeDetailed, Nomenclator } from "../../types/leads"
 import type { Campaign } from "../../types/campaigns"
 import { GenericContainer } from "../common/forms/GenericContainer"
 
-interface LeadFieldData extends LeadFieldPost {
-  creation_method: string,
+export interface LeadFieldData extends LeadFieldPost {
+  creation_method?: string,
   validation_rules: FieldValidationRule[]
 }
 
@@ -27,14 +27,22 @@ export const CreateLeadFields = () => {
   const { id } = useParams()
   const nav = useNavigate()
 
-  const { register, control, handleSubmit, watch, reset, setValue } = useForm<LeadFieldData>({
-    defaultValues: {
-      required: false,
-      is_primary: false,
-      is_visible: false,
-      creation_method: "template"
-    }
+  const defaultValues = {
+    name: "",
+    default_value: "",
+    required: false,
+    is_primary: false,
+    is_visible: false,
+    creation_method: "template",
+    validation_rules: []
+  }
+
+  const { register, control, handleSubmit, reset, setValue, formState } = useForm<LeadFieldData>({
+    shouldUnregister: true,
+    defaultValues
   })
+
+  console.log("dirty",formState.dirtyFields)
 
   useEffect(() => {
     if (!id) return
@@ -48,8 +56,10 @@ export const CreateLeadFields = () => {
   const saveLeadField = async (data: LeadFieldData) => {
     if (!id) return
     try {
-      const newLeadField = await createLeadField(getFieldDataByType(data, data.creation_method === "template"))
-      const newValidationList = await Promise.all(data?.validation_rules.map(val => createValidation({ ...val, field_id: newLeadField.id })))
+      delete data.creation_method
+      const newLeadField = await console.log(data)
+      if (!data?.validation_rules) return newLeadField
+      const newValidationList = await Promise.all(data?.validation_rules.map(val => console.log({ ...val, field_id: newLeadField?.id ?? 1 })))
       return { ...newLeadField, validation_rules: newValidationList }
     } catch (e) {
       console.log(e)
@@ -65,7 +75,10 @@ export const CreateLeadFields = () => {
   const submitAndReset = async (data: LeadFieldData) => {
     await saveLeadField(data)
     alert("Creado")
-    reset()
+    reset(defaultValues, {
+      keepDirty: false,
+      keepTouched: false,
+    })
   }
 
   const currentCampaign = useMemo(
@@ -81,8 +94,10 @@ export const CreateLeadFields = () => {
             <LeadFieldForm templates={fieldTemplates} sections={fieldSections} nomenclators={nomenclators}
               campaigns={campaigns} types={fieldTypes}
               register={register} control={control} campaignId={parseInt(id)} />
-            <Divider sx={{paddingBlock:2}}/>
-            <ValidationRuleForm control={control} register={register} watch={watch} setValue={setValue} />
+
+            <Divider sx={{ paddingBlock: 2 }} />
+
+            <ValidationRuleForm control={control} register={register} setValue={setValue} />
 
             <Button variant="outlined" component={Link} to={`/campaigns/${id}`}>
               Volver

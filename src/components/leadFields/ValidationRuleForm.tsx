@@ -1,152 +1,172 @@
-import { Divider, Typography, Button, Grid, TextField, RadioGroup, FormControlLabel, Radio } from '@mui/material'
+import { Divider, Typography, Button, Grid, TextField } from '@mui/material'
 import { useEffect, useMemo, useState } from 'react'
-import { useFieldArray } from 'react-hook-form'
+import { useFieldArray, useWatch, type Control, type UseFieldArrayRemove, type UseFormRegister, type UseFormSetValue } from 'react-hook-form'
 import { getValidationTemplates } from '../leadFields/leadFieldServices'
 import { ControlledAutocomplete } from '../common/forms/ControlledAutocomplete'
-import type { FieldValidationRule } from '../../types/leads'
+import type { FieldValidationRulePost, FieldValidationRuleTemplate } from '../../types/leads'
+import type { LeadFieldData } from './CreateLeadFields'
+import { ControlledRadio } from '../common/forms/ControlledInputs'
 
-export const ValidationRuleForm = ({ control, register, watch, setValue }) => {
+interface ValidationRuleFormProps {
+    control: Control,
+    register: UseFormRegister<LeadFieldData>,
+    setValue: UseFormSetValue<LeadFieldData>
+}
 
-    const { append, remove, fields } = useFieldArray<FieldValidationRule>({ control, name: "validation_rules" })
-    const [templates, setTemplates] = useState<any[]>([])
+export const ValidationRuleForm = ({ control, register, setValue }: ValidationRuleFormProps) => {
+
+    const { append, remove, fields } = useFieldArray<FieldValidationRulePost>({ control, name: "validation_rules" })
+    const [templates, setTemplates] = useState<FieldValidationRuleTemplate[]>([])
 
     useEffect(() => {
         getValidationTemplates().then(setTemplates)
-        return () => setTemplates([])
     }, [])
 
     return (
         <>
-            <Typography variant="h3">Validaciones</Typography>
-            <Divider sx={{ marginBlock: "1rem" }} />
+            <Typography variant="h2">Reglas de Validación</Typography>
             {fields?.length > 0 &&
                 fields.map((field, idx) =>
-                    <ValidationInstance key={field.id} register={register} idx={idx} remove={remove} templates={templates} control={control} watch={watch} setValue={setValue} />
+                    <ValidationInstance key={field.id} idx={idx} templates={templates}
+                        register={register} control={control} setValue={setValue} remove={remove} />
                 )
             }
-            <Button variant="contained" onClick={() => append({})}>
+            <Button variant="contained" onClick={() =>
+                append({ name: "", error_message: "", creation_method: "template", template_params: {} })}>
                 Agregar Validación
             </Button>
             <Divider sx={{ marginBlock: "1rem" }} />
-
         </>
     )
 }
 
 
-export const ValidationInstance = ({ idx, register, templates, control, remove, watch, setValue }) => {
+interface ValidationInstanceProps {
+    idx: number,
+    templates: FieldValidationRuleTemplate[],
+    register: UseFormRegister<LeadFieldData>,
+    control: Control,
+    setValue: UseFormSetValue<LeadFieldData>,
+    remove: UseFieldArrayRemove
 
-    const [validationMethod, setValidationMethod] = useState("Por Plantilla")
+}
+export const ValidationInstance = ({ idx, templates, register, control, setValue, remove }: ValidationInstanceProps) => {
 
-    const selectedCode = watch(`validation_rules.${idx}.template_code`)
-    const requiredParamsValue = watch(`validation_rules.${idx}.template_params`)
+    const selectedTemplateCode = useWatch({ name: `validation_rules.${idx}.template_code`, control })
+    const requiredParamsValue = useWatch({ name: `validation_rules.${idx}.template_params`, control })
+    const creationMethod = useWatch({ name: `validation_rules.${idx}.creation_method`, control })
 
-    const changeValidationMethod = (e) => {
-        setValidationMethod(e.target.value)
-    }
     const selectedTemplate = useMemo(() => {
-        if (validationMethod === "Por Plantilla" && selectedCode) {
-            return templates.find(template => selectedCode === template.code)
-        }
-    }, [selectedCode, validationMethod, templates])
+        if (creationMethod !== "template" || !selectedTemplateCode) return null
+        return templates.find(template => selectedTemplateCode === template.code)
+    }, [selectedTemplateCode, templates, creationMethod])
+
+    const creationMethodOptions = [
+        { label: "Por Plantilla", value: "template" },
+        { label: "Manual", value: "manual" }
+    ]
+
+    useEffect(() => {
+        if (selectedTemplateCode) setValue(`validation_rules.${idx}.template_params`, {})
+
+    }, [selectedTemplateCode, idx, setValue])
 
     const generateErrorMessage = () => {
-        let errorMessage = selectedTemplate.error_message
+        if (selectedTemplate) {
+            let errorMessage = selectedTemplate.error_message
 
-        for (let item of selectedTemplate?.required_params) {
-            errorMessage = errorMessage.replace(`{${item}}`, requiredParamsValue[item])
+            for (const param of selectedTemplate.required_params) {
+                errorMessage = errorMessage.replace(`{${param}}`, requiredParamsValue[param])
+            }
+            setValue(`validation_rules.${idx}.error_message`, errorMessage, {
+                shouldDirty: false,
+                shouldTouch: false,
+                shouldValidate: false,
+            })
         }
-        setValue(`validation_rules.${idx}.error_message`, errorMessage)
     }
-
     return (
         <>
-            <Typography variant="h4">Validación {idx + 1}</Typography>
+            <Grid container justifyContent="center" marginBlock={2}>
+                <Grid size="grow">
+                    <Typography variant="h4">Validación {idx + 1}</Typography>
+                </Grid>
+                <Grid size="auto">
+                    <Button variant="outlined" color="error" onClick={() => remove(idx)}>
+                        Eliminar Validación
+                    </Button>
+                </Grid>
+            </Grid>
+
             <Grid container spacing={2} justifyContent="center">
-                <Grid container spacing={2} size={11}>
-
-                    <Grid container spacing={2} minWidth="20rem">
-                        <Grid size="grow" minWidth="20rem">
-                            <TextField
-                                id=""
-                                label="Nombre de Validación"
-                                fullWidth
-                                {...register(`validation_rules.${idx}.name`)}
-                            />
-                        </Grid>
-                        <Grid size="grow" minWidth="20rem" justifyContent="center">
-                            <RadioGroup row
-                                aria-labelledby="demo-radio-buttons-group-label"
-                                defaultValue="Por Plantilla"
-                                name="radio-buttons-group"
-                                onChange={changeValidationMethod}
-                            >
-                                <FormControlLabel value="Por Plantilla" defaultChecked control={<Radio />} label="Por Plantilla" />
-                                <FormControlLabel value="Manual" control={<Radio />} label="Manual" />
-                            </RadioGroup>
-                        </Grid>
+                <Grid container spacing={2} minWidth="20rem" size={12}>
+                    <Grid size={4} minWidth="20rem">
+                        <TextField
+                            id={`validation_rules.${idx}.name`}
+                            label="Nombre de la Regla"
+                            fullWidth
+                            {...register(`validation_rules.${idx}.name`)}
+                        />
                     </Grid>
-
-                    {validationMethod === "Manual" &&
-                        <Grid container size={12} spacing={2}>
-                            <TextField
-                                id=""
-                                label={`Expresión de Validación`}
-                                fullWidth
-                                {...register(`validation_rules.${idx}.expression`)}
-                            />
-                        </Grid>}
-
-                    {validationMethod === "Por Plantilla" &&
-                        <>
-                            <Grid size={12} spacing={2}>
-                                <ControlledAutocomplete control={control} label='Plantilla' name={`validation_rules.${idx}.template_code`}
-                                    optionList={templates} getOptionKey={op => op.code} getOptionLabel={op => op.name} returnField="code" />
-                            </Grid>
-                            {
-                                selectedTemplate?.required_params?.length > 0 &&
-                                selectedTemplate?.required_params.map(i => {
-                                    return (
-                                        <Grid container size={4} minWidth="15rem" spacing={2} key={`${i}`}>
-                                            <TextField
-                                                id=""
-                                                label={i}
-                                                fullWidth
-                                                {...register(`validation_rules.${idx}.template_params.${i}`)}
-                                            />
-                                        </Grid>)
-                                })
-                            }
-                        </>
-                    }
-
-                    <Grid container spacing={2} size={12}>
+                    <Grid container spacing={2} size="grow" minWidth="20rem">
                         <Grid size="grow" minWidth="20rem" justifyContent="center">
                             <TextField
-                                id=""
+                                id={`validation_rules.${idx}.error_message`}
                                 label={`Mensaje de Error`}
                                 fullWidth
                                 {...register(`validation_rules.${idx}.error_message`)}
-                                defaultValue=" "
                             />
                         </Grid>
                         {
-                            validationMethod === "Por Plantilla" && selectedTemplate?.error_message &&
+                            creationMethod === "template" && selectedTemplate?.error_message &&
                             <Grid size="auto" justifyContent="center">
                                 <Button variant="outlined" onClick={generateErrorMessage}>
-                                    Generar
+                                    Generar Mensaje
                                 </Button>
                             </Grid>
 
                         }
                     </Grid>
                 </Grid>
-                <Grid><Button variant="outlined" color="error" onClick={() => remove(idx)}>
-                    Eliminar
-                </Button></Grid>
+
+                <Grid container spacing={2} minWidth="20rem" size={12}>
+                    <Grid size={4} minWidth="20rem" justifyContent="center">
+                        <ControlledRadio control={control} name={`validation_rules.${idx}.creation_method`} options={creationMethodOptions} />
+                    </Grid>
+                    {creationMethod === "manual" &&
+                        <Grid size="grow">
+                            <TextField
+                                id={`validation_rules.${idx}.expression`}
+                                label={`Expresión de Validación`}
+                                fullWidth
+                                {...register(`validation_rules.${idx}.expression`)}
+                            />
+                        </Grid>
+                    }
+                    {creationMethod === "template" &&
+                        <Grid size="grow" spacing={2}>
+                            <ControlledAutocomplete control={control} label='Plantilla' name={`validation_rules.${idx}.template_code`}
+                                optionList={templates} getOptionKey={op => op.code} getOptionLabel={op => op.name} returnField="code" />
+                        </Grid>
+                    }
+                </Grid>
+                <Grid container spacing={2} size="grow" justifyContent="end">
+                    {
+                        selectedTemplate && selectedTemplate.required_params?.length > 0 &&
+                        selectedTemplate?.required_params.map(param =>
+                            <Grid container size={3} minWidth="15rem" spacing={2} key={`${param}`}>
+                                <TextField
+                                    id={`validation_rules.${idx}.template_params.${param}`}
+                                    label={param}
+                                    fullWidth
+                                    {...register(`validation_rules.${idx}.template_params.${param}`)}
+                                />
+                            </Grid>
+                        )
+                    }
+                </Grid>
             </Grid>
             <Divider sx={{ marginBlock: "1rem" }} />
-
         </>
     )
 }
