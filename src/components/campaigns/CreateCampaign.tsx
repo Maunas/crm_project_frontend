@@ -15,8 +15,8 @@ export const CampaignForm = () => {
     const nav = useNavigate()
 
     useEffect(() => {
-        getWorkspaces().then(setWorkspaces)
-        getOrganizations().then(setOrganizations)
+        getWorkspaces({only_active:true}).then(setWorkspaces)
+        getOrganizations({only_active:true}).then(setOrganizations)
     }, [])
 
     const { register, handleSubmit, control } = useForm<CampaignPost & { organization_id?: number }>()
@@ -110,7 +110,7 @@ export const WorkspaceForm = () => {
     const [organizations, setOrganizations] = useState<Organization[] | []>([])
 
     useEffect(() => {
-        getOrganizations().then(setOrganizations)
+        getOrganizations({only_active: true}).then(setOrganizations)
     }, [])
 
     const submit = (data: WorkspacePost) => {

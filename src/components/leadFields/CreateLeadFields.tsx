@@ -1,47 +1,54 @@
 import { useEffect, useMemo, useState } from "react"
 import { getCampaigns } from "../campaigns/campaignServices"
-import { createLeadField, createValidation, getFieldTemplates, getFieldTypes, getNomenclators } from "../leadFields/leadFieldServices"
+import { createLeadField, createValidation, getFieldDataByType, getFieldSections, getFieldTemplates, getFieldTypes, getNomenclators } from "../leadFields/leadFieldServices"
 import { Divider, TextField, Button, Grid, FormControlLabel, FormGroup, Typography, RadioGroup, Container, Paper, Radio } from "@mui/material"
-import { getFieldSections } from "../lead/leadService"
-import { useForm } from "react-hook-form"
+import { useForm, useWatch } from "react-hook-form"
 import { Link, useNavigate, useParams } from "react-router-dom"
 import { ControlledAutocomplete } from "../common/forms/ControlledAutocomplete"
-import { ControlledCheckbox } from "../common/forms/ControlledCheckbox"
+import { ControlledCheckbox, ControlledRadio } from "../common/forms/ControlledCheckbox"
 import { ValidationRuleForm } from "./ValidationRuleForm"
+import type { FieldValidationRule, LeadFieldPost, LeadFieldSection, LeadFieldTemplate, LeadFieldTypeDetailed, Nomenclator } from "../../types/leads"
+import type { Campaign } from "../../types/campaigns"
 
 export const CreateLeadFields = () => {
 
-  const [fieldTemplates, setFieldTemplates] = useState<any[]>([])
-  const [fieldSections, setFieldSections] = useState<any[]>([])
-  const [fieldTypes, setFieldTypes] = useState<any[]>([])
-  const [nomenclators, setNomenclators] = useState<any[]>([])
-  const [campaigns, setCampaigns] = useState<any[]>([])
+  const [fieldTemplates, setFieldTemplates] = useState<LeadFieldTemplate[]>([])
+  const [fieldSections, setFieldSections] = useState<LeadFieldSection[]>([])
+  const [fieldTypes, setFieldTypes] = useState<LeadFieldTypeDetailed[]>([])
+  const [nomenclators, setNomenclators] = useState<Nomenclator[]>([])
+  const [campaigns, setCampaigns] = useState<Campaign[]>([])
 
   const { id } = useParams()
   const nav = useNavigate()
 
-  const { register, control, handleSubmit, watch, reset, setValue } = useForm({
+  const { register, control, handleSubmit, watch, reset, setValue } = useForm<LeadFieldData>({
     defaultValues: {
       required: false,
       is_primary: false,
       is_visible: false,
-      default_value: null
+      creation_method: "template"
     }
   })
 
   useEffect(() => {
+    if (!id) return
     getFieldTemplates().then(setFieldTemplates)
-    getFieldSections().then(setFieldSections)
-    getFieldTypes().then(setFieldTypes)
-    getNomenclators().then(setNomenclators)
-    getCampaigns().then(setCampaigns)
-    return () => setFieldTemplates([])
+    getFieldSections({ only_active: true }).then(setFieldSections)
+    getFieldTypes({ detailed: true }).then(setFieldTypes)
+    getNomenclators({ global_nomenclator: true, campaign_id: parseInt(id) }).then(setNomenclators)
+    getCampaigns({ only_active: true }).then(setCampaigns)
   }, [id])
 
-  const saveLeadField = async (data) => {
+  interface LeadFieldData extends LeadFieldPost {
+    creation_method: string,
+    validation_rules: FieldValidationRule[]
+  }
+
+  const saveLeadField = async (data: LeadFieldData) => {
+    if (!id) return
     try {
-      const newLeadField = await createLeadField({ ...data, campaign_id: id })
-      const newValidationList = await Promise.all(data?.validation_rules.map(validation => createValidation({ ...validation, "field_id": newLeadField.id })))
+      const newLeadField = await createLeadField(getFieldDataByType(data, data.creation_method === "template"))
+      const newValidationList = await Promise.all(data?.validation_rules.map(val => createValidation({ ...val, field_id: newLeadField.id })))
       return { ...newLeadField, validation_rules: newValidationList }
     } catch (e) {
       console.log(e)
@@ -49,18 +56,18 @@ export const CreateLeadFields = () => {
     }
   }
 
-  const submit = async (data) => {
+  const submit = async (data: LeadFieldData) => {
     await saveLeadField(data)
     nav(`/campaigns/${id}`)
   }
 
-  const submitAndReset = async (data) => {
-    await saveLeadField(data)
+  const submitAndReset = async (data: LeadFieldData) => {
+    console.log(data)
     alert("Creado")
     reset()
   }
 
-  const fieldType = watch("field_type_code")
+  const fieldType = useWatch({ name: "field_type_code", control })
 
   return (
     <Container >
@@ -70,7 +77,7 @@ export const CreateLeadFields = () => {
           <Typography variant="h3" color="initial">Campaña {id}</Typography>
           <LeadField templates={fieldTemplates} sections={fieldSections} register={register}
             types={fieldTypes} control={control} fieldType={fieldType}
-            nomenclators={nomenclators} campaigns={campaigns} />
+            nomenclators={nomenclators} campaigns={campaigns} campaignId={id} />
 
           <ValidationRuleForm control={control} register={register} watch={watch} setValue={setValue} />
           <Button variant="outlined" component={Link} to={`/campaigns/${id}`}>
@@ -87,19 +94,21 @@ export const CreateLeadFields = () => {
     </Container >
   )
 }
-const LeadField = ({ templates, sections, types, nomenclators, campaigns, register, control, fieldType }) => {
+const LeadField = ({ templates, sections, types, nomenclators, campaigns, register, control, fieldType, campaignId }) => {
 
-  const [fieldMethod, setFieldMethod] = useState<string | null>("Por Plantilla")
+  const creationMethod = useWatch({ control, name: "creation_method" })
 
-  const changeFieldMethod = (e, data) => {
-    setFieldMethod(data)
-  }
+  const creationMethodRadioOptions = [
+    { label: "Por Plantilla", value: "template" },
+    { label: "Manual", value: "manual" }
+  ]
 
   const fieldTypeObject = useMemo(() => types ? types?.find(i => i.code === fieldType) : null, [types, fieldType])
 
   return (
     <>
       <Divider sx={{ marginBlock: ".5rem" }} />
+      <input type="hidden" {...register("campaign_id", { value: parseInt(campaignId) })} />
       <Grid container spacing={2} justifyContent="center">
         <Grid size="grow" container minWidth="20rem">
           <Grid size="grow" minWidth="15rem">
@@ -124,18 +133,10 @@ const LeadField = ({ templates, sections, types, nomenclators, campaigns, regist
             </FormGroup>
           </Grid>
           <Grid size="grow" minWidth="20rem" justifyContent="center">
-            <RadioGroup row
-              aria-labelledby="demo-radio-buttons-group-label"
-              defaultValue="Por Plantilla"
-              name="radio-buttons-group"
-              onChange={changeFieldMethod}
-            >
-              <FormControlLabel value="Por Plantilla" defaultChecked control={<Radio />} label="Por Plantilla" />
-              <FormControlLabel value="Manual" control={<Radio />} label="Manual" />
-            </RadioGroup>
+            <ControlledRadio control={control} name="creation_method" options={creationMethodRadioOptions} />
           </Grid>
-          {fieldMethod === "Por Plantilla" ?
 
+          {creationMethod === "template" ?
             <Grid size="grow" minWidth="20rem" justifyContent="center">
               <ControlledAutocomplete name="field_template_code" label="Plantillas"
                 control={control} optionList={templates} returnField="code"
@@ -196,7 +197,7 @@ const LeadField = ({ templates, sections, types, nomenclators, campaigns, regist
               }
             </>
           }
-          {(fieldMethod === "Por Plantilla" || ["NUMBER", "INT", "STRING", "BOOL"].includes(fieldType)) &&
+          {(creationMethod === "template" || ["NUMBER", "INT", "STRING", "BOOL"].includes(fieldType)) &&
 
             <Grid size="grow" minWidth="20rem">
               <TextField

@@ -32,18 +32,18 @@ export interface LeadFieldPost {
   is_primary: boolean;
   is_visible: boolean;
   lead_field_section_id: number;
-
-  field_template_code?: string;
-
-  field_type_code?: string;
-  field_subtype_code?: string;
   default_value?: string;
   input_mask?: string;
-
+  //Plantilla
+  field_template_code?: string;
+  //Manual con Subtype
+  field_type_code?: string;
+  field_subtype_code?: string;
+  //Selector o Checkbox
   nomenclator_id?: number;
-
+  //Lead
   related_campaign_id?: number;
-
+  //Calculated
   calculation_expression?: string;
 }
 
@@ -52,14 +52,25 @@ export interface LeadField extends LeadFieldPost {
   configuration?: string;
   lead_field_section: LeadFieldSection;
   organization_id: number;
-  order:number
+  order: number;
 }
 
 export interface LeadFieldDetailed extends LeadField, Metadata {
-  validation_rules: ValidationRule[];
+  validation_rules: FieldValidationRule[];
   nomenclator: Nomenclator;
   lead_field_section: LeadFieldSectionDetailed;
   related_campaign: Campaign;
+}
+
+export interface LeadFieldTemplate {
+  code: string;
+  name: string;
+  field_type_code: string;
+  rules: {
+    template_code?: string | null;
+    template_params?: object | null;
+    error_message: string;
+  };
 }
 
 export interface LeadFieldType {
@@ -72,18 +83,7 @@ export interface LeadFieldTypeDetailed extends LeadField, Metadata {
   subtypes: (LeadFieldType & { lead_field_type_code: string })[];
 }
 
-export interface LeadFieldTypeTemplate {
-  code: string;
-  name: string;
-  field_type_code: string;
-  rules: {
-    template_code?: string | null;
-    template_params?: object | null;
-    error_message: string;
-  };
-}
-
-export interface ValidationRule {
+export interface FieldValidationRule {
   id: number;
   name: string;
   expression?: string;
@@ -98,10 +98,10 @@ export interface Nomenclator {
   name: string;
   campaign_id?: number | null;
   parent_nomenclator_id?: number | null;
-  //Detailed
-  created_by?: number;
-  created_at?: string;
-  updated_at?: string;
+  organization_id?: number | null;
+}
+
+export interface NomenclatorDetailed extends Nomenclator, Metadata {
   sub_nomenclators?: Nomenclator[];
   items?: NomenclatorItem[];
 }
@@ -112,6 +112,7 @@ export interface NomenclatorItem {
   value: string;
   nomenclator_id: number;
   parent_item_id: number;
+  organization_id?: number | null;
 }
 
 export interface LeadFieldSectionPost {

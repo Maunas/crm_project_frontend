@@ -3,10 +3,11 @@ import { useEffect, useMemo, useState } from 'react'
 import { useFieldArray } from 'react-hook-form'
 import { getValidationTemplates } from '../leadFields/leadFieldServices'
 import { ControlledAutocomplete } from '../common/forms/ControlledAutocomplete'
+import type { FieldValidationRule } from '../../types/leads'
 
 export const ValidationRuleForm = ({ control, register, watch, setValue }) => {
 
-    const { append, remove, fields } = useFieldArray({ control, name: "validation_rules" })
+    const { append, remove, fields } = useFieldArray<FieldValidationRule>({ control, name: "validation_rules" })
     const [templates, setTemplates] = useState<any[]>([])
 
     useEffect(() => {
