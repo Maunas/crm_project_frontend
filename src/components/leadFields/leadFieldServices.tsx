@@ -1,6 +1,7 @@
 import axios from "axios"
-import type { LeadField, LeadFieldDetailed, LeadFieldPost, LeadFieldType, LeadFieldTypeDetailed, LeadFieldTemplate, Nomenclator, LeadFieldSection, LeadFieldSectionDetailed, NomenclatorDetailed, FieldValidationRule, FieldValidationRuleTemplate } from "../../types/leads"
+import type { LeadField, LeadFieldDetailed, LeadFieldPost, LeadFieldType, LeadFieldTypeDetailed, LeadFieldTemplate, Nomenclator, LeadFieldSection, LeadFieldSectionDetailed, NomenclatorDetailed, FieldValidationRule, FieldValidationRuleTemplate, FieldValidationRulePost } from "../../types/leadFields"
 import { API_BASE_URL } from "../../generalService"
+import type { FieldValidationRuleData } from "./CreateLeadFields"
 
 interface Params {
     detailed?: boolean,
@@ -10,7 +11,7 @@ interface Params {
     global_nomenclator?: boolean
 }
 
-export const getFieldDataByType = (data: LeadFieldPost, isTemplate = false) : LeadFieldPost => {
+export const getFieldDataByType = (data: LeadFieldPost, isTemplate = false): LeadFieldPost => {
     const requiredData: LeadFieldPost = {
         name: data.name,
         order: data.order,
@@ -43,6 +44,34 @@ export const getFieldDataByType = (data: LeadFieldPost, isTemplate = false) : Le
         case "CALCULATED":
             return { ...manualData, calculation_expression: data.calculation_expression }
         default: return manualData
+    }
+}
+
+export const getValidationDataByType = (data: FieldValidationRuleData, isTemplate = false): FieldValidationRulePost => {
+    const requiredData: FieldValidationRuleData = {
+        name: data.name,
+        error_message: data.error_message,
+        field_id: data.field_id
+    }
+    //Si es por template, devuelve el código de template y sus parametros
+    if (isTemplate) {
+        //Asegura que, de no haber llenado template o sus params, no sean undefined, si no vacío.
+        const params = data.template_params ?? {}
+        const required = data.template?.required_params ?? []
+
+        //Convierte los parametros recibidos a un arreglo, y filtra para dejar solo los requeridos.
+        const filteredParams = Object.entries(params).filter(([key]) =>
+            required.includes(key)
+        )
+        return {
+            ...requiredData,
+            template_code: data.template?.code,
+            //Luego vuelve a convertir a objeto con Object.fromEntries
+            template_params: Object.fromEntries(filteredParams)
+        }
+    } else {
+        //Si es manual, solo devuelve la expresión.
+        return { ...requiredData, expression: data.expression }
     }
 }
 
@@ -79,7 +108,7 @@ export const getValidationTemplates = async (): Promise<FieldValidationRuleTempl
     return val.data
 }
 
-export const createValidation = async (body: FieldValidationRule): Promise<FieldValidationRule[]> => {
+export const createValidation = async (body: FieldValidationRulePost): Promise<FieldValidationRule[]> => {
     const val = await axios.post(`${API_BASE_URL}/validation_rules`, body)
     return val.data
 }

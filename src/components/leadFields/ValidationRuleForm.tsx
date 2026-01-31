@@ -1,21 +1,21 @@
 import { Divider, Typography, Button, Grid, TextField } from '@mui/material'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useFieldArray, useWatch, type Control, type UseFieldArrayRemove, type UseFormRegister, type UseFormSetValue } from 'react-hook-form'
 import { getValidationTemplates } from '../leadFields/leadFieldServices'
 import { ControlledAutocomplete } from '../common/forms/ControlledAutocomplete'
-import type { FieldValidationRulePost, FieldValidationRuleTemplate } from '../../types/leads'
+import type { FieldValidationRuleTemplate } from '../../types/leadFields'
 import type { LeadFieldData } from './CreateLeadFields'
-import { ControlledRadio } from '../common/forms/ControlledInputs'
+import { ControlledRadio, ControlledTextInput } from '../common/forms/ControlledInputs'
 
 interface ValidationRuleFormProps {
-    control: Control,
+    control: Control<LeadFieldData>,
     register: UseFormRegister<LeadFieldData>,
     setValue: UseFormSetValue<LeadFieldData>
 }
 
 export const ValidationRuleForm = ({ control, register, setValue }: ValidationRuleFormProps) => {
 
-    const { append, remove, fields } = useFieldArray<FieldValidationRulePost>({ control, name: "validation_rules" })
+    const { append, remove, fields } = useFieldArray<LeadFieldData>({ control, name: "validation_rules" })
     const [templates, setTemplates] = useState<FieldValidationRuleTemplate[]>([])
 
     useEffect(() => {
@@ -45,46 +45,32 @@ interface ValidationInstanceProps {
     idx: number,
     templates: FieldValidationRuleTemplate[],
     register: UseFormRegister<LeadFieldData>,
-    control: Control,
+    control: Control<LeadFieldData>,
     setValue: UseFormSetValue<LeadFieldData>,
     remove: UseFieldArrayRemove
 
 }
 export const ValidationInstance = ({ idx, templates, register, control, setValue, remove }: ValidationInstanceProps) => {
 
-    const selectedTemplateCode = useWatch({ name: `validation_rules.${idx}.template_code`, control })
+    const selectedTemplate = useWatch({ name: `validation_rules.${idx}.template`, control })
     const requiredParamsValue = useWatch({ name: `validation_rules.${idx}.template_params`, control })
     const creationMethod = useWatch({ name: `validation_rules.${idx}.creation_method`, control })
-
-    const selectedTemplate = useMemo(() => {
-        if (creationMethod !== "template" || !selectedTemplateCode) return null
-        return templates.find(template => selectedTemplateCode === template.code)
-    }, [selectedTemplateCode, templates, creationMethod])
 
     const creationMethodOptions = [
         { label: "Por Plantilla", value: "template" },
         { label: "Manual", value: "manual" }
     ]
 
-    useEffect(() => {
-        if (selectedTemplateCode) setValue(`validation_rules.${idx}.template_params`, {})
-
-    }, [selectedTemplateCode, idx, setValue])
-
     const generateErrorMessage = () => {
         if (selectedTemplate) {
             let errorMessage = selectedTemplate.error_message
-
             for (const param of selectedTemplate.required_params) {
-                errorMessage = errorMessage.replace(`{${param}}`, requiredParamsValue[param])
+                errorMessage = errorMessage.replace(`{${param}}`, requiredParamsValue[param] ?? `[${param}]`)
             }
-            setValue(`validation_rules.${idx}.error_message`, errorMessage, {
-                shouldDirty: false,
-                shouldTouch: false,
-                shouldValidate: false,
-            })
+            setValue(`validation_rules.${idx}.error_message`, errorMessage)
         }
     }
+
     return (
         <>
             <Grid container justifyContent="center" marginBlock={2}>
@@ -110,12 +96,7 @@ export const ValidationInstance = ({ idx, templates, register, control, setValue
                     </Grid>
                     <Grid container spacing={2} size="grow" minWidth="20rem">
                         <Grid size="grow" minWidth="20rem" justifyContent="center">
-                            <TextField
-                                id={`validation_rules.${idx}.error_message`}
-                                label={`Mensaje de Error`}
-                                fullWidth
-                                {...register(`validation_rules.${idx}.error_message`)}
-                            />
+                            <ControlledTextInput control={control} label='Mensaje de Error' name={`validation_rules.${idx}.error_message`} />
                         </Grid>
                         {
                             creationMethod === "template" && selectedTemplate?.error_message &&
@@ -145,8 +126,8 @@ export const ValidationInstance = ({ idx, templates, register, control, setValue
                     }
                     {creationMethod === "template" &&
                         <Grid size="grow" spacing={2}>
-                            <ControlledAutocomplete control={control} label='Plantilla' name={`validation_rules.${idx}.template_code`}
-                                optionList={templates} getOptionKey={op => op.code} getOptionLabel={op => op.name} returnField="code" />
+                            <ControlledAutocomplete control={control} label='Plantilla' name={`validation_rules.${idx}.template`}
+                                optionList={templates} getOptionKey={op => op.code} getOptionLabel={op => op.name}/>
                         </Grid>
                     }
                 </Grid>
@@ -154,9 +135,9 @@ export const ValidationInstance = ({ idx, templates, register, control, setValue
                     {
                         selectedTemplate && selectedTemplate.required_params?.length > 0 &&
                         selectedTemplate?.required_params.map(param =>
-                            <Grid container size={3} minWidth="15rem" spacing={2} key={`${param}`}>
+                            <Grid container size={3} minWidth="15rem" spacing={2} key={`${param}-${selectedTemplate.name}`}>
                                 <TextField
-                                    id={`validation_rules.${idx}.template_params.${param}`}
+                                    id={`validation_rules.${idx}.template_params.${param}-${selectedTemplate.name}`}
                                     label={param}
                                     fullWidth
                                     {...register(`validation_rules.${idx}.template_params.${param}`)}

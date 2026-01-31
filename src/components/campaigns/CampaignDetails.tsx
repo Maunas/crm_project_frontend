@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import type { LeadFieldDetailed } from '../../types/leads'
+import type { LeadFieldDetailed } from '../../types/leadFields'
 import { getCampaign } from './campaignServices'
 import { Button, Chip, Container, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material'
 import { getFieldsFromCampaign } from '../leadFields/leadFieldServices'

@@ -1,19 +1,23 @@
 import { useEffect, useMemo, useState } from "react"
 import { getCampaigns } from "../campaigns/campaignServices"
-import { createLeadField, createValidation, getFieldSections, getFieldTemplates, getFieldTypes, getNomenclators } from "../leadFields/leadFieldServices"
+import { createLeadField, createValidation, getFieldDataByType, getFieldSections, getFieldTemplates, getFieldTypes, getNomenclators, getValidationDataByType } from "../leadFields/leadFieldServices"
 import { Divider, TextField, Button, Grid, FormControlLabel, FormGroup, Typography } from "@mui/material"
 import { useForm, useWatch, type Control, type UseFormRegister } from "react-hook-form"
 import { Link, useNavigate, useParams } from "react-router-dom"
 import { ControlledAutocomplete } from "../common/forms/ControlledAutocomplete"
-import { ControlledCheckbox, ControlledRadio } from "../common/forms/ControlledInputs"
+import { ControlledCheckbox, ControlledRadio, ControlledTextInput } from "../common/forms/ControlledInputs"
 import { ValidationRuleForm } from "./ValidationRuleForm"
-import type { FieldValidationRule, LeadFieldPost, LeadFieldSection, LeadFieldTemplate, LeadFieldTypeDetailed, Nomenclator } from "../../types/leads"
+import type { FieldValidationRulePost, FieldValidationRuleTemplate, LeadFieldPost, LeadFieldSection, LeadFieldTemplate, LeadFieldTypeDetailed, Nomenclator } from "../../types/leadFields"
 import type { Campaign } from "../../types/campaigns"
 import { GenericContainer } from "../common/forms/GenericContainer"
 
+export interface FieldValidationRuleData extends FieldValidationRulePost {
+  creation_method?: string,
+  template?: FieldValidationRuleTemplate
+}
 export interface LeadFieldData extends LeadFieldPost {
   creation_method?: string,
-  validation_rules: FieldValidationRule[]
+  validation_rules: FieldValidationRuleData[]
 }
 
 export const CreateLeadFields = () => {
@@ -28,22 +32,17 @@ export const CreateLeadFields = () => {
   const nav = useNavigate()
 
   const defaultValues = {
-    name: "",
-    default_value: "",
     required: false,
     is_primary: false,
-    is_visible: false,
+    is_visible: true,
     creation_method: "template",
+    field_template_code: null,
     validation_rules: []
   }
 
-  const { register, control, handleSubmit, reset, setValue, formState } = useForm<LeadFieldData>({
-    shouldUnregister: true,
+  const { register, control, handleSubmit, reset, setValue } = useForm<LeadFieldData>({
     defaultValues
   })
-
-  console.log("dirty",formState.dirtyFields)
-
   useEffect(() => {
     if (!id) return
     getFieldTemplates().then(setFieldTemplates)
@@ -56,10 +55,13 @@ export const CreateLeadFields = () => {
   const saveLeadField = async (data: LeadFieldData) => {
     if (!id) return
     try {
-      delete data.creation_method
-      const newLeadField = await console.log(data)
+      const newLeadField = await createLeadField(getFieldDataByType(data, data.creation_method === "template"))
       if (!data?.validation_rules) return newLeadField
-      const newValidationList = await Promise.all(data?.validation_rules.map(val => console.log({ ...val, field_id: newLeadField?.id ?? 1 })))
+      const newValidationList = await Promise.all(
+        data?.validation_rules.map(val =>
+          createValidation(getValidationDataByType({ ...val, field_id: newLeadField?.id ?? 6 }, val.creation_method === "template"))
+        )
+      )
       return { ...newLeadField, validation_rules: newValidationList }
     } catch (e) {
       console.log(e)
@@ -75,10 +77,7 @@ export const CreateLeadFields = () => {
   const submitAndReset = async (data: LeadFieldData) => {
     await saveLeadField(data)
     alert("Creado")
-    reset(defaultValues, {
-      keepDirty: false,
-      keepTouched: false,
-    })
+    reset(defaultValues)
   }
 
   const currentCampaign = useMemo(
@@ -97,7 +96,7 @@ export const CreateLeadFields = () => {
 
             <Divider sx={{ paddingBlock: 2 }} />
 
-            <ValidationRuleForm control={control} register={register} setValue={setValue} />
+            <ValidationRuleForm control={control} register={register} setValue={setValue} reset={reset} />
 
             <Button variant="outlined" component={Link} to={`/campaigns/${id}`}>
               Volver
@@ -121,7 +120,7 @@ interface LeadFieldFormProps {
   nomenclators: Nomenclator[],
   campaigns: Campaign[],
   register: UseFormRegister<LeadFieldData>,
-  control: Control,
+  control: Control<LeadFieldData>,
   campaignId: number
 }
 
@@ -144,12 +143,7 @@ const LeadFieldForm = ({ templates, sections, types, nomenclators, campaigns, re
       <input type="hidden" {...register("campaign_id", { value: campaignId })} />
       <Grid size={12} container minWidth="20rem">
         <Grid size="grow" minWidth="20rem">
-          <TextField
-            id="name"
-            label="Nombre del Campo"
-            fullWidth
-            {...register(`name`)}
-          />
+          <ControlledTextInput control={control} label="Nombre del Campo" name="name" />
         </Grid>
         <Grid size="grow" minWidth="20rem" justifyContent="center">
           <ControlledAutocomplete name="lead_field_section_id" label="Sección"
@@ -235,12 +229,7 @@ const LeadFieldForm = ({ templates, sections, types, nomenclators, campaigns, re
         {(creationMethod === "template" || (fieldTypeCode && ["NUMBER", "INT", "STRING", "BOOL"].includes(fieldTypeCode))) &&
 
           <Grid size="grow" minWidth="20rem">
-            <TextField
-              id="default_value"
-              label="Valor por Defecto"
-              fullWidth
-              {...register(`default_value`)}
-            />
+            <ControlledTextInput control={control} label="Valor por Defecto" name="default_value" />
           </Grid>
         }
       </Grid>

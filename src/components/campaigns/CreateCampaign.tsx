@@ -1,7 +1,7 @@
 import { TextField, Typography, Button, Grid } from "@mui/material"
 import { useEffect, useMemo, useState } from "react"
 import { useForm, useWatch } from "react-hook-form"
-import type { LeadFieldPost } from "../../types/leads"
+import type { LeadFieldPost } from "../../types/leadFields"
 import { createCampaign, createOrganization, createWorkspace, getOrganizations, getWorkspaces } from "./campaignServices"
 import { Link, useNavigate } from "react-router-dom"
 import { ControlledAutocomplete } from "../common/forms/ControlledAutocomplete"

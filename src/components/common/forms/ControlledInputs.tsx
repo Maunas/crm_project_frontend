@@ -1,4 +1,4 @@
-import { Checkbox, FormControlLabel, Radio, RadioGroup } from '@mui/material'
+import { Checkbox, FormControlLabel, Radio, RadioGroup, TextField } from '@mui/material'
 import { Controller, type Control } from 'react-hook-form'
 
 interface ControlledCheckboxProps {
@@ -38,12 +38,33 @@ export const ControlledRadio = ({ control, name, row = true, options }: Controll
                 >
                     {options?.length > 0 &&
                         options.map((option) =>
-                            <FormControlLabel key={option.label} value={option.value} control={<Radio />} label={option.label} />
+                            <FormControlLabel key={option.label} value={option.value}
+                                control={<Radio />} label={option.label} />
                         )}
                 </RadioGroup>
-
             }>
+        </Controller>
+    )
+}
 
+interface ControlledTextProps {
+    control: Control,
+    name: string,
+    label: string,
+    id?: string
+}
+export const ControlledTextInput = ({ control, name, label, id }: ControlledTextProps) => {
+    return (
+        <Controller control={control} name={name}
+            render={({ field }) =>
+                <TextField
+                    {...field}
+                    id={id ?? name}
+                    label={label ?? name}
+                    value={field.value ?? ""}
+                    fullWidth
+                />
+            }>
         </Controller>
     )
 }
