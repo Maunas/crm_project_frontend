@@ -1,8 +1,7 @@
-import { Grid, TextField, Typography } from "@mui/material"
+import { Grid } from "@mui/material"
 import type { Control, UseFormRegister } from "react-hook-form"
 import type { LeadPostData, LeadPostValueData } from "./LeadForm"
-import { useState } from "react"
-import { LeadFormBool, LeadFormDefault, LeadFormMoney, LeadFormPassword, LeadFormRating } from "./LeadFormFieldTypes"
+import { LeadFormAddress, LeadFormBool, LeadFormMoney, LeadFormNumber, LeadFormPassword, LeadFormRating, LeadFormText } from "./LeadFormFieldTypes"
 
 interface LeadFormFieldProps {
     register: UseFormRegister<LeadPostData>,
@@ -14,21 +13,8 @@ interface LeadFormFieldProps {
 
 export const LeadFormField = ({ register, control, idx, leadField }: LeadFormFieldProps) => {
     return (
-        <Grid size={6} container spacing={2}>
-            <Grid size={2} >
-                <TextField
-                    id={`values.${idx}.field_id`}
-                    label="Id"
-                    fullWidth
-                    {...register(`values.${idx}.field_id`)}
-                    value={leadField.fieldData.id}
-                    disabled
-                />
-            </Grid>
-            <Grid size="grow" minWidth="20rem">
-                <LeadFormFieldType register={register} idx={idx} control={control} leadField={leadField} />
-                <Typography color="initial">{leadField.fieldData.field_template_code && `${leadField.fieldData.field_template_code} - `}{leadField.fieldData.field_type_code}</Typography>
-            </Grid>
+        <Grid size="grow" alignItems="center" minWidth="20rem">
+            <LeadFormFieldType register={register} idx={idx} control={control} leadField={leadField} />
         </Grid>
     )
 }
@@ -42,11 +28,26 @@ interface LeadFormFieldTypeProps {
 }
 export const LeadFormFieldType = ({ register, idx, control, leadField }: LeadFormFieldTypeProps) => {
 
-
+    if (leadField.field_id === 45) console.log(leadField.fieldData.field_type_code)
     switch (leadField.fieldData.field_type_code) {
+        case "URL":
+            return (<LeadFormText label={leadField.fieldData.name} name={`values.${idx}.value`} register={register} type="url" />)
+        case "ADDRESS":
+            return (<LeadFormAddress label={leadField.fieldData.name} name={`values.${idx}.value`} register={register} leadField={leadField}/>)
+        case "PHONE":
+            return (<LeadFormText label={leadField.fieldData.name} name={`values.${idx}.value`} register={register} type="tel" />)
+        case "FILE":
+            return (<LeadFormText label={leadField.fieldData.name} name={`values.${idx}.value`} register={register} type="file" />)
+        case "EMAIL":
+            return (<LeadFormText label={leadField.fieldData.name} name={`values.${idx}.value`} register={register} type="email" />)
+        case "DATE":
+            return (<LeadFormText label={leadField.fieldData.name} name={`values.${idx}.value`} register={register} type="date" />)
+        case "DATETIME":
+            return (<LeadFormText label={leadField.fieldData.name} name={`values.${idx}.value`} register={register} type="datetime-local" />)
+        case "NUMBER": case "INT":
+            return (<LeadFormNumber label={leadField.fieldData.name} name={`values.${idx}.value`} control={control} />)
         case "RATING":
             return (<LeadFormRating label={leadField.fieldData.name} leadField={leadField} name={`values.${idx}.value`} control={control} />)
-        
         case "MONEY":
             return (<LeadFormMoney label={leadField.fieldData.name} name={`values.${idx}.value`} register={register} />)
         case "PASSWORD":
@@ -54,6 +55,6 @@ export const LeadFormFieldType = ({ register, idx, control, leadField }: LeadFor
         case "BOOL":
             return (<LeadFormBool label={leadField.fieldData.name} name={`values.${idx}.value`} control={control} />)
         default:
-            return <LeadFormDefault label={leadField.fieldData.name} name={`values.${idx}.value`} register={register} />
+            return <LeadFormText label={leadField.fieldData.name} name={`values.${idx}.value`} register={register} />
     }
 }

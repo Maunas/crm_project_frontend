@@ -30,11 +30,13 @@ export default function NumberField({
   label,
   error,
   size = 'medium',
+  helperText,
   ...other
 }: BaseNumberField.Root.Props & {
   label?: React.ReactNode;
   size?: 'small' | 'medium';
   error?: boolean;
+  helperText?: string
 }) {
   let id = React.useId();
   if (idProp) {
@@ -51,6 +53,7 @@ export default function NumberField({
           required={state.required}
           error={error}
           variant="outlined"
+          fullWidth
         >
           {props.children}
         </FormControl>
@@ -114,7 +117,7 @@ export default function NumberField({
         )}
       />
       <FormHelperText sx={{ ml: 0, '&:empty': { mt: 0 } }}>
-        Enter value between 10 and 40
+        {helperText}
       </FormHelperText>
     </BaseNumberField.Root>
   );
@@ -166,20 +169,21 @@ export function NumberSpinner({
           <Box component="span" sx={{ userSelect: 'none', width: 'max-content' }} />
         }
       >
-        <FormLabel
-          htmlFor={id}
-          sx={{
-            display: 'inline-block',
-            cursor: 'ew-resize',
-            fontSize: '0.875rem',
-            color: 'text.primary',
-            fontWeight: 500,
-            lineHeight: 1.5,
-            mb: 0.5,
-          }}
-        >
-          {label}
-        </FormLabel>
+        {label &&
+          <FormLabel
+            htmlFor={id}
+            sx={{
+              display: 'inline-block',
+              cursor: 'ew-resize',
+              fontSize: '0.875rem',
+              color: 'text.primary',
+              fontWeight: 500,
+              lineHeight: 1.5,
+              mb: 0.5,
+            }}
+          >
+            {label}
+          </FormLabel>}
         <BaseNumberField.ScrubAreaCursor>
           <OpenInFullIcon
             fontSize="small"
@@ -225,10 +229,15 @@ export function NumberSpinner({
                   size:
                     Math.max(
                       (other.min?.toString() || '').length,
+                      //Agregado: Toma el tamaño del input máximo si existe
+                      (other.max?.toString() || '').length,
+                      //Agregado: Toma el tamaño del input máximo, más la parte decimal de step, si existen
+                      (((other.max || 0) + (Number(other.step) || 0)).toString()).length,
                       state.inputValue.length || 1,
                     ) + 1,
                   sx: {
                     textAlign: 'center',
+                    paddingInline: 0
                   },
                 },
               }}

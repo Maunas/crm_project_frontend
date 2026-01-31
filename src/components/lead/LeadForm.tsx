@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { useFieldArray, useForm, useWatch } from "react-hook-form"
 import { getCampaigns } from "../campaigns/campaignServices"
 import { ControlledAutocomplete } from "../common/forms/ControlledAutocomplete"
-import { Button, Grid } from "@mui/material"
+import { Button, Divider, Grid, Typography } from "@mui/material"
 import { getLeadFields } from "../leadFields/leadFieldServices"
 import { LeadFormField } from "./LeadFormField"
 import type { LeadField } from "../../types/leadFields"
@@ -42,7 +42,7 @@ export const LeadForm = () => {
 
     useEffect(() => {
         const newFields = leadFields?.filter(field => field.field_type_code !== "CALCULATED")
-            .map(field => ({ field_id: field.id, value:"", fieldData: field }))
+            .map(field => ({ field_id: field.id, value: "", fieldData: field }))
         replace(newFields)
     }, [leadFields])
 
@@ -52,23 +52,20 @@ export const LeadForm = () => {
 
     return (
         <form>
+            <Typography variant="h1" color="initial">Nuevo Lead</Typography>
+            <ControlledAutocomplete control={control} label="Campaña" name="campaign_id" getOptionKey={option => option.id}
+                getOptionLabel={option => option.name} optionList={campaigns} returnField="id" />
+            <Divider sx={{marginBlock:2}}/>
             <Grid container spacing={2}>
-                <Grid size={12}>
-                    <ControlledAutocomplete control={control} label="Campaña" name="campaign_id" getOptionKey={option => option.id}
-                        getOptionLabel={option => option.name} optionList={campaigns} returnField="id" />
-                </Grid>
-
-                <Grid container spacing={2} size={12}>
-                    {
-                        fields?.length > 0 &&
-                        fields.map((leadField, idx) =>
-                            <LeadFormField register={register} control={control} key={leadField.arrayId}
-                                idx={idx} leadField={leadField} />
-                        )
-                    }
-                </Grid>
-
+                {
+                    fields?.length > 0 &&
+                    fields.map((leadField, idx) =>
+                        <LeadFormField register={register} control={control} key={leadField.arrayId}
+                            idx={idx} leadField={leadField} />
+                    )
+                }
             </Grid>
+
             <Button variant="contained" color="primary" onClick={handleSubmit(submitData)}>
                 Guardar
             </Button>

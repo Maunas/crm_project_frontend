@@ -1,9 +1,9 @@
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { FormControl, FormControlLabel, Grid, IconButton, InputAdornment, InputLabel, OutlinedInput, Rating, TextField, Typography } from "@mui/material"
+import { Box, FormControl, FormControlLabel, Grid, IconButton, InputAdornment, InputLabel, OutlinedInput, Rating, Slider, TextField, Typography } from "@mui/material"
 import { useState } from "react";
-import { ControlledCheckbox } from "../common/forms/ControlledInputs";
-import { NumberField } from '@base-ui/react/number-field';
+import { ControlledCheckbox, ControlledNumber, ControlledSlider } from "../common/forms/ControlledInputs";
 import { Controller } from "react-hook-form";
+import NumberField, { NumberSpinner } from "../common/forms/NumberField";
 
 export const LeadFormPassword = ({ label, name, register }) => {
     const [showPassword, setShowPassword] = useState(false);
@@ -34,10 +34,12 @@ export const LeadFormPassword = ({ label, name, register }) => {
     )
 }
 
-export const LeadFormDefault = ({ label, register, name }) => {
-    return (
-        <TextField id={name} label={label} fullWidth name={name} {...register(name)} />
+export const LeadFormText = ({ label, register, name, type = "text" }) => {
+    if (["date", "datetime-local", "file"].includes(type)) return (
+        <TextField id={name} label={label} fullWidth name={name} type={type} {...register(name)}
+            slotProps={{ inputLabel: { shrink: true } }} />
     )
+    return (<TextField id={name} label={label} fullWidth name={name} type={type} {...register(name)} />)
 }
 export const LeadFormMoney = ({ label, register, name }) => {
     return (
@@ -60,18 +62,23 @@ export const LeadFormBool = ({ label, control, name }) => {
 export const LeadFormRating = ({ label, control, name, leadField }) => {
     switch (leadField.fieldData.field_subtype_code) {
         case "STAR_RATING":
-            return (
-                <Controller name={name} control={control} render={({ field }) =>
-                    <Grid container spacing={2} alignItems="center">
-                        <Rating precision={0.5} size="large"
-                            {...field}
-                        />
-                        <TextField type="number"
-                            {...field}
-                        />
-                    </Grid>
-                } />
-            )
+            return <ControlledSlider control={control} label={label} name={name} max={5} step={.5} type="rating" />
+        case "NPS":
+            return <ControlledSlider control={control} label={label} name={name} min={1} max={10} defaultValue={1} />
+        case "SCORE":
+            return <ControlledSlider control={control} label={label} name={name} min={0} max={100} />
+    }
+}
 
+export const LeadFormNumber = ({ label, control, name }) => {
+    return <ControlledNumber control={control} label={label} name={name} />
+}
+
+export const LeadFormAddress = ({ label, register, name, leadField }) => {
+    switch (leadField.fieldData.field_subtype_code) {
+        case "MAPS_URL":
+            return (<LeadFormText label={label} name={name} register={register} type="url" />)
+        default:
+            return (<LeadFormText label={label} name={name} register={register} />)
     }
 }
