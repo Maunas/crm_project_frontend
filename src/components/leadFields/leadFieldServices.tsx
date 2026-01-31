@@ -75,6 +75,14 @@ export const getValidationDataByType = (data: FieldValidationRuleData, isTemplat
     }
 }
 
+
+
+
+export const getLeadFields = async<T extends Params>(params?: T):
+    Promise<T["detailed"] extends true ? LeadFieldDetailed[] : LeadField[]> => {
+    const leadField = await axios.get(`${API_BASE_URL}/lead_fields`, { params })
+    return leadField.data.items
+}
 export const getFieldTemplates = async (): Promise<LeadFieldTemplate[]> => {
     const tmp = await axios.get(`${API_BASE_URL}/templates/lead_fields`)
     return tmp.data
@@ -95,12 +103,6 @@ export const getNomenclators = async<T extends Params>(params?: T):
 export const createLeadField = async (body: LeadFieldPost): Promise<LeadField> => {
     const leadField = await axios.post(`${API_BASE_URL}/lead_fields`, body)
     return leadField.data
-}
-
-export const getFieldsFromCampaign = async<T extends Params>(params?: T):
-    Promise<T["detailed"] extends true ? LeadFieldDetailed[] : LeadField[]> => {
-    const leadField = await axios.get(`${API_BASE_URL}/lead_fields`, { params })
-    return leadField.data.items
 }
 
 export const getValidationTemplates = async (): Promise<FieldValidationRuleTemplate[]> => {

@@ -34,7 +34,7 @@ export const router = createBrowserRouter([
             },
             {
                 path: "/leads/new",
-                Component: LeadForm
+                element: <GenericContainer><LeadForm/></GenericContainer>
             },
             {
                 path: "/leads/:id",

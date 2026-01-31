@@ -1,42 +1,53 @@
 import { useEffect, useState } from "react"
-import { useFieldArray, useForm } from "react-hook-form"
+import { useFieldArray, useForm, useWatch } from "react-hook-form"
 import { getCampaigns } from "../campaigns/campaignServices"
-import { getLeadFieldsByCampaign } from "../leadFields/leadFieldServices"
 import { ControlledAutocomplete } from "../common/forms/ControlledAutocomplete"
-import { TextField, Button, Grid, Container, Typography } from "@mui/material"
+import { Button, Grid } from "@mui/material"
+import { getLeadFields } from "../leadFields/leadFieldServices"
+import { LeadFormField } from "./LeadFormField"
+import type { LeadField } from "../../types/leadFields"
+import type { Campaign } from "../../types/campaigns"
+import type { LeadPost, LeadPostValue } from "../../types/leads"
+
+//Para permitir mantener los datos de cada campo
+export interface LeadPostValueData extends LeadPostValue {
+    fieldData: LeadField
+}
+export interface LeadPostData extends LeadPost {
+    values: LeadPostValue[]
+}
 
 export const LeadForm = () => {
 
-    const [campaigns, setCampaigns] = useState([])
-    const [leadFields, setLeadFields] = useState([])
+    const [campaigns, setCampaigns] = useState<Campaign[]>([])
+    const [leadFields, setLeadFields] = useState<LeadField[]>([])
 
     useEffect(() => {
         getCampaigns().then(setCampaigns)
     }, [])
 
-    const { register, control, watch, handleSubmit } = useForm()
+    const { register, control, handleSubmit } = useForm<LeadPostData>()
 
-    const campaignId = watch("campaign_id")
+    const campaignId = useWatch({ name: "campaign_id", control })
 
     useEffect(() => {
         if (campaignId) {
-            getLeadFieldsByCampaign(campaignId).then(res =>
+            getLeadFields({ only_active: true, campaign_id: campaignId }).then(res =>
                 setLeadFields(res.sort((a, b) => a.order - b.order))
             )
         }
     }, [campaignId])
 
-
-    const { fields, replace } = useFieldArray({ name: "values", control, keyName: "arrayId" })
+    const { fields, replace } = useFieldArray<LeadPostData>({ name: "values", control, keyName: "arrayId" })
 
     useEffect(() => {
-        const newFields = leadFields?.filter(i => i.field_type_code !== "CALCULATED")
-        .map(i => ({ fieldData: i }))
+        const newFields = leadFields?.filter(field => field.field_type_code !== "CALCULATED")
+            .map(field => ({ field_id: field.id, value:"", fieldData: field }))
         replace(newFields)
     }, [leadFields])
 
     const submitData = (data) => {
-        data?.values?.forEach(i => delete i.fieldData)
+        console.log(data)
     }
 
     return (
@@ -47,33 +58,16 @@ export const LeadForm = () => {
                         getOptionLabel={option => option.name} optionList={campaigns} returnField="id" />
                 </Grid>
 
-                {
-                    fields?.length > 0 &&
-                    fields.map((leadField, idx) =>
-                        <Grid size={12} container spacing={2} key={leadField.arrayId}>
-                            <Grid size={2} >
-                                <TextField
-                                    id=""
-                                    label="Id"
-                                    fullWidth
-                                    {...register(`values.${idx}.field_id`)}
-                                    value={leadField.fieldData.id}
-                                    disabled
-                                />
-                            </Grid>
-                            <Grid size="grow" minWidth="20rem">
+                <Grid container spacing={2} size={12}>
+                    {
+                        fields?.length > 0 &&
+                        fields.map((leadField, idx) =>
+                            <LeadFormField register={register} control={control} key={leadField.arrayId}
+                                idx={idx} leadField={leadField} />
+                        )
+                    }
+                </Grid>
 
-                                <TextField
-                                    id=""
-                                    label={leadField.fieldData.name}
-                                    fullWidth
-                                    {...register(`values.${idx}.value`)}
-                                />
-                                <Typography color="initial">{leadField.fieldData.field_template_code && `${leadField.fieldData.field_template_code} - `}{leadField.fieldData.field_type_code}</Typography>
-                            </Grid>
-                        </Grid>
-                    )
-                }
             </Grid>
             <Button variant="contained" color="primary" onClick={handleSubmit(submitData)}>
                 Guardar
