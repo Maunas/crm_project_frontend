@@ -2,11 +2,11 @@ import { createBrowserRouter } from "react-router-dom";
 import MainLayout from "./components/common/mainLayout";
 import { NotFound } from "./pages/NotFound";
 import { LeadDetails } from "./components/lead/LeadDetails";
-import { CreateCampaign, WorkspaceForm } from "./components/campaigns/CreateCampaign";
+import { CampaignForm, OrganizationForm, WorkspaceForm } from "./components/campaigns/CreateCampaign";
 import { CampaignDetails } from "./components/campaigns/CampaignDetails";
 import { CreateLeadFields } from "./components/leadFields/CreateLeadFields";
-import { WorkspaceList } from "./components/campaigns/CampaignList";
-import { createWorkspace } from "./components/campaigns/campaignServices";
+import { OrganizationList } from "./components/campaigns/CampaignList";
+import { GenericContainer } from "./components/common/forms/GenericContainer";
 import { LeadForm } from "./components/lead/LeadForm";
 
 export const router = createBrowserRouter([
@@ -42,7 +42,7 @@ export const router = createBrowserRouter([
             },
             {
                 path: "/campaigns/",
-                Component: WorkspaceList
+                Component: OrganizationList
             },
             {
                 path: "/campaigns/:id",
@@ -54,11 +54,15 @@ export const router = createBrowserRouter([
             },
             {
                 path: "/campaigns/new",
-                Component: CreateCampaign
+                element: <GenericContainer><CampaignForm/></GenericContainer>
             },
             {
                 path: "/workspaces/new",
-                Component: WorkspaceForm
+                element: <GenericContainer><WorkspaceForm/></GenericContainer>
+            },
+            {
+                path: "/organizations/new",
+                element: <GenericContainer><OrganizationForm/></GenericContainer>
             },
             {
                 path: "*", //Si no coincide con nada más.
