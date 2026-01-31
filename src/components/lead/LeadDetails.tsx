@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react"
 import { useParams } from "react-router-dom"
 import { getLead } from "./leadService.ts"
 import { Accordion, AccordionDetails, AccordionSummary, Box, Chip, Container, Divider, Grid, Link, Paper, Typography } from "@mui/material"
-import type { Lead, LeadFieldValue } from "../../types/leads.ts"
+import type { Lead } from "../../types/leads"
+import type { LeadFieldValue } from "../../types/leadFields"
 import { getFieldType } from "../../generalService.ts"
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 

@@ -1,38 +1,37 @@
-import { Container, Paper, TextField, Typography, Button, Grid } from "@mui/material"
-import { useEffect, useState } from "react"
-import { useForm } from "react-hook-form"
-import type { Campaign, LeadField, Workspace } from "../../types/leads"
-import { createCampaign, createWorkspace, getWorkspaces } from "./campaignServices"
+import { TextField, Typography, Button, Grid } from "@mui/material"
+import { useEffect, useMemo, useState } from "react"
+import { useForm, useWatch } from "react-hook-form"
+import type { LeadFieldPost } from "../../types/leadFields"
+import { createCampaign, createOrganization, createWorkspace, getOrganizations, getWorkspaces } from "./campaignServices"
 import { Link, useNavigate } from "react-router-dom"
 import { ControlledAutocomplete } from "../common/forms/ControlledAutocomplete"
 import { createLeadField } from "../leadFields/leadFieldServices"
-
-export const CreateCampaign = () => {
-
-    return (
-        <Container >
-            <Paper sx={{ p: 2 }}>
-                <Typography variant="h1">
-                    Crear Campaña
-                </Typography>
-                <CampaignForm />
-            </Paper>
-        </Container>
-    )
-}
-
+import type { CampaignPost, Organization, OrganizationPost, Workspace, WorkspacePost } from "../../types/campaigns"
 
 export const CampaignForm = () => {
 
-    const { register, handleSubmit, control } = useForm()
     const [workspaces, setWorkspaces] = useState<Workspace[] | []>([])
+    const [organizations, setOrganizations] = useState<Organization[] | []>([])
     const nav = useNavigate()
 
     useEffect(() => {
-        getWorkspaces().then(setWorkspaces)
+        getWorkspaces({only_active:true}).then(setWorkspaces)
+        getOrganizations({only_active:true}).then(setOrganizations)
     }, [])
 
-    const requiredFields: LeadField[] = [
+    const { register, handleSubmit, control } = useForm<CampaignPost & { organization_id?: number }>()
+
+    const selectedOrg = useWatch({
+        control,
+        name: "organization_id",
+    });
+
+    const filteredWorkspaces = useMemo(() => {
+        if (!selectedOrg) return []
+        return workspaces.filter(workspace => workspace.organization_id === selectedOrg)
+    }, [selectedOrg, workspaces])
+
+    const requiredFields: Omit<LeadFieldPost, "campaign_id">[] = [
         {
             "order": 1,
             "required": true,
@@ -51,7 +50,8 @@ export const CampaignForm = () => {
         }
     ]
 
-    const submit = (data: Campaign) => {
+    const submit = (data: CampaignPost & { organization_id?: number }) => {
+        delete data.organization_id
         createCampaign(data)
             .then((res) =>
                 Promise.all(requiredFields.map((field) => createLeadField({ ...field, campaign_id: res.id })))
@@ -62,23 +62,35 @@ export const CampaignForm = () => {
     }
 
     return (
-        <form onSubmit={handleSubmit(submit)}>
+        <form>
+            <Typography variant="h1" color="initial">Crear Campaña</Typography>
             <Grid container spacing={2} sx={{
                 justifyContent: "center",
                 alignItems: "center",
                 margin: "1rem"
             }}>
-                <Grid size="grow" minWidth={"20rem"}>
-                    <TextField {...register("name")} label="Nombre" fullWidth />
+                <Grid container spacing={2} size={12}>
+                    <Grid size="grow" minWidth={"20rem"}>
+                        <TextField {...register("name")} label="Nombre" fullWidth required />
+                    </Grid>
+                    <Grid size="grow" minWidth={"20rem"}>
+                        <TextField {...register("description")} label="Descripción" fullWidth />
+                    </Grid>
                 </Grid>
-                <Grid size="grow" minWidth={"20rem"}>
-                    <TextField {...register("description")} label="Descripción" fullWidth />
+                <Grid container spacing={2} size={12}>
+
+                    <Grid size="grow" minWidth={"20rem"}>
+                        <ControlledAutocomplete control={control} label="Organización" name="organization_id"
+                            getOptionLabel={(option) => option.name} getOptionKey={(option) => option.id}
+                            optionList={organizations} returnField="id" />
+                    </Grid>
+                    <Grid size="grow" minWidth={"20rem"}>
+                        <ControlledAutocomplete control={control} label="Espacio de Trabajo" name="workspace_id"
+                            getOptionLabel={(option) => option.name} getOptionKey={(option) => option.id}
+                            optionList={filteredWorkspaces} returnField="id" disabled={!selectedOrg} />
+                    </Grid>
                 </Grid>
-                <Grid size="grow" minWidth={"20rem"}>
-                    <ControlledAutocomplete control={control} label="Espacio de Trabajo" name="workspace_id"
-                        getOptionLabel={(option) => option.name} getOptionKey={(option) => option.id}
-                        optionList={workspaces} returnField="id"/>
-                </Grid>
+
             </Grid>
             <Button component={Link} to="/campaigns">
                 Cancelar
@@ -92,27 +104,40 @@ export const CampaignForm = () => {
 
 export const WorkspaceForm = () => {
 
-    const { register, handleSubmit } = useForm()
+    const { register, handleSubmit, control } = useForm<WorkspacePost>()
     const nav = useNavigate()
 
-    const submit = (data: Workspace) => {
-        createWorkspace(data).then((_) => {
+    const [organizations, setOrganizations] = useState<Organization[] | []>([])
+
+    useEffect(() => {
+        getOrganizations({only_active: true}).then(setOrganizations)
+    }, [])
+
+    const submit = (data: WorkspacePost) => {
+        createWorkspace(data).then(() => {
             nav(`/campaigns`)
         }).catch((e) => console.error(e))
     }
 
     return (
-        <form onSubmit={handleSubmit(submit)}>
+        <form>
+            <Typography variant="h1" color="initial">Crear Espacio de Trabajo</Typography>
             <Grid container spacing={2} sx={{
                 justifyContent: "center",
                 alignItems: "center",
                 margin: "1rem"
             }}>
                 <Grid size="grow" minWidth={"20rem"}>
-                    <TextField {...register("name")} label="Nombre" fullWidth />
+                    <TextField {...register("name")} required label="Nombre" fullWidth />
                 </Grid>
                 <Grid size="grow" minWidth={"20rem"}>
                     <TextField {...register("description")} label="Descripción" fullWidth />
+                </Grid>
+
+                <Grid size="grow" minWidth={"20rem"}>
+                    <ControlledAutocomplete control={control} name="organization_id" label="Organización"
+                        getOptionKey={option => option.id} getOptionLabel={option => option.name} optionList={organizations}
+                        returnField="id" />
                 </Grid>
 
             </Grid>
@@ -125,3 +150,41 @@ export const WorkspaceForm = () => {
         </form>
     )
 }
+
+export const OrganizationForm = () => {
+
+    const { register, handleSubmit } = useForm<WorkspacePost>()
+    const nav = useNavigate()
+
+    const submit = (data: OrganizationPost) => {
+        createOrganization(data)
+            .then(() => nav(`/campaigns`))
+            .catch((e) => console.error(e))
+    }
+
+    return (
+        <form>
+            <Typography variant="h1" color="initial">Crear Organización</Typography>
+            <Grid container spacing={2} sx={{
+                justifyContent: "center",
+                alignItems: "center",
+                margin: "1rem"
+            }}>
+                <Grid size="grow" minWidth={"20rem"}>
+                    <TextField {...register("name")} label="Nombre" required fullWidth />
+                </Grid>
+                <Grid size="grow" minWidth={"20rem"}>
+                    <TextField {...register("description")} label="Descripción" fullWidth />
+                </Grid>
+
+            </Grid>
+            <Button component={Link} to="/campaigns">
+                Cancelar
+            </Button>
+            <Button variant="contained" onClick={handleSubmit(submit)} sx={{ marginBlock: "1rem" }}>
+                Guardar Organización
+            </Button>
+        </form>
+    )
+}
+
