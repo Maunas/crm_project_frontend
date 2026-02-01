@@ -64,7 +64,7 @@ export const CreateLeadFields = () => {
       )
       return { ...newLeadField, validation_rules: newValidationList }
     } catch (e) {
-      console.log(e)
+      console.error(e)
       throw e
     }
   }

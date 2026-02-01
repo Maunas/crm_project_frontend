@@ -1,15 +1,7 @@
 import axios from "axios"
-import type { LeadField, LeadFieldDetailed, LeadFieldPost, LeadFieldType, LeadFieldTypeDetailed, LeadFieldTemplate, Nomenclator, LeadFieldSection, LeadFieldSectionDetailed, NomenclatorDetailed, FieldValidationRule, FieldValidationRuleTemplate, FieldValidationRulePost } from "../../types/leadFields"
+import type { LeadField, LeadFieldDetailed, LeadFieldPost, LeadFieldType, LeadFieldTypeDetailed, LeadFieldTemplate, Nomenclator, LeadFieldSection, LeadFieldSectionDetailed, NomenclatorDetailed, FieldValidationRule, FieldValidationRuleTemplate, FieldValidationRulePost, NomenclatorItem, NomenclatorItemDetailed } from "../../types/leadFields"
 import { API_BASE_URL } from "../../generalService"
 import type { FieldValidationRuleData } from "./CreateLeadFields"
-
-interface Params {
-    detailed?: boolean,
-    only_active?: boolean,
-    page?: number,
-    campaign_id?: number,
-    global_nomenclator?: boolean
-}
 
 export const getFieldDataByType = (data: LeadFieldPost, isTemplate = false): LeadFieldPost => {
     const requiredData: LeadFieldPost = {
@@ -77,6 +69,15 @@ export const getValidationDataByType = (data: FieldValidationRuleData, isTemplat
 
 
 
+interface Params {
+    detailed?: boolean,
+    only_active?: boolean,
+    page?: number,
+    campaign_id?: number,
+    global_nomenclator?: boolean,
+    nomenclator_id?: number,
+    parent_item_id?: number
+}
 
 export const getLeadFields = async<T extends Params>(params?: T):
     Promise<T["detailed"] extends true ? LeadFieldDetailed[] : LeadField[]> => {
@@ -100,6 +101,12 @@ export const getNomenclators = async<T extends Params>(params?: T):
     return wksp.data.items
 }
 
+export const getNomenclatorItems = async<T extends Params>(params?: T):
+    Promise<T["detailed"] extends true ? NomenclatorItemDetailed[] : NomenclatorItem[]> => {
+    const leadField = await axios.get(`${API_BASE_URL}/nomenclator_items`, { params })
+    return leadField.data.items
+}
+
 export const createLeadField = async (body: LeadFieldPost): Promise<LeadField> => {
     const leadField = await axios.post(`${API_BASE_URL}/lead_fields`, body)
     return leadField.data
@@ -120,3 +127,4 @@ export const getFieldSections = async<T extends Params>(params?: T):
     const sections = await axios.get(`${API_BASE_URL}/lead_field_sections`, { params })
     return sections.data.items
 }
+

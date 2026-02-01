@@ -1,39 +1,30 @@
-import { Grid } from "@mui/material"
-import type { Control, UseFormRegister } from "react-hook-form"
+import { type Control, type UseFormRegister } from "react-hook-form"
 import type { LeadPostData, LeadPostValueData } from "./LeadForm"
-import { LeadFormAddress, LeadFormBool, LeadFormMoney, LeadFormNumber, LeadFormPassword, LeadFormRating, LeadFormText } from "./LeadFormFieldTypes"
+import { LeadFormAddress, LeadFormBool, LeadFormMoney, LeadFormNumber, LeadFormPassword, LeadFormRating, LeadFormSelector, LeadFormText } from "./LeadFormFieldTypes"
+import type { Lead } from "../../types/leads"
+import type { NomenclatorItem } from "../../types/leadFields"
 
-interface LeadFormFieldProps {
-    register: UseFormRegister<LeadPostData>,
-    control: Control<LeadPostData>,
-    idx: number,
-    leadField: LeadPostValueData
-
-}
-
-export const LeadFormField = ({ register, control, idx, leadField }: LeadFormFieldProps) => {
-    return (
-        <Grid size="grow" alignItems="center" minWidth="20rem">
-            <LeadFormFieldType register={register} idx={idx} control={control} leadField={leadField} />
-        </Grid>
-    )
-}
 
 interface LeadFormFieldTypeProps {
     register: UseFormRegister<LeadPostData>,
     control: Control<LeadPostData>,
     idx: number,
-    leadField: LeadPostValueData
-
+    leadField: LeadPostValueData,
+    relatedLeads: Map<number, Lead[]>,
+    selectors: Map<number, NomenclatorItem[]>
 }
-export const LeadFormFieldType = ({ register, idx, control, leadField }: LeadFormFieldTypeProps) => {
 
-    if (leadField.field_id === 45) console.log(leadField.fieldData.field_type_code)
+export const LeadFormFieldType = ({ register, idx, control, leadField, relatedLeads, selectors }: LeadFormFieldTypeProps) => {
+
     switch (leadField.fieldData.field_type_code) {
+        case "LEAD":
+            return (<LeadFormSelector label={leadField.fieldData.name} name={`values.${idx}.value`} control={control} optionMap={relatedLeads} leadField={leadField} />)
+        case "SELECTOR": case "CHECKBOX":
+            return (<LeadFormSelector label={leadField.fieldData.name} name={`values.${idx}.value`} control={control} optionMap={selectors} leadField={leadField} />)
         case "URL":
             return (<LeadFormText label={leadField.fieldData.name} name={`values.${idx}.value`} register={register} type="url" />)
         case "ADDRESS":
-            return (<LeadFormAddress label={leadField.fieldData.name} name={`values.${idx}.value`} register={register} leadField={leadField}/>)
+            return (<LeadFormAddress label={leadField.fieldData.name} name={`values.${idx}.value`} register={register} leadField={leadField} />)
         case "PHONE":
             return (<LeadFormText label={leadField.fieldData.name} name={`values.${idx}.value`} register={register} type="tel" />)
         case "FILE":

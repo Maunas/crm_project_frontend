@@ -2,8 +2,12 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { Box, FormControl, FormControlLabel, Grid, IconButton, InputAdornment, InputLabel, OutlinedInput, Rating, Slider, TextField, Typography } from "@mui/material"
 import { useState } from "react";
 import { ControlledCheckbox, ControlledNumber, ControlledSlider } from "../common/forms/ControlledInputs";
-import { Controller } from "react-hook-form";
+import { Controller, type Control } from "react-hook-form";
 import NumberField, { NumberSpinner } from "../common/forms/NumberField";
+import { ControlledAutocomplete } from "../common/forms/ControlledAutocomplete";
+import type { NomenclatorDetailed, NomenclatorItem } from "../../types/leadFields";
+import type { Lead } from "../../types/leads";
+import type { LeadPostData, LeadPostValueData } from "./LeadForm";
 
 export const LeadFormPassword = ({ label, name, register }) => {
     const [showPassword, setShowPassword] = useState(false);
@@ -81,4 +85,22 @@ export const LeadFormAddress = ({ label, register, name, leadField }) => {
         default:
             return (<LeadFormText label={label} name={name} register={register} />)
     }
+}
+
+interface LeadFormSelectorProps {
+    label?: string,
+    control: Control<LeadPostData>,
+    name: string,
+    leadField: LeadPostValueData,
+    optionMap: Map<number, Lead[] | NomenclatorItem[]>,
+}
+
+export const LeadFormSelector = ({ label, control, name, leadField, optionMap }: LeadFormSelectorProps) => {
+    if(!optionMap) return
+    const optionMapId = leadField.fieldData.related_campaign_id ?? leadField.fieldData.nomenclator_id
+    if(!optionMapId || !optionMap.has(optionMapId)) return
+    return (
+        <ControlledAutocomplete control={control} name={name} label={label} returnField="id"
+        getOptionKey={option=>option.code} getOptionLabel={option=>option.value} optionList={optionMap.get(optionMapId)} />
+    )
 }
