@@ -52,14 +52,16 @@ export const LeadForm = () => {
         newFields.forEach(async (field) => {
             if (!field?.fieldData?.field_type_code) return
             if (field.fieldData.field_type_code === "LEAD") {
-                if (newRelatedLeads.has(field.fieldData.campaign_id)) return
-                if (relatedLeads.has(field.fieldData.campaign_id)) {
-                    newRelatedLeads.set(field.fieldData.campaign_id, relatedLeads.get(field.fieldData.campaign_id))
+                const relatedCampaignId = field.fieldData.related_campaign_id
+                if (!relatedCampaignId) return
+                if (newRelatedLeads.has(relatedCampaignId)) return
+                if (relatedLeads.has(relatedCampaignId)) {
+                    newRelatedLeads.set(relatedCampaignId, relatedLeads.get(relatedCampaignId))
                     return
                 }
                 promises.push(
-                    getLeads({ campaign_id: field.fieldData.campaign_id, only_active: true })
-                        .then(newLeadList => { newRelatedLeads.set(field.fieldData.campaign_id, newLeadList) })
+                    getLeads({ campaign_id: relatedCampaignId, only_active: true })
+                        .then(newLeadList => { newRelatedLeads.set(relatedCampaignId, newLeadList) })
                 )
             }
             if (["CHECKBOX", "SELECTOR"].includes(field?.fieldData?.field_type_code)) {
@@ -80,15 +82,14 @@ export const LeadForm = () => {
         setSelectors(newSelectors)
     }
 
-
     useEffect(() => {
         const updateFields = async (newFields: LeadPostValueData[]) => {
-            await updateRelatedLeads(newFields)
+            updateRelatedLeads(newFields)
             replace(newFields)
         }
 
         const newFields = leadFields?.filter(field => field.field_type_code !== "CALCULATED")
-            .map(field => ({ field_id: field.id, value: "", fieldData: field }))
+            .map(field => ({ field_id: field.id, fieldData: field }))
         updateFields(newFields)
 
     }, [leadFields])
@@ -100,7 +101,7 @@ export const LeadForm = () => {
     return (
         <form>
             <Typography variant="h1" color="initial">Nuevo Lead</Typography>
-            <ControlledAutocomplete control={control} label="Campaña" name="campaign_id" getOptionKey={option => option.id}
+            <ControlledAutocomplete control={control} label="Campaña" name="campaign_id"
                 getOptionLabel={option => option.name} optionList={campaigns} returnField="id" />
             <Divider sx={{ marginBlock: 2 }} />
             <Grid container spacing={2}>

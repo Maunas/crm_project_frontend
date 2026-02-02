@@ -112,7 +112,8 @@ export const ValidationInstance = ({ idx, templates, register, control, setValue
 
                 <Grid container spacing={2} minWidth="20rem" size={12}>
                     <Grid size={4} minWidth="20rem" justifyContent="center">
-                        <ControlledRadio control={control} name={`validation_rules.${idx}.creation_method`} options={creationMethodOptions} />
+                        <ControlledRadio control={control} name={`validation_rules.${idx}.creation_method`} options={creationMethodOptions} 
+                        returnField="value" radioLabel={option=>option.label} />
                     </Grid>
                     {creationMethod === "manual" &&
                         <Grid size="grow">

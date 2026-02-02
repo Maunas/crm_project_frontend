@@ -1,6 +1,6 @@
 import { type Control, type UseFormRegister } from "react-hook-form"
 import type { LeadPostData, LeadPostValueData } from "./LeadForm"
-import { LeadFormAddress, LeadFormBool, LeadFormMoney, LeadFormNumber, LeadFormPassword, LeadFormRating, LeadFormSelector, LeadFormText } from "./LeadFormFieldTypes"
+import { LeadFormAddress, LeadFormBool, LeadFormCheckbox, LeadFormMoney, LeadFormNumber, LeadFormPassword, LeadFormRating, LeadFormRelatedLead, LeadFormSelector, LeadFormText } from "./LeadFormFieldTypes"
 import type { Lead } from "../../types/leads"
 import type { NomenclatorItem } from "../../types/leadFields"
 
@@ -15,12 +15,13 @@ interface LeadFormFieldTypeProps {
 }
 
 export const LeadFormFieldType = ({ register, idx, control, leadField, relatedLeads, selectors }: LeadFormFieldTypeProps) => {
-
     switch (leadField.fieldData.field_type_code) {
         case "LEAD":
-            return (<LeadFormSelector label={leadField.fieldData.name} name={`values.${idx}.value`} control={control} optionMap={relatedLeads} leadField={leadField} />)
-        case "SELECTOR": case "CHECKBOX":
+            return (<LeadFormRelatedLead label={leadField.fieldData.name} name={`values.${idx}.value`} control={control} optionMap={relatedLeads} leadField={leadField} />)
+        case "SELECTOR":
             return (<LeadFormSelector label={leadField.fieldData.name} name={`values.${idx}.value`} control={control} optionMap={selectors} leadField={leadField} />)
+        case "CHECKBOX":
+            return (<LeadFormCheckbox label={leadField.fieldData.name} name={`values.${idx}.value`} control={control} optionMap={selectors} leadField={leadField} returnField="id" />)
         case "URL":
             return (<LeadFormText label={leadField.fieldData.name} name={`values.${idx}.value`} register={register} type="url" />)
         case "ADDRESS":

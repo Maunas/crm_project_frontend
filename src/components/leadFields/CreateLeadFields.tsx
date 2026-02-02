@@ -148,7 +148,7 @@ const LeadFieldForm = ({ templates, sections, types, nomenclators, campaigns, re
         <Grid size="grow" minWidth="20rem" justifyContent="center">
           <ControlledAutocomplete name="lead_field_section_id" label="Sección"
             control={control} optionList={sections} returnField="id"
-            getOptionKey={(option) => option.id} getOptionLabel={(option) => option.name}
+            getOptionLabel={(option) => option.name}
           />
         </Grid>
         <Grid size="grow" minWidth="20rem" justifyContent="center">
@@ -162,7 +162,8 @@ const LeadFieldForm = ({ templates, sections, types, nomenclators, campaigns, re
 
       <Grid size={12} container minWidth="20rem">
         <Grid size={4} minWidth="20rem" justifyContent="center">
-          <ControlledRadio control={control} name="creation_method" options={creationMethodRadioOptions} />
+          <ControlledRadio control={control} name="creation_method" options={creationMethodRadioOptions} 
+          returnField="value" radioLabel={option=>option.label} />
         </Grid>
 
         {creationMethod === "template" ?
@@ -184,7 +185,7 @@ const LeadFieldForm = ({ templates, sections, types, nomenclators, campaigns, re
               <Grid size="grow" minWidth="20rem" justifyContent="center">
                 <ControlledAutocomplete name="field_subtype_code" label="Subtipo de Campo"
                   control={control} optionList={fieldTypeObject?.subtypes} returnField="code"
-                  getOptionKey={(option) => option.id} getOptionLabel={(option) => `${option.code} - ${option.description}`}
+                  getOptionLabel={(option) => `${option.code} - ${option.description}`}
                 />
               </Grid>
             }
@@ -192,7 +193,7 @@ const LeadFieldForm = ({ templates, sections, types, nomenclators, campaigns, re
               <Grid size="grow" minWidth="20rem" justifyContent="center">
                 <ControlledAutocomplete name="nomenclator_id" label="Lista de Opciones"
                   control={control} optionList={nomenclators} returnField="id"
-                  getOptionKey={(option) => option.id} getOptionLabel={(option) => option.name}
+                  getOptionLabel={(option) => option.name}
                 />
               </Grid>
             }
@@ -200,7 +201,7 @@ const LeadFieldForm = ({ templates, sections, types, nomenclators, campaigns, re
               <Grid size="grow" minWidth="20rem" justifyContent="center">
                 <ControlledAutocomplete name="related_campaign_id" label="Campaña del Lead Relacionado"
                   control={control} optionList={campaigns} returnField="id"
-                  getOptionKey={(option) => option.id} getOptionLabel={(option) => option.name}
+                  getOptionLabel={(option) => option.name}
                 />
               </Grid>
             }

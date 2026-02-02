@@ -81,12 +81,12 @@ export const CampaignForm = () => {
 
                     <Grid size="grow" minWidth={"20rem"}>
                         <ControlledAutocomplete control={control} label="Organización" name="organization_id"
-                            getOptionLabel={(option) => option.name} getOptionKey={(option) => option.id}
+                            getOptionLabel={(option) => option.name}
                             optionList={organizations} returnField="id" />
                     </Grid>
                     <Grid size="grow" minWidth={"20rem"}>
                         <ControlledAutocomplete control={control} label="Espacio de Trabajo" name="workspace_id"
-                            getOptionLabel={(option) => option.name} getOptionKey={(option) => option.id}
+                            getOptionLabel={(option) => option.name}
                             optionList={filteredWorkspaces} returnField="id" disabled={!selectedOrg} />
                     </Grid>
                 </Grid>
@@ -136,7 +136,7 @@ export const WorkspaceForm = () => {
 
                 <Grid size="grow" minWidth={"20rem"}>
                     <ControlledAutocomplete control={control} name="organization_id" label="Organización"
-                        getOptionKey={option => option.id} getOptionLabel={option => option.name} optionList={organizations}
+                        getOptionLabel={option => option.name} optionList={organizations}
                         returnField="id" />
                 </Grid>
 

@@ -1,6 +1,7 @@
-import { Checkbox, FormControlLabel, Grid, Radio, RadioGroup, Rating, Slider, TextField, Typography } from '@mui/material'
-import { Controller, type Control } from 'react-hook-form'
+import { Checkbox, FormControl, FormControlLabel, FormGroup, FormLabel, Grid, Radio, RadioGroup, Rating, Slider, TextField, Typography } from '@mui/material'
+import { Controller, type Control, type ControllerRenderProps } from 'react-hook-form'
 import NumberField, { NumberSpinner } from './NumberField'
+import { useEffect, useState } from 'react'
 
 interface ControlledCheckboxProps {
     control: Control,
@@ -25,24 +26,35 @@ interface ControlledRadioProps {
     control: Control,
     name: string,
     row?: boolean,
-    options: {
-        label: string,
-        value: string
-    }[]
+    label?: string,
+    options: object[],
+    returnField?: string | null,
+    radioLabel?: (option: object) => string,
+    keyField?: string,
 }
-export const ControlledRadio = ({ control, name, row = true, options }: ControlledRadioProps) => {
+export const ControlledRadio = ({ control, name, row = true, options, label,
+    returnField = "value", radioLabel = (option) => `${option.value}`, keyField = "label" }: ControlledRadioProps) => {
     return (
         <Controller control={control} name={name}
-            render={({ field }) =>
-                <RadioGroup row={row}
-                    {...field}
-                >
-                    {options?.length > 0 &&
-                        options.map((option) =>
-                            <FormControlLabel key={option.label} value={option.value}
-                                control={<Radio />} label={option.label} />
-                        )}
-                </RadioGroup>
+            render={({ field }) => {
+                return (
+                    <FormControl>
+                        <FormLabel id={name}>{label}</FormLabel>
+                        <RadioGroup row={row}
+                            {...field}
+                            id={name}
+                            value={field.value ?? null}
+                        >
+
+                            {options?.length > 0 &&
+                                options.map((option) =>
+                                    <FormControlLabel key={option?.[keyField]} value={option?.[returnField] ?? null}
+                                        control={<Radio />} label={radioLabel(option)} />
+                                )}
+                        </RadioGroup>
+                    </FormControl>
+                )
+            }
             }>
         </Controller>
     )
@@ -127,14 +139,14 @@ export const ControlledNumber = ({ name, control, label, min, max, step, type = 
             <>
                 {type === "field" &&
                     <NumberField
-                        {...field} sx={{width:"100%"}}
+                        {...field} sx={{ width: "100%" }}
                         onValueChange={(value) => field.onChange(value)}
                         label={label} min={min} max={max} step={step}
                     />
                 }
                 {type === "spinner" &&
                     <NumberSpinner
-                        {...field} sx={{width:"100%"}}
+                        {...field} sx={{ width: "100%" }}
                         onValueChange={(value) => field.onChange(value)}
                         label={label} min={min} max={max} step={step}
                     />
@@ -142,5 +154,73 @@ export const ControlledNumber = ({ name, control, label, min, max, step, type = 
             </>
         )}
         />
+    )
+}
+
+interface CtrlGroupedCheckboxProps {
+    label?: string,
+    control: Control,
+    name: string,
+    options: object[],
+    returnField?: string | null,
+    row?: boolean,
+    idField?: string,
+    checkboxLabel?: (option: object) => string
+}
+export const ControlledGroupedCheckbox = ({ label, name, control, row=true, options, returnField = null, idField, checkboxLabel }: CtrlGroupedCheckboxProps) => {
+
+    return <Controller name={name} control={control} render={({ field }) =>
+        <GroupedCheckbox field={field} label={label} options={options} row={row}
+    returnField={returnField} idField={idField} checkboxLabel={checkboxLabel} />
+
+    } />
+}
+
+interface GroupedCheckboxProps {
+    field: ControllerRenderProps,
+    label?: string,
+    options: object[],
+    returnField?: string | null,
+    row?: boolean,
+    idField?: string,
+    checkboxLabel?: (option: object) => string
+}
+const GroupedCheckbox = ({ field, label, options, row=true,returnField = null, idField = "id", checkboxLabel = (option) => option.value }: GroupedCheckboxProps) => {
+
+    const [checkboxState, setCheckboxState] = useState(new Map())
+
+    useEffect(() => {
+        field.onChange(Array.from(checkboxState.values()))
+    }, [checkboxState])
+
+    const handleChange = (e, value, option) => {
+        const newCheckboxState = new Map(checkboxState)
+        if (value) {
+            newCheckboxState.set(option?.[idField], returnField ? option?.[returnField] : option)
+        } else {
+            newCheckboxState.delete(option?.[idField])
+        }
+        setCheckboxState(newCheckboxState)
+    }
+
+    return (
+        <FormControl
+            component="fieldset"
+            variant="standard"
+        >
+            <FormLabel>{label}</FormLabel>
+            <FormGroup row={row} >
+                {options?.map(option => (
+                    <FormControlLabel key={option?.[idField]}
+                        control={
+                            <Checkbox checked={checkboxState.has(option?.[idField])} onChange={(e, value) => handleChange(e, value, option)}
+                                name={option?.[idField]} />
+                        }
+                        label={checkboxLabel(option)}
+                    />)
+
+                )}
+            </FormGroup>
+        </FormControl>
     )
 }

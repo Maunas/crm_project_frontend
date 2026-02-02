@@ -1,10 +1,10 @@
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { Box, FormControl, FormControlLabel, Grid, IconButton, InputAdornment, InputLabel, OutlinedInput, Rating, Slider, TextField, Typography } from "@mui/material"
-import { useState } from "react";
-import { ControlledCheckbox, ControlledNumber, ControlledSlider } from "../common/forms/ControlledInputs";
+import { Autocomplete, Box, Checkbox, CircularProgress, FormControl, FormControlLabel, FormGroup, FormLabel, Grid, IconButton, InputAdornment, InputLabel, OutlinedInput, Rating, Slider, TextField, Typography } from "@mui/material"
+import { useEffect, useState } from "react";
+import { ControlledCheckbox, ControlledGroupedCheckbox, ControlledNumber, ControlledRadio, ControlledSlider } from "../common/forms/ControlledInputs";
 import { Controller, type Control } from "react-hook-form";
 import NumberField, { NumberSpinner } from "../common/forms/NumberField";
-import { ControlledAutocomplete } from "../common/forms/ControlledAutocomplete";
+import { AutocompleteLoader, ControlledAutocomplete, ControlledAutocompleteMultiple } from "../common/forms/ControlledAutocomplete";
 import type { NomenclatorDetailed, NomenclatorItem } from "../../types/leadFields";
 import type { Lead } from "../../types/leads";
 import type { LeadPostData, LeadPostValueData } from "./LeadForm";
@@ -92,15 +92,59 @@ interface LeadFormSelectorProps {
     control: Control<LeadPostData>,
     name: string,
     leadField: LeadPostValueData,
-    optionMap: Map<number, Lead[] | NomenclatorItem[]>,
+    optionMap: Map<number, NomenclatorItem[]>,
 }
 
+
 export const LeadFormSelector = ({ label, control, name, leadField, optionMap }: LeadFormSelectorProps) => {
-    if(!optionMap) return
-    const optionMapId = leadField.fieldData.related_campaign_id ?? leadField.fieldData.nomenclator_id
-    if(!optionMapId || !optionMap.has(optionMapId)) return
+
+    const optionMapId = leadField.fieldData.nomenclator_id
+    if (!optionMap || !optionMapId || !optionMap.has(optionMapId)) return <AutocompleteLoader label={label} />
+
     return (
         <ControlledAutocomplete control={control} name={name} label={label} returnField="id"
-        getOptionKey={option=>option.code} getOptionLabel={option=>option.value} optionList={optionMap.get(optionMapId)} />
+            getOptionKey={option => option?.code} getOptionLabel={option => option?.value}
+            optionList={optionMap.get(optionMapId)}
+            multiple={leadField.fieldData.field_subtype_code === "SELECTOR_MULTIPLE"} />
+    )
+
+}
+
+interface LeadFormLeadProps extends Omit<LeadFormSelectorProps, "optionMap"> {
+    optionMap: Map<number, Lead[]>,
+}
+export const LeadFormRelatedLead = ({ label, control, name, leadField, optionMap }: LeadFormLeadProps) => {
+    const optionMapId = leadField.fieldData.related_campaign_id
+    if (!optionMap || !optionMapId || !optionMap.has(optionMapId)) return <AutocompleteLoader label={label} />
+    return (
+        <ControlledAutocomplete control={control} name={name} label={label} returnField="id"
+            getOptionLabel={(option) => `${option?.field_values?.[0].value} ${option?.field_values?.[1].value}`}
+            optionList={optionMap.get(optionMapId)} />
     )
 }
+
+
+
+interface LeadFormCheckboxProps {
+    label?: string,
+    control: Control<LeadPostData>,
+    name: string,
+    leadField: LeadPostValueData,
+    optionMap: Map<number, NomenclatorItem[]>,
+    returnField?: string | null
+}
+export const LeadFormCheckbox = ({ label, control, name, leadField, optionMap, returnField = null }: LeadFormCheckboxProps) => {
+    const optionMapId = leadField?.fieldData?.nomenclator_id
+    if (!optionMap || !optionMapId || !optionMap.has(optionMapId)) return null
+
+    if (leadField.fieldData.field_subtype_code === "CHECKBOX_SIMPLE") return (
+        <ControlledRadio control={control} name={name} options={optionMap.get(optionMapId)} label={label}
+            keyField="id" returnField="id" radioLabel={option=>option.value}/>
+    )
+
+    if (leadField.fieldData.field_subtype_code === "CHECKBOX_MULTIPLE") return (
+        <ControlledGroupedCheckbox control={control} name={name} returnField={returnField} label={label} options={optionMap.get(optionMapId)}
+            checkboxLabel={option => option.value} idField="id" row/>
+    )
+}
+
