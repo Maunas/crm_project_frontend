@@ -17,36 +17,36 @@ interface LeadFormFieldTypeProps {
 export const LeadFormFieldType = ({ register, idx, control, leadField, relatedLeads, selectors }: LeadFormFieldTypeProps) => {
     switch (leadField.fieldData.field_type_code) {
         case "LEAD":
-            return (<LeadFormRelatedLead label={leadField.fieldData.name} name={`values.${idx}.value`} control={control} optionMap={relatedLeads} leadField={leadField} />)
+            return (<LeadFormRelatedLead label={leadField.fieldData.name} name={`values.${idx}.value`} control={control} optionMap={relatedLeads} leadField={leadField} required={leadField.fieldData.required}/>)
         case "SELECTOR":
-            return (<LeadFormSelector label={leadField.fieldData.name} name={`values.${idx}.value`} control={control} optionMap={selectors} leadField={leadField} />)
+            return (<LeadFormSelector label={leadField.fieldData.name} name={`values.${idx}.value`} control={control} optionMap={selectors} leadField={leadField} required={leadField.fieldData.required}/>)
         case "CHECKBOX":
-            return (<LeadFormCheckbox label={leadField.fieldData.name} name={`values.${idx}.value`} control={control} optionMap={selectors} leadField={leadField} returnField="id" />)
+            return (<LeadFormCheckbox label={leadField.fieldData.name} name={`values.${idx}.value`} control={control} optionMap={selectors} leadField={leadField} returnField="id" required={leadField.fieldData.required}/>)
         case "URL":
-            return (<LeadFormText label={leadField.fieldData.name} name={`values.${idx}.value`} register={register} type="url" />)
+            return (<LeadFormText label={leadField.fieldData.name} name={`values.${idx}.value`} register={register} type="url" required={leadField.fieldData.required}/>)
         case "ADDRESS":
-            return (<LeadFormAddress label={leadField.fieldData.name} name={`values.${idx}.value`} register={register} leadField={leadField} />)
+            return (<LeadFormAddress label={leadField.fieldData.name} name={`values.${idx}.value`} register={register} leadField={leadField} required={leadField.fieldData.required}/>)
         case "PHONE":
-            return (<LeadFormText label={leadField.fieldData.name} name={`values.${idx}.value`} register={register} type="tel" />)
+            return (<LeadFormText label={leadField.fieldData.name} name={`values.${idx}.value`} register={register} type="tel" required={leadField.fieldData.required}/>)
         case "FILE":
-            return (<LeadFormText label={leadField.fieldData.name} name={`values.${idx}.value`} register={register} type="file" />)
+            return (<LeadFormText label={leadField.fieldData.name} name={`values.${idx}.value`} register={register} type="file" required={leadField.fieldData.required}/>)
         case "EMAIL":
-            return (<LeadFormText label={leadField.fieldData.name} name={`values.${idx}.value`} register={register} type="email" />)
+            return (<LeadFormText label={leadField.fieldData.name} name={`values.${idx}.value`} register={register} type="email" required={leadField.fieldData.required}/>)
         case "DATE":
-            return (<LeadFormText label={leadField.fieldData.name} name={`values.${idx}.value`} register={register} type="date" />)
+            return (<LeadFormText label={leadField.fieldData.name} name={`values.${idx}.value`} register={register} type="date" required={leadField.fieldData.required}/>)
         case "DATETIME":
-            return (<LeadFormText label={leadField.fieldData.name} name={`values.${idx}.value`} register={register} type="datetime-local" />)
+            return (<LeadFormText label={leadField.fieldData.name} name={`values.${idx}.value`} register={register} type="datetime-local" required={leadField.fieldData.required}/>)
         case "NUMBER": case "INT":
-            return (<LeadFormNumber label={leadField.fieldData.name} name={`values.${idx}.value`} control={control} />)
+            return (<LeadFormNumber label={leadField.fieldData.name} name={`values.${idx}.value`} control={control} required={leadField.fieldData.required}/>)
         case "RATING":
-            return (<LeadFormRating label={leadField.fieldData.name} leadField={leadField} name={`values.${idx}.value`} control={control} />)
+            return (<LeadFormRating label={leadField.fieldData.name} leadField={leadField} name={`values.${idx}.value`} control={control} required={leadField.fieldData.required}/>)
         case "MONEY":
-            return (<LeadFormMoney label={leadField.fieldData.name} name={`values.${idx}.value`} register={register} />)
+            return (<LeadFormMoney label={leadField.fieldData.name} name={`values.${idx}.value`} register={register} required={leadField.fieldData.required}/>)
         case "PASSWORD":
-            return (<LeadFormPassword label={leadField.fieldData.name} name={`values.${idx}.value`} register={register} />)
+            return (<LeadFormPassword label={leadField.fieldData.name} name={`values.${idx}.value`} register={register} required={leadField.fieldData.required}/>)
         case "BOOL":
-            return (<LeadFormBool label={leadField.fieldData.name} name={`values.${idx}.value`} control={control} />)
+            return (<LeadFormBool label={leadField.fieldData.name} name={`values.${idx}.value`} control={control}/>)
         default:
-            return <LeadFormText label={leadField.fieldData.name} name={`values.${idx}.value`} register={register} />
+            return <LeadFormText label={leadField.fieldData.name} name={`values.${idx}.value`} register={register} required={leadField.fieldData.required}/>
     }
 }

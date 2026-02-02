@@ -26,19 +26,20 @@ interface ControlledRadioProps {
     control: Control,
     name: string,
     row?: boolean,
+    required?: boolean,
     label?: string,
     options: object[],
     returnField?: string | null,
     radioLabel?: (option: object) => string,
     keyField?: string,
 }
-export const ControlledRadio = ({ control, name, row = true, options, label,
+export const ControlledRadio = ({ control, name, row = true, options, label, required=false,
     returnField = "value", radioLabel = (option) => `${option.value}`, keyField = "label" }: ControlledRadioProps) => {
     return (
         <Controller control={control} name={name}
             render={({ field }) => {
                 return (
-                    <FormControl>
+                    <FormControl required={required}>
                         <FormLabel id={name}>{label}</FormLabel>
                         <RadioGroup row={row}
                             {...field}
@@ -64,9 +65,10 @@ interface ControlledTextProps {
     control: Control,
     name: string,
     label: string,
+    required?: boolean,
     id?: string
 }
-export const ControlledTextInput = ({ control, name, label, id }: ControlledTextProps) => {
+export const ControlledTextInput = ({ control, name, label, id, required=false }: ControlledTextProps) => {
     return (
         <Controller control={control} name={name}
             render={({ field }) =>
@@ -75,6 +77,7 @@ export const ControlledTextInput = ({ control, name, label, id }: ControlledText
                     id={id ?? name}
                     label={label ?? name}
                     value={field.value ?? ""}
+                    required={required}
                     fullWidth
                 />
             }>
@@ -90,14 +93,15 @@ interface ControlledSliderProps {
     min?: number,
     max?: number
     step?: number,
+    required?: boolean,
     type?: "slider" | "rating"
 }
-export const ControlledSlider = ({ name, control, label, min = 0, max, defaultValue = 0, step = 1, type = "slider" }: ControlledSliderProps) => {
+export const ControlledSlider = ({ name, control, label, min = 0, max, defaultValue = 0, step = 1, type = "slider",required=false }: ControlledSliderProps) => {
     return (
         <Controller name={name} control={control} render={({ field }) =>
             <Grid container spacing={2} alignItems="center">
                 <Grid size="grow" alignItems="center" sx={{ paddingInline: 2 }}>
-                    {label && <Typography component="legend">{label}</Typography>}
+                    {label && <Typography component="legend">{label}{required && "*"}</Typography>}
 
                     {type === "slider" &&
                         <Slider
@@ -132,8 +136,9 @@ interface ControlledNumberProps {
     max?: number
     step?: number,
     type?: "field" | "spinner"
+    required?: boolean,
 }
-export const ControlledNumber = ({ name, control, label, min, max, step, type = "field" }: ControlledNumberProps) => {
+export const ControlledNumber = ({ name, control, label, min, max, step, type = "field", required=false }: ControlledNumberProps) => {
     return (
         <Controller name={name} control={control} render={({ field }) => (
             <>
@@ -141,14 +146,15 @@ export const ControlledNumber = ({ name, control, label, min, max, step, type = 
                     <NumberField
                         {...field} sx={{ width: "100%" }}
                         onValueChange={(value) => field.onChange(value)}
-                        label={label} min={min} max={max} step={step}
+                        label={label} min={min} max={max} step={step} required={required}
+
                     />
                 }
                 {type === "spinner" &&
                     <NumberSpinner
                         {...field} sx={{ width: "100%" }}
                         onValueChange={(value) => field.onChange(value)}
-                        label={label} min={min} max={max} step={step}
+                        label={label} min={min} max={max} step={step} required={required}
                     />
                 }
             </>

@@ -31,12 +31,14 @@ export default function NumberField({
   error,
   size = 'medium',
   helperText,
+  required = false,
   ...other
 }: BaseNumberField.Root.Props & {
   label?: React.ReactNode;
   size?: 'small' | 'medium';
   error?: boolean;
-  helperText?: string
+  helperText?: string,
+  required?: boolean
 }) {
   let id = React.useId();
   if (idProp) {
@@ -50,7 +52,7 @@ export default function NumberField({
           size={size}
           ref={props.ref}
           disabled={state.disabled}
-          required={state.required}
+          required={required}
           error={error}
           variant="outlined"
           fullWidth
@@ -128,11 +130,13 @@ export function NumberSpinner({
   label,
   error,
   size = 'medium',
+  required = false,
   ...other
 }: BaseNumberField.Root.Props & {
   label?: React.ReactNode;
   size?: 'small' | 'medium';
   error?: boolean;
+  required?: boolean;
 }) {
   let id = React.useId();
   if (idProp) {
@@ -146,7 +150,7 @@ export function NumberSpinner({
           size={size}
           ref={props.ref}
           disabled={state.disabled}
-          required={state.required}
+          required={required}
           error={error}
           variant="outlined"
           sx={{
