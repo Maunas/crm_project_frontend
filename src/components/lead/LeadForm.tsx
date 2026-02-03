@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react"
 import { useFieldArray, useForm, useWatch } from "react-hook-form"
 import { getCampaigns } from "../campaigns/campaignServices"
-import { ControlledAutocomplete } from "../common/forms/ControlledAutocomplete"
-import { Button, Divider, Grid, Typography } from "@mui/material"
+import { ControlledAutocomplete } from "../common/forms/CustomMultipleInputs"
+import { Button, Divider, FormHelperText, Grid, Typography, ButtonGroup } from "@mui/material"
 import { getLeadFields, getNomenclatorItems } from "../leadFields/leadFieldServices"
-import { LeadFormField, LeadFormFieldType } from "./LeadFormField"
+import { LeadFormFieldType } from "./LeadFormField"
 import type { LeadField, NomenclatorItem } from "../../types/leadFields"
 import type { Campaign } from "../../types/campaigns"
 import type { Lead, LeadPost, LeadPostValue } from "../../types/leads"
-import { getLeads } from "./leadService"
+import { createLead, getLeads, simulateCreateLead } from "./leadService"
+import { useNavigate } from "react-router-dom"
 
 //Para permitir mantener los datos de cada campo
 export interface LeadPostValueData extends LeadPostValue {
@@ -22,15 +23,17 @@ export const LeadForm = () => {
 
     const [campaigns, setCampaigns] = useState<Campaign[]>([])
     const [leadFields, setLeadFields] = useState<LeadField[]>([])
+    const nav = useNavigate()
 
     const [relatedLeads, setRelatedLeads] = useState<Map<number, Lead[]>>(new Map())
     const [selectors, setSelectors] = useState<Map<number, NomenclatorItem[]>>(new Map())
+
 
     useEffect(() => {
         getCampaigns().then(setCampaigns)
     }, [])
 
-    const { register, control, handleSubmit } = useForm<LeadPostData>()
+    const { register, control, handleSubmit, setError, formState: { errors } } = useForm<LeadPostData>()
 
     const campaignId = useWatch({ name: "campaign_id", control })
 
@@ -94,31 +97,59 @@ export const LeadForm = () => {
 
     }, [leadFields])
 
-    const submitData = (data) => {
-        console.log(data)
+    const submitData = (data, simulate = false) => {
+        data.values.forEach(value => delete value.fieldData)
+        if (!data.campaign_id) return setError("campaign_id", { message: "Este campo es obligatorio." })
+        if (simulate) {
+            console.log(data)
+            return simulateCreateLead(data)
+                .then(r => { alert("Creado Exitosamente"); console.log(r) })
+                .catch(e => findError(e))
+        }
+        createLead(data)
+            .then(r => nav(`/leads/${r.id}`))
+            .catch(e => findError(e))
+    }
+
+    const findError = (error) => {
+        const errorDetail = error?.response?.data?.detail
+        if (!errorDetail) return setError("root", { message: error.message })
+        const errorIndex = fields.findIndex(field => field.fieldData.name === errorDetail.field) ?? null
+        setError(`values.${errorIndex}.value`, { message: errorDetail.message })
     }
 
     return (
-        <form>
+        <form autoComplete="off">
             <Typography variant="h1" color="initial">Nuevo Lead</Typography>
-            <ControlledAutocomplete control={control} label="Campaña" name="campaign_id"
-                getOptionLabel={option => option.name} optionList={campaigns} returnField="id" />
+            <ControlledAutocomplete control={control} label="Campaña" name="campaign_id" required
+                getOptionLabel={option => option.name} options={campaigns} returnField="id"
+                errorMessage={errors?.campaign_id?.message}
+            />
             <Divider sx={{ marginBlock: 2 }} />
             <Grid container spacing={2}>
                 {
                     fields?.length > 0 &&
                     fields.map((leadField, idx) =>
                         <Grid size="grow" alignItems="center" minWidth="20rem" key={leadField.arrayId}>
-                            <LeadFormFieldType register={register} idx={idx} control={control} 
-                            leadField={leadField} relatedLeads={relatedLeads} selectors={selectors}/>
+                            <LeadFormFieldType register={register} idx={idx} control={control}
+                                leadField={leadField} relatedLeads={relatedLeads} selectors={selectors} 
+                                errorMessage={errors?.values?.[idx]?.value?.message}
+                                />
                         </Grid>
                     )
                 }
             </Grid>
-
-            <Button variant="contained" color="primary" onClick={handleSubmit(submitData)}>
-                Guardar
-            </Button>
+            {errors?.root &&
+                <FormHelperText error sx={{ marginBlock: 1 }}>{errors?.root.message}</FormHelperText>
+            }
+            <ButtonGroup sx={{ marginBlock: 1 }}>
+                <Button variant="outlined" color="primary" onClick={handleSubmit((data) => submitData(data, true))}>
+                    Validar Datos
+                </Button>
+                <Button variant="contained" color="primary" onClick={handleSubmit((data) => submitData(data))}>
+                    Guardar
+                </Button>
+            </ButtonGroup>
         </form>
     )
 }

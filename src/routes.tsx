@@ -6,7 +6,7 @@ import { CampaignForm, OrganizationForm, WorkspaceForm } from "./components/camp
 import { CampaignDetails } from "./components/campaigns/CampaignDetails";
 import { CreateLeadFields } from "./components/leadFields/CreateLeadFields";
 import { OrganizationList } from "./components/campaigns/CampaignList";
-import { GenericContainer } from "./components/common/forms/GenericContainer";
+import { GenericContainer } from "./components/common/layout/GenericContainer";
 import { LeadForm } from "./components/lead/LeadForm";
 
 export const router = createBrowserRouter([

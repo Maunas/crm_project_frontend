@@ -1,9 +1,7 @@
-import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { FormControl, FormControlLabel, IconButton, InputAdornment, InputLabel, OutlinedInput, TextField } from "@mui/material"
-import { useState } from "react";
-import { ControlledCheckbox, ControlledGroupedCheckbox, ControlledNumber, ControlledRadio, ControlledSlider } from "../common/forms/ControlledInputs";
+import { FormControl, FormHelperText, InputAdornment, InputLabel, OutlinedInput, TextField } from "@mui/material"
+import { ControlledCheckbox, ControlledNumber, ControlledSlider, PasswordField } from "../common/forms/CustomInputs";
 import { type Control, type UseFormRegister } from "react-hook-form";
-import { AutocompleteLoader, ControlledAutocomplete } from "../common/forms/ControlledAutocomplete";
+import { AutocompleteLoader, ControlledAutocomplete, ControlledGroupedCheckbox, ControlledRadio } from "../common/forms/CustomMultipleInputs";
 import type { NomenclatorItem } from "../../types/leadFields";
 import type { Lead } from "../../types/leads";
 import type { LeadPostData, LeadPostValueData } from "./LeadForm";
@@ -11,7 +9,9 @@ import type { LeadPostData, LeadPostValueData } from "./LeadForm";
 interface BasicFormInput {
     label?: string,
     name: string,
-    required?: boolean
+    required?: boolean,
+    errorMessage?: string | null,
+    autoComplete?: string
 }
 interface RegisterFormInput extends BasicFormInput {
     register: UseFormRegister<object>
@@ -20,156 +20,128 @@ interface ControlFormInput extends BasicFormInput {
     control: Control<object>
 }
 
-export const LeadFormPassword = ({ label, name, register, required = true }: RegisterFormInput) => {
-    const [showPassword, setShowPassword] = useState(false);
-
-    const handleClickShowPassword = () => setShowPassword((show) => !show);
-
-    return (
-        <FormControl fullWidth>
-            <InputLabel htmlFor={name}>{label}</InputLabel>
-            <OutlinedInput id={name} label={label} type={showPassword ? 'text' : 'password'}
-                required={required}
-                {...register(name)}
-                endAdornment={
-                    <InputAdornment position="end">
-                        <IconButton
-                            aria-label={
-                                showPassword ? 'Ocultar contraseña.' : 'Ver contraseña.'
-                            }
-                            onClick={handleClickShowPassword}
-                            edge="end"
-                        >
-                            {showPassword ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                    </InputAdornment>
-                }
-
-            />
-        </FormControl>
-    )
+export const LeadFormPassword = ({ label, name, register, required = true, errorMessage = null, autoComplete = "one-time-code" }: RegisterFormInput) => {
+    return <PasswordField label={label} name={name} register={register} required={required} errorMessage={errorMessage} autoComplete={autoComplete}/>
 }
 
-
-interface LeadFormTextInput extends BasicFormInput {
-    type?: string
+interface LeadFormTextInput extends RegisterFormInput {
+    type?: string,
+    autoComplete?: string
 }
-export const LeadFormText = ({ label, register, name, type = "text", required=false }: LeadFormTextInput) => {
+export const LeadFormText = ({ label, register, name, type = "text", required = false, errorMessage = null, autoComplete = "one-time-code" }: LeadFormTextInput) => {
     if (["date", "datetime-local", "file"].includes(type)) return (
-        <TextField id={name} label={label} fullWidth name={name} type={type} {...register(name)}
-            slotProps={{ inputLabel: { shrink: true } }} required={required}/>
-    )
-    return (<TextField id={name} label={label} fullWidth name={name} type={type} {...register(name)}  required={required}/>)
+        <>
+            <TextField id={name} label={label} fullWidth type={type} {...register(name)} autoComplete={autoComplete}
+                slotProps={{ inputLabel: { shrink: true } }} required={required} error={!!errorMessage} />
+            {errorMessage &&
+                <FormHelperText error sx={{ marginBlock: 1 }}>{errorMessage}</FormHelperText>
+            }
+        </>)
+    return (
+        <>
+            <TextField id={name} label={label} fullWidth type={type} {...register(name)} required={required} error={!!errorMessage} autoComplete={autoComplete} />
+            {errorMessage &&
+                <FormHelperText error sx={{ marginBlock: 1 }}>{errorMessage}</FormHelperText>
+            }
+        </>)
 }
 
-export const LeadFormMoney = ({ label, register, name, required=false }: RegisterFormInput) => {
+interface AddressProps extends LeadFormTextInput {
+    leadField: object
+}
+export const LeadFormAddress = ({ label, register, name, leadField, required = false, errorMessage = null, autoComplete = "one-time-code" }: AddressProps) => {
+    switch (leadField.fieldData.field_subtype_code) {
+        case "MAPS_URL":
+            return (<LeadFormText label={label} name={name} register={register} type="url" required={required} errorMessage={errorMessage} autoComplete={autoComplete} />)
+        default:
+            return (<LeadFormText label={label} name={name} register={register} required={required} errorMessage={errorMessage} autoComplete={autoComplete} />)
+    }
+}
+
+export const LeadFormMoney = ({ label, register, name, required = false, errorMessage = null, autoComplete = "one-time-code" }: LeadFormTextInput) => {
     return (
-        <FormControl fullWidth>
+        <FormControl fullWidth required={required} error={!!errorMessage}>
             <InputLabel htmlFor={name}>{label}</InputLabel>
-            <OutlinedInput id={name} label={label} required={required}
-                startAdornment={<InputAdornment position="start">$</InputAdornment>}
+            <OutlinedInput id={name} label={label} autoComplete={autoComplete}
                 {...register(name)}
+                startAdornment={<InputAdornment position="start">$</InputAdornment>}
             />
+            {errorMessage &&
+                <FormHelperText error sx={{ marginBlock: 1 }}>{errorMessage}</FormHelperText>
+            }
         </FormControl>
     )
 }
 
-export const LeadFormBool = ({ label, control, name, required=false }: ControlFormInput) => {
-    return (
-        <FormControlLabel control={<ControlledCheckbox control={control} name={name} />} label={label} required={required}/>
-    )
+export const LeadFormBool = ({ label, control, name, required = false, errorMessage = null }: ControlFormInput) => {
+    return <ControlledCheckbox control={control} name={name} label={label} errorMessage={errorMessage} required={required} />
 }
 
 interface RatingProps extends ControlFormInput {
-    leadField:object
+    leadField: object
 }
-export const LeadFormRating = ({ label, control, name, required=false, leadField }: RatingProps) => {
+export const LeadFormRating = ({ label, control, name, required = false, leadField, errorMessage = null }: RatingProps) => {
     switch (leadField.fieldData.field_subtype_code) {
         case "STAR_RATING":
-            return <ControlledSlider control={control} label={label} name={name} max={5} step={.5} type="rating" required={required} />
+            return <ControlledSlider control={control} label={label} name={name} max={5} step={.5} type="rating" required={required} errorMessage={errorMessage} />
         case "NPS":
-            return <ControlledSlider control={control} label={label} name={name} min={1} max={10} defaultValue={1} required={required} />
+            return <ControlledSlider control={control} label={label} name={name} min={1} max={10} defaultValue={1} required={required} errorMessage={errorMessage} />
         case "SCORE":
-            return <ControlledSlider control={control} label={label} name={name} min={0} max={100} required={required} />
+            return <ControlledSlider control={control} label={label} name={name} min={0} max={100} required={required} errorMessage={errorMessage} />
     }
 }
 
-export const LeadFormNumber = ({ label, control, name, required=false }: ControlFormInput) => {
-    return <ControlledNumber control={control} label={label} name={name} required={required} />
+export const LeadFormNumber = ({ label, control, name, required = false, errorMessage = null }: ControlFormInput) => {
+    return <ControlledNumber control={control} label={label} name={name} required={required} errorMessage={errorMessage} />
 }
 
-interface AddressProps extends RegisterFormInput {
-    leadField:object
-}
-export const LeadFormAddress = ({ label, register, name, leadField, required=false }: AddressProps) => {
-    switch (leadField.fieldData.field_subtype_code) {
-        case "MAPS_URL":
-            return (<LeadFormText label={label} name={name} register={register} type="url" required={required}/>)
-        default:
-            return (<LeadFormText label={label} name={name} register={register} required={required}/>)
-    }
-}
-
-interface LeadFormSelectorProps {
-    label?: string,
-    control: Control<LeadPostData>,
-    name: string,
+interface LeadFormSelectorProps extends ControlFormInput {
     leadField: LeadPostValueData,
     optionMap: Map<number, NomenclatorItem[]>,
-    required?: boolean
+    autoComplete?: string
 }
 
-
-export const LeadFormSelector = ({ label, control, name, leadField, optionMap, required=false }: LeadFormSelectorProps) => {
+export const LeadFormSelector = ({ label, name, control, required = false, errorMessage = null, leadField, optionMap, autoComplete = "one-time-code" }: LeadFormSelectorProps) => {
 
     const optionMapId = leadField.fieldData.nomenclator_id
     if (!optionMap || !optionMapId || !optionMap.has(optionMapId)) return <AutocompleteLoader label={label} />
 
     return (
-        <ControlledAutocomplete control={control} name={name} label={label} returnField="id"
+        <ControlledAutocomplete control={control} name={name} label={label} returnField="id" autoComplete={autoComplete}
             getOptionKey={option => option?.code} getOptionLabel={option => option?.value}
-            optionList={optionMap.get(optionMapId)} required={required}
+            options={optionMap.get(optionMapId)} required={required} errorMessage={errorMessage}
             multiple={leadField.fieldData.field_subtype_code === "SELECTOR_MULTIPLE"} />
     )
 
 }
 
-interface LeadFormLeadProps extends Omit<LeadFormSelectorProps, "optionMap"> {
-    optionMap: Map<number, Lead[]>,
-}
-export const LeadFormRelatedLead = ({ label, control, name, leadField, optionMap, required = false }: LeadFormLeadProps) => {
-    const optionMapId = leadField.fieldData.related_campaign_id
-    if (!optionMap || !optionMapId || !optionMap.has(optionMapId)) return <AutocompleteLoader label={label} />
-    return (
-        <ControlledAutocomplete control={control} name={name} label={label} returnField="id" required={required}
-            getOptionLabel={(option) => `${option?.field_values?.[0].value} ${option?.field_values?.[1].value}`}
-            optionList={optionMap.get(optionMapId)} />
-    )
-}
-
-
-
-interface LeadFormCheckboxProps {
-    label?: string,
-    control: Control<LeadPostData>,
-    name: string,
-    leadField: LeadPostValueData,
-    optionMap: Map<number, NomenclatorItem[]>,
+interface LeadFormCheckboxProps extends LeadFormSelectorProps {
     returnField?: string | null,
-    required?: boolean
 }
-export const LeadFormCheckbox = ({ label, control, name, leadField, optionMap, returnField = null, required = false }: LeadFormCheckboxProps) => {
+export const LeadFormCheckbox = ({ label, name, control, required = false, errorMessage = null, leadField, optionMap, returnField = null }: LeadFormCheckboxProps) => {
     const optionMapId = leadField?.fieldData?.nomenclator_id
     if (!optionMap || !optionMapId || !optionMap.has(optionMapId)) return null
 
     if (leadField.fieldData.field_subtype_code === "CHECKBOX_SIMPLE") return (
-        <ControlledRadio control={control} name={name} options={optionMap.get(optionMapId)} label={label}
-            keyField="id" returnField="id" radioLabel={option => option.value} required={required} />
+        <ControlledRadio control={control} name={name} options={optionMap.get(optionMapId)} label={label} int
+            keyField="id" returnField="id" radioLabel={option => option.value} required={required} errorMessage={errorMessage} />
     )
 
     if (leadField.fieldData.field_subtype_code === "CHECKBOX_MULTIPLE") return (
         <ControlledGroupedCheckbox control={control} name={name} returnField={returnField} label={label} options={optionMap.get(optionMapId)}
-            checkboxLabel={option => option.value} idField="id" row required={required} />
+            checkboxLabel={option => option.value} idField="id" row required={required} errorMessage={errorMessage} />
     )
 }
 
+interface LeadFormLeadProps extends Omit<LeadFormSelectorProps, "optionMap"> {
+    optionMap: Map<number, Lead[]>,
+}
+export const LeadFormRelatedLead = ({ label, name, control, required = false, errorMessage = null, leadField, optionMap, autoComplete = "one-time-code" }: LeadFormLeadProps) => {
+    const optionMapId = leadField.fieldData.related_campaign_id
+    if (!optionMap || !optionMapId || !optionMap.has(optionMapId)) return <AutocompleteLoader label={label} />
+    return (
+        <ControlledAutocomplete control={control} name={name} label={label} returnField="id" autoComplete={autoComplete}
+            getOptionLabel={(option) => `${option?.field_values?.[0].value} ${option?.field_values?.[1].value}`}
+            options={optionMap.get(optionMapId)} required={required} errorMessage={errorMessage} />
+    )
+}

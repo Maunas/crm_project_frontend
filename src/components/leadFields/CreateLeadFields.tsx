@@ -1,15 +1,15 @@
 import { useEffect, useMemo, useState } from "react"
 import { getCampaigns } from "../campaigns/campaignServices"
 import { createLeadField, createValidation, getFieldDataByType, getFieldSections, getFieldTemplates, getFieldTypes, getNomenclators, getValidationDataByType } from "../leadFields/leadFieldServices"
-import { Divider, TextField, Button, Grid, FormControlLabel, FormGroup, Typography } from "@mui/material"
+import { Divider, TextField, Button, Grid, FormGroup, Typography } from "@mui/material"
 import { useForm, useWatch, type Control, type UseFormRegister } from "react-hook-form"
 import { Link, useNavigate, useParams } from "react-router-dom"
-import { ControlledAutocomplete } from "../common/forms/ControlledAutocomplete"
-import { ControlledCheckbox, ControlledRadio, ControlledTextInput } from "../common/forms/ControlledInputs"
+import { ControlledAutocomplete, ControlledRadio } from "../common/forms/CustomMultipleInputs"
+import { ControlledCheckbox, ControlledTextInput } from "../common/forms/CustomInputs"
 import { ValidationRuleForm } from "./ValidationRuleForm"
 import type { FieldValidationRulePost, FieldValidationRuleTemplate, LeadFieldPost, LeadFieldSection, LeadFieldTemplate, LeadFieldTypeDetailed, Nomenclator } from "../../types/leadFields"
 import type { Campaign } from "../../types/campaigns"
-import { GenericContainer } from "../common/forms/GenericContainer"
+import { GenericContainer } from "../common/layout/GenericContainer"
 
 export interface FieldValidationRuleData extends FieldValidationRulePost {
   creation_method?: string,
@@ -147,15 +147,15 @@ const LeadFieldForm = ({ templates, sections, types, nomenclators, campaigns, re
         </Grid>
         <Grid size="grow" minWidth="20rem" justifyContent="center">
           <ControlledAutocomplete name="lead_field_section_id" label="Sección"
-            control={control} optionList={sections} returnField="id"
+            control={control} options={sections} returnField="id"
             getOptionLabel={(option) => option.name}
           />
         </Grid>
         <Grid size="grow" minWidth="20rem" justifyContent="center">
           <FormGroup row>
-            <FormControlLabel control={<ControlledCheckbox control={control} name="required" />} label="Obligatorio" />
-            <FormControlLabel control={<ControlledCheckbox control={control} name="is_primary" />} label="Único" />
-            <FormControlLabel control={<ControlledCheckbox control={control} name="is_visible" />} label="Visible" />
+            <ControlledCheckbox control={control} name="required" label="Obligatorio" />
+            <ControlledCheckbox control={control} name="is_primary" label="Único" />
+            <ControlledCheckbox control={control} name="is_visible" label="Visible" />
           </FormGroup>
         </Grid>
       </Grid>
@@ -163,13 +163,13 @@ const LeadFieldForm = ({ templates, sections, types, nomenclators, campaigns, re
       <Grid size={12} container minWidth="20rem">
         <Grid size={4} minWidth="20rem" justifyContent="center">
           <ControlledRadio control={control} name="creation_method" options={creationMethodRadioOptions} 
-          returnField="value" radioLabel={option=>option.label} />
+          returnField="value" radioLabel={option=>option.label} label="Método de Creación"/>
         </Grid>
 
         {creationMethod === "template" ?
           <Grid size="grow" minWidth="20rem" justifyContent="center">
             <ControlledAutocomplete name="field_template_code" label="Plantillas"
-              control={control} optionList={templates} returnField="code"
+              control={control} options={templates} returnField="code"
               getOptionKey={(option) => option.code} getOptionLabel={(option) => option.name}
             />
           </Grid>
@@ -177,14 +177,14 @@ const LeadFieldForm = ({ templates, sections, types, nomenclators, campaigns, re
           <>
             <Grid size="grow" minWidth="20rem" justifyContent="center">
               <ControlledAutocomplete name="field_type_code" label="Tipo de Dato"
-                control={control} optionList={types} returnField="code"
+                control={control} options={types} returnField="code"
                 getOptionKey={(option) => option.code} getOptionLabel={(option) => `${option.code} - ${option.description}`}
               />
             </Grid>
             {fieldTypeObject?.subtypes && fieldTypeObject?.subtypes?.length > 0 &&
               <Grid size="grow" minWidth="20rem" justifyContent="center">
                 <ControlledAutocomplete name="field_subtype_code" label="Subtipo de Campo"
-                  control={control} optionList={fieldTypeObject?.subtypes} returnField="code"
+                  control={control} options={fieldTypeObject?.subtypes} returnField="code"
                   getOptionLabel={(option) => `${option.code} - ${option.description}`}
                 />
               </Grid>
@@ -192,7 +192,7 @@ const LeadFieldForm = ({ templates, sections, types, nomenclators, campaigns, re
             {(fieldTypeCode === "SELECTOR" || fieldTypeCode === "CHECKBOX") &&
               <Grid size="grow" minWidth="20rem" justifyContent="center">
                 <ControlledAutocomplete name="nomenclator_id" label="Lista de Opciones"
-                  control={control} optionList={nomenclators} returnField="id"
+                  control={control} options={nomenclators} returnField="id"
                   getOptionLabel={(option) => option.name}
                 />
               </Grid>
@@ -200,7 +200,7 @@ const LeadFieldForm = ({ templates, sections, types, nomenclators, campaigns, re
             {(fieldTypeCode === "LEAD") &&
               <Grid size="grow" minWidth="20rem" justifyContent="center">
                 <ControlledAutocomplete name="related_campaign_id" label="Campaña del Lead Relacionado"
-                  control={control} optionList={campaigns} returnField="id"
+                  control={control} options={campaigns} returnField="id"
                   getOptionLabel={(option) => option.name}
                 />
               </Grid>
