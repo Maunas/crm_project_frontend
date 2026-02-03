@@ -2,7 +2,8 @@ import { type Control, type UseFormRegister } from "react-hook-form"
 import type { LeadPostData, LeadPostValueData } from "./LeadForm"
 import {
     LeadFormAddress, LeadFormBool, LeadFormCheckbox, LeadFormMoney, LeadFormNumber, LeadFormPassword, LeadFormRating, LeadFormRelatedLead,
-    LeadFormSelector, LeadFormText
+    LeadFormSelector, LeadFormText,
+    LeadFormTextArea
 } from "./LeadFormFieldTypes"
 import type { Lead } from "../../types/leads"
 import type { NomenclatorItem } from "../../types/leadFields"
@@ -49,6 +50,9 @@ export const LeadFormFieldType = ({ register, idx, control, leadField, relatedLe
                 required={leadField.fieldData.required} errorMessage={errorMessage} />)
         case "NUMBER": case "INT":
             return (<LeadFormNumber label={leadField.fieldData.name} name={`values.${idx}.value`} control={control}
+                required={leadField.fieldData.required} errorMessage={errorMessage} />)
+        case "RICH_TEXT":
+            return (<LeadFormTextArea label={leadField.fieldData.name} name={`values.${idx}.value`} register={register}
                 required={leadField.fieldData.required} errorMessage={errorMessage} />)
         case "RATING":
             return (<LeadFormRating label={leadField.fieldData.name} leadField={leadField} name={`values.${idx}.value`} control={control}

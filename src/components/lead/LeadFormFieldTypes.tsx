@@ -21,14 +21,15 @@ interface ControlFormInput extends BasicFormInput {
 }
 
 export const LeadFormPassword = ({ label, name, register, required = true, errorMessage = null, autoComplete = "one-time-code" }: RegisterFormInput) => {
-    return <PasswordField label={label} name={name} register={register} required={required} errorMessage={errorMessage} autoComplete={autoComplete}/>
+    return <PasswordField label={label} name={name} register={register} required={required} errorMessage={errorMessage} autoComplete={autoComplete} />
 }
 
 interface LeadFormTextInput extends RegisterFormInput {
     type?: string,
-    autoComplete?: string
+    autoComplete?: string,
+    multiline?: boolean
 }
-export const LeadFormText = ({ label, register, name, type = "text", required = false, errorMessage = null, autoComplete = "one-time-code" }: LeadFormTextInput) => {
+export const LeadFormText = ({ label, register, name, type = "text", required = false, errorMessage = null, autoComplete = "one-time-code", multiline = false }: LeadFormTextInput) => {
     if (["date", "datetime-local", "file"].includes(type)) return (
         <>
             <TextField id={name} label={label} fullWidth type={type} {...register(name)} autoComplete={autoComplete}
@@ -39,7 +40,7 @@ export const LeadFormText = ({ label, register, name, type = "text", required = 
         </>)
     return (
         <>
-            <TextField id={name} label={label} fullWidth type={type} {...register(name)} required={required} error={!!errorMessage} autoComplete={autoComplete} />
+            <TextField id={name} label={label} fullWidth type={multiline ? null : type} {...register(name)} required={required} error={!!errorMessage} autoComplete={autoComplete} multiline={multiline} />
             {errorMessage &&
                 <FormHelperText error sx={{ marginBlock: 1 }}>{errorMessage}</FormHelperText>
             }
@@ -56,6 +57,10 @@ export const LeadFormAddress = ({ label, register, name, leadField, required = f
         default:
             return (<LeadFormText label={label} name={name} register={register} required={required} errorMessage={errorMessage} autoComplete={autoComplete} />)
     }
+}
+
+export const LeadFormTextArea = ({ label, register, name, required = false, errorMessage = null, autoComplete = "one-time-code" }: LeadFormTextInput) => {
+    return (<LeadFormText label={label} name={name} register={register} required={required} multiline errorMessage={errorMessage} autoComplete={autoComplete} />)
 }
 
 export const LeadFormMoney = ({ label, register, name, required = false, errorMessage = null, autoComplete = "one-time-code" }: LeadFormTextInput) => {
