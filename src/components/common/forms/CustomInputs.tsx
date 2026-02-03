@@ -99,7 +99,7 @@ export const ControlledNumber = ({ name, control, label, min, max, step, type = 
                 {type === "field" &&
                     <NumberField
                         {...field} sx={{ width: "100%" }} error={!!errorMessage}
-                        value={field.value ?? ""} 
+                        value={field.value ?? ""}
                         onValueChange={(value) => field.onChange(value)}
                         label={label} min={min} max={max} step={step} required={required}
 
@@ -177,4 +177,23 @@ export const PasswordField = ({ label, name, register, required = true, errorMes
             }
         </FormControl>
     )
+}
+
+interface FileProps extends RegisterFormInput {
+    accept?: string,
+    id?: string
+}
+export const SingleFileField = ({ name, label, register, id, required = false, errorMessage = null, autoComplete, accept = "" }: FileProps) => {
+    return (
+        <>
+            <TextField
+                {...register(name)}
+                autoComplete={autoComplete} type="file" accept={accept} fullWidth
+                id={id ?? name} label={label ?? name} required={required} error={!!errorMessage}
+                slotProps={{ inputLabel: { shrink: true } }}
+            />
+            {errorMessage &&
+                <FormHelperText error sx={{ marginBlock: 1 }}>{errorMessage}</FormHelperText>
+            }
+        </>)
 }

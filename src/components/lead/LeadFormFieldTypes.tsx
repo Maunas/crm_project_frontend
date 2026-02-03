@@ -1,8 +1,8 @@
 import { FormControl, FormHelperText, InputAdornment, InputLabel, OutlinedInput, TextField } from "@mui/material"
-import { ControlledCheckbox, ControlledNumber, ControlledSlider, PasswordField } from "../common/forms/CustomInputs";
+import { ControlledCheckbox, ControlledNumber, ControlledSingleFile, ControlledSlider, PasswordField, SingleFileField } from "../common/forms/CustomInputs";
 import { type Control, type UseFormRegister } from "react-hook-form";
 import { AutocompleteLoader, ControlledAutocomplete, ControlledGroupedCheckbox, ControlledRadio } from "../common/forms/CustomMultipleInputs";
-import type { NomenclatorItem } from "../../types/leadFields";
+import type { LeadField, NomenclatorItem } from "../../types/leadFields";
 import type { Lead } from "../../types/leads";
 import type { LeadPostData, LeadPostValueData } from "./LeadForm";
 
@@ -30,7 +30,7 @@ interface LeadFormTextInput extends RegisterFormInput {
     multiline?: boolean
 }
 export const LeadFormText = ({ label, register, name, type = "text", required = false, errorMessage = null, autoComplete = "one-time-code", multiline = false }: LeadFormTextInput) => {
-    if (["date", "datetime-local", "file"].includes(type)) return (
+    if (["date", "datetime-local"].includes(type)) return (
         <>
             <TextField id={name} label={label} fullWidth type={type} {...register(name)} autoComplete={autoComplete}
                 slotProps={{ inputLabel: { shrink: true } }} required={required} error={!!errorMessage} />
@@ -47,10 +47,20 @@ export const LeadFormText = ({ label, register, name, type = "text", required = 
         </>)
 }
 
-interface AddressProps extends LeadFormTextInput {
-    leadField: object
+interface FileProps extends RegisterFormInput {
+    leadField: LeadPostValueData
 }
-export const LeadFormAddress = ({ label, register, name, leadField, required = false, errorMessage = null, autoComplete = "one-time-code" }: AddressProps) => {
+export const LeadFormFile = ({ label, register, name, leadField, required = false, errorMessage = null, autoComplete = "one-time-code" }: FileProps) => {
+    const subType = leadField.fieldData.field_subtype_code
+    return (<>
+        <SingleFileField id={name} label={label} register={register} name={name}
+            errorMessage={errorMessage} required={required} autoComplete={autoComplete}
+            accept={subType === "FILE_DOCUMENT" ? "" : "image/*"}
+        />
+    </>)
+}
+
+export const LeadFormAddress = ({ label, register, name, leadField, required = false, errorMessage = null, autoComplete = "one-time-code" }: FileProps) => {
     switch (leadField.fieldData.field_subtype_code) {
         case "MAPS_URL":
             return (<LeadFormText label={label} name={name} register={register} type="url" required={required} errorMessage={errorMessage} autoComplete={autoComplete} />)

@@ -16,7 +16,7 @@ export interface LeadPostValueData extends LeadPostValue {
     fieldData: LeadField
 }
 export interface LeadPostData extends LeadPost {
-    values: LeadPostValue[]
+    values: LeadPostValueData[]
 }
 
 export const CreateLead = () => {
@@ -141,14 +141,34 @@ const LeadFormValues = ({ leadFields, simulate = false, register, control, handl
     }, [leadFields])
 
     const submitData = (data: LeadPostData, isSimulating: boolean) => {
-        data.values.forEach(value => delete value.fieldData)
+
         if (!data.campaign_id) return setError("campaign_id", { message: "Este campo es obligatorio." })
+
+        const formData = new FormData()
+        const formValues = []
+
+        data?.values?.forEach(fieldValue => {
+            if (fieldValue?.fieldData?.field_type_code === "FILE") {
+                if (fieldValue?.value?.length > 0) {
+                    formData.set(`file-${fieldValue.field_id}`, fieldValue?.value?.[0])
+                    formValues.push({field_id: fieldValue?.field_id, value: fieldValue?.value?.[0].name})
+                }
+            } else {
+                formValues.push({field_id: fieldValue?.field_id, value: fieldValue?.value})
+            }
+        })
+        formData.set("data", JSON.stringify({...data, values: formValues}))
+        
         if (isSimulating) {
-            return simulateCreateLead(data)
+            console.log("Datos no procesados", data)
+            console.log("Datos procesados", {...data, values: formValues})
+            console.log("Datos enviados", new Map(formData.entries()))
+
+            return simulateCreateLead(formData)
                 .then(r => { alert("Creado Exitosamente"); console.log(r) })
                 .catch(e => findError(e))
         }
-        createLead(data)
+        createLead(formData)
             .then(r => nav(`/leads/${r.id}`))
             .catch(e => findError(e))
     }
@@ -156,6 +176,7 @@ const LeadFormValues = ({ leadFields, simulate = false, register, control, handl
     const findError = (error) => {
         const errorDetail = error?.response?.data?.detail
         if (!errorDetail) return setError("root", { message: error.message })
+        if (!errorDetail.field) return setError("root", { message: errorDetail })
         const errorIndex = fields.findIndex(field => field.fieldData.name === errorDetail.field) ?? null
         setError(`values.${errorIndex}.value`, { message: errorDetail.message })
     }
@@ -183,7 +204,7 @@ const LeadFormValues = ({ leadFields, simulate = false, register, control, handl
                     Validar Datos
                 </Button>
                 {!simulate &&
-                    <Button variant="contained" color="primary" onClick={handleSubmit(submitData)}>
+                    <Button variant="contained" color="primary" onClick={handleSubmit((data) => submitData(data, false))}>
                         Guardar Lead
                     </Button>
                 }
