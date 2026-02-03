@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react"
-import { useFieldArray, useForm, useWatch } from "react-hook-form"
+import { useFieldArray, useForm, useWatch, type Control, type FieldErrors, type UseFormHandleSubmit, type UseFormRegister, type UseFormSetError } from "react-hook-form"
 import { getCampaigns } from "../campaigns/campaignServices"
 import { ControlledAutocomplete } from "../common/forms/CustomMultipleInputs"
-import { Button, Divider, FormHelperText, Grid, Typography, ButtonGroup } from "@mui/material"
+import { Button, Divider, FormHelperText, Grid, Typography, ButtonGroup, TextField } from "@mui/material"
 import { getLeadFields, getNomenclatorItems } from "../leadFields/leadFieldServices"
 import { LeadFormFieldType } from "./LeadFormField"
-import type { LeadField, NomenclatorItem } from "../../types/leadFields"
+import type { LeadField, NomenclatorItem, NomenclatorItemDetailed } from "../../types/leadFields"
 import type { Campaign } from "../../types/campaigns"
-import type { Lead, LeadPost, LeadPostValue } from "../../types/leads"
+import type { Lead, LeadDetailed, LeadPost, LeadPostValue } from "../../types/leads"
 import { createLead, getLeads, simulateCreateLead } from "./leadService"
 import { useNavigate } from "react-router-dom"
 
@@ -19,15 +19,10 @@ export interface LeadPostData extends LeadPost {
     values: LeadPostValue[]
 }
 
-export const LeadForm = () => {
+export const CreateLead = () => {
 
     const [campaigns, setCampaigns] = useState<Campaign[]>([])
     const [leadFields, setLeadFields] = useState<LeadField[]>([])
-    const nav = useNavigate()
-
-    const [relatedLeads, setRelatedLeads] = useState<Map<number, Lead[]>>(new Map())
-    const [selectors, setSelectors] = useState<Map<number, NomenclatorItem[]>>(new Map())
-
 
     useEffect(() => {
         getCampaigns().then(setCampaigns)
@@ -45,9 +40,57 @@ export const LeadForm = () => {
         }
     }, [campaignId])
 
+    return (
+        <form autoComplete="off">
+            <Typography variant="h1" color="initial">Nuevo Lead</Typography>
+            <ControlledAutocomplete control={control} label="Campaña" name="campaign_id" required
+                getOptionLabel={option => option.name} options={campaigns} returnField="id"
+                errorMessage={errors?.campaign_id?.message}
+            />
+            <Divider sx={{ marginBlock: 2 }} />
+            <LeadFormValues leadFields={leadFields}
+                register={register} control={control} handleSubmit={handleSubmit} setError={setError} errors={errors} />
+        </form>
+    )
+}
+
+interface SimulateProps {
+    campaignId: number,
+    leadFields: LeadDetailed[]
+}
+export const SimulateLead = ({ campaignId, leadFields }: SimulateProps) => {
+
+    const { register, control, handleSubmit, setError, formState: { errors } } = useForm<LeadPostData>()
+
+    return (
+        <form autoComplete="off">
+            <Typography variant="h1" color="initial">Simulación de Nuevo Lead: Campaña {campaignId}</Typography>
+            <input type="text" id="campaign_id" value={campaignId} hidden
+                {...register("campaign_id", { valueAsNumber: true })} />
+            <LeadFormValues leadFields={leadFields} simulate
+                register={register} control={control} handleSubmit={handleSubmit} setError={setError} errors={errors} />
+        </form>
+    )
+}
+
+interface SimulateProps {
+    leadFields: LeadDetailed[],
+    simulate?: boolean,
+    register: UseFormRegister<LeadPostData>,
+    control: Control<LeadPostData>,
+    handleSubmit: UseFormHandleSubmit<LeadPostData>,
+    setError: UseFormSetError<LeadPostData>,
+    errors: FieldErrors<LeadPostData>,
+}
+const LeadFormValues = ({ leadFields, simulate = false, register, control, handleSubmit, setError, errors }: SimulateProps) => {
+
+    const [relatedLeads, setRelatedLeads] = useState<Map<number, Lead[] | LeadDetailed[]>>(new Map())
+    const [selectors, setSelectors] = useState<Map<number, NomenclatorItem[] | NomenclatorItemDetailed[]>>(new Map())
+    const nav = useNavigate()
+
     const { fields, replace } = useFieldArray<LeadPostData>({ name: "values", control, keyName: "arrayId" })
 
-    const updateRelatedLeads = async (newFields: LeadPostValueData[]) => {
+    const updateSelectors = async (newFields: LeadPostValueData[]) => {
         const newRelatedLeads = new Map()
         const newSelectors = new Map()
         const promises: Array<Promise<void>> = []
@@ -55,7 +98,7 @@ export const LeadForm = () => {
         newFields.forEach(async (field) => {
             if (!field?.fieldData?.field_type_code) return
             if (field.fieldData.field_type_code === "LEAD") {
-                const relatedCampaignId = field.fieldData.related_campaign_id
+                const relatedCampaignId = field?.fieldData?.related_campaign_id ?? field?.fieldData?.related_campaign?.id
                 if (!relatedCampaignId) return
                 if (newRelatedLeads.has(relatedCampaignId)) return
                 if (relatedLeads.has(relatedCampaignId)) {
@@ -68,15 +111,16 @@ export const LeadForm = () => {
                 )
             }
             if (["CHECKBOX", "SELECTOR"].includes(field?.fieldData?.field_type_code)) {
-                if (!field.fieldData.nomenclator_id) return
-                if (newSelectors.has(field.fieldData.nomenclator_id)) return
-                if (selectors.has(field?.fieldData?.nomenclator_id)) {
-                    newSelectors.set(field.fieldData.nomenclator_id, selectors.get(field.fieldData.nomenclator_id))
+                const nomenclatorId = field?.fieldData?.nomenclator_id ?? field?.fieldData?.nomenclator?.id
+                if (!nomenclatorId) return
+                if (newSelectors.has(nomenclatorId)) return
+                if (selectors.has(nomenclatorId)) {
+                    newSelectors.set(nomenclatorId, selectors.get(nomenclatorId))
                     return
                 }
                 promises.push(
-                    getNomenclatorItems({ nomenclator_id: field.fieldData.nomenclator_id, only_active: true })
-                        .then(newSelectorList => { newSelectors.set(field.fieldData.nomenclator_id, newSelectorList) })
+                    getNomenclatorItems({ nomenclator_id: nomenclatorId, only_active: true })
+                        .then(newSelectorList => { newSelectors.set(nomenclatorId, newSelectorList) })
                 )
             }
         })
@@ -87,21 +131,19 @@ export const LeadForm = () => {
 
     useEffect(() => {
         const updateFields = async (newFields: LeadPostValueData[]) => {
-            updateRelatedLeads(newFields)
+            updateSelectors(newFields)
             replace(newFields)
         }
 
         const newFields = leadFields?.filter(field => field.field_type_code !== "CALCULATED")
             .map(field => ({ field_id: field.id, fieldData: field }))
         updateFields(newFields)
-
     }, [leadFields])
 
-    const submitData = (data, simulate = false) => {
+    const submitData = (data: LeadPostData, isSimulating: boolean) => {
         data.values.forEach(value => delete value.fieldData)
         if (!data.campaign_id) return setError("campaign_id", { message: "Este campo es obligatorio." })
-        if (simulate) {
-            console.log(data)
+        if (isSimulating) {
             return simulateCreateLead(data)
                 .then(r => { alert("Creado Exitosamente"); console.log(r) })
                 .catch(e => findError(e))
@@ -119,22 +161,16 @@ export const LeadForm = () => {
     }
 
     return (
-        <form autoComplete="off">
-            <Typography variant="h1" color="initial">Nuevo Lead</Typography>
-            <ControlledAutocomplete control={control} label="Campaña" name="campaign_id" required
-                getOptionLabel={option => option.name} options={campaigns} returnField="id"
-                errorMessage={errors?.campaign_id?.message}
-            />
-            <Divider sx={{ marginBlock: 2 }} />
+        <>
             <Grid container spacing={2}>
                 {
                     fields?.length > 0 &&
                     fields.map((leadField, idx) =>
                         <Grid size="grow" alignItems="center" minWidth="20rem" key={leadField.arrayId}>
                             <LeadFormFieldType register={register} idx={idx} control={control}
-                                leadField={leadField} relatedLeads={relatedLeads} selectors={selectors} 
+                                leadField={leadField} relatedLeads={relatedLeads} selectors={selectors}
                                 errorMessage={errors?.values?.[idx]?.value?.message}
-                                />
+                            />
                         </Grid>
                     )
                 }
@@ -143,13 +179,15 @@ export const LeadForm = () => {
                 <FormHelperText error sx={{ marginBlock: 1 }}>{errors?.root.message}</FormHelperText>
             }
             <ButtonGroup sx={{ marginBlock: 1 }}>
-                <Button variant="outlined" color="primary" onClick={handleSubmit((data) => submitData(data, true))}>
+                <Button variant={simulate ? "contained" : "outlined"} color="primary" onClick={handleSubmit((data) => submitData(data, true))}>
                     Validar Datos
                 </Button>
-                <Button variant="contained" color="primary" onClick={handleSubmit((data) => submitData(data))}>
-                    Guardar
-                </Button>
+                {!simulate &&
+                    <Button variant="contained" color="primary" onClick={handleSubmit(submitData)}>
+                        Guardar Lead
+                    </Button>
+                }
             </ButtonGroup>
-        </form>
+        </>
     )
 }

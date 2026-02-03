@@ -107,8 +107,7 @@ interface LeadFormSelectorProps extends ControlFormInput {
 }
 
 export const LeadFormSelector = ({ label, name, control, required = false, errorMessage = null, leadField, optionMap, autoComplete = "one-time-code" }: LeadFormSelectorProps) => {
-
-    const optionMapId = leadField.fieldData.nomenclator_id
+    const optionMapId = leadField?.fieldData?.nomenclator_id ?? leadField?.fieldData?.nomenclator?.id
     if (!optionMap || !optionMapId || !optionMap.has(optionMapId)) return <AutocompleteLoader label={label} />
 
     return (
@@ -124,7 +123,7 @@ interface LeadFormCheckboxProps extends LeadFormSelectorProps {
     returnField?: string | null,
 }
 export const LeadFormCheckbox = ({ label, name, control, required = false, errorMessage = null, leadField, optionMap, returnField = null }: LeadFormCheckboxProps) => {
-    const optionMapId = leadField?.fieldData?.nomenclator_id
+    const optionMapId = leadField?.fieldData?.nomenclator_id ?? leadField?.fieldData?.nomenclator?.id
     if (!optionMap || !optionMapId || !optionMap.has(optionMapId)) return null
 
     if (leadField.fieldData.field_subtype_code === "CHECKBOX_SIMPLE") return (
@@ -142,7 +141,7 @@ interface LeadFormLeadProps extends Omit<LeadFormSelectorProps, "optionMap"> {
     optionMap: Map<number, Lead[]>,
 }
 export const LeadFormRelatedLead = ({ label, name, control, required = false, errorMessage = null, leadField, optionMap, autoComplete = "one-time-code" }: LeadFormLeadProps) => {
-    const optionMapId = leadField.fieldData.related_campaign_id
+    const optionMapId = leadField.fieldData.related_campaign_id ?? leadField?.fieldData?.related_campaign?.id
     if (!optionMap || !optionMapId || !optionMap.has(optionMapId)) return <AutocompleteLoader label={label} />
     return (
         <ControlledAutocomplete control={control} name={name} label={label} returnField="id" autoComplete={autoComplete}

@@ -7,7 +7,7 @@ import { CampaignDetails } from "./components/campaigns/CampaignDetails";
 import { CreateLeadFields } from "./components/leadFields/CreateLeadFields";
 import { OrganizationList } from "./components/campaigns/CampaignList";
 import { GenericContainer } from "./components/common/layout/GenericContainer";
-import { LeadForm } from "./components/lead/LeadForm";
+import { CreateLead } from "./components/lead/LeadForm";
 
 export const router = createBrowserRouter([
     {
@@ -34,7 +34,7 @@ export const router = createBrowserRouter([
             },
             {
                 path: "/leads/new",
-                element: <GenericContainer><LeadForm/></GenericContainer>
+                element: <GenericContainer containerSx={{minWidth:"85%"}}><CreateLead/></GenericContainer>
             },
             {
                 path: "/leads/:id",

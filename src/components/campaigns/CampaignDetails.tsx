@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import type { LeadFieldDetailed } from '../../types/leadFields'
 import { getCampaign } from './campaignServices'
-import { Button, Chip, Container, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material'
+import { Button, Chip, Container, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, ButtonGroup } from '@mui/material'
 import type { Campaign } from '../../types/campaigns'
 import { getLeadFields } from '../leadFields/leadFieldServices'
+import { GenericModal } from '../common/layout/GenericContainer'
+import { SimulateLead } from '../lead/LeadForm'
 
 export const CampaignDetails = () => {
     const { id } = useParams()
@@ -67,9 +69,16 @@ export const CampaignDetails = () => {
                                 </TableBody>
                             </Table>
                         </TableContainer>
-                        <Button component={Link} to={`/campaigns/${id}/new`}>
-                            Agregar nuevo campo
-                        </Button>
+                        <ButtonGroup>
+                            <Button component={Link} variant='contained' to={`/campaigns/${id}/new`}>
+                                Agregar nuevo campo
+                            </Button>
+                            <GenericModal buttonText='Vista previa de formulario' buttonProps={{ variant: "outlined" }} containerSx={{minWidth: "80vw"}} >
+                                {campaign && fields?.length > 0 &&
+                                    <SimulateLead campaignId={campaign.id} leadFields={fields} />
+                                }
+                            </GenericModal>
+                        </ButtonGroup>
                     </>
                 }
             </Paper>

@@ -20,6 +20,7 @@ interface LeadFormFieldTypeProps {
 }
 
 export const LeadFormFieldType = ({ register, idx, control, leadField, relatedLeads, selectors, errorMessage = null }: LeadFormFieldTypeProps) => {
+ 
     switch (leadField.fieldData.field_type_code) {
         case "LEAD":
             return (<LeadFormRelatedLead label={leadField.fieldData.name} name={`values.${idx}.value`} control={control} optionMap={relatedLeads}
