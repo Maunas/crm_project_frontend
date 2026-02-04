@@ -24,7 +24,6 @@ interface ControlledACProps extends BasicControlFormInput {
 
 export const ControlledAutocomplete = ({ label, name, control, options, required = false, errorMessage = null, disabled = false, loading = false,
     getOptionLabel, getOptionKey = option => option.id, returnField = null, sx = {}, multiple = false, autocomplete = "one-time-code" }: ControlledACProps) => {
-
     const handleChange = (field: ControllerRenderProps<FieldValues, string>, values: object | object[] | null) => {
         //Por defecto, si no hay valores devuelve null o []
         if (!values) {
@@ -211,6 +210,16 @@ const GroupedCheckbox = ({ label, field, options, required = false, errorMessage
     row = true, idField = "id", checkboxLabel = (option) => option.value }: GroupedCheckboxProps) => {
 
     const [checkboxState, setCheckboxState] = useState(new Map())
+
+    useEffect(() => {
+        if (field?.value?.length === 0) return
+        const valueArray = field.value.map(value => ([
+            options.find(op => (op?.[returnField] ?? op) === value)?.[idField],
+            value
+        ]))
+        const defaultValues = new Map(valueArray)
+        setCheckboxState(defaultValues)
+    }, [])
 
     useEffect(() => {
         field.onChange(Array.from(checkboxState.values()))

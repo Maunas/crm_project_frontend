@@ -31,7 +31,7 @@ export const LeadDetails = () => {
                         <Box>
                             <Paper sx={{ p: 2, borderRadius: "1em", marginBottom: "1rem" }}>
                                 <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>
-                                    <Typography variant="h1">{fieldValues[0].value ?? "Lead no encontrado"} {fieldValues[1].value ?? ""}</Typography>
+                                    <Typography variant="h1">{fieldValues[0]?.value ?? "Lead no encontrado"} {fieldValues[1]?.value ?? ""}</Typography>
                                     <Chip label={lead?.active ? "Habilitado" : "Deshabilitado"} color={lead?.active ? "success" : "error"} />
                                 </Box>
                             </Paper>
