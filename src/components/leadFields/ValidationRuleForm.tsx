@@ -2,10 +2,10 @@ import { Divider, Typography, Button, Grid, TextField } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useFieldArray, useWatch, type Control, type UseFieldArrayRemove, type UseFormRegister, type UseFormSetValue } from 'react-hook-form'
 import { getValidationTemplates } from '../leadFields/leadFieldServices'
-import { ControlledAutocomplete } from '../common/forms/ControlledAutocomplete'
+import { ControlledAutocomplete, ControlledRadio } from '../common/forms/CustomMultipleInputs'
 import type { FieldValidationRuleTemplate } from '../../types/leadFields'
 import type { LeadFieldData } from './CreateLeadFields'
-import { ControlledRadio, ControlledTextInput } from '../common/forms/ControlledInputs'
+import { ControlledTextInput } from '../common/forms/CustomInputs'
 
 interface ValidationRuleFormProps {
     control: Control<LeadFieldData>,
@@ -112,7 +112,8 @@ export const ValidationInstance = ({ idx, templates, register, control, setValue
 
                 <Grid container spacing={2} minWidth="20rem" size={12}>
                     <Grid size={4} minWidth="20rem" justifyContent="center">
-                        <ControlledRadio control={control} name={`validation_rules.${idx}.creation_method`} options={creationMethodOptions} />
+                        <ControlledRadio control={control} name={`validation_rules.${idx}.creation_method`} options={creationMethodOptions} 
+                        returnField="value" radioLabel={option=>option.label} label="Método de Creación" />
                     </Grid>
                     {creationMethod === "manual" &&
                         <Grid size="grow">
@@ -127,7 +128,7 @@ export const ValidationInstance = ({ idx, templates, register, control, setValue
                     {creationMethod === "template" &&
                         <Grid size="grow" spacing={2}>
                             <ControlledAutocomplete control={control} label='Plantilla' name={`validation_rules.${idx}.template`}
-                                optionList={templates} getOptionKey={op => op.code} getOptionLabel={op => op.name}/>
+                                options={templates} getOptionKey={op => op.code} getOptionLabel={op => op.name}/>
                         </Grid>
                     }
                 </Grid>

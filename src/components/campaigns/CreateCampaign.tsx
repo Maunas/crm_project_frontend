@@ -4,7 +4,7 @@ import { useForm, useWatch } from "react-hook-form"
 import type { LeadFieldPost } from "../../types/leadFields"
 import { createCampaign, createOrganization, createWorkspace, getOrganizations, getWorkspaces } from "./campaignServices"
 import { Link, useNavigate } from "react-router-dom"
-import { ControlledAutocomplete } from "../common/forms/ControlledAutocomplete"
+import { ControlledAutocomplete } from "../common/forms/CustomMultipleInputs"
 import { createLeadField } from "../leadFields/leadFieldServices"
 import type { CampaignPost, Organization, OrganizationPost, Workspace, WorkspacePost } from "../../types/campaigns"
 
@@ -81,13 +81,13 @@ export const CampaignForm = () => {
 
                     <Grid size="grow" minWidth={"20rem"}>
                         <ControlledAutocomplete control={control} label="Organización" name="organization_id"
-                            getOptionLabel={(option) => option.name} getOptionKey={(option) => option.id}
-                            optionList={organizations} returnField="id" />
+                            getOptionLabel={(option) => option.name}
+                            options={organizations} returnField="id" />
                     </Grid>
                     <Grid size="grow" minWidth={"20rem"}>
                         <ControlledAutocomplete control={control} label="Espacio de Trabajo" name="workspace_id"
-                            getOptionLabel={(option) => option.name} getOptionKey={(option) => option.id}
-                            optionList={filteredWorkspaces} returnField="id" disabled={!selectedOrg} />
+                            getOptionLabel={(option) => option.name}
+                            options={filteredWorkspaces} returnField="id" disabled={!selectedOrg} />
                     </Grid>
                 </Grid>
 
@@ -136,7 +136,7 @@ export const WorkspaceForm = () => {
 
                 <Grid size="grow" minWidth={"20rem"}>
                     <ControlledAutocomplete control={control} name="organization_id" label="Organización"
-                        getOptionKey={option => option.id} getOptionLabel={option => option.name} optionList={organizations}
+                        getOptionLabel={option => option.name} options={organizations}
                         returnField="id" />
                 </Grid>
 
