@@ -1,6 +1,6 @@
 import axios from "axios"
 import type { LeadField, LeadFieldDetailed, LeadFieldPost, LeadFieldType, LeadFieldTypeDetailed, LeadFieldTemplate, Nomenclator, LeadFieldSection, LeadFieldSectionDetailed, NomenclatorDetailed, FieldValidationRule, FieldValidationRuleTemplate, FieldValidationRulePost, NomenclatorItem, NomenclatorItemDetailed } from "../../types/leadFields"
-import { API_BASE_URL } from "../../generalService"
+import { API_BASE_URL, orderList } from "../../generalService"
 import type { FieldValidationRuleData } from "./CreateLeadFields"
 
 export const getFieldDataByType = (data: LeadFieldPost, isTemplate = false): LeadFieldPost => {
@@ -82,7 +82,7 @@ interface Params {
 export const getLeadFields = async<T extends Params>(params?: T):
     Promise<T["detailed"] extends true ? LeadFieldDetailed[] : LeadField[]> => {
     const leadField = await axios.get(`${API_BASE_URL}/lead_fields`, { params })
-    return leadField.data.items
+    return orderList(leadField.data.items, "order")
 }
 export const getFieldTemplates = async (): Promise<LeadFieldTemplate[]> => {
     const tmp = await axios.get(`${API_BASE_URL}/templates/lead_fields`)
@@ -92,19 +92,21 @@ export const getFieldTemplates = async (): Promise<LeadFieldTemplate[]> => {
 export const getFieldTypes = async<T extends Params>(params?: T):
     Promise<T["detailed"] extends true ? LeadFieldTypeDetailed[] : LeadFieldType[]> => {
     const tmp = await axios.get(`${API_BASE_URL}/lead_field_types`, { params })
-    return tmp.data.items
+    return orderList(tmp.data.items, "id")
 }
 
 export const getNomenclators = async<T extends Params>(params?: T):
     Promise<T["detailed"] extends true ? NomenclatorDetailed[] : Nomenclator[]> => {
     const wksp = await axios.get(`${API_BASE_URL}/nomenclators`, { params })
-    return wksp.data.items
+    return orderList(wksp.data.items)
 }
 
 export const getNomenclatorItems = async<T extends Params>(params?: T):
     Promise<T["detailed"] extends true ? NomenclatorItemDetailed[] : NomenclatorItem[]> => {
     const leadField = await axios.get(`${API_BASE_URL}/nomenclator_items`, { params })
-    return leadField.data.items
+    //Ajuste temporal
+    const items = leadField.data.items.map((field: NomenclatorItem) => ({ ...field, value: field.value.replace(" Province", "") }))
+    return orderList(items, "id")
 }
 
 export const createLeadField = async (body: LeadFieldPost): Promise<LeadField> => {
@@ -125,6 +127,6 @@ export const createValidation = async (body: FieldValidationRulePost): Promise<F
 export const getFieldSections = async<T extends Params>(params?: T):
     Promise<T["detailed"] extends true ? LeadFieldSectionDetailed[] : LeadFieldSection[]> => {
     const sections = await axios.get(`${API_BASE_URL}/lead_field_sections`, { params })
-    return sections.data.items
+    return orderList(sections.data.items, "id")
 }
 

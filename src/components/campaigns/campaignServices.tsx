@@ -1,17 +1,18 @@
 import axios from "axios"
-import { API_BASE_URL } from "../../generalService"
+import { API_BASE_URL, orderList } from "../../generalService"
 import type { Campaign, CampaignDetailed, CampaignPost, Organization, OrganizationDetailed, OrganizationPost, Workspace, WorkspaceDetailed, WorkspacePost } from "../../types/campaigns"
 
 interface Params {
     detailed?: boolean,
     only_active?: boolean,
-    page?: number
+    page?: number,
+    page_size?:number
 }
 
 //Multitipo en Typescript. Se crea un tipo T a partir de Params, si T["detailed"] es verdadero, da el tipo Detailed.
 export const getWorkspaces = async<T extends Params>(params?: T): Promise<T["detailed"] extends true ? WorkspaceDetailed[] : Workspace[]> => {
     const wksp = await axios.get(`${API_BASE_URL}/workspaces`, { params })
-    return wksp.data.items
+    return orderList(wksp.data.items, "id")
 }
 
 export const createWorkspace = async (body: WorkspacePost): Promise<Workspace> => {
@@ -21,7 +22,7 @@ export const createWorkspace = async (body: WorkspacePost): Promise<Workspace> =
 
 export const getOrganizations = async<T extends Params>(params?: T): Promise<T["detailed"] extends true ? Organization[] : OrganizationDetailed[]> => {
     const org = await axios.get(`${API_BASE_URL}/organizations`, { params })
-    return org.data.items
+    return orderList(org.data.items, "id")
 }
 
 export const createOrganization = async (body: OrganizationPost): Promise<Organization> => {
@@ -30,7 +31,7 @@ export const createOrganization = async (body: OrganizationPost): Promise<Organi
 }
 export const getCampaigns = async<T extends Params> (params?: T): Promise<T["detailed"] extends true ? Campaign[] : CampaignDetailed[]> => {
     const campaigns = await axios.get(`${API_BASE_URL}/campaigns`, {params})
-    return campaigns.data.items
+    return orderList(campaigns.data.items, "id")
 }
 
 export const getCampaign = async (id: number): Promise<CampaignDetailed> => {

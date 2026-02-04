@@ -25,7 +25,7 @@ export const CreateLead = () => {
     const [leadFields, setLeadFields] = useState<LeadField[]>([])
 
     useEffect(() => {
-        getCampaigns().then(setCampaigns)
+        getCampaigns({ "page_size": 200 }).then(setCampaigns)
     }, [])
 
     const { register, control, handleSubmit, setError, formState: { errors } } = useForm<LeadPostData>()
@@ -34,7 +34,7 @@ export const CreateLead = () => {
 
     useEffect(() => {
         if (campaignId) {
-            getLeadFields({ only_active: true, campaign_id: campaignId }).then(res =>
+            getLeadFields({ only_active: true, campaign_id: campaignId, "page_size": 200 }).then(res =>
                 setLeadFields(res.sort((a, b) => a.order - b.order))
             )
         }
@@ -106,7 +106,7 @@ const LeadFormValues = ({ leadFields, simulate = false, register, control, handl
                     return
                 }
                 promises.push(
-                    getLeads({ campaign_id: relatedCampaignId, only_active: true })
+                    getLeads({ campaign_id: relatedCampaignId, only_active: true, page_size:200 })
                         .then(newLeadList => { newRelatedLeads.set(relatedCampaignId, newLeadList) })
                 )
             }
@@ -119,7 +119,7 @@ const LeadFormValues = ({ leadFields, simulate = false, register, control, handl
                     return
                 }
                 promises.push(
-                    getNomenclatorItems({ nomenclator_id: nomenclatorId, only_active: true })
+                    getNomenclatorItems({ nomenclator_id: nomenclatorId, only_active: true, page_size:200 })
                         .then(newSelectorList => { newSelectors.set(nomenclatorId, newSelectorList) })
                 )
             }
@@ -151,17 +151,17 @@ const LeadFormValues = ({ leadFields, simulate = false, register, control, handl
             if (fieldValue?.fieldData?.field_type_code === "FILE") {
                 if (fieldValue?.value?.length > 0) {
                     formData.set(`file-${fieldValue.field_id}`, fieldValue?.value?.[0])
-                    formValues.push({field_id: fieldValue?.field_id, value: fieldValue?.value?.[0].name})
+                    formValues.push({ field_id: fieldValue?.field_id, value: fieldValue?.value?.[0].name })
                 }
             } else {
-                formValues.push({field_id: fieldValue?.field_id, value: fieldValue?.value})
+                formValues.push({ field_id: fieldValue?.field_id, value: fieldValue?.value })
             }
         })
-        formData.set("data", JSON.stringify({...data, values: formValues}))
-        
+        formData.set("data", JSON.stringify({ ...data, values: formValues }))
+
         if (isSimulating) {
             console.log("Datos no procesados", data)
-            console.log("Datos procesados", {...data, values: formValues})
+            console.log("Datos procesados", { ...data, values: formValues })
             console.log("Datos enviados", new Map(formData.entries()))
 
             return simulateCreateLead(formData)
