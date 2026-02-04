@@ -1,6 +1,5 @@
 import { useForm } from "react-hook-form"
 import type { LeadDetailed } from "../../types/leads"
-import type { LeadFieldDetailed } from "../../types/leadFields"
 import { LeadFormValues, type LeadPostData } from "./LeadForm"
 import { Typography } from "@mui/material"
 import { useParams } from "react-router-dom"
