@@ -15,7 +15,7 @@ export const UpdateLead = () => {
     useEffect(() => {
         getLead(Number(id)).then(setLead)
     }, [id])
-
+    
     const { register, control, handleSubmit, setError, formState: { errors } } = useForm<LeadPostData>()
 
     const formattedLeadValues = useMemo(() => {
