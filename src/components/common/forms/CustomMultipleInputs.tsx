@@ -212,7 +212,7 @@ const GroupedCheckbox = ({ label, field, options, required = false, errorMessage
     const [checkboxState, setCheckboxState] = useState(new Map())
 
     useEffect(() => {
-        if (field?.value?.length === 0) return
+        if (!field?.value || field?.value?.length === 0) return
         const valueArray = field.value.map(value => ([
             options.find(op => (op?.[returnField] ?? op) === value)?.[idField],
             value
