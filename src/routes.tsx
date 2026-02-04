@@ -8,6 +8,8 @@ import { CreateLeadFields } from "./components/leadFields/CreateLeadFields";
 import { OrganizationList } from "./components/campaigns/CampaignList";
 import { GenericContainer } from "./components/common/layout/GenericContainer";
 import { CreateLead } from "./components/lead/LeadForm";
+import { UpdateLead } from "./components/lead/UpdateLead";
+import { LeadList } from "./components/lead/LeadList";
 
 export const router = createBrowserRouter([
     {
@@ -33,8 +35,16 @@ export const router = createBrowserRouter([
                 element: <div>Home Test</div>
             },
             {
+                path: "/leads",
+                element: <GenericContainer containerSx={{ minWidth: "85%" }}><LeadList /></GenericContainer>
+            },
+            {
                 path: "/leads/new",
-                element: <GenericContainer containerSx={{minWidth:"85%"}}><CreateLead/></GenericContainer>
+                element: <GenericContainer containerSx={{ minWidth: "85%" }}><CreateLead /></GenericContainer>
+            },
+            {
+                path: "/leads/modify/:id",
+                element: <GenericContainer containerSx={{ minWidth: "85%" }}><UpdateLead /></GenericContainer>
             },
             {
                 path: "/leads/:id",
@@ -54,15 +64,15 @@ export const router = createBrowserRouter([
             },
             {
                 path: "/campaigns/new",
-                element: <GenericContainer><CampaignForm/></GenericContainer>
+                element: <GenericContainer><CampaignForm /></GenericContainer>
             },
             {
                 path: "/workspaces/new",
-                element: <GenericContainer><WorkspaceForm/></GenericContainer>
+                element: <GenericContainer><WorkspaceForm /></GenericContainer>
             },
             {
                 path: "/organizations/new",
-                element: <GenericContainer><OrganizationForm/></GenericContainer>
+                element: <GenericContainer><OrganizationForm /></GenericContainer>
             },
             {
                 path: "*", //Si no coincide con nada más.
