@@ -1,7 +1,7 @@
 import axios from "axios"
 import type { LeadField, LeadFieldDetailed, LeadFieldPost, LeadFieldType, LeadFieldTypeDetailed, LeadFieldTemplate, Nomenclator, LeadFieldSection, LeadFieldSectionDetailed, NomenclatorDetailed, FieldValidationRule, FieldValidationRuleTemplate, FieldValidationRulePost, NomenclatorItem, NomenclatorItemDetailed } from "../../types/leadFields"
 import { API_BASE_URL, orderList } from "../../generalService"
-import type { FieldValidationRuleData } from "./CreateLeadFields"
+import type { FieldValidationRuleData } from "./LeadFieldForm"
 
 export const getFieldDataByType = (data: LeadFieldPost, isTemplate = false): LeadFieldPost => {
     const requiredData: LeadFieldPost = {
@@ -84,6 +84,33 @@ export const getLeadFields = async<T extends Params>(params?: T):
     const leadField = await axios.get(`${API_BASE_URL}/lead_fields`, { params })
     return orderList(leadField.data.items, "order")
 }
+
+export const getLeadField = async (id:number): Promise<LeadFieldDetailed> => {
+    const leadField = await axios.get(`${API_BASE_URL}/lead_fields/${id}`,)
+    return leadField.data
+}
+
+
+export const createLeadField = async (body: LeadFieldPost): Promise<LeadField> => {
+    const leadField = await axios.post(`${API_BASE_URL}/lead_fields`, body)
+    return leadField.data
+}
+
+export const updateLeadField = async (body: LeadFieldPost, id: number): Promise<LeadField> => {
+    const leadField = await axios.put(`${API_BASE_URL}/lead_fields/${id}`, body)
+    return leadField.data
+}
+
+export const deleteLeadField = async (id: number): Promise<LeadField> => {
+    const leadField = await axios.delete(`${API_BASE_URL}/lead_fields/${id}`)
+    return leadField.data
+}
+
+export const activeLeadField = async (id: number): Promise<LeadField> => {
+    const leadField = await axios.put(`${API_BASE_URL}/lead_fields/active/${id}`)
+    return leadField.data
+}
+
 export const getFieldTemplates = async (): Promise<LeadFieldTemplate[]> => {
     const tmp = await axios.get(`${API_BASE_URL}/templates/lead_fields`)
     return tmp.data
@@ -109,11 +136,6 @@ export const getNomenclatorItems = async<T extends Params>(params?: T):
     return orderList(items, "id")
 }
 
-export const createLeadField = async (body: LeadFieldPost): Promise<LeadField> => {
-    const leadField = await axios.post(`${API_BASE_URL}/lead_fields`, body)
-    return leadField.data
-}
-
 export const getValidationTemplates = async (): Promise<FieldValidationRuleTemplate[]> => {
     const val = await axios.get(`${API_BASE_URL}/templates/validation_rules`)
     return val.data
@@ -121,6 +143,11 @@ export const getValidationTemplates = async (): Promise<FieldValidationRuleTempl
 
 export const createValidation = async (body: FieldValidationRulePost): Promise<FieldValidationRule[]> => {
     const val = await axios.post(`${API_BASE_URL}/validation_rules`, body)
+    return val.data
+}
+
+export const updateValidation = async (body: FieldValidationRulePost, id:number): Promise<FieldValidationRule[]> => {
+    const val = await axios.put(`${API_BASE_URL}/validation_rules/${id}`, body)
     return val.data
 }
 
