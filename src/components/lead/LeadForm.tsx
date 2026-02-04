@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useFieldArray, useForm, useWatch, type Control, type FieldErrors, type UseFormHandleSubmit, type UseFormRegister, type UseFormSetError } from "react-hook-form"
 import { getCampaigns } from "../campaigns/campaignServices"
 import { ControlledAutocomplete } from "../common/forms/CustomMultipleInputs"
@@ -62,12 +62,14 @@ export const SimulateLead = ({ campaignId, leadFields }: SimulateProps) => {
 
     const { register, control, handleSubmit, setError, formState: { errors } } = useForm<LeadPostData>()
 
+    const filteredLeadFields = useMemo(()=>leadFields.filter(field=>field.active),[leadFields])
+
     return (
         <form autoComplete="off">
             <Typography variant="h1" color="initial">Simulación de Nuevo Lead: Campaña {campaignId}</Typography>
             <input type="text" id="campaign_id" value={campaignId} hidden
                 {...register("campaign_id", { valueAsNumber: true })} />
-            <LeadFormValues leadFields={leadFields} simulate
+            <LeadFormValues leadFields={filteredLeadFields} simulate
                 register={register} control={control} handleSubmit={handleSubmit} setError={setError} errors={errors} />
         </form>
     )
