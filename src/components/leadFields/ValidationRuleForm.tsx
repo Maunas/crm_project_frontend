@@ -4,7 +4,7 @@ import { useFieldArray, useWatch, type Control, type UseFieldArrayRemove, type U
 import { getValidationTemplates } from '../leadFields/leadFieldServices'
 import { ControlledAutocomplete, ControlledRadio } from '../common/forms/CustomMultipleInputs'
 import type { FieldValidationRuleTemplate } from '../../types/leadFields'
-import type { LeadFieldData } from './CreateLeadFields'
+import type { LeadFieldData } from './LeadFieldForm'
 import { ControlledTextInput } from '../common/forms/CustomInputs'
 
 interface ValidationRuleFormProps {

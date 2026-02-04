@@ -4,9 +4,12 @@ import type { LeadFieldDetailed } from '../../types/leadFields'
 import { getCampaign } from './campaignServices'
 import { Button, Chip, Container, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, ButtonGroup } from '@mui/material'
 import type { Campaign } from '../../types/campaigns'
-import { getLeadFields } from '../leadFields/leadFieldServices'
+import { activeLeadField, deleteLeadField, getLeadFields } from '../leadFields/leadFieldServices'
 import { GenericModal } from '../common/layout/GenericContainer'
 import { SimulateLead } from '../lead/LeadForm'
+import EditIcon from '@mui/icons-material/Edit';
+import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 export const CampaignDetails = () => {
     const { id } = useParams()
@@ -16,10 +19,27 @@ export const CampaignDetails = () => {
     useEffect(() => {
         if (id) getCampaign(parseInt(id)).then((res) => {
             setCampaign(res)
-            getLeadFields({ detailed: true, campaign_id: parseInt(id) }).then(res => setFields(res))
+            getLeadFields({ detailed: true, campaign_id: parseInt(id), only_active: false }).then(res => setFields(res))
         })
         return () => setCampaign(null)
     }, [id])
+
+    const handleActive = (fieldIdx: number) => {
+        const newFields = [...fields]
+        if (fields[fieldIdx].active) {
+            deleteLeadField(fields[fieldIdx].id)
+                .then(() => {
+                    newFields[fieldIdx].active = false
+                    setFields(newFields)
+                }).catch(() => alert("error"))
+        } else {
+            activeLeadField(fields[fieldIdx].id)
+                .then(() => {
+                    newFields[fieldIdx].active = true
+                    setFields(newFields)
+                }).catch(() => alert("error"))
+        }
+    }
 
     return (
         <Container>
@@ -45,11 +65,12 @@ export const CampaignDetails = () => {
                                         <TableCell align="right">Visible</TableCell>
                                         <TableCell align="right">Habilitado</TableCell>
                                         <TableCell align="right">Orden</TableCell>
+                                        <TableCell align="right">Modificar</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
                                     {fields?.sort((a, b) => a.order - b.order)
-                                        .map((row) => (
+                                        .map((row, idx) => (
                                             <TableRow
                                                 key={row.id}
                                                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
@@ -64,16 +85,24 @@ export const CampaignDetails = () => {
                                                 <TableCell align="right">{row.is_visible ? <Chip color='success' label="Visible" /> : <Chip color='error' label="Oculto" />}</TableCell>
                                                 <TableCell align="right">{row.active ? <Chip color='success' label="Habilitado" /> : <Chip color='error' label="Deshabilitado" />}</TableCell>
                                                 <TableCell align="right">{row.order}</TableCell>
+                                                <TableCell align="right">
+                                                    <Button variant="text" component={Link} to={`/leadfield/modify/${row.id}`}>
+                                                        <EditIcon />
+                                                    </Button>
+                                                    <Button variant="text" onClick={() => handleActive(idx)}>
+                                                        {row.active ? <RemoveCircleOutlineIcon color="error" /> : <CheckCircleOutlineIcon color="success" />}
+                                                    </Button>
+                                                </TableCell>
                                             </TableRow>
                                         ))}
                                 </TableBody>
                             </Table>
                         </TableContainer>
                         <ButtonGroup>
-                            <Button component={Link} variant='contained' to={`/campaigns/${id}/new`}>
+                            <Button component={Link} variant='contained' to={`/leadfield/new/${id}`}>
                                 Agregar nuevo campo
                             </Button>
-                            <GenericModal buttonText='Vista previa de formulario' buttonProps={{ variant: "outlined" }} containerSx={{minWidth: "80vw"}} >
+                            <GenericModal buttonText='Vista previa de formulario' buttonProps={{ variant: "outlined" }} containerSx={{ minWidth: "80vw" }} >
                                 {campaign && fields?.length > 0 &&
                                     <SimulateLead campaignId={campaign.id} leadFields={fields} />
                                 }

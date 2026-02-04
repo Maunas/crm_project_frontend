@@ -20,8 +20,9 @@ interface ControlFormInput extends BasicFormInput {
 
 interface ControlledTextProps extends ControlFormInput {
     id?: string,
+    type?: string | null
 }
-export const ControlledTextInput = ({ control, name, label, id, required = false, errorMessage = null, autoComplete = "one-time-code" }: ControlledTextProps) => {
+export const ControlledTextInput = ({ control, name, type = "text", label, id, required = false, errorMessage = null, autoComplete = "one-time-code" }: ControlledTextProps) => {
     return (
         <Controller control={control} name={name}
             render={({ field }) =>
@@ -31,7 +32,7 @@ export const ControlledTextInput = ({ control, name, label, id, required = false
                         id={id ?? name}
                         label={label ?? name}
                         value={field.value ?? ""}
-                        required={required}
+                        required={required} type={type}
                         error={!!errorMessage}
                         fullWidth
                     />
@@ -183,7 +184,7 @@ interface FileProps extends RegisterFormInput {
     accept?: string,
     id?: string
 }
-export const SingleFileField = ({ name, label, register, id, required = false, errorMessage = null, autoComplete, accept = "" }: FileProps) => {
+export const SingleFileField = ({ name, label, register, id, required = false, errorMessage = null, autoComplete = "one-time-code", accept = "" }: FileProps) => {
     return (
         <>
             <TextField
@@ -196,4 +197,19 @@ export const SingleFileField = ({ name, label, register, id, required = false, e
                 <FormHelperText error sx={{ marginBlock: 1 }}>{errorMessage}</FormHelperText>
             }
         </>)
+}
+
+interface RegisteredTextProps extends RegisterFormInput {
+    id?: string | null,
+    type?: string | null
+}
+
+export const RegisteredTextInput = ({ name, label, register, type = "text", id = null, required = false, errorMessage = null, autoComplete = "one-time-code" }: RegisteredTextProps) => {
+    return (
+        <TextField
+            {...register(name)}
+            autoComplete={autoComplete} fullWidth type={type}
+            id={id ?? name} label={label ?? name} required={required} error={!!errorMessage}
+        />
+    )
 }

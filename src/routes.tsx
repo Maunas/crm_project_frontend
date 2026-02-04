@@ -4,12 +4,12 @@ import { NotFound } from "./pages/NotFound";
 import { LeadDetails } from "./components/lead/LeadDetails";
 import { CampaignForm, OrganizationForm, WorkspaceForm } from "./components/campaigns/CreateCampaign";
 import { CampaignDetails } from "./components/campaigns/CampaignDetails";
-import { CreateLeadFields } from "./components/leadFields/CreateLeadFields";
 import { OrganizationList } from "./components/campaigns/CampaignList";
 import { GenericContainer } from "./components/common/layout/GenericContainer";
 import { CreateLead } from "./components/lead/LeadForm";
 import { UpdateLead } from "./components/lead/UpdateLead";
 import { LeadList } from "./components/lead/LeadList";
+import { CreateLeadField, ModifyLeadField } from "./components/leadFields/ModifyLeadFields";
 
 export const router = createBrowserRouter([
     {
@@ -55,12 +55,16 @@ export const router = createBrowserRouter([
                 Component: OrganizationList
             },
             {
-                path: "/campaigns/:id",
-                Component: CampaignDetails
+                path: "/leadfield/new/:campaignId",
+                Component: CreateLeadField
             },
             {
-                path: "/campaigns/:id/new",
-                Component: CreateLeadFields
+                path: "/leadfield/modify/:leadFieldId",
+                Component: ModifyLeadField
+            },
+            {
+                path: "/campaigns/:id",
+                Component: CampaignDetails
             },
             {
                 path: "/campaigns/new",

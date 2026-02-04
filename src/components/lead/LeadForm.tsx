@@ -75,6 +75,7 @@ export const SimulateLead = ({ campaignId, leadFields }: SimulateProps) => {
     )
 }
 
+
 interface LeadFormProps {
     leadFields: LeadFieldDetailed[],
     simulate?: boolean,
@@ -200,7 +201,7 @@ export const LeadFormValues = ({ leadFields, simulate = false, register, control
     const findError = (error) => {
         const errorDetail = error?.response?.data?.detail
         if (!errorDetail) return setError("root", { message: error.message })
-        if (!errorDetail.field) return setError("root", { message: errorDetail })
+        if (!errorDetail.field) return setError("root", { message: errorDetail.message })
         const errorIndex = fields.findIndex(field => field.fieldData.name === errorDetail.field) ?? null
         setError(`values.${errorIndex}.value`, { message: errorDetail.message })
     }
