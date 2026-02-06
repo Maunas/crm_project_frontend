@@ -1,10 +1,23 @@
-import { Divider, Typography, Button, Grid, TextField } from "@mui/material";
+import {
+  Divider,
+  Typography,
+  Button,
+  Grid,
+  TextField,
+  FormControl,
+  FormHelperText,
+  FormControlLabel,
+  Chip,
+} from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 import {
   useFieldArray,
   useWatch,
   type Control,
+  type FieldError,
+  type FieldErrors,
   type UseFieldArrayRemove,
+  type UseFormClearErrors,
   type UseFormRegister,
   type UseFormSetValue,
 } from "react-hook-form";
@@ -15,18 +28,25 @@ import {
 } from "../common/forms/CustomMultipleInputs";
 import type { FieldValidationRuleTemplate } from "../../types/leadFields";
 import type { LeadFieldData } from "./LeadFieldForm";
-import { ControlledTextInput } from "../common/forms/CustomInputs";
+import {
+  ControlledTextInput,
+  RegisteredTextInput,
+} from "../common/forms/CustomInputs";
 
 interface ValidationRuleFormProps {
   control: Control<LeadFieldData>;
   register: UseFormRegister<LeadFieldData>;
   setValue: UseFormSetValue<LeadFieldData>;
+  errors: FieldErrors<LeadFieldData>;
+  clearErrors: UseFormClearErrors
 }
 
 export const ValidationRuleForm = ({
   control,
   register,
   setValue,
+  clearErrors,
+  errors,
 }: ValidationRuleFormProps) => {
   const { append, remove, fields } = useFieldArray<LeadFieldData>({
     control,
@@ -37,6 +57,8 @@ export const ValidationRuleForm = ({
   useEffect(() => {
     getValidationTemplates().then(setTemplates);
   }, []);
+
+  const validationRules = useWatch({ name: "validation_rules", control });
 
   return (
     <>
@@ -51,6 +73,8 @@ export const ValidationRuleForm = ({
             control={control}
             setValue={setValue}
             remove={remove}
+            valId={validationRules?.[idx]?.id || null}
+            errors={errors} clearErrors={clearErrors}
           />
         ))}
       <Button
@@ -78,6 +102,10 @@ interface ValidationInstanceProps {
   control: Control<LeadFieldData>;
   setValue: UseFormSetValue<LeadFieldData>;
   remove: UseFieldArrayRemove;
+  valId: number | null;
+  errors: FieldErrors<LeadFieldData>;
+  clearErrors: UseFormClearErrors
+
 }
 export const ValidationInstance = ({
   idx,
@@ -86,6 +114,9 @@ export const ValidationInstance = ({
   control,
   setValue,
   remove,
+  errors,
+  valId,
+  clearErrors
 }: ValidationInstanceProps) => {
   const selectedTemplateCode = useWatch({
     name: `validation_rules.${idx}.template_code`,
@@ -105,11 +136,16 @@ export const ValidationInstance = ({
     [selectedTemplateCode, templates],
   );
 
+  useEffect(() => {
+    setValue(`validation_rules.${idx}.required_params`,
+      selectedTemplate?.required_params
+    )
+  }, [selectedTemplate, templates]);
+
   const creationMethodOptions = [
     { label: "Por Plantilla", value: "template" },
     { label: "Manual", value: "manual" },
   ];
-
   const generateErrorMessage = () => {
     if (selectedTemplate) {
       let errorMessage = selectedTemplate.error_message;
@@ -128,6 +164,7 @@ export const ValidationInstance = ({
       <Grid container justifyContent="center" marginBlock={2}>
         <Grid size="grow">
           <Typography variant="h4">Validación {idx + 1}</Typography>
+          {valId && <Chip sx={{ mb: 2 }} color="success" label="Creado" />}
         </Grid>
         <Grid size="auto">
           <Button variant="outlined" color="error" onClick={() => remove(idx)}>
@@ -139,11 +176,12 @@ export const ValidationInstance = ({
       <Grid container spacing={2} justifyContent="center">
         <Grid container spacing={2} minWidth="20rem" size={12}>
           <Grid size={4} minWidth="20rem">
-            <TextField
-              id={`validation_rules.${idx}.name`}
+            <RegisteredTextInput
+              name={`validation_rules.${idx}.name`}
+              register={register}
               label="Nombre de la Regla"
-              fullWidth
-              {...register(`validation_rules.${idx}.name`)}
+              required
+              errorMessage={errors?.validation_rules?.[idx]?.name?.message}
             />
           </Grid>
           <Grid container spacing={2} size="grow" minWidth="20rem">
@@ -152,6 +190,9 @@ export const ValidationInstance = ({
                 control={control}
                 label="Mensaje de Error"
                 name={`validation_rules.${idx}.error_message`}
+                errorMessage={
+                  errors?.validation_rules?.[idx]?.error_message?.message
+                }
               />
             </Grid>
             {creationMethod === "template" &&
@@ -178,11 +219,14 @@ export const ValidationInstance = ({
           </Grid>
           {creationMethod === "manual" && (
             <Grid size="grow">
-              <TextField
-                id={`validation_rules.${idx}.expression`}
+              <RegisteredTextInput
+                name={`validation_rules.${idx}.expression`}
+                register={register}
+                required
                 label={`Expresión de Validación`}
-                fullWidth
-                {...register(`validation_rules.${idx}.expression`)}
+                errorMessage={
+                  errors?.validation_rules?.[idx]?.expression?.message
+                }
               />
             </Grid>
           )}
@@ -196,31 +240,42 @@ export const ValidationInstance = ({
                 getOptionKey={(op) => op.code}
                 getOptionLabel={(op) => op.name}
                 returnField="code"
+                required
+                errorMessage={
+                  errors?.validation_rules?.[idx]?.template_code?.message
+                }
               />
             </Grid>
           )}
         </Grid>
         <Grid container spacing={2} size="grow" justifyContent="end">
-          {selectedTemplate &&
-            selectedTemplate.required_params?.length > 0 &&
-            selectedTemplate?.required_params.map((param) => (
-              <Grid
-                container
-                size={3}
-                minWidth="15rem"
-                spacing={2}
-                key={`${param}-${selectedTemplate.name}`}
-              >
-                <TextField
-                  id={`validation_rules.${idx}.template_params.${param}-${selectedTemplate.name}`}
-                  label={param}
-                  fullWidth
-                  {...register(
-                    `validation_rules.${idx}.template_params.${param}`,
-                  )}
-                />
-              </Grid>
-            ))}
+          <FormControl error={!!errors?.validation_rules?.[idx]?.template_params}>
+            {selectedTemplate &&
+              selectedTemplate.required_params?.length > 0 &&
+              selectedTemplate?.required_params.map((param) => (
+                <Grid
+                  container
+                  size={3}
+                  minWidth="15rem"
+                  spacing={2}
+                  key={`${param}-${selectedTemplate.name}`}
+                >
+                  <RegisteredTextInput
+                    name={`validation_rules.${idx}.template_params.${param}`}
+                    required
+                    id={`validation_rules.${idx}.template_params.${param}-${selectedTemplate.name}`}
+                    label={param}
+                    register={register}
+                    errorMessage={errors?.validation_rules?.[idx]?.template_params?.[param]?.message}
+                    onChange={(e) => { 
+                      clearErrors(`validation_rules.${idx}.template_params`) 
+                      //TO DO mejorar
+                      setValue(`validation_rules.${idx}.template_params`, {...requiredParamsValue, [param]: e.target.value})
+                    }}
+                  />
+                </Grid>
+              ))}
+          </FormControl>
         </Grid>
       </Grid>
       <Divider sx={{ marginBlock: "1rem" }} />

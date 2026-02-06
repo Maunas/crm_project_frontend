@@ -21,7 +21,6 @@ export const ModifyLeadField = () => {
     useEffect(() => {
         if (!leadFieldId) return
         getLeadField(Number(leadFieldId)).then((field)=>{
-            console.log(field)
             const newField = {...field}
             newField.validation_rules = field.validation_rules.map(val=>{
                 if (val.template_code) return {...val, creation_method: "template"}
