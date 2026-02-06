@@ -34,13 +34,23 @@ export const LeadFieldForm = ({ leadField = null, campaignId }: LeadFieldFormPro
 
   const nav = useNavigate()
 
-  const defaultValues = {
+  const defaultValues: LeadFieldData = {
+    campaign_id: campaignId,
+    name: leadField?.name || null,
+    lead_field_section_id: leadField?.lead_field_section?.id || null,
+    field_type_code: leadField?.field_type_code || null,
+    field_subtype_code: leadField?.field_subtype_code || null,
+    calculation_expression: leadField?.calculation_expression || null,
+    default_value: leadField?.default_value || null,
+    input_mask: leadField?.input_mask || null,
+    nomenclator_id: leadField?.nomenclator?.id || null,
+    related_campaign_id: leadField?.related_campaign?.id || null,
     required: leadField?.required || false,
     is_primary: leadField?.is_primary || false,
     is_visible: leadField?.is_visible || true,
     creation_method: (!leadField || leadField.field_template_code) ? "template" : "manual",
     field_template_code: leadField?.field_template_code || null,
-    validation_rules: leadField?.validation_rules || []
+    validation_rules: leadField?.validation_rules || [],
   }
 
   const { register, control, handleSubmit, reset, setValue, formState: { errors }, setError } = useForm<LeadFieldData>({

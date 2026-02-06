@@ -57,7 +57,7 @@ export const getValidationDataByType = (data: FieldValidationRuleData, isTemplat
         )
         return {
             ...requiredData,
-            template_code: data.template?.code,
+            template_code: data?.template_code,
             //Luego vuelve a convertir a objeto con Object.fromEntries
             template_params: Object.fromEntries(filteredParams)
         }
