@@ -7,7 +7,9 @@ import { getLeadField } from './leadFieldServices'
 export const CreateLeadField = () => {
     const { campaignId } = useParams()
 
-    if(campaignId && !isNaN(Number(campaignId))) return (<LeadFieldForm campaignId={Number(campaignId)} />)
+    if(campaignId && !isNaN(Number(campaignId))) return (
+    <LeadFieldForm campaignId={Number(campaignId)} />
+)
 }
 
 export const ModifyLeadField = () => {
@@ -19,11 +21,10 @@ export const ModifyLeadField = () => {
     useEffect(() => {
         if (!leadFieldId) return
         getLeadField(Number(leadFieldId)).then((field)=>{
-            console.log(field)
             const newField = {...field}
             newField.validation_rules = field.validation_rules.map(val=>{
                 if (val.template_code) return {...val, creation_method: "template"}
-                else  return {...val, creation_method: "manual"}
+                else return {...val, creation_method: "manual"}
             })
             setLeadField(newField)
         })
