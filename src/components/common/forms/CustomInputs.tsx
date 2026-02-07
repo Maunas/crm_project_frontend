@@ -357,7 +357,7 @@ export const RegisteredTextInput = ({
   return (
     <>
       <TextField
-        {...register(name)}
+        {...register(name, {setValueAs: (val)=>val === "" ? undefined : val})}
         autoComplete={autoComplete}
         fullWidth
         type={type}

@@ -52,6 +52,7 @@ import type {
 } from "../../types/leadFields";
 import type { Campaign } from "../../types/campaigns";
 import { GenericContainer } from "../common/layout/GenericContainer";
+import { setFormErrors } from "../../generalService";
 
 export interface FieldValidationRuleData extends FieldValidationRulePost {
   creation_method?: string;
@@ -130,46 +131,35 @@ export const LeadFieldForm = ({
   }, [campaignId]);
 
   const findError = (error) => {
-    const errorDetail = error?.response?.data?.detail;
-    if (!errorDetail) return setError("root", { message: error.message });
-    if (typeof errorDetail === "string") return setError("root", { message: errorDetail });
-    if (errorDetail?.length > 0)
-      return errorDetail?.map((error) => {
-        setError(error.field, { message: error.message });
-      });
-
-    setError(errorDetail.field, { message: errorDetail.message });
+    return setFormErrors(error, setError)
   };
 
   const findValError = (error, val, idx) => {
-    const errorDetail = error?.response?.data?.detail;
-    if (!errorDetail) return setError("root", { message: error.message });
-    if (errorDetail?.length > 0)
-      return errorDetail?.map((error) => {
-        if (error.field === "body")
-          return setError(
-            `validation_rules.${idx}.${
-              val.creation_method === "template"
+    return setFormErrors(error, setError,
+      (error) => {
+        return error.response.data.detail?.map((error) => {
+          if (error.field === "body")
+            return setError(
+              `validation_rules.${idx}.${val.creation_method === "template"
                 ? "template_code"
                 : "expression"
-            }`,
-            { message: error.message },
-          );
+              }`,
+              { message: error.message },
+            );
           else if (error.field === "template_params")
-          return setError(
-            `validation_rules.${idx}.template_params.${
+            return setError(
               error.message.split("'")?.[1]
-            }`,
-            { message: error.message },
-          );
-        else
-          return setError(`validation_rules.${idx}.${error.field}`, {
-            message: error.message,
-          });
-      });
-    if (!errorDetail.field) return setError("root", { message: errorDetail });
-
-    setError(errorDetail.field, { message: errorDetail.message });
+                ? `validation_rules.${idx}.template_params.${error.message.split("'")?.[1]}`
+                : `validation_rules.${idx}.template_params`
+              , { message: error.message },
+            );
+          else
+            return setError(`validation_rules.${idx}.${error.field}`, {
+              message: error.message,
+            });
+        });
+      }
+    )
   };
 
   const saveLeadField = async (data: LeadFieldData) => {
@@ -191,6 +181,7 @@ export const LeadFieldForm = ({
         .then((leadField) => {
           setValue("fieldId", leadField.id)
           setValue("name", leadField.name)
+          return leadField
         })
         .catch((e) => {
           findError(e);
@@ -202,7 +193,12 @@ export const LeadFieldForm = ({
     const newValidationList = await Promise.all(
       data?.validation_rules.map((val, idx) =>
         submitValidation(val, newLeadField?.id)
-          .then((newVal) => setValue(`validation_rules.${idx}.id`, newVal.id))
+          .then((newVal) => {
+            setValue(`validation_rules.${idx}.id`, newVal.id)
+            setValue(`validation_rules.${idx}.name`, newVal.name)
+            setValue(`validation_rules.${idx}.error_message`, newVal.error_message)
+            return newVal
+          })
           .catch((e) => {
             findValError(e, val, idx);
             throw e;
@@ -211,13 +207,11 @@ export const LeadFieldForm = ({
     );
     return { ...newLeadField, validation_rules: newValidationList };
   };
-  console.log(errors);
   const submitValidation = (val: FieldValidationRuleData, fieldId: number) => {
     const newVal = getValidationDataByType(
       { ...val, field_id: fieldId },
       val.creation_method === "template",
     );
-    console.log(val)
     if (val.id) {
       return updateValidation(newVal, val.id);
     } else {
@@ -226,14 +220,14 @@ export const LeadFieldForm = ({
   };
 
   const submit = async () => {
-clearErrors(); // Clears all validation errors
+    clearErrors(); // Clears all validation errors
     const data = getValues();
     await saveLeadField(data);
     nav(`/campaigns/${campaignId}`);
   };
 
   const submitAndReset = async () => {
-clearErrors(); // Clears all validation errors
+    clearErrors(); // Clears all validation errors
     const data = getValues();
     await saveLeadField(data);
     alert("Creado");
@@ -283,11 +277,11 @@ clearErrors(); // Clears all validation errors
             errors={errors}
             clearErrors={clearErrors}
           />
-{errors.root && (
-        <FormHelperText error sx={{ marginBlock: 1 }}>
-          {errors?.root?.message}
-        </FormHelperText>
-      )}
+          {errors.root && (
+            <FormHelperText error sx={{ marginBlock: 1 }}>
+              {errors?.root?.message}
+            </FormHelperText>
+          )}
           <ButtonGroup>
             <Button
               variant="outlined"
@@ -508,7 +502,6 @@ const LeadFieldFormFields = ({
                   label="Máscara de Input"
                   register={register}
                   errorMessage={errors?.input_mask?.message}
-                  required
                 />
               </Grid>
             )}
@@ -517,15 +510,15 @@ const LeadFieldFormFields = ({
         {(creationMethod === "template" ||
           (fieldTypeCode &&
             ["NUMBER", "INT", "STRING", "BOOL"].includes(fieldTypeCode))) && (
-          <Grid size="grow" minWidth="20rem">
-            <ControlledTextInput
-              control={control}
-              label="Valor por Defecto"
-              name="default_value"
-              errorMessage={errors?.default_value?.message}
-            />
-          </Grid>
-        )}
+            <Grid size="grow" minWidth="20rem">
+              <ControlledTextInput
+                control={control}
+                label="Valor por Defecto"
+                name="default_value"
+                errorMessage={errors?.default_value?.message}
+              />
+            </Grid>
+          )}
       </Grid>
     </Grid>
   );

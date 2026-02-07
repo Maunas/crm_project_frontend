@@ -1,4 +1,4 @@
-import { TextField, Typography, Button, Grid } from "@mui/material"
+import { TextField, Typography, Button, Grid, FormHelperText } from "@mui/material"
 import { useEffect, useMemo, useState } from "react"
 import { useForm, useWatch } from "react-hook-form"
 import type { LeadFieldPost } from "../../types/leadFields"
@@ -7,6 +7,8 @@ import { Link, useNavigate } from "react-router-dom"
 import { ControlledAutocomplete } from "../common/forms/CustomMultipleInputs"
 import { createLeadField } from "../leadFields/leadFieldServices"
 import type { CampaignPost, Organization, OrganizationPost, Workspace, WorkspacePost } from "../../types/campaigns"
+import { setFormErrors } from "../../generalService"
+import { RegisteredTextInput } from "../common/forms/CustomInputs"
 
 export const CampaignForm = () => {
 
@@ -19,7 +21,7 @@ export const CampaignForm = () => {
         getOrganizations({only_active:true}).then(setOrganizations)
     }, [])
 
-    const { register, handleSubmit, control } = useForm<CampaignPost & { organization_id?: number }>()
+    const { register, handleSubmit, control, formState:{errors}, setError } = useForm<CampaignPost & { organization_id?: number }>()
 
     const selectedOrg = useWatch({
         control,
@@ -58,7 +60,9 @@ export const CampaignForm = () => {
                     .then(() => nav(`/campaigns/${res.id}`))
                     .catch((e) => console.error(e))
             )
-            .catch((e) => console.error(e))
+            .catch((e) => {
+                setFormErrors(e,setError)
+            })
     }
 
     return (
@@ -71,27 +75,31 @@ export const CampaignForm = () => {
             }}>
                 <Grid container spacing={2} size={12}>
                     <Grid size="grow" minWidth={"20rem"}>
-                        <TextField {...register("name")} label="Nombre" fullWidth required />
+                        <RegisteredTextInput name="name" register={register} label="Nombre"
+                        required errorMessage={errors.name?.message} />
                     </Grid>
                     <Grid size="grow" minWidth={"20rem"}>
-                        <TextField {...register("description")} label="Descripción" fullWidth />
+                        <RegisteredTextInput name="description" register={register} label="Descripción"
+                        errorMessage={errors.description?.message} />
                     </Grid>
                 </Grid>
                 <Grid container spacing={2} size={12}>
 
                     <Grid size="grow" minWidth={"20rem"}>
                         <ControlledAutocomplete control={control} label="Organización" name="organization_id"
-                            getOptionLabel={(option) => option.name}
-                            options={organizations} returnField="id" />
+                            getOptionLabel={(option) => option.name} errorMessage={errors.organization_id?.message}
+                            options={organizations} returnField="id" required/>
                     </Grid>
                     <Grid size="grow" minWidth={"20rem"}>
                         <ControlledAutocomplete control={control} label="Espacio de Trabajo" name="workspace_id"
-                            getOptionLabel={(option) => option.name}
-                            options={filteredWorkspaces} returnField="id" disabled={!selectedOrg} />
+                            getOptionLabel={(option) => option.name} errorMessage={errors?.workspace_id?.message}
+                            options={filteredWorkspaces} returnField="id" disabled={!selectedOrg} required/>
                     </Grid>
                 </Grid>
 
             </Grid>
+            {errors?.root && 
+            <FormHelperText color="error">{errors?.root?.message}</FormHelperText>}
             <Button component={Link} to="/campaigns">
                 Cancelar
             </Button>
@@ -104,7 +112,7 @@ export const CampaignForm = () => {
 
 export const WorkspaceForm = () => {
 
-    const { register, handleSubmit, control } = useForm<WorkspacePost>()
+    const { register, handleSubmit, control, formState:{errors}, setError} = useForm<WorkspacePost>()
     const nav = useNavigate()
 
     const [organizations, setOrganizations] = useState<Organization[] | []>([])
@@ -116,7 +124,7 @@ export const WorkspaceForm = () => {
     const submit = (data: WorkspacePost) => {
         createWorkspace(data).then(() => {
             nav(`/campaigns`)
-        }).catch((e) => console.error(e))
+        }).catch((e) => setFormErrors(e,setError))
     }
 
     return (
@@ -128,19 +136,23 @@ export const WorkspaceForm = () => {
                 margin: "1rem"
             }}>
                 <Grid size="grow" minWidth={"20rem"}>
-                    <TextField {...register("name")} required label="Nombre" fullWidth />
+                    <RegisteredTextInput name="name" register={register} label="Nombre"
+                        required errorMessage={errors.name?.message} />
                 </Grid>
                 <Grid size="grow" minWidth={"20rem"}>
-                    <TextField {...register("description")} label="Descripción" fullWidth />
+                    <RegisteredTextInput name="description" register={register} label="Descripción"
+                        errorMessage={errors.description?.message} />
                 </Grid>
 
                 <Grid size="grow" minWidth={"20rem"}>
                     <ControlledAutocomplete control={control} name="organization_id" label="Organización"
                         getOptionLabel={option => option.name} options={organizations}
-                        returnField="id" />
+                        returnField="id" errorMessage={errors.organization_id?.message} required />
                 </Grid>
 
             </Grid>
+            {errors?.root && 
+            <FormHelperText color="error">{errors?.root?.message}</FormHelperText>}
             <Button component={Link} to="/campaigns">
                 Cancelar
             </Button>
@@ -153,13 +165,13 @@ export const WorkspaceForm = () => {
 
 export const OrganizationForm = () => {
 
-    const { register, handleSubmit } = useForm<WorkspacePost>()
+    const { register, handleSubmit, formState:{errors}, setError } = useForm<WorkspacePost>()
     const nav = useNavigate()
 
     const submit = (data: OrganizationPost) => {
         createOrganization(data)
             .then(() => nav(`/campaigns`))
-            .catch((e) => console.error(e))
+            .catch((e) => setFormErrors(e,setError))
     }
 
     return (
@@ -171,13 +183,17 @@ export const OrganizationForm = () => {
                 margin: "1rem"
             }}>
                 <Grid size="grow" minWidth={"20rem"}>
-                    <TextField {...register("name")} label="Nombre" required fullWidth />
+                    <RegisteredTextInput name="name" register={register} label="Nombre"
+                        required errorMessage={errors.name?.message} />
                 </Grid>
                 <Grid size="grow" minWidth={"20rem"}>
-                    <TextField {...register("description")} label="Descripción" fullWidth />
+                    <RegisteredTextInput name="description" register={register} label="Descripción"
+                        errorMessage={errors.description?.message} />
                 </Grid>
 
             </Grid>
+            {errors?.root && 
+            <FormHelperText color="error">{errors?.root?.message}</FormHelperText>}
             <Button component={Link} to="/campaigns">
                 Cancelar
             </Button>

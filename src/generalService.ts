@@ -1,3 +1,5 @@
+import type { UseFormSetError } from "react-hook-form";
+
 export const API_BASE_URL = "http://localhost:8000";
 
 export const getFieldType = (
@@ -24,4 +26,18 @@ export function orderList(list: object[], orderField: string = "id", desc = fals
       : (a?.[orderField] ?? 0) - (b?.[orderField] ?? 0);
   });
   return newList;
+}
+
+export const setFormErrors = (error, setError: UseFormSetError<object>,
+  mapFunction: null | ((error: any) => void) = null) => {
+  const errorDetail = error?.response?.data?.detail;
+  if (!errorDetail) return setError("root", { message: error.message });
+  if (typeof errorDetail === "string") return setError("root", { message: errorDetail });
+  if (errorDetail?.length > 0) {
+    if (mapFunction) return mapFunction(error);
+    else return errorDetail?.map((error) => {
+      setError(error.field, { message: error.message });
+    })
+  }
+  setError(errorDetail.field, { message: errorDetail.message });
 }
