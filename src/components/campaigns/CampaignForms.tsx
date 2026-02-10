@@ -10,15 +10,20 @@ import type { Campaign, CampaignPost, Organization, OrganizationPost, Workspace,
 import { setFormErrors } from "../../generalService"
 import { RegisteredTextInput } from "../common/forms/CustomInputs"
 
-export const CampaignForm = ({ existingCmp, closeSidebar }: { existingCmp?: Campaign, closeSidebar: () => void }) => {
+export const CampaignForm = ({ existingCmp, closeSidebar,createEntityOnList}
+    : { existingCmp?: Campaign, closeSidebar: () => void, createEntityOnList: (
+            entity: OrganizationDetailed | WorkspaceDetailed | CampaignDetailed | null,
+        ) => void }) => {
 
     const [workspaces, setWorkspaces] = useState<Workspace[] | []>([])
     const [organizations, setOrganizations] = useState<Organization[] | []>([])
     const nav = useNavigate()
 
     useEffect(() => {
-        getWorkspaces({ only_active: true }).then(setWorkspaces)
-        getOrganizations({ only_active: true }).then(setOrganizations)
+        getWorkspaces({ only_active: true })
+        .then(res=>setWorkspaces(res.items))
+        getOrganizations({ only_active: true })
+        .then(res=>setOrganizations(res.items))
     }, [])
 
     const { register, handleSubmit, control, formState: { errors }, setError }
@@ -66,7 +71,10 @@ export const CampaignForm = ({ existingCmp, closeSidebar }: { existingCmp?: Camp
             createCampaign(data)
                 .then((res) =>
                     Promise.all(requiredFields.map((field) => createLeadField({ ...field, campaign_id: res.id })))
-                        .then(() => nav(`/campaigns/${res.id}`))
+                        .then(() => {
+                            createEntityOnList(res)
+                            closeSidebar()
+                        })
                         .catch((e) => console.error(e))
                 )
                 .catch((e) => {

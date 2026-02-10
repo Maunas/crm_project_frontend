@@ -32,11 +32,21 @@ export const OrganizationList = () => {
                 setOrganizations({ ...organizations, items: [...organizations.items, entity] })
                 break;
             case "CREATE_WSP":
-                setWorkspaces({...workspaces, items:[...workspaces.items, entity]})
+                setWorkspaces({ ...workspaces, items: [...workspaces.items, entity] })
                 break;
+            case "CREATE_CMP": {
+                const workspacesItems = [...workspaces.items]
+                const workspaceIdx = workspacesItems.findIndex(wsp => wsp.id === entity.workspace_id)
+                workspacesItems[workspaceIdx] = {
+                    ...workspacesItems[workspaceIdx],
+                    campaigns: [...workspacesItems[workspaceIdx].campaigns, entity]
+                }
+                setWorkspaces({ ...workspaces, items: [...workspacesItems] })
+                break;
+            }
+
         }
     }
-console.log(organizations)
     useEffect(() => {
         getWorkspaces({ detailed: true }).then(setWorkspaces)
         getOrganizations({ detailed: true, page_size: 12 }).then(setOrganizations)
