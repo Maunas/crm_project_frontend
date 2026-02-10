@@ -19,13 +19,12 @@ export const getFieldType = (
 };
 
 export function orderList(list: object[], orderField: string = "id", desc = false) {
-  const newList = [...list];
-  newList.sort((a, b) => {
-    return desc
-      ? (b?.[orderField] ?? 0) - (a?.[orderField] ?? 0)
-      : (a?.[orderField] ?? 0) - (b?.[orderField] ?? 0);
-  });
-  return newList;
+    const newList = [...list];
+    return newList.sort((a, b) => {
+      return desc
+        ? (b?.[orderField] ?? 0) - (a?.[orderField] ?? 0)
+        : (a?.[orderField] ?? 0) - (b?.[orderField] ?? 0);
+    });
 }
 
 export const setFormErrors = (error, setError: UseFormSetError<object>,
