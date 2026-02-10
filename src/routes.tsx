@@ -2,7 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import MainLayout from "./components/common/mainLayout";
 import { NotFound } from "./pages/NotFound";
 import { LeadDetails } from "./components/lead/LeadDetails";
-import { CampaignForm, OrganizationForm, WorkspaceForm } from "./components/campaigns/CreateCampaign";
+import { CampaignForm, OrganizationForm, WorkspaceForm } from "./components/campaigns/CampaignForms";
 import { CampaignDetails } from "./components/campaigns/CampaignDetails";
 import { OrganizationList } from "./components/campaigns/CampaignList";
 import { GenericContainer } from "./components/common/layout/GenericContainer";

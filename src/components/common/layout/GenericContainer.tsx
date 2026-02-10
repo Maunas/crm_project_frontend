@@ -1,4 +1,4 @@
-import { Box, Button, Container, Modal, Paper, type Breakpoint } from '@mui/material'
+import { Button, Container, Modal, Paper, type Breakpoint } from '@mui/material'
 import { useState, type ReactNode } from 'react'
 
 
@@ -12,11 +12,20 @@ interface GenericContainerProps {
 export const GenericContainer = ({ children, maxWidth = "lg", containerSx = {}, paperSx = {}, ...props }: GenericContainerProps) => {
 
     return (
-        <Container sx={{ ...containerSx}} maxWidth={maxWidth}>
+        <Container sx={{ ...containerSx }} maxWidth={maxWidth} {...props}>
             <Paper sx={{ paddingInline: 4, paddingBlock: 2, width: "100%", ...paperSx }}>
                 {children}
             </Paper>
         </Container>
+    )
+}
+
+export const GenericPaper = ({ children, paperSx = {}, ...props }: GenericContainerProps) => {
+
+    return (
+            <Paper sx={{ paddingInline: 4, paddingBlock: 2, width: "100%", ...paperSx }} {...props}>
+                {children}
+            </Paper>
     )
 }
 
@@ -38,9 +47,9 @@ export const GenericModal = ({ buttonText, buttonProps = {}, maxWidth = "lg", co
                 aria-labelledby="modal-modal-title"
                 aria-describedby="modal-modal-description"
             >
-                <GenericContainer maxWidth={maxWidth} paperSx={{overflowY:"auto", maxHeight:"95vh", ...paperSx}}
-                containerSx={{position:"absolute", top:"50%", left:"50%", transform:"translate(-50%, -50%)",...containerSx}} 
-                  >
+                <GenericContainer maxWidth={maxWidth} paperSx={{ overflowY: "auto", maxHeight: "95vh", ...paperSx }}
+                    containerSx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", ...containerSx }}
+                >
                     {children}
                 </GenericContainer>
             </Modal>
