@@ -1,6 +1,7 @@
 import axios from "axios";
 import { API_BASE_URL, orderList } from "../../generalService";
 import type { Lead, LeadDetailed } from "../../types/leads";
+import type { Paginable } from "../../types/common";
 
 interface Params {
   detailed?: boolean;
@@ -9,11 +10,10 @@ interface Params {
   campaign_id?: number;
 }
 
-export const getLeads = async <T extends Params>(
-  params?: T,
-): Promise<T["detailed"] extends true ? LeadDetailed[] : Lead[]> => {
+export const getLeads = async <T extends Params>( params?: T )
+: Promise<Paginable<T["detailed"] extends true ? LeadDetailed[] : Lead[]>> => {
   const lead = await axios.get(`${API_BASE_URL}/leads`, { params });
-  return orderList(lead.data.items);
+  return {...lead.data, items: orderList(lead.data.items)};
 };
 
 export const getLead = async (id: number): Promise<LeadDetailed> => {
