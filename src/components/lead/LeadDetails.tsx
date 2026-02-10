@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
-import { useParams } from "react-router-dom"
+import { Link as RouterLink, useParams } from "react-router-dom"
 import { getLead } from "./leadService.ts"
-import { Accordion, AccordionDetails, AccordionSummary, Box, Chip, Container, Divider, Grid, Link, Paper, Typography } from "@mui/material"
+import { Accordion, AccordionDetails, AccordionSummary, Box, Chip, Container, Divider, Grid, Paper, Typography, Button, Link } from "@mui/material"
 import type { Lead } from "../../types/leads"
 import type { LeadFieldValue } from "../../types/leadFields"
 import { getFieldType } from "../../generalService.ts"
@@ -34,6 +34,10 @@ export const LeadDetails = () => {
                                     <Typography variant="h1">{fieldValues[0]?.value ?? "Lead no encontrado"} {fieldValues[1]?.value ?? ""}</Typography>
                                     <Chip label={lead?.active ? "Habilitado" : "Deshabilitado"} color={lead?.active ? "success" : "error"} />
                                 </Box>
+                                <Button variant="contained" color="primary" component={RouterLink} to={`/leads/modify/${lead?.id}`}
+                                sx={{marginBlock:1}}>
+                                  Modificar Lead
+                                </Button>
                             </Paper>
                             <Paper sx={{ p: 1, borderRadius: "1em" }}>
                                 <LeadFieldSections fieldValues={fieldValues} />
