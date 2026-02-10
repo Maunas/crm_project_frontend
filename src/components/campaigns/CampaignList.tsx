@@ -28,8 +28,8 @@ export const OrganizationList = () => {
     const createEntityOnList = (entity, mode) => {
         switch (mode) {
             case "CREATE_ORG":
-                if (organizations.page !== organizations.total_pages) break
-                setOrganizations({ ...organizations, items: [...organizations.items, entity] })
+                getOrganizations({ detailed: true, page_size: 12, page: organizations.page })
+                    .then(setOrganizations)
                 break;
             case "CREATE_WSP":
                 setWorkspaces({ ...workspaces, items: [...workspaces.items, entity] })
