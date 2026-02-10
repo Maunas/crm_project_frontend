@@ -215,6 +215,7 @@ export const ControlledNumber = ({
 
 interface ControlledCheckboxProps extends ControlFormInput {
   title?: string;
+  defaultValue?: boolean;
 }
 
 export const ControlledCheckbox = ({
@@ -224,6 +225,7 @@ export const ControlledCheckbox = ({
   title,
   required = false,
   errorMessage = null,
+  defaultValue = false
 }: ControlledCheckboxProps) => {
   return (
     <FormControl error={!!errorMessage}>
@@ -235,7 +237,7 @@ export const ControlledCheckbox = ({
           <Controller
             name={name}
             control={control}
-            defaultValue={false}
+            defaultValue={defaultValue ?? false}
             render={({ field }) => (
               <Checkbox
                 {...field}

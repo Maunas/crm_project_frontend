@@ -9,7 +9,7 @@ import type { LeadField, LeadFieldDetailed, LeadFieldValueDetailed, NomenclatorI
 import type { Campaign } from "../../types/campaigns"
 import type { Lead, LeadDetailed, LeadPost, LeadPostValue } from "../../types/leads"
 import { createLead, getLeads, simulateCreateLead, updateLead } from "./leadService"
-import { useNavigate } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 
 //Para permitir mantener los datos de cada campo
 export interface LeadPostValueData extends LeadPostValue {
@@ -225,6 +225,10 @@ export const LeadFormValues = ({ leadFields, simulate = false, register, control
                 <FormHelperText error sx={{ marginBlock: 1 }}>{errors?.root.message}</FormHelperText>
             }
             <ButtonGroup sx={{ marginBlock: 1 }}>
+                <Button variant="outlined" color="primary" component={Link} 
+                to={idLead ? `/leads/${idLead}` : "/leads"}>
+                        Cancelar
+                    </Button>
                 { //Disponible en todas como debug, bloquear al terminar
                     //simulate &&
                     <Button variant={simulate ? "contained" : "outlined"} color="primary" onClick={handleSubmit((data) => submitData(data, true))}>
