@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react"
 import { useForm, useWatch } from "react-hook-form"
 import type { LeadFieldPost } from "../../types/leadFields"
 import { createCampaign, createOrganization, createWorkspace, getOrganizations, getWorkspaces, updateCampaign, updateOrganization, updateWorkspace } from "./campaignServices"
-import { Link, useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { ControlledAutocomplete } from "../common/forms/CustomMultipleInputs"
 import { createLeadField } from "../leadFields/leadFieldServices"
 import type { Campaign, CampaignPost, Organization, OrganizationPost, Workspace, WorkspacePost } from "../../types/campaigns"
@@ -120,7 +120,12 @@ export const CampaignForm = ({ existingCmp, closeSidebar }: { existingCmp?: Camp
     )
 }
 
-export const WorkspaceForm = ({ existingWksp, closeSidebar }: { existingWksp?: Workspace, closeSidebar: () => void }) => {
+export const WorkspaceForm = ({ existingWksp, closeSidebar, createEntityOnList }
+    : {
+        existingWksp?: Workspace, closeSidebar: () => void, createEntityOnList: (
+            entity: OrganizationDetailed | WorkspaceDetailed | CampaignDetailed | null,
+        ) => void
+    }) => {
 
     const { register, handleSubmit, control, formState: { errors }, setError } = useForm<WorkspacePost>({
         defaultValues: {
@@ -134,13 +139,14 @@ export const WorkspaceForm = ({ existingWksp, closeSidebar }: { existingWksp?: W
     const [organizations, setOrganizations] = useState<Organization[] | []>([])
 
     useEffect(() => {
-        getOrganizations({ only_active: true }).then(setOrganizations)
+        getOrganizations({ only_active: true }).then(res => setOrganizations(res.items))
     }, [])
 
     const submit = (data: WorkspacePost) => {
         if (!existingWksp) {
-            createWorkspace(data).then(() => {
-                nav(`/campaigns`)
+            createWorkspace(data).then((res) => {
+                createEntityOnList(res)
+                closeSidebar()
             }).catch((e) => setFormErrors(e, setError))
         } else {
             updateWorkspace(data, existingWksp.id).then(() => {
@@ -192,7 +198,6 @@ export const OrganizationForm = ({ existingOrg, closeSidebar, createEntityOnList
     : {
         existingOrg?: Organization, closeSidebar: () => void, createEntityOnList: (
             entity: OrganizationDetailed | WorkspaceDetailed | CampaignDetailed | null,
-            mode: string | null,
         ) => void
     }) => {
 
@@ -203,7 +208,7 @@ export const OrganizationForm = ({ existingOrg, closeSidebar, createEntityOnList
         if (!existingOrg) {
             createOrganization(data)
                 .then((res) => {
-                    createEntityOnList(res, "CREATE_ORG")
+                    createEntityOnList(res)
                     closeSidebar()
                 })
                 .catch((e) => setFormErrors(e, setError))

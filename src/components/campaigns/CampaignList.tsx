@@ -32,7 +32,7 @@ export const OrganizationList = () => {
                 setOrganizations({ ...organizations, items: [...organizations.items, entity] })
                 break;
             case "CREATE_WSP":
-                setWorkspaces([...workspaces, entity])
+                setWorkspaces({...workspaces, items:[...workspaces.items, entity]})
                 break;
         }
     }
