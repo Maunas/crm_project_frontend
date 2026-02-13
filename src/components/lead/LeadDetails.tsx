@@ -30,8 +30,8 @@ export const LeadDetails = () => {
             .sort((a: LeadFieldValue, b: LeadFieldValue) => a.field.order - b.field.order)
     }
         , [lead])
-    console.log(lead)
-    return (
+
+        return (
         <Container maxWidth={false}>
             <Grid container spacing={3}>
                 <Grid size={{ xs: 12, md: 4, lg: 4 }} minWidth="20rem" >
@@ -59,8 +59,11 @@ export const LeadDetails = () => {
                                     </AccordionSummary>
                                     <AccordionDetails sx={{ paddingTop: 0 }}>
                                         <Divider sx={{ marginBottom: "1rem" }} ></Divider>
-                                        <LeadField fieldName="Fecha de Creación" value={lead?.created_at} type="DATE" />
-                                        <LeadField fieldName="Fecha de Última Modificación" value={lead?.updated_at} type="DATE" />
+                                    <Typography sx={{ fontWeight: "bold" }} component="h3">Fecha de Creación:</Typography>
+
+                                        <LeadFieldByType fieldValue={{}} value={lead?.created_at} type="DATE" />
+                                    <Typography sx={{ fontWeight: "bold" }} component="h3">Fecha de Última Modificación:</Typography>
+                                        <LeadFieldByType fieldValue={{}} value={lead?.updated_at} type="DATE" />
                                     </AccordionDetails>
                                 </Accordion>
                             </Paper>
@@ -272,7 +275,7 @@ const RatingField = ({ value, subtype }) => {
             {subtype === "NPS" &&
                 <Grid size={8}>
                     <Slider
-                        disableSwap min={1} max={10} step={1}
+                         min={1} max={10} step={1}
                         value={value}
                     />
                 </Grid>
@@ -280,7 +283,7 @@ const RatingField = ({ value, subtype }) => {
             {subtype === "SCORE" &&
                 <Grid size={8}>
                     <Slider
-                        disabled min={0} max={100} step={1}
+                         min={0} max={100} step={1}
                         defaultValue={value}
                     />
                 </Grid>
