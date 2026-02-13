@@ -6,6 +6,8 @@ import type { Lead } from "../../types/leads"
 import type { LeadFieldValue } from "../../types/leadFields"
 import { getFieldType } from "../../generalService.ts"
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
 
 export const LeadDetails = () => {
 
@@ -18,11 +20,12 @@ export const LeadDetails = () => {
 
     const fieldValues = useMemo(() => {
         if (!lead?.field_values) return []
-        return lead.field_values.filter(i => (i.field.is_visible && i.value))
+        return lead.field_values.filter(i => (i.field.is_visible &&
+            (i.value || i.nomenclator_items?.length > 0 || i.related_leads?.length > 0)))
             .sort((a: LeadFieldValue, b: LeadFieldValue) => a.field.order - b.field.order)
     }
         , [lead])
-
+    console.log(lead)
     return (
         <Container maxWidth={false}>
             <Grid container spacing={3}>
@@ -35,8 +38,8 @@ export const LeadDetails = () => {
                                     <Chip label={lead?.active ? "Habilitado" : "Deshabilitado"} color={lead?.active ? "success" : "error"} />
                                 </Box>
                                 <Button variant="contained" color="primary" component={RouterLink} to={`/leads/modify/${lead?.id}`}
-                                sx={{marginBlock:1}}>
-                                  Modificar Lead
+                                    sx={{ marginBlock: 1 }}>
+                                    Modificar Lead
                                 </Button>
                             </Paper>
                             <Paper sx={{ p: 1, borderRadius: "1em" }}>
@@ -111,8 +114,14 @@ export const LeadFieldSections = ({ fieldValues }: LeadFieldSectionsProps) => {
                             <Divider sx={{ marginBottom: "1rem" }} ></Divider>
 
                             {section?.fields.map((fieldValue, idx) =>
-                                <LeadField fieldName={fieldValue.field.name} type={fieldValue.field.field_type_code}
-                                    value={fieldValue.value} template={fieldValue.field.field_template_code} key={idx} />
+                                <Box key={idx}>
+                                    <Typography sx={{ fontWeight: "bold" }} component="h3">{fieldValue?.field?.name}:</Typography>
+
+                                    <LeadField fieldValue={fieldValue} type={fieldValue.field.field_type_code}
+                                        value={fieldValue.value} template={fieldValue.field.field_template_code} />
+                                    <LeadFieldByType fieldValue={fieldValue} type={fieldValue.field.field_type_code}
+                                        value={fieldValue.value} template={fieldValue.field.field_template_code} />
+                                </Box>
                             )}
 
                         </AccordionDetails>
@@ -124,49 +133,72 @@ export const LeadFieldSections = ({ fieldValues }: LeadFieldSectionsProps) => {
 }
 
 interface LeadFieldProps {
-    fieldName: string,
+    fieldValue: LeadFieldValue,
     value: string | number | boolean,
     type: string,
     template?: string | null
 }
 
-export const LeadField = ({ fieldName, value, type, template = null }: LeadFieldProps) => {
+export const LeadField = ({ fieldValue, value, type, template = null }: LeadFieldProps) => {
 
-    const fieldValue = useMemo(() => getFieldType(type, value), [type, value])
-
-    if (type === "BOOL" && fieldValue) {
-        return <Chip color={value ? "success" : "error"} 
-        label={`${fieldName}: ${value ? "Si" : "No"}`} sx={{ marginBottom: ".5rem", fontWeight: "bold" }} />
-    }
+    const castedField = useMemo(() => getFieldType(type, value), [type, value])
 
     return (
         <>
-            <Typography sx={{ fontWeight: "bold" }} component="h3">{fieldName}:</Typography>
-
             {template === "INSTAGRAM_USER" && typeof value === "string" &&
                 <Link sx={{ paddingLeft: ".5rem" }} href={`https://instagram.com/${value?.substring(1)}`} target="_blank" rel="noopener">
                     {value}
                 </Link>
             }
 
-            {template === "WEBSITE_URL" &&
+            {type === "URL" &&
                 <Link sx={{ paddingLeft: ".5rem" }} href={`${value}`} target="_blank" rel="noopener">
                     {value}
                 </Link>
             }
 
-            {template === "EMAIL" &&
+            {type === "EMAIL" &&
                 <Link sx={{ paddingLeft: ".5rem" }} href={`mailto:${value}`} target="_blank" rel="noopener">
                     {value}
                 </Link>
             }
 
-            {(!template || !["INSTAGRAM_USER", "WEBSITE_URL", "EMAIL"].includes(template)) &&
-                <Typography sx={{ paddingLeft: ".5rem" }}>
-                    {template && template === "SALARY_EXPECTATION" && "$"}
-                    {value}
-                </Typography>}
-
+<Typography sx={{ paddingLeft: ".5rem" }}>
+                    {type} * {template}
+                </Typography>
         </>
     )
+}
+
+export const LeadFieldByType = ({ fieldValue, value, type, template = null }: LeadFieldProps) => {
+    switch (type) {
+        case "LEAD":
+            return <Link sx={{ paddingLeft: ".5rem" }} component={RouterLink}
+                    to={`/leads/${fieldValue?.related_leads?.[0]?.id}`} >
+                    {fieldValue?.related_leads?.[0]?.field_values?.[0]?.value} {fieldValue?.related_leads?.[0]?.field_values?.[1]?.value}
+                </Link>
+        case "SELECTOR": case "CHECKBOX":
+        return <ul style={{ margin: 0 }}>
+                {fieldValue?.nomenclator_items?.length > 0 &&
+                fieldValue.nomenclator_items.map(i =>
+                    <Typography sx={{ paddingLeft: ".5rem" }} key={i.code}>
+                        <li> {i.value}</li>
+                    </Typography>
+                )}
+                </ul>
+        case "TAGS":
+        return <Chip color="primary"
+            label={value} sx={{ ml: ".5rem", marginBottom: ".5rem", fontWeight: "bold" }} />
+        case "BOOL":
+        return <Chip color={value ? "success" : "error"}
+            label={<Grid alignItems="center" container justifyContent="space-between">
+                {value ? <><CheckIcon /> Si</>
+                : <><CloseIcon /> No</>}
+                </Grid>
+            } sx={{ ml: ".5rem", marginBottom: ".5rem", fontWeight: "bold" }} />
+        default: 
+        return <Typography sx={{ paddingLeft: ".5rem" }}>
+                    {type === "MONEY" && "$"} {value}
+                </Typography>
+    }
 }

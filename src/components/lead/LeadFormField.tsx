@@ -48,7 +48,7 @@ export const LeadFormFieldType = ({ register, idx, control, leadField, relatedLe
         case "DATE":
             return (<LeadFormText label={leadField.fieldData.name} name={name} register={register} type="date"
                 required={leadField.fieldData.required} errorMessage={errorMessage} />)
-        case "DATETIME":
+        case "DATE_TIME":
             return (<LeadFormText label={leadField.fieldData.name} name={name} register={register} type="datetime-local"
                 required={leadField.fieldData.required} errorMessage={errorMessage} />)
         case "NUMBER": case "INT":

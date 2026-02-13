@@ -30,9 +30,18 @@ interface LeadFormTextInput extends RegisterFormInput {
     multiline?: boolean
 }
 export const LeadFormText = ({ label, register, name, type = "text", required = false, errorMessage = null, autoComplete = "one-time-code", multiline = false }: LeadFormTextInput) => {
-    if (["date", "datetime-local"].includes(type)) return (
+    if (type === "date") return (
         <>
             <TextField id={name} label={label} fullWidth type={type} {...register(name)} autoComplete={autoComplete}
+                slotProps={{ inputLabel: { shrink: true } }} required={required} error={!!errorMessage} />
+            {errorMessage &&
+                <FormHelperText error sx={{ marginBlock: 1 }}>{errorMessage}</FormHelperText>
+            }
+        </>)
+            if (type === "datetime-local") return (
+        <>
+            <TextField id={name} label={label} fullWidth type={type} 
+            {...register(name, {setValueAs:(value)=> `${value.replace("T"," ")}:00`})} autoComplete={autoComplete}
                 slotProps={{ inputLabel: { shrink: true } }} required={required} error={!!errorMessage} />
             {errorMessage &&
                 <FormHelperText error sx={{ marginBlock: 1 }}>{errorMessage}</FormHelperText>
