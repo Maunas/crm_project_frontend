@@ -1,13 +1,18 @@
 import { useEffect, useMemo, useState } from "react"
 import { Link as RouterLink, useParams } from "react-router-dom"
 import { getLead } from "./leadService.ts"
-import { Accordion, AccordionDetails, AccordionSummary, Box, Chip, Container, Divider, Grid, Paper, Typography, Button, Link } from "@mui/material"
+import { Accordion, AccordionDetails, AccordionSummary, Box, Chip, Container, Divider, Grid, Paper, Typography, Button, Link, Rating, Slider } from "@mui/material"
 import type { Lead } from "../../types/leads"
 import type { LeadFieldValue } from "../../types/leadFields"
 import { getFieldType } from "../../generalService.ts"
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import DOMPurify from 'dompurify';
+import Markdown from 'react-markdown'
+import { GenericModal } from "../common/layout/GenericContainer.tsx"
 
 export const LeadDetails = () => {
 
@@ -145,60 +150,161 @@ export const LeadField = ({ fieldValue, value, type, template = null }: LeadFiel
 
     return (
         <>
-            {template === "INSTAGRAM_USER" && typeof value === "string" &&
-                <Link sx={{ paddingLeft: ".5rem" }} href={`https://instagram.com/${value?.substring(1)}`} target="_blank" rel="noopener">
-                    {value}
-                </Link>
+            {
             }
 
-            {type === "URL" &&
-                <Link sx={{ paddingLeft: ".5rem" }} href={`${value}`} target="_blank" rel="noopener">
-                    {value}
-                </Link>
-            }
-
-            {type === "EMAIL" &&
-                <Link sx={{ paddingLeft: ".5rem" }} href={`mailto:${value}`} target="_blank" rel="noopener">
-                    {value}
-                </Link>
-            }
-
-<Typography sx={{ paddingLeft: ".5rem" }}>
-                    {type} * {template}
-                </Typography>
+            <Typography sx={{ paddingLeft: ".5rem" }}>
+                {type} * {template}
+            </Typography>
         </>
     )
 }
 
 export const LeadFieldByType = ({ fieldValue, value, type, template = null }: LeadFieldProps) => {
+    if (template) {
+        switch (template) {
+            case "INSTAGRAM_USER":
+                return <Link sx={{ paddingLeft: ".5rem" }} href={`https://instagram.com/${value?.substring(1)}`} target="_blank" rel="noopener">
+                    {value}
+                </Link>
+                case "POSTAL_CODE":
+                    return <Link sx={{ paddingLeft: ".5rem" }} href={`https://www.google.com/maps/search/${value.replaceAll(" ","+")}`} target="_blank" rel="noopener">
+                {value}
+            </Link>
+            case "CREDIT_CARD_SIMPLE":
+                    return <CardField value={value}/>
+        }
+    }
     switch (type) {
+        case "ADDRESS":
+            if (fieldValue?.field?.field_subtype_code === "MAPS_URL") {
+                return <><Link sx={{ paddingLeft: ".5rem" }} href={`${value}`} target="_blank" rel="noopener">
+                {value}
+            </Link>
+            <GenericModal buttonText='Ver en el mapa' buttonProps={{ variant: "outlined" }} containerSx={{ minWidth: "80vw" }} >
+                    <iframe src={value} width="600" height="450" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </GenericModal>
+            </>
+            } else {
+                return <Link sx={{ paddingLeft: ".5rem" }} href={`https://www.google.com/maps/search/${value.replaceAll(" ","+")}`} target="_blank" rel="noopener">
+                {value}
+            </Link>
+            }
+        case "RATING":
+            return <RatingField value={value} subtype={fieldValue?.field?.field_subtype_code} />
+        case "PASSWORD":
+            return <PasswordField value={value} />
+        case "EMAIL":
+            return <Link sx={{ paddingLeft: ".5rem" }} href={`mailto:${value}`} target="_blank" rel="noopener">
+                {value}
+            </Link>
+        case "URL":
+            return <Link sx={{ paddingLeft: ".5rem" }} href={`${value}`} target="_blank" rel="noopener">
+                {value}
+            </Link>
+        case "RICH_TEXT":
+            if (fieldValue?.field?.field_subtype_code === "HTML") {
+                const purifiedHTML = DOMPurify.sanitize(value)
+                return <GenericModal buttonText='Ver HTML' buttonProps={{ variant: "outlined" }} containerSx={{ minWidth: "80vw" }} >
+                    {purifiedHTML
+                        ? <div sx={{ paddingLeft: ".5rem" }} dangerouslySetInnerHTML={{ __html: purifiedHTML }} />
+                        : <Typography variant="body1" color="error">Contenido HTML no seguro, no se puede mostrar.</Typography>}
+                </GenericModal>
+            } else {
+                return <>
+                    <GenericModal buttonText='Ver Markdown' buttonProps={{ variant: "outlined" }} containerSx={{ minWidth: "80vw" }} >
+                        <Markdown >{value as string}</Markdown>
+                    </GenericModal>
+                </>
+            }
         case "LEAD":
             return <Link sx={{ paddingLeft: ".5rem" }} component={RouterLink}
-                    to={`/leads/${fieldValue?.related_leads?.[0]?.id}`} >
-                    {fieldValue?.related_leads?.[0]?.field_values?.[0]?.value} {fieldValue?.related_leads?.[0]?.field_values?.[1]?.value}
-                </Link>
+                to={`/leads/${fieldValue?.related_leads?.[0]?.id}`} >
+                {fieldValue?.related_leads?.[0]?.field_values?.[0]?.value} {fieldValue?.related_leads?.[0]?.field_values?.[1]?.value}
+            </Link>
         case "SELECTOR": case "CHECKBOX":
-        return <ul style={{ margin: 0 }}>
+            return <ul style={{ margin: 0 }}>
                 {fieldValue?.nomenclator_items?.length > 0 &&
-                fieldValue.nomenclator_items.map(i =>
-                    <Typography sx={{ paddingLeft: ".5rem" }} key={i.code}>
-                        <li> {i.value}</li>
-                    </Typography>
-                )}
-                </ul>
+                    fieldValue.nomenclator_items.map(i =>
+                        <Typography sx={{ paddingLeft: ".5rem" }} key={i.code}>
+                            <li> {i.value}</li>
+                        </Typography>
+                    )}
+            </ul>
         case "TAGS":
-        return <Chip color="primary"
-            label={value} sx={{ ml: ".5rem", marginBottom: ".5rem", fontWeight: "bold" }} />
+            return <Chip color="primary"
+                label={value} sx={{ ml: ".5rem", marginBottom: ".5rem", fontWeight: "bold" }} />
         case "BOOL":
-        return <Chip color={value ? "success" : "error"}
-            label={<Grid alignItems="center" container justifyContent="space-between">
-                {value ? <><CheckIcon /> Si</>
-                : <><CloseIcon /> No</>}
+            return <Chip color={value ? "success" : "error"}
+                label={<Grid alignItems="center" container justifyContent="space-between">
+                    {value ? <><CheckIcon /> Si</>
+                        : <><CloseIcon /> No</>}
                 </Grid>
-            } sx={{ ml: ".5rem", marginBottom: ".5rem", fontWeight: "bold" }} />
-        default: 
-        return <Typography sx={{ paddingLeft: ".5rem" }}>
-                    {type === "MONEY" && "$"} {value}
-                </Typography>
+                } sx={{ ml: ".5rem", marginBottom: ".5rem", fontWeight: "bold" }} />
+        default:
+            return <Typography sx={{ paddingLeft: ".5rem" }}>
+                {type === "MONEY" && "$"} {value}
+            </Typography>
     }
+}
+
+
+const PasswordField = ({ value }) => {
+    const [showPassword, setShowPassword] = useState<boolean>(false);
+    return (
+        <Grid container spacing={2} alignItems="center">
+            <Typography sx={{ paddingLeft: ".5rem" }}>
+                {showPassword ? value : "********"}
+            </Typography>
+            <Button variant="text" onClick={() => setShowPassword(!showPassword)}>
+                {showPassword ?
+                    <VisibilityOffIcon /> : <VisibilityIcon />
+                }
+            </Button>
+        </Grid>
+    )
+}
+const CardField = ({ value }) => {
+    const [showPassword, setShowPassword] = useState<boolean>(false);
+    return (
+        <Grid container spacing={2} alignItems="center">
+            <Typography sx={{ paddingLeft: ".5rem" }}>
+                {showPassword 
+                ? `${value.substring(0,4)}-${value.substring(4,8)}-${value.substring(8,12)}-${value.slice(-4)}` 
+                : `****-****-****-${value?.slice(-4)}`}
+            </Typography>
+            <Button variant="text" onClick={() => setShowPassword(!showPassword)}>
+                {showPassword ?
+                    <VisibilityOffIcon /> : <VisibilityIcon />
+                }
+            </Button>
+        </Grid>
+    )
+}
+const RatingField = ({ value, subtype }) => {
+
+    return (
+        <Grid container alignItems="center" spacing={2}>
+            {subtype === "STAR_RATING" &&
+                <Rating name="read-only" value={value} readOnly />
+            }
+            {subtype === "NPS" &&
+                <Grid size={8}>
+                    <Slider
+                        disableSwap min={1} max={10} step={1}
+                        value={value}
+                    />
+                </Grid>
+            }
+            {subtype === "SCORE" &&
+                <Grid size={8}>
+                    <Slider
+                        disabled min={0} max={100} step={1}
+                        defaultValue={value}
+                    />
+                </Grid>
+            }
+            <Chip color="secondary" label={value} />
+        </Grid>
+    )
 }

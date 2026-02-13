@@ -38,10 +38,10 @@ export const LeadFormText = ({ label, register, name, type = "text", required = 
                 <FormHelperText error sx={{ marginBlock: 1 }}>{errorMessage}</FormHelperText>
             }
         </>)
-            if (type === "datetime-local") return (
+    if (type === "datetime-local") return (
         <>
-            <TextField id={name} label={label} fullWidth type={type} 
-            {...register(name, {setValueAs:(value)=> `${value.replace("T"," ")}:00`})} autoComplete={autoComplete}
+            <TextField id={name} label={label} fullWidth type={type}
+                {...register(name, { setValueAs: (value) => `${value.replace("T", " ")}${value.length < 19 ? ":00" : ""}` })} autoComplete={autoComplete}
                 slotProps={{ inputLabel: { shrink: true } }} required={required} error={!!errorMessage} />
             {errorMessage &&
                 <FormHelperText error sx={{ marginBlock: 1 }}>{errorMessage}</FormHelperText>
