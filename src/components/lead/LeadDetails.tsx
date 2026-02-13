@@ -121,9 +121,6 @@ export const LeadFieldSections = ({ fieldValues }: LeadFieldSectionsProps) => {
                             {section?.fields.map((fieldValue, idx) =>
                                 <Box key={idx}>
                                     <Typography sx={{ fontWeight: "bold" }} component="h3">{fieldValue?.field?.name}:</Typography>
-
-                                    <LeadField fieldValue={fieldValue} type={fieldValue.field.field_type_code}
-                                        value={fieldValue.value} template={fieldValue.field.field_template_code} />
                                     <LeadFieldByType fieldValue={fieldValue} type={fieldValue.field.field_type_code}
                                         value={fieldValue.value} template={fieldValue.field.field_template_code} />
                                 </Box>
@@ -144,22 +141,6 @@ interface LeadFieldProps {
     template?: string | null
 }
 
-export const LeadField = ({ fieldValue, value, type, template = null }: LeadFieldProps) => {
-
-    const castedField = useMemo(() => getFieldType(type, value), [type, value])
-
-    return (
-        <>
-            {
-            }
-
-            <Typography sx={{ paddingLeft: ".5rem" }}>
-                {type} * {template}
-            </Typography>
-        </>
-    )
-}
-
 export const LeadFieldByType = ({ fieldValue, value, type, template = null }: LeadFieldProps) => {
     if (template) {
         switch (template) {
@@ -167,28 +148,28 @@ export const LeadFieldByType = ({ fieldValue, value, type, template = null }: Le
                 return <Link sx={{ paddingLeft: ".5rem" }} href={`https://instagram.com/${value?.substring(1)}`} target="_blank" rel="noopener">
                     {value}
                 </Link>
-                case "POSTAL_CODE":
-                    return <Link sx={{ paddingLeft: ".5rem" }} href={`https://www.google.com/maps/search/${value.replaceAll(" ","+")}`} target="_blank" rel="noopener">
-                {value}
-            </Link>
+            case "POSTAL_CODE":
+                return <Link sx={{ paddingLeft: ".5rem" }} href={`https://www.google.com/maps/search/${value.replaceAll(" ", "+")}`} target="_blank" rel="noopener">
+                    {value}
+                </Link>
             case "CREDIT_CARD_SIMPLE":
-                    return <CardField value={value}/>
+                return <CardField value={value} />
         }
     }
     switch (type) {
         case "ADDRESS":
             if (fieldValue?.field?.field_subtype_code === "MAPS_URL") {
                 return <><Link sx={{ paddingLeft: ".5rem" }} href={`${value}`} target="_blank" rel="noopener">
-                {value}
-            </Link>
-            <GenericModal buttonText='Ver en el mapa' buttonProps={{ variant: "outlined" }} containerSx={{ minWidth: "80vw" }} >
-                    <iframe src={value} width="600" height="450" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-                </GenericModal>
-            </>
+                    {value}
+                </Link>
+                    <GenericModal buttonText='Ver en el mapa' buttonProps={{ variant: "outlined" }} containerSx={{ minWidth: "80vw" }} >
+                        <iframe src={value} width="600" height="450" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    </GenericModal>
+                </>
             } else {
-                return <Link sx={{ paddingLeft: ".5rem" }} href={`https://www.google.com/maps/search/${value.replaceAll(" ","+")}`} target="_blank" rel="noopener">
-                {value}
-            </Link>
+                return <Link sx={{ paddingLeft: ".5rem" }} href={`https://www.google.com/maps/search/${value.replaceAll(" ", "+")}`} target="_blank" rel="noopener">
+                    {value}
+                </Link>
             }
         case "RATING":
             return <RatingField value={value} subtype={fieldValue?.field?.field_subtype_code} />
@@ -235,9 +216,9 @@ export const LeadFieldByType = ({ fieldValue, value, type, template = null }: Le
             return <Chip color="primary"
                 label={value} sx={{ ml: ".5rem", marginBottom: ".5rem", fontWeight: "bold" }} />
         case "BOOL":
-            return <Chip color={value ? "success" : "error"}
+            return <Chip color={getFieldType("BOOL", value) ? "success" : "error"}
                 label={<Grid alignItems="center" container justifyContent="space-between">
-                    {value ? <><CheckIcon /> Si</>
+                    {getFieldType("BOOL", value) ? <><CheckIcon /> Si</>
                         : <><CloseIcon /> No</>}
                 </Grid>
                 } sx={{ ml: ".5rem", marginBottom: ".5rem", fontWeight: "bold" }} />
@@ -269,9 +250,9 @@ const CardField = ({ value }) => {
     return (
         <Grid container spacing={2} alignItems="center">
             <Typography sx={{ paddingLeft: ".5rem" }}>
-                {showPassword 
-                ? `${value.substring(0,4)}-${value.substring(4,8)}-${value.substring(8,12)}-${value.slice(-4)}` 
-                : `****-****-****-${value?.slice(-4)}`}
+                {showPassword
+                    ? `${value.substring(0, 4)}-${value.substring(4, 8)}-${value.substring(8, 12)}-${value.slice(-4)}`
+                    : `****-****-****-${value?.slice(-4)}`}
             </Typography>
             <Button variant="text" onClick={() => setShowPassword(!showPassword)}>
                 {showPassword ?
