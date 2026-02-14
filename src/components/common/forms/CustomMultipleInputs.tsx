@@ -68,7 +68,7 @@ export const ControlledAutocomplete = ({ label, name, control, options, required
                 <Autocomplete
                     {...field}
                     loading={loading}
-                    options={options}
+                    options={options ?? []}
                     multiple={multiple}
                     renderInput={(params) =>
                         <>

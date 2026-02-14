@@ -111,7 +111,7 @@ export const LeadFormValues = ({ leadFields, simulate = false, register, control
                 }
                 promises.push(
                     getLeads({ campaign_id: relatedCampaignId, only_active: true, page_size: 200 })
-                        .then(newLeadList => { newRelatedLeads.set(relatedCampaignId, newLeadList) })
+                        .then(newLeadList => { newRelatedLeads.set(relatedCampaignId, newLeadList.items) })
                 )
             }
             if (["CHECKBOX", "SELECTOR"].includes(field?.fieldData?.field_type_code)) {

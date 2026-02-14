@@ -13,7 +13,7 @@ export const getFieldType = (
     case "NUMBER":
       return parseInt(value);
     case "BOOL":
-      return Boolean(value);
+      return value === "1";
   }
   return value;
 };
