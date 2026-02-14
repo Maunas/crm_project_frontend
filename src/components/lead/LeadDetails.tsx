@@ -165,9 +165,6 @@ export const LeadFieldByType = ({ fieldValue, value, type, template = null }: Le
                 return <><Link sx={{ paddingLeft: ".5rem" }} href={`${value}`} target="_blank" rel="noopener">
                     {value}
                 </Link>
-                    <GenericModal buttonText='Ver en el mapa' buttonProps={{ variant: "outlined" }} containerSx={{ minWidth: "80vw" }} >
-                        <iframe src={value} width="600" height="450" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-                    </GenericModal>
                 </>
             } else {
                 return <Link sx={{ paddingLeft: ".5rem" }} href={`https://www.google.com/maps/search/${value.replaceAll(" ", "+")}`} target="_blank" rel="noopener">
