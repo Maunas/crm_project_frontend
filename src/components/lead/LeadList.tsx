@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import type { Lead } from '../../types/leads'
 import { getLeads } from './leadService'
 import { Accordion, AccordionDetails, AccordionSummary, Button, Divider, Pagination, Typography, Grid, TableContainer, Paper, Table, TableRow, TableCell, TableBody, TableHead, TablePagination } from '@mui/material'
@@ -9,11 +9,12 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { ControlledCheckbox, ControlledNumber, RegisteredTextInput } from '../common/forms/CustomInputs'
 import { ControlledAutocomplete } from '../common/forms/CustomMultipleInputs'
 import { getCampaigns } from '../campaigns/campaignServices'
+import type { CampaignDetailed } from '../../types/campaigns'
 
 export const LeadList = () => {
 
     const [leads, setLeads] = useState<Paginable<Lead[]> | null>(null)
-    const [campaigns, setCampaigns] = useState<Lead[] | null>(null)
+    const [campaigns, setCampaigns] = useState<CampaignDetailed[] | null>(null)
     const [filters, setFilters] = useState<object>({ campaign_id: 1, only_active: false, page_size: 20 })
 
     useEffect(() => {
@@ -93,27 +94,61 @@ interface LeadTableProps {
     leads: Lead[]
 }
 export const LeadTable = ({ leads }: LeadTableProps) => {
-    return (
-        <TableContainer component={Paper}>
-            <Table sx={{ minWidth: 650 }} aria-label="simple table">
-                <TableHead>
-                    <TableRow>
-                        <TableCell>Nombre Completo</TableCell>
+    const fieldNames = useMemo(() =>
+        leads[0].field_values
+            .sort((a, b) => a.field?.order - b.field?.order)
+            .map(value => value?.field?.name)
+            .slice(2, 7)
+        , [leads])
+
+    const getValue = (field_value) => {
+        if (field_value.value) return field_value.value
+        else if (field_value.nomenclator_items?.length > 0) {
+            return field_value.nomenclator_items?.reduce((acc, item) => `${acc}${acc.length > 0 ? " | ":""}${item.value}`, "")
+    }
+        else if (field_value.related_leads?.length > 0) {
+            const relatedLead = field_value.related_leads[0]?.field_values
+            return relatedLead?.[0]?.value + " " + relatedLead?.[1]?.value
+                    }
+        else return "---"
+        }
+
+return (
+    <TableContainer component={Paper}>
+        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+            <TableHead>
+                <TableRow>
+                    <TableCell>Nombre Completo</TableCell>
+                    {fieldNames?.length > 0 &&
+                        fieldNames.map((name) =>
+                            <TableCell align="right" key={name} >{name}</TableCell>
+                        )}
+                </TableRow>
+            </TableHead>
+            <TableBody>
+                {leads.map(lead => (
+                    <TableRow
+                        key={lead.id}
+                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                    >
+                        <TableCell component="td" scope="row">
+                            {lead?.field_values?.[0]?.value} {lead?.field_values?.[1]?.value}
+                        </TableCell>
+                        {
+                            lead.field_values?.length > 2 &&
+                            lead.field_values
+                                .sort((a, b) => a.field?.order - b.field?.order)
+                                .slice(2, 7)
+                                .map((value) =>
+                                    <TableCell key={value.id} align="right">
+                                        {getValue(value)}
+                                    </TableCell>
+                                )
+                        }
                     </TableRow>
-                </TableHead>
-                <TableBody>
-                    {leads.map(lead => (
-                        <TableRow
-                            key={lead.id}
-                            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                        >
-                            <TableCell component="td" scope="row">
-                                {lead?.field_values?.[0]?.value} {lead?.field_values?.[1]?.value}
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-        </TableContainer>
-    )
+                ))}
+            </TableBody>
+        </Table>
+    </TableContainer>
+)
 }
