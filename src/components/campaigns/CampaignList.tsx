@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { getOrganizations, getWorkspaces } from './campaignServices'
-import { Box, Button, ButtonGroup, Container, Grid, Pagination, Paper, Typography } from '@mui/material'
+import { Box, Button, ButtonGroup, Container, Grid, Pagination, Paper, Stack, Typography } from '@mui/material'
 import { Link } from 'react-router-dom'
 import type { Campaign, CampaignDetailed, OrganizationDetailed, WorkspaceDetailed } from '../../types/campaigns'
 import SubdirectoryArrowRightIcon from '@mui/icons-material/SubdirectoryArrowRight';
@@ -84,20 +84,27 @@ export const OrganizationList = () => {
             <Grid container spacing={2}>
                 <Grid size="grow" minWidth="30rem">
                     <GenericPaper>
-                        <ButtonGroup variant="contained" >
-                            <Button onClick={() => handleSidebar("CREATE_CMP")} >Crear Campaña</Button>
-                            <Button onClick={() => handleSidebar("CREATE_WSP")} >Crear Espacio de Trabajo</Button>
-                            <Button onClick={() => handleSidebar("CREATE_ORG")} >Crear Organización</Button>
-                        </ButtonGroup>
-                        {detailedOrgs?.length > 0 &&
-                            detailedOrgs.map((org, idx) =>
-                                <Box key={`org${idx}`}>
-                                    <Typography color="initial">{org.name}{org.description && `: ${org.description}`}</Typography>
-                                    <WorkspaceList workspaces={org.workspaces} />
-                                </Box>
-                            )}
-                        <Pagination count={organizations?.total_pages} page={page}
-                            shape="rounded" color="secondary" onChange={handlePage} />
+                        <Stack spacing={2}>
+                            <Grid container spacing={2} justifyContent="space-between" alignItems="center">
+                                    <Typography variant="h1">Lista de Campañas</Typography>
+                                    <ButtonGroup variant="contained" color="primary">
+                                        <Button onClick={() => handleSidebar("CREATE_CMP")} >Crear Campaña</Button>
+                                        <Button onClick={() => handleSidebar("CREATE_WSP")} >Crear Espacio de Trabajo</Button>
+                                        <Button onClick={() => handleSidebar("CREATE_ORG")} >Crear Organización</Button>
+                                    </ButtonGroup>
+                                </Grid>
+                            <Box>
+                                {detailedOrgs?.length > 0 &&
+                                    detailedOrgs.map((org, idx) =>
+                                        <Box key={`org${idx}`}>
+                                            <Typography color="initial">{org.name}{org.description && `: ${org.description}`}</Typography>
+                                            <WorkspaceList workspaces={org.workspaces} />
+                                        </Box>
+                                    )}
+                            </Box>
+                            <Pagination count={organizations?.total_pages} page={page}
+                                shape="rounded" color="secondary" onChange={handlePage} />
+                        </Stack>
                     </GenericPaper>
                 </Grid>
                 {sidebarMode &&
