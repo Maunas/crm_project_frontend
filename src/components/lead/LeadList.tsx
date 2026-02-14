@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import type { Lead } from '../../types/leads'
 import { getLeads } from './leadService'
-import { Accordion, AccordionDetails, AccordionSummary, Button, Divider, Pagination, Typography, Grid } from '@mui/material'
+import { Accordion, AccordionDetails, AccordionSummary, Button, Divider, Pagination, Typography, Grid, TableContainer, Paper, Table, TableRow, TableCell, TableBody, TableHead, TablePagination } from '@mui/material'
 import { Link } from 'react-router-dom'
 import type { Paginable } from '../../types/common'
 import { useForm } from 'react-hook-form'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { ControlledCheckbox, RegisteredTextInput } from '../common/forms/CustomInputs'
+import { ControlledCheckbox, ControlledNumber, RegisteredTextInput } from '../common/forms/CustomInputs'
 import { ControlledAutocomplete } from '../common/forms/CustomMultipleInputs'
 import { getCampaigns } from '../campaigns/campaignServices'
 
@@ -14,28 +14,41 @@ export const LeadList = () => {
 
     const [leads, setLeads] = useState<Paginable<Lead[]> | null>(null)
     const [campaigns, setCampaigns] = useState<Lead[] | null>(null)
+    const [filters, setFilters] = useState<object>({ campaign_id: 1, only_active: false, page_size: 20 })
 
     useEffect(() => {
-        getLeads({ only_active: false }).then(setLeads)
         getCampaigns({ only_active: false }).then(setCampaigns)
     }, [])
 
     const [page, setPage] = useState<number>(1)
     const handlePage = (e: React.ChangeEvent<unknown>, value: number) => {
         if (value === page) return
-        getLeads({ only_active: false, page: value }).then((res) => {
+        getLeads({ page: value, ...filters }).then((res) => {
             setPage(value)
             setLeads(res)
         })
     }
 
-    const { control, handleSubmit } = useForm()
+    const { control, handleSubmit } = useForm({
+        defaultValues: { campaign_id: 1, only_active: false, page_size: 20 }
+    })
 
     const applyFilters = (data) => {
-        getLeads({ ...data, page: 1 }).then((res) => {
+        const newFilters = { ...filters, ...data }
+        setFilters(newFilters)
+    }
+
+    useEffect(() => {
+        getLeads({ page: 1, ...filters }).then((res) => {
             setPage(1)
             setLeads(res)
         })
+    }, [filters])
+
+    console.log(leads)
+
+    const handlePageSize = (e, value) => {
+        setFilters({ ...filters, page_size: value })
     }
 
     return (
@@ -48,32 +61,59 @@ export const LeadList = () => {
                     </Button>
                 </Grid>
             </Grid>
-            <Accordion disableGutters sx={{ boxShadow: "none" }}>
+            <Accordion disableGutters sx={{ boxShadow: "none", border: "1px solid gray" }}>
                 <AccordionSummary sx={{ height: "64px" }}
                     expandIcon={<ArrowDropDownIcon />}
-                    aria-controls="panel0-content" id="panel0-header"
+                    aria-controls="filter-content" id="filter-header"
                 >
-                    <Typography variant="h2">Filtros</Typography>
+                    <Typography variant="h2" >Filtros</Typography>
                 </AccordionSummary>
                 <AccordionDetails sx={{ paddingTop: 0 }}>
-                    <form >
-                        <ControlledAutocomplete name='campaign_id' control={control} options={campaigns}
-                            getOptionLabel={o => o.name} label='Campaña' returnField="id" />
-                        <ControlledCheckbox control={control} name="only_active" label="Mostrar Leads Deshabilitados"
-                            defaultValue={true} />
-                        <Button variant="contained" color="secondary" onClick={handleSubmit(applyFilters)}>
-                            Aplicar Filtros
-                        </Button>
-                    </form>
+                    {campaigns?.length > 0 &&
+                        <form >
+                            <ControlledAutocomplete name='campaign_id' control={control} options={campaigns}
+                                getOptionLabel={o => o.name} label='Campaña' returnField="id" />
+                            <ControlledCheckbox control={control} name="only_active" label="Mostrar sólo Leads habilitados"
+                                defaultValue={true} />
+                            <ControlledNumber control={control} name="page_size" label="Items por página" min={1} step={5} />
+                            <Button variant="contained" color="secondary" onClick={handleSubmit(applyFilters)}>
+                                Aplicar Filtros
+                            </Button>
+                        </form>}
                 </AccordionDetails>
             </Accordion>
-            {leads?.items?.length > 0 &&
-                leads.items.map(lead =>
-                    <Button component={Link} to={`/leads/${lead.id}`} key={lead.id}>
-                        {`${lead.field_values?.[0]?.value} ${lead.field_values?.[1]?.value}`}
-                    </Button>)
+            {leads &&
+                <LeadTable leads={leads.items} />
             }
             <Pagination page={page} onChange={handlePage} count={leads?.total_pages} color="secondary" />
         </>
+    )
+}
+interface LeadTableProps {
+    leads: Lead[]
+}
+export const LeadTable = ({ leads }: LeadTableProps) => {
+    return (
+        <TableContainer component={Paper}>
+            <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                <TableHead>
+                    <TableRow>
+                        <TableCell>Nombre Completo</TableCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {leads.map(lead => (
+                        <TableRow
+                            key={lead.id}
+                            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                        >
+                            <TableCell component="td" scope="row">
+                                {lead?.field_values?.[0]?.value} {lead?.field_values?.[1]?.value}
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </TableContainer>
     )
 }
