@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import type { Lead } from '../../types/leads'
 import { getLeads } from './leadService'
 import { Accordion, AccordionDetails, AccordionSummary, Button, Divider, Pagination, Typography, Grid, TableContainer, Paper, Table, TableRow, TableCell, TableBody, TableHead, TablePagination } from '@mui/material'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate, useNavigation } from 'react-router-dom'
 import type { Paginable } from '../../types/common'
 import { useForm } from 'react-hook-form'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
@@ -48,10 +48,6 @@ export const LeadList = () => {
 
     console.log(leads)
 
-    const handlePageSize = (e, value) => {
-        setFilters({ ...filters, page_size: value })
-    }
-
     return (
         <>
             <Grid container justifyContent="space-between" alignItems="center">
@@ -83,7 +79,7 @@ export const LeadList = () => {
                         </form>}
                 </AccordionDetails>
             </Accordion>
-            {leads &&
+            {leads && leads?.items?.length>0 &&
                 <LeadTable leads={leads.items} />
             }
             <Pagination page={page} onChange={handlePage} count={leads?.total_pages} color="secondary" />
@@ -94,61 +90,95 @@ interface LeadTableProps {
     leads: Lead[]
 }
 export const LeadTable = ({ leads }: LeadTableProps) => {
-    const fieldNames = useMemo(() =>
-        leads[0].field_values
+
+    const areFirstFieldNames = useMemo(() => {
+        const isFirstNameTemplate = leads[0].field_values[0].field.field_template_code === "FIRST_NAME"
+        const isLastNameTemplate = leads[0].field_values[1].field.field_template_code === "LAST_NAME"
+        return isFirstNameTemplate && isLastNameTemplate
+    }, [leads])
+
+    const fieldNames = useMemo(() => {
+        const fieldNames = leads[0].field_values
             .sort((a, b) => a.field?.order - b.field?.order)
             .map(value => value?.field?.name)
-            .slice(2, 7)
-        , [leads])
+        if (areFirstFieldNames) {
+            return fieldNames.slice(2, 8)
+        } else {
+            return fieldNames.slice(0, 8)
+        }
+    }, [leads, areFirstFieldNames])
 
     const getValue = (field_value) => {
-        if (field_value.value) return field_value.value
+        if (field_value.value) return `${field_value.field.field_type_code === "MONEY" ? "$ " : ""}${field_value.value}`
         else if (field_value.nomenclator_items?.length > 0) {
-            return field_value.nomenclator_items?.reduce((acc, item) => `${acc}${acc.length > 0 ? " | ":""}${item.value}`, "")
-    }
+            return field_value.nomenclator_items?.reduce((acc, item) => `${acc}${acc.length > 0 ? " | " : ""}${item.value}`, "")
+        }
         else if (field_value.related_leads?.length > 0) {
             const relatedLead = field_value.related_leads[0]?.field_values
             return relatedLead?.[0]?.value + " " + relatedLead?.[1]?.value
-                    }
-        else return "---"
         }
+        else return "---"
+    }
 
-return (
-    <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
-            <TableHead>
-                <TableRow>
-                    <TableCell>Nombre Completo</TableCell>
-                    {fieldNames?.length > 0 &&
-                        fieldNames.map((name) =>
-                            <TableCell align="right" key={name} >{name}</TableCell>
-                        )}
-                </TableRow>
-            </TableHead>
-            <TableBody>
-                {leads.map(lead => (
-                    <TableRow
-                        key={lead.id}
-                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                    >
-                        <TableCell component="td" scope="row">
-                            {lead?.field_values?.[0]?.value} {lead?.field_values?.[1]?.value}
-                        </TableCell>
+    const nav = useNavigate()
+
+    return (
+        <TableContainer component={Paper}>
+            <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                <TableHead>
+                    <TableRow >
                         {
-                            lead.field_values?.length > 2 &&
-                            lead.field_values
-                                .sort((a, b) => a.field?.order - b.field?.order)
-                                .slice(2, 7)
-                                .map((value) =>
-                                    <TableCell key={value.id} align="right">
-                                        {getValue(value)}
-                                    </TableCell>
-                                )
+                            areFirstFieldNames &&
+                            <TableCell>Nombre Completo</TableCell>
                         }
+                        { fieldNames?.length > 0 &&
+                            fieldNames.map((name,idx) =>
+                                <TableCell align={!areFirstFieldNames && idx === 0 ? "left": "right"} key={name} >{name}</TableCell>
+                            )}
                     </TableRow>
-                ))}
-            </TableBody>
-        </Table>
-    </TableContainer>
-)
+                </TableHead>
+                <TableBody>
+                    {leads.map(lead => (
+                        <TableRow onClick={()=>nav(`/leads/${lead.id}`)} style={{ cursor: "pointer" }}
+                            key={lead.id}
+                            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                        >
+                            {
+                                areFirstFieldNames ?
+                                    <>
+                                        <TableCell component="td" scope="row">
+                                            {lead?.field_values?.[0]?.value} {lead?.field_values?.[1]?.value}
+                                        </TableCell>
+                                        {
+                                            lead.field_values?.length > 2 &&
+                                            lead.field_values
+                                                .sort((a, b) => a.field?.order - b.field?.order)
+                                                .slice(2, 8)
+                                                .map((value) =>
+                                                    <TableCell key={value.id} align="right">
+                                                        {getValue(value)}
+                                                    </TableCell>
+                                                )
+                                        }
+                                    </> :
+                                    <>
+                                        {
+                                            lead.field_values?.length > 0 &&
+                                            lead.field_values
+                                                .sort((a, b) => a.field?.order - b.field?.order)
+                                                .slice(0, 8)
+                                                .map((value,idx) =>
+                                                    <TableCell key={value.id} align={idx === 0 ? "left": "right"}>
+                                                        {getValue(value)}
+                                                    </TableCell>
+                                                )
+                                        }
+                                    </>
+                            }
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </TableContainer>
+    )
 }
