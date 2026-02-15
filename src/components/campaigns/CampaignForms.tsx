@@ -6,7 +6,7 @@ import { createCampaign, createOrganization, createWorkspace, getOrganizations, 
 import { useNavigate } from "react-router-dom"
 import { ControlledAutocomplete } from "../common/forms/CustomMultipleInputs"
 import { createLeadField } from "../leadFields/leadFieldServices"
-import type { Campaign, CampaignPost, Organization, OrganizationPost, Workspace, WorkspacePost } from "../../types/campaigns"
+import type { Campaign, CampaignDetailed, CampaignPost, Organization, OrganizationDetailed, OrganizationPost, Workspace, WorkspaceDetailed, WorkspacePost } from "../../types/campaigns"
 import { setFormErrors } from "../../generalService"
 import { RegisteredTextInput } from "../common/forms/CustomInputs"
 
@@ -209,8 +209,12 @@ export const OrganizationForm = ({ existingOrg, closeSidebar, createEntityOnList
         ) => void
     }) => {
 
-    const { register, handleSubmit, formState: { errors }, setError } = useForm<OrganizationPost>()
-    const nav = useNavigate()
+    const { register, handleSubmit, formState: { errors }, setError } = useForm<OrganizationPost>({
+        defaultValues: {
+            name: existingOrg?.name || undefined,
+            description: existingOrg?.description || undefined,
+        }
+    })
 
     const submit = (data: OrganizationPost) => {
         if (!existingOrg) {
@@ -222,7 +226,10 @@ export const OrganizationForm = ({ existingOrg, closeSidebar, createEntityOnList
                 .catch((e) => setFormErrors(e, setError))
         } else {
             updateOrganization(data, existingOrg.id)
-                .then(() => nav(`/campaigns`))
+                .then((res) => {
+                    createEntityOnList(res)
+                    closeSidebar()
+                })
                 .catch((e) => setFormErrors(e, setError))
         }
     }
