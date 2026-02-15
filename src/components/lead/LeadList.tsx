@@ -13,7 +13,7 @@ import type { CampaignDetailed } from '../../types/campaigns'
 
 export const LeadList = () => {
 
-    const [leads, setLeads] = useState<Paginable<Lead[]> | null>(null)
+    const [leads, setLeads] = useState<Paginable<Lead> | null>(null)
     const [campaigns, setCampaigns] = useState<CampaignDetailed[] | null>(null)
     const [filters, setFilters] = useState<object>({ campaign_id: 1, only_active: false, page_size: 20 })
 

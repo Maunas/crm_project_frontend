@@ -22,7 +22,7 @@ export interface Workspace extends WorkspacePost {
   id: number;
 }
 export interface WorkspaceDetailed extends Workspace, Metadata {
-  campaigns: Campaign[];
+  campaigns: CampaignDetailed[];
 }
 
 //Organizations

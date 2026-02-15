@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { getOrganizations, getWorkspaces } from './campaignServices'
-import { Box, Button, ButtonGroup, Chip, Collapse, Container, Grid, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Pagination, Paper, Stack, Typography } from '@mui/material'
-import { Link } from 'react-router-dom'
-import type { Campaign, CampaignDetailed, OrganizationDetailed, WorkspaceDetailed } from '../../types/campaigns'
+import { disableOrganization, enableOrganization, getOrganizations, getWorkspaces } from './campaignServices'
+import { Box, Button, ButtonGroup, Chip, Collapse, Container, Grid, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Pagination, Stack, Typography } from '@mui/material'
+import type { CampaignDetailed, OrganizationDetailed, WorkspaceDetailed } from '../../types/campaigns'
 import SubdirectoryArrowRightIcon from '@mui/icons-material/SubdirectoryArrowRight';
 import { CampaignSidebar } from './CampaignSidebar'
 import { GenericPaper } from '../common/layout/GenericContainer'
@@ -13,8 +12,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 
 export const OrganizationList = () => {
-    const [organizations, setOrganizations] = useState<Paginable<OrganizationDetailed[]> | null>(null)
-    const [workspaces, setWorkspaces] = useState<Paginable<WorkspaceDetailed[]> | []>([])
+    const [organizations, setOrganizations] = useState<Paginable<OrganizationDetailed> | null>(null)
+    const [workspaces, setWorkspaces] = useState<Paginable<WorkspaceDetailed> | null>(null)
     const [sidebarMode, setSidebarMode] = useState<string | null>(null)
     const [selectedEntity, setSelectedEntity] =
         useState<OrganizationDetailed | WorkspaceDetailed | CampaignDetailed | null>(null)
@@ -29,39 +28,47 @@ export const OrganizationList = () => {
         setSelectedEntity(null)
         setSidebarMode(null)
     }
-    const createEntityOnList = (entity, mode) => {
+    const createEntityOnList = (
+        entity: OrganizationDetailed | WorkspaceDetailed | CampaignDetailed | null,
+        mode: string) => {
         switch (mode) {
             case "CREATE_ORG":
-                getOrganizations({ detailed: true, page_size: 12, page: organizations.page })
+                getOrganizations({ detailed: true, page_size: 12, page: organizations?.page ?? 1 })
                     .then(setOrganizations)
                 break;
-            case "CREATE_WSP":
-                setWorkspaces({ ...workspaces, items: [...workspaces.items, entity] })
+            case "CREATE_WSP": {
+                if (!workspaces) break
+                const newWsp = entity as WorkspaceDetailed
+                setWorkspaces({ ...workspaces, items: [...workspaces.items, newWsp] })
                 break;
+            }
             case "CREATE_CMP": {
+                if (!workspaces) break
+                const newCmp = entity as CampaignDetailed
                 const workspacesItems = [...workspaces.items]
-                const workspaceIdx = workspacesItems.findIndex(wsp => wsp.id === entity.workspace_id)
+                const workspaceIdx = workspacesItems.findIndex(wsp => wsp.id === newCmp.workspace_id)
                 workspacesItems[workspaceIdx] = {
                     ...workspacesItems[workspaceIdx],
-                    campaigns: [...workspacesItems[workspaceIdx].campaigns, entity]
+                    campaigns: [...workspacesItems[workspaceIdx].campaigns, newCmp]
                 }
                 setWorkspaces({ ...workspaces, items: [...workspacesItems] })
                 break;
             }
             case "UPDATE_ORG": {
                 if (!organizations) break
+                const newOrg = entity as OrganizationDetailed
                 const newOrganizationsItems = [...organizations.items]
-                const orgIdx = newOrganizationsItems.findIndex(org => org.id === entity.id)
+                const orgIdx = newOrganizationsItems.findIndex(org => org.id === newOrg.id)
                 if (orgIdx === -1) break
-                newOrganizationsItems[orgIdx] = entity
+                newOrganizationsItems[orgIdx] = newOrg
                 setOrganizations({ ...organizations, items: [...newOrganizationsItems] })
                 break;
             }
         }
     }
     useEffect(() => {
-        getWorkspaces({ detailed: true }).then(setWorkspaces)
-        getOrganizations({ detailed: true, page_size: 12 }).then(setOrganizations)
+        getWorkspaces({ detailed: true, only_active: false }).then(setWorkspaces)
+        getOrganizations({ detailed: true, page_size: 12, only_active: false }).then(setOrganizations)
     }, [])
 
     interface OrganizationFull extends OrganizationDetailed {
@@ -69,10 +76,12 @@ export const OrganizationList = () => {
     }
 
     const detailedOrgs: OrganizationFull[] = useMemo(() => {
+        if (!(workspaces && organizations)) return []
         if (!(workspaces?.items?.length > 0 && organizations?.items?.length > 0)) return []
+
         const detailedOrgs = new Map()
 
-        organizations.items.forEach(org => {
+        organizations?.items.forEach(org => {
             detailedOrgs.set(org.id, { ...org, workspaces: [] })
         })
         workspaces.items.forEach((workspace) => {
@@ -90,7 +99,24 @@ export const OrganizationList = () => {
             setOrganizations(res)
         })
     }
-
+    const handleActive = (org: OrganizationDetailed) => {
+        if (!org) return
+        if (org.active) {
+            disableOrganization(org.id).then(() => {
+                createEntityOnList({ ...org, active: false }, "UPDATE_ORG")
+                if (selectedEntity?.id === org.id) {
+                    setSelectedEntity({ ...selectedEntity, active: false })
+                }
+            })
+        } else {
+            enableOrganization(org.id).then(() => {
+                createEntityOnList({ ...org, active: true }, "UPDATE_ORG")
+                if (selectedEntity?.id === org.id) {
+                    setSelectedEntity({ ...selectedEntity, active: true })
+                }
+            })
+        }
+    }
     return (
         <Container maxWidth={false}>
             <Grid container spacing={2}>
@@ -118,7 +144,8 @@ export const OrganizationList = () => {
                                                     <IconButton edge="end" aria-label="modify" onClick={() => handleSidebar("UPDATE_ORG", org)}>
                                                         <EditIcon />
                                                     </IconButton>
-                                                    <IconButton edge="end" aria-label={org.active ? "delete" : "restore"}>
+                                                    <IconButton edge="end" aria-label={org.active ? "delete" : "restore"}
+                                                        onClick={() => handleActive(org)}>
                                                         {org.active ?
                                                             <DeleteIcon color="error" /> :
                                                             <RestoreFromTrashIcon color="success" />
@@ -206,7 +233,7 @@ export const WorkspaceList = ({ workspaces = [], handleSidebar }: WorkspaceListP
 }
 
 interface CampaignListProps {
-    campaigns?: Campaign[],
+    campaigns?: CampaignDetailed[],
     handleSidebar: (mode: string, entity?: OrganizationDetailed | WorkspaceDetailed | CampaignDetailed) => void
 }
 export const CampaignList = ({ campaigns = [], handleSidebar }: CampaignListProps) => {

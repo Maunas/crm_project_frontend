@@ -10,10 +10,12 @@ import type { Campaign, CampaignDetailed, CampaignPost, Organization, Organizati
 import { setFormErrors } from "../../generalService"
 import { RegisteredTextInput } from "../common/forms/CustomInputs"
 
-export const CampaignForm = ({ existingCmp, closeSidebar,createEntityOnList}
-    : { existingCmp?: Campaign, closeSidebar: () => void, createEntityOnList: (
+export const CampaignForm = ({ existingCmp, closeSidebar, createEntityOnList }
+    : {
+        existingCmp?: Campaign, closeSidebar: () => void, createEntityOnList: (
             entity: OrganizationDetailed | WorkspaceDetailed | CampaignDetailed | null,
-        ) => void }) => {
+        ) => void
+    }) => {
 
     const [workspaces, setWorkspaces] = useState<Workspace[] | []>([])
     const [organizations, setOrganizations] = useState<Organization[] | []>([])
@@ -21,18 +23,18 @@ export const CampaignForm = ({ existingCmp, closeSidebar,createEntityOnList}
 
     useEffect(() => {
         getWorkspaces({ only_active: true })
-        .then(res=>setWorkspaces(res.items))
+            .then(res => setWorkspaces(res.items))
         getOrganizations({ only_active: true })
-        .then(res=>setOrganizations(res.items))
+            .then(res => setOrganizations(res.items))
     }, [])
 
     const { register, handleSubmit, control, formState: { errors }, setError }
         = useForm<CampaignPost & { organization_id?: number }>({
             defaultValues: {
-                name: existingCmp?.name || null,
-                description: existingCmp?.description || null,
-                workspace_id: existingCmp?.workspace_id || null,
-                organization_id: existingCmp?.organization_id || null,
+                name: existingCmp?.name,
+                description: existingCmp?.description,
+                workspace_id: existingCmp?.workspace_id,
+                organization_id: existingCmp?.organization_id,
             }
         })
 
@@ -137,9 +139,9 @@ export const WorkspaceForm = ({ existingWksp, closeSidebar, createEntityOnList }
 
     const { register, handleSubmit, control, formState: { errors }, setError } = useForm<WorkspacePost>({
         defaultValues: {
-            name: existingWksp?.name || null,
-            description: existingWksp?.description || null,
-            organization_id: existingWksp?.organization_id || null,
+            name: existingWksp?.name,
+            description: existingWksp?.description,
+            organization_id: existingWksp?.organization_id,
         }
     })
     const nav = useNavigate()
@@ -202,17 +204,18 @@ export const WorkspaceForm = ({ existingWksp, closeSidebar, createEntityOnList }
     )
 }
 
-export const OrganizationForm = ({ existingOrg, closeSidebar, createEntityOnList }
+export const OrganizationForm = ({ existingOrg, closeSidebar, handleSidebar, createEntityOnList }
     : {
         existingOrg?: Organization, closeSidebar: () => void, createEntityOnList: (
             entity: OrganizationDetailed | WorkspaceDetailed | CampaignDetailed | null,
-        ) => void
+        ) => void,
+        handleSidebar: (mode: string, entity?: OrganizationDetailed | WorkspaceDetailed | CampaignDetailed) => void
     }) => {
 
     const { register, handleSubmit, formState: { errors }, setError } = useForm<OrganizationPost>({
         defaultValues: {
-            name: existingOrg?.name || undefined,
-            description: existingOrg?.description || undefined,
+            name: existingOrg?.name,
+            description: existingOrg?.description,
         }
     })
 
@@ -221,14 +224,14 @@ export const OrganizationForm = ({ existingOrg, closeSidebar, createEntityOnList
             createOrganization(data)
                 .then((res) => {
                     createEntityOnList(res)
-                    closeSidebar()
+                    handleSidebar("DETAILS_ORG", res)
                 })
                 .catch((e) => setFormErrors(e, setError))
         } else {
             updateOrganization(data, existingOrg.id)
                 .then((res) => {
                     createEntityOnList(res)
-                    closeSidebar()
+                    handleSidebar("DETAILS_ORG", res)
                 })
                 .catch((e) => setFormErrors(e, setError))
         }
