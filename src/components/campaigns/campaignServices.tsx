@@ -34,21 +34,33 @@ export const enableOrganization = async (id: number): Promise<{actived:boolean}>
     const org = await axios.put(`${API_BASE_URL}/organizations/active/${id}`)
     return org.data
 }
+/******************************** Workspaces ************************************/
 export const getWorkspaces = async<T extends Params>(params?: T):
     Promise<Paginable<
         T["detailed"] extends true ? WorkspaceDetailed : Workspace>> => {
-    const wksp = await axios.get(`${API_BASE_URL}/workspaces`, { params })
-    return {...wksp.data, items: orderList(wksp.data.items, "id")}
+    const wsp = await axios.get(`${API_BASE_URL}/workspaces`, { params })
+    return {...wsp.data, items: orderList(wsp.data.items, "id")}
 }
-
+export const getWorkspace = async (id: number): Promise<WorkspaceDetailed> => {
+    const wsp = await axios.get(`${API_BASE_URL}/workspaces/${id}`)
+    return wsp.data
+}
 export const createWorkspace = async (body: WorkspacePost): Promise<WorkspaceDetailed> => {
-    const wksp = await axios.post(`${API_BASE_URL}/workspaces`, body)
-    return wksp.data
+    const wsp = await axios.post(`${API_BASE_URL}/workspaces`, body)
+    return wsp.data
+}
+export const updateWorkspace = async (body: WorkspacePost, id: number): Promise<WorkspaceDetailed> => {
+    const wsp = await axios.put(`${API_BASE_URL}/workspaces/${id}`, body)
+    return wsp.data
 }
 
-export const updateWorkspace = async (body: WorkspacePost, id: number): Promise<WorkspaceDetailed> => {
-    const wksp = await axios.put(`${API_BASE_URL}/workspaces/${id}`, body)
-    return wksp.data
+export const disableWorkspace = async (id: number): Promise<{action:string}> => {
+    const org = await axios.delete(`${API_BASE_URL}/workspaces/${id}`)
+    return org.data
+}
+export const enableWorkspace = async (id: number): Promise<{actived:boolean}> => {
+    const org = await axios.put(`${API_BASE_URL}/workspaces/active/${id}`)
+    return org.data
 }
 export const getCampaigns = async<T extends Params>(params?: T): Promise<T["detailed"] extends true ? Campaign[] : CampaignDetailed[]> => {
     const campaigns = await axios.get(`${API_BASE_URL}/campaigns`, { params })

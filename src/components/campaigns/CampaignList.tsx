@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { disableOrganization, enableOrganization, getOrganizations, getWorkspaces } from './campaignServices'
+import { disableOrganization, disableWorkspace, enableOrganization, enableWorkspace, getOrganizations, getWorkspaces } from './campaignServices'
 import { Box, Button, ButtonGroup, Chip, Collapse, Container, Grid, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Pagination, Stack, Typography } from '@mui/material'
 import type { CampaignDetailed, OrganizationDetailed, WorkspaceDetailed } from '../../types/campaigns'
 import SubdirectoryArrowRightIcon from '@mui/icons-material/SubdirectoryArrowRight';
@@ -18,10 +18,13 @@ export const OrganizationList = () => {
     const [selectedEntity, setSelectedEntity] =
         useState<OrganizationDetailed | WorkspaceDetailed | CampaignDetailed | null>(null)
 
+    const PAGESIZE = 8
+
     const handleSidebar = (mode: string,
         entity?: OrganizationDetailed | WorkspaceDetailed | CampaignDetailed) => {
         if (!entity) setSelectedEntity(null)
         else setSelectedEntity(entity)
+        if (mode === "KEEP") return
         setSidebarMode(mode)
     }
     const closeSidebar = () => {
@@ -33,7 +36,7 @@ export const OrganizationList = () => {
         mode: string) => {
         switch (mode) {
             case "CREATE_ORG":
-                getOrganizations({ detailed: true, page_size: 12, page: organizations?.page ?? 1 })
+                getOrganizations({ detailed: true, page_size: PAGESIZE, page: organizations?.page ?? 1 })
                     .then(setOrganizations)
                 break;
             case "CREATE_WSP": {
@@ -64,11 +67,33 @@ export const OrganizationList = () => {
                 setOrganizations({ ...organizations, items: [...newOrganizationsItems] })
                 break;
             }
+            case "UPDATE_WSP": {
+                if (!workspaces) break
+                const newWsp = entity as WorkspaceDetailed
+                const newWorkspaceItems = [...workspaces.items]
+                const wspIdx = newWorkspaceItems.findIndex(wsp => wsp.id === newWsp.id)
+                if (wspIdx === -1) break
+                newWorkspaceItems[wspIdx] = newWsp
+                setWorkspaces({ ...workspaces, items: [...newWorkspaceItems] })
+                break;
+            }
+            case "UPDATE_CMP": {
+                if (!workspaces) break
+                const newCmp = entity as CampaignDetailed
+                const newWorkspaceItems = [...workspaces.items]
+                const wspIdx = newWorkspaceItems.findIndex(wsp => wsp.id === newCmp.workspace_id)
+                if (wspIdx === -1) break
+                const cmpIdx = newWorkspaceItems[wspIdx].campaigns.findIndex(cmp => cmp.id === newCmp.id)
+                if (cmpIdx === -1) break
+                newWorkspaceItems[wspIdx].campaigns[cmpIdx] = newCmp
+                setWorkspaces({ ...workspaces, items: [...newWorkspaceItems] })
+                break;
+            }
         }
     }
     useEffect(() => {
-        getWorkspaces({ detailed: true, only_active: false }).then(setWorkspaces)
-        getOrganizations({ detailed: true, page_size: 12, only_active: false }).then(setOrganizations)
+        getWorkspaces({ detailed: true, only_active: false, organization_id: 1 }).then(setWorkspaces)
+        getOrganizations({ detailed: true, page_size: PAGESIZE, only_active: false }).then(setOrganizations)
     }, [])
 
     interface OrganizationFull extends OrganizationDetailed {
@@ -92,9 +117,9 @@ export const OrganizationList = () => {
     }, [workspaces, organizations])
 
     const [page, setPage] = useState<number>(1)
-    const handlePage = (e: React.ChangeEvent<unknown>, value: number) => {
+    const handlePage = (_: React.ChangeEvent<unknown>, value: number) => {
         if (value === page) return
-        getOrganizations({ detailed: true, page_size: 12, page: value }).then((res) => {
+        getOrganizations({ detailed: true, page_size: PAGESIZE, page: value }).then((res) => {
             setPage(value)
             setOrganizations(res)
         })
@@ -105,14 +130,14 @@ export const OrganizationList = () => {
             disableOrganization(org.id).then(() => {
                 createEntityOnList({ ...org, active: false }, "UPDATE_ORG")
                 if (selectedEntity?.id === org.id) {
-                    setSelectedEntity({ ...selectedEntity, active: false })
+                    handleSidebar("KEEP", { ...selectedEntity, active: false })
                 }
             })
         } else {
             enableOrganization(org.id).then(() => {
                 createEntityOnList({ ...org, active: true }, "UPDATE_ORG")
                 if (selectedEntity?.id === org.id) {
-                    setSelectedEntity({ ...selectedEntity, active: true })
+                    handleSidebar("KEEP", { ...selectedEntity, active: true })
                 }
             })
         }
@@ -162,7 +187,8 @@ export const OrganizationList = () => {
 
                                             </ListItem>
                                             <Collapse in={true} timeout="auto" unmountOnExit>
-                                                <WorkspaceList workspaces={org.workspaces} handleSidebar={handleSidebar} />
+                                                <WorkspaceList workspaces={org.workspaces} handleSidebar={handleSidebar}
+                                                    createEntityOnList={createEntityOnList} selectedEntity={selectedEntity} />
                                             </Collapse>
                                         </>
                                     )}
@@ -187,10 +213,32 @@ export const OrganizationList = () => {
 
 interface WorkspaceListProps {
     workspaces?: WorkspaceDetailed[],
-    handleSidebar: (mode: string, entity?: OrganizationDetailed | WorkspaceDetailed | CampaignDetailed) => void
+    handleSidebar: (mode: string, entity?: OrganizationDetailed | WorkspaceDetailed | CampaignDetailed) => void,
+    selectedEntity: OrganizationDetailed | WorkspaceDetailed | CampaignDetailed | null,
+    createEntityOnList: (entity: OrganizationDetailed | WorkspaceDetailed | CampaignDetailed | null, mode: string) => void
 }
 
-export const WorkspaceList = ({ workspaces = [], handleSidebar }: WorkspaceListProps) => {
+export const WorkspaceList = ({ workspaces = [], handleSidebar, selectedEntity, createEntityOnList }: WorkspaceListProps) => {
+
+    const handleActive = (wsp: OrganizationDetailed) => {
+        if (!wsp) return
+        if (wsp.active) {
+            disableWorkspace(wsp.id).then(() => {
+                createEntityOnList({ ...wsp, active: false }, "UPDATE_WSP")
+                if (selectedEntity?.id === wsp.id) {
+                    handleSidebar("KEEP", { ...selectedEntity, active: false })
+                }
+            })
+        } else {
+            enableWorkspace(wsp.id).then(() => {
+                createEntityOnList({ ...wsp, active: true }, "UPDATE_WSP")
+                if (selectedEntity?.id === wsp.id) {
+                    handleSidebar("KEEP", { ...selectedEntity, active: true })
+                }
+            })
+        }
+    }
+
     return (
         <>
             <List>
@@ -198,26 +246,31 @@ export const WorkspaceList = ({ workspaces = [], handleSidebar }: WorkspaceListP
                     workspaces.map(wsp =>
                         <>
                             <ListItem key={`wsp${wsp.id}`} disablePadding secondaryAction={
-                                <>
-                                    <IconButton edge="end" aria-label="details">
+                                <Grid container spacing={1} alignItems="center">
+                                    {wsp.active ? <Chip color='success' label="Habilitado" /> : <Chip color='error' label="Deshabilitado" />}
+                                    <IconButton edge="end" aria-label="details" onClick={() => handleSidebar("DETAILS_WSP", wsp)}>
                                         <SearchIcon />
                                     </IconButton>
-                                    <IconButton edge="end" aria-label="modify">
+                                    <IconButton edge="end" aria-label="modify" onClick={() => handleSidebar("UPDATE_WSP", wsp)}>
                                         <EditIcon />
                                     </IconButton>
-                                    <IconButton edge="end" aria-label={wsp.active ? "delete" : "restore"}>
+                                    <IconButton edge="end" aria-label={wsp.active ? "delete" : "restore"}
+                                        onClick={() => handleActive(wsp)}>
                                         {wsp.active ?
                                             <DeleteIcon color="error" /> :
                                             <RestoreFromTrashIcon color="success" />
                                         }
                                     </IconButton>
-                                </>
+                                </Grid>
                             }>
                                 <ListItemButton onClick={() => handleSidebar("DETAILS_WSP", wsp)}>
                                     <ListItemIcon>
                                         <SubdirectoryArrowRightIcon />
                                     </ListItemIcon>
-                                    <ListItemText primary={`${wsp.name}${wsp.description ? `: ${wsp.description}` : ""}`} />
+                                    <ListItemText primary={<>
+                                        <Typography fontWeight="bold">{wsp.name}</Typography>
+                                        {wsp.description && <Typography paddingInlineStart={2}>{wsp.description} </Typography>}
+                                    </>} />
                                 </ListItemButton>
 
                             </ListItem>
@@ -238,7 +291,7 @@ interface CampaignListProps {
 }
 export const CampaignList = ({ campaigns = [], handleSidebar }: CampaignListProps) => {
     if (campaigns?.length > 0) return (
-        <Box sx={{ marginLeft: 4 }}>
+        <Box sx={{ marginLeft: 6 }}>
             {campaigns.map((campaign, idx) =>
                 <Button key={`campaign${idx}`} variant="text" onClick={() => handleSidebar("DETAILS_CMP", campaign)}>
                     <Typography component="p">{campaign.name}</Typography>

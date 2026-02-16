@@ -3,23 +3,22 @@ import { useEffect, useMemo, useState } from "react"
 import { useForm, useWatch } from "react-hook-form"
 import type { LeadFieldPost } from "../../types/leadFields"
 import { createCampaign, createOrganization, createWorkspace, getOrganizations, getWorkspaces, updateCampaign, updateOrganization, updateWorkspace } from "./campaignServices"
-import { useNavigate } from "react-router-dom"
 import { ControlledAutocomplete } from "../common/forms/CustomMultipleInputs"
 import { createLeadField } from "../leadFields/leadFieldServices"
 import type { Campaign, CampaignDetailed, CampaignPost, Organization, OrganizationDetailed, OrganizationPost, Workspace, WorkspaceDetailed, WorkspacePost } from "../../types/campaigns"
 import { setFormErrors } from "../../generalService"
 import { RegisteredTextInput } from "../common/forms/CustomInputs"
 
-export const CampaignForm = ({ existingCmp, closeSidebar, createEntityOnList }
+export const CampaignForm = ({ existingCmp, closeSidebar, createEntityOnList, handleSidebar }
     : {
         existingCmp?: Campaign, closeSidebar: () => void, createEntityOnList: (
             entity: OrganizationDetailed | WorkspaceDetailed | CampaignDetailed | null,
-        ) => void
+        ) => void,
+        handleSidebar: (mode: string, entity?: OrganizationDetailed | WorkspaceDetailed | CampaignDetailed) => void
     }) => {
 
     const [workspaces, setWorkspaces] = useState<Workspace[] | []>([])
     const [organizations, setOrganizations] = useState<Organization[] | []>([])
-    const nav = useNavigate()
 
     useEffect(() => {
         getWorkspaces({ only_active: true })
@@ -75,7 +74,7 @@ export const CampaignForm = ({ existingCmp, closeSidebar, createEntityOnList }
                     Promise.all(requiredFields.map((field) => createLeadField({ ...field, campaign_id: res.id })))
                         .then(() => {
                             createEntityOnList(res)
-                            closeSidebar()
+                            handleSidebar("DETAILS_CMP", res)
                         })
                         .catch((e) => console.error(e))
                 )
@@ -84,7 +83,10 @@ export const CampaignForm = ({ existingCmp, closeSidebar, createEntityOnList }
                 })
         } else {
             updateCampaign(data, existingCmp.id)
-                .then((res) => nav(`/campaigns/${res.id}`))
+                .then((res) => {
+                    createEntityOnList(res)
+                    handleSidebar("DETAILS_CMP", res)
+                })
                 .catch((e) => setFormErrors(e, setError))
         }
     }
@@ -110,12 +112,12 @@ export const CampaignForm = ({ existingCmp, closeSidebar, createEntityOnList }
                 <Grid size="grow" minWidth={"20rem"}>
                     <ControlledAutocomplete control={control} label="Organización" name="organization_id"
                         getOptionLabel={(option) => option.name} errorMessage={errors.organization_id?.message}
-                        options={organizations} returnField="id" required />
+                        options={organizations} returnField="id" required disabled={!!existingCmp}/>
                 </Grid>
                 <Grid size="grow" minWidth={"20rem"}>
                     <ControlledAutocomplete control={control} label="Espacio de Trabajo" name="workspace_id"
                         getOptionLabel={(option) => option.name} errorMessage={errors?.workspace_id?.message}
-                        options={filteredWorkspaces} returnField="id" disabled={!selectedOrg} required />
+                        options={filteredWorkspaces} returnField="id" disabled={!selectedOrg} required disabled={!!existingCmp}/>
                 </Grid>
             </Grid>
             {errors?.root &&
@@ -130,11 +132,12 @@ export const CampaignForm = ({ existingCmp, closeSidebar, createEntityOnList }
     )
 }
 
-export const WorkspaceForm = ({ existingWksp, closeSidebar, createEntityOnList }
+export const WorkspaceForm = ({ existingWksp, closeSidebar, handleSidebar, createEntityOnList }
     : {
         existingWksp?: Workspace, closeSidebar: () => void, createEntityOnList: (
             entity: OrganizationDetailed | WorkspaceDetailed | CampaignDetailed | null,
         ) => void
+        handleSidebar: (mode: string, entity?: OrganizationDetailed | WorkspaceDetailed | CampaignDetailed) => void
     }) => {
 
     const { register, handleSubmit, control, formState: { errors }, setError } = useForm<WorkspacePost>({
@@ -144,7 +147,6 @@ export const WorkspaceForm = ({ existingWksp, closeSidebar, createEntityOnList }
             organization_id: existingWksp?.organization_id,
         }
     })
-    const nav = useNavigate()
 
     const [organizations, setOrganizations] = useState<Organization[] | []>([])
 
@@ -156,11 +158,12 @@ export const WorkspaceForm = ({ existingWksp, closeSidebar, createEntityOnList }
         if (!existingWksp) {
             createWorkspace(data).then((res) => {
                 createEntityOnList(res)
-                closeSidebar()
+                handleSidebar("DETAILS_WSP", res)
             }).catch((e) => setFormErrors(e, setError))
         } else {
-            updateWorkspace(data, existingWksp.id).then(() => {
-                nav(`/campaigns`)
+            updateWorkspace(data, existingWksp.id).then((res) => {
+                createEntityOnList(res)
+                handleSidebar("DETAILS_WSP", res)
             }).catch((e) => setFormErrors(e, setError))
         }
     }
@@ -187,7 +190,7 @@ export const WorkspaceForm = ({ existingWksp, closeSidebar, createEntityOnList }
 
                 <Grid size="grow" minWidth={"20rem"}>
                     <ControlledAutocomplete control={control} name="organization_id" label="Organización"
-                        getOptionLabel={option => option.name} options={organizations}
+                        getOptionLabel={option => option.name} options={organizations} disabled={!!existingWksp}
                         returnField="id" errorMessage={errors.organization_id?.message} required />
                 </Grid>
 
