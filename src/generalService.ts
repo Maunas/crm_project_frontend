@@ -1,6 +1,11 @@
 import type { UseFormSetError } from "react-hook-form";
-
+import axios from "axios"
 export const API_BASE_URL = "http://localhost:8000";
+
+export const generalSearch = async (query: string) => {
+    const res = await axios.get(`${API_BASE_URL}/search`, { params: { query } })
+    return res.data
+}
 
 export const getFieldType = (
   fieldType: string,

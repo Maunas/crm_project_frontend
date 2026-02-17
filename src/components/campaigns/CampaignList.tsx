@@ -12,13 +12,12 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 
 export const OrganizationList = () => {
-    const [organizations, setOrganizations] = useState<Paginable<OrganizationDetailed> | null>(null)
     const [workspaces, setWorkspaces] = useState<Paginable<WorkspaceDetailed> | null>(null)
     const [sidebarMode, setSidebarMode] = useState<string | null>(null)
     const [selectedEntity, setSelectedEntity] =
         useState<OrganizationDetailed | WorkspaceDetailed | CampaignDetailed | null>(null)
 
-    const PAGESIZE = 8
+    const PAGESIZE = 12
 
     const handleSidebar = (mode: string,
         entity?: OrganizationDetailed | WorkspaceDetailed | CampaignDetailed) => {
@@ -35,10 +34,6 @@ export const OrganizationList = () => {
         entity: OrganizationDetailed | WorkspaceDetailed | CampaignDetailed | null,
         mode: string) => {
         switch (mode) {
-            case "CREATE_ORG":
-                getOrganizations({ detailed: true, page_size: PAGESIZE, page: organizations?.page ?? 1 })
-                    .then(setOrganizations)
-                break;
             case "CREATE_WSP": {
                 if (!workspaces) break
                 const newWsp = entity as WorkspaceDetailed
