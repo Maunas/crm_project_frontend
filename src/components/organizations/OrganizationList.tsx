@@ -4,12 +4,14 @@ import { OrganizationFormSidebar } from './OrganizationForm'
 import type { Paginable } from '../../types/common'
 import type { OrganizationDetailed } from '../../types/campaigns'
 import { disableOrganization, enableOrganization, getOrganizations } from '../campaigns/campaignServices'
-import { Button, ButtonGroup, Chip, Container, Divider, Grid, IconButton, List, ListItem, ListItemButton, ListItemText, Pagination, Stack, Typography } from '@mui/material'
+import { Button, ButtonGroup, Chip, Container, Divider, Grid, IconButton, List, ListItem, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import { EnabledIcon } from '../common/lists/Badges'
+import { useListPagination } from '../hooks/useListPagination'
+import { PaginationComponent } from '../common/lists/PaginationComponent'
 
 
 export const OrganizationList = () => {
@@ -20,15 +22,12 @@ export const OrganizationList = () => {
         useState<OrganizationDetailed | null>(null)
 
 
-    const PAGESIZE = 24
-    const [page, setPage] = useState<number>(1)
-    const handlePage = (_: React.ChangeEvent<unknown>, value: number) => {
-        if (value !== page) setPage(value)
-    }
+    const { page, pageSize, pageComponentProps } = useListPagination(organizations?.total_pages || 0, 1)
+
 
     useEffect(() => {
-        getOrganizations({ detailed: true, page_size: PAGESIZE, page: page, only_active: false }).then(setOrganizations)
-    }, [page])
+        getOrganizations({ detailed: true, page_size: pageSize, page: page, only_active: false }).then(setOrganizations)
+    }, [page, pageSize])
 
     const handleSidebar = (mode: string, entity: OrganizationDetailed | null) => {
         setSelectedEntity(entity)
@@ -43,7 +42,7 @@ export const OrganizationList = () => {
     const updateEntityOnList = (newOrg: OrganizationDetailed, mode: string) => {
         switch (mode) {
             case "CREATE_ORG":
-                getOrganizations({ detailed: true, page_size: PAGESIZE, page: organizations?.page ?? 1 })
+                getOrganizations({ detailed: true, page_size: pageSize, page: organizations?.page ?? 1 })
                     .then(setOrganizations)
                 break;
             case "UPDATE_ORG": {
@@ -123,8 +122,7 @@ export const OrganizationList = () => {
                                 }
 
                             </List>
-                            <Pagination count={organizations?.total_pages} page={page}
-                                shape="rounded" color="secondary" onChange={handlePage} />
+                            <PaginationComponent {...pageComponentProps} />
                         </Stack>
                     </GenericPaper>
                 </Grid>

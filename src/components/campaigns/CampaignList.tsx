@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { disableWorkspace, enableWorkspace, getWorkspaces } from './campaignServices'
-import { Box, Button, ButtonGroup, Container, Grid, IconButton, List, ListItem, ListItemButton, ListItemText, Pagination, Stack, Typography } from '@mui/material'
+import { Box, Button, ButtonGroup, Container, Grid, IconButton, List, ListItem, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
 import type { CampaignDetailed, WorkspaceDetailed } from '../../types/campaigns'
 import { CampaignSidebar } from './CampaignSidebar'
 import { GenericPaper } from '../common/layout/GenericContainer'
@@ -11,6 +11,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import { EnabledIcon } from '../common/lists/Badges';
 import { Link } from 'react-router-dom'
+import { useListPagination } from '../hooks/useListPagination'
+import { PaginationComponent } from '../common/lists/PaginationComponent'
 
 export const WorkspaceList = () => {
     const [workspaces, setWorkspaces] = useState<Paginable<WorkspaceDetailed> | null>(null)
@@ -18,7 +20,6 @@ export const WorkspaceList = () => {
     const [selectedEntity, setSelectedEntity] =
         useState<WorkspaceDetailed | CampaignDetailed | null>(null)
 
-    const PAGESIZE = 24
 
     const handleSidebar = (mode: string, entity: WorkspaceDetailed | CampaignDetailed | null) => {
         setSelectedEntity(entity)
@@ -76,15 +77,11 @@ export const WorkspaceList = () => {
         }
     }
 
-    const [page, setPage] = useState<number>(1)
-    const handlePage = (_: React.ChangeEvent<unknown>, value: number) => {
-        if (value === page) return
-        setPage(value)
-    }
-
+    const { page, pageSize, pageComponentProps } = useListPagination(workspaces?.total_pages || 0, 1)
+    
     useEffect(() => {
-        getWorkspaces({ detailed: true, page_size: PAGESIZE, only_active: false, organization_id: 1, page: page }).then(setWorkspaces)
-    }, [page])
+        getWorkspaces({ detailed: true, page_size: pageSize, only_active: false, organization_id: 1, page: page }).then(setWorkspaces)
+    }, [page, pageSize])
 
     const handleActive = (wsp: WorkspaceDetailed) => {
         if (!wsp) return
@@ -152,8 +149,7 @@ export const WorkspaceList = () => {
                                 }
 
                             </List>
-                            <Pagination count={workspaces?.total_pages} page={page}
-                                shape="rounded" color="secondary" onChange={handlePage} />
+                            <PaginationComponent {...pageComponentProps} />
                         </Stack>
                     </GenericPaper>
                 </Grid>
@@ -174,7 +170,7 @@ interface CampaignListProps {
     campaigns?: CampaignDetailed[],
 }
 export const CampaignList = ({ campaigns = [] }: CampaignListProps) => {
-    
+
     if (campaigns?.length > 0) return (
         <Box sx={{ marginLeft: 6 }}>
             {campaigns.map((campaign, idx) =>
