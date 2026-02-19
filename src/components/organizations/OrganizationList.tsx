@@ -4,13 +4,13 @@ import { OrganizationFormSidebar } from './OrganizationForm'
 import type { Paginable } from '../../types/common'
 import type { OrganizationDetailed } from '../../types/campaigns'
 import { disableOrganization, enableOrganization, getOrganizations } from '../campaigns/campaignServices'
-import { Button, ButtonGroup, Chip, Container, Divider, Grid, IconButton, List, ListItem, ListItemButton, ListItemText, Pagination, Stack, Tooltip, Typography } from '@mui/material'
+import { Button, ButtonGroup, Chip, Container, Divider, Grid, IconButton, List, ListItem, ListItemButton, ListItemText, Pagination, Stack, Typography } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import HighlightOffIcon from '@mui/icons-material/HighlightOff';
+import { EnabledIcon } from '../common/lists/Badges'
+
 
 export const OrganizationList = () => {
     const [organizations, setOrganizations] = useState<Paginable<OrganizationDetailed> | null>(null)
@@ -20,7 +20,7 @@ export const OrganizationList = () => {
         useState<OrganizationDetailed | null>(null)
 
 
-    const PAGESIZE = 12
+    const PAGESIZE = 24
     const [page, setPage] = useState<number>(1)
     const handlePage = (_: React.ChangeEvent<unknown>, value: number) => {
         if (value !== page) setPage(value)
@@ -90,7 +90,6 @@ export const OrganizationList = () => {
                                         organizations.items.map(org =>
                                             <ListItem key={org.id} disablePadding secondaryAction={
                                                 <Grid container spacing={1} alignItems="center">
-
                                                     <IconButton edge="end" aria-label="details" onClick={() => handleSidebar("DETAILS_ORG", org)}>
                                                         <SearchIcon />
                                                     </IconButton>
@@ -109,11 +108,7 @@ export const OrganizationList = () => {
                                                 <ListItemButton onClick={() => handleSidebar("DETAILS_ORG", org)} className="selectable">
                                                     <ListItemText primary={<>
                                                         <Stack spacing={1} direction="row">
-                                                            <Tooltip title={org.active ? "Habilitado" : "Deshabilitado"}
-                                                                color={org.active ? "success" : "error"} >
-                                                                {org.active
-                                                                    ? <CheckCircleOutlineIcon color="success" /> : <HighlightOffIcon color="error" />}
-                                                            </Tooltip>
+                                                            <EnabledIcon active={org.active} />
                                                             <Typography fontWeight="bold">{org.name} </Typography>
                                                         </Stack>
                                                         {org.description && <Typography paddingInlineStart={2}>{org.description} </Typography>}

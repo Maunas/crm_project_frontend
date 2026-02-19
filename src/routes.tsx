@@ -2,7 +2,6 @@ import { createBrowserRouter } from "react-router-dom";
 import MainLayout from "./components/common/mainLayout";
 import { NotFound } from "./pages/NotFound";
 import { LeadDetails } from "./components/lead/LeadDetails";
-import { CampaignForm, OrganizationForm, WorkspaceForm } from "./components/campaigns/CampaignForms";
 import { CampaignDetails } from "./components/campaigns/CampaignDetails";
 import { WorkspaceList } from "./components/campaigns/CampaignList";
 import { GenericContainer } from "./components/common/layout/GenericContainer";
@@ -70,18 +69,6 @@ export const router = createBrowserRouter([
             {
                 path: "/campaigns/:id",
                 Component: CampaignDetails
-            },
-            {
-                path: "/campaigns/new",
-                element: <GenericContainer><CampaignForm /></GenericContainer>
-            },
-            {
-                path: "/workspaces/new",
-                element: <GenericContainer><WorkspaceForm /></GenericContainer>
-            },
-            {
-                path: "/organizations/new",
-                element: <GenericContainer><OrganizationForm /></GenericContainer>
             },
             {
                 path: "*", //Si no coincide con nada más.

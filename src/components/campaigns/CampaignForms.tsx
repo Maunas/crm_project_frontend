@@ -2,28 +2,29 @@ import { Typography, Button, Grid, FormHelperText } from "@mui/material"
 import { useEffect, useMemo, useState } from "react"
 import { useForm, useWatch } from "react-hook-form"
 import type { LeadFieldPost } from "../../types/leadFields"
-import { createCampaign, createOrganization, createWorkspace, getOrganizations, getWorkspaces, updateCampaign, updateOrganization, updateWorkspace } from "./campaignServices"
+import { createCampaign, createWorkspace, getOrganizations, getWorkspaces, updateCampaign, updateWorkspace } from "./campaignServices"
 import { ControlledAutocomplete } from "../common/forms/CustomMultipleInputs"
 import { createLeadField } from "../leadFields/leadFieldServices"
-import type { Campaign, CampaignDetailed, CampaignPost, Organization, OrganizationDetailed, OrganizationPost, Workspace, WorkspaceDetailed, WorkspacePost } from "../../types/campaigns"
+import type { Campaign, CampaignDetailed, CampaignPost, Organization, OrganizationDetailed, Workspace, WorkspaceDetailed, WorkspacePost } from "../../types/campaigns"
 import { setFormErrors } from "../../generalService"
 import { RegisteredTextInput } from "../common/forms/CustomInputs"
 
 export const CampaignForm = ({ existingCmp, closeSidebar, createEntityOnList, handleSidebar }
     : {
-        existingCmp?: Campaign, closeSidebar: () => void, createEntityOnList: (
-            entity: OrganizationDetailed | WorkspaceDetailed | CampaignDetailed | null,
+        existingCmp?: Campaign, closeSidebar: () => void, 
+        createEntityOnList: (
+            entity: WorkspaceDetailed | CampaignDetailed | null,
         ) => void,
-        handleSidebar: (mode: string, entity?: OrganizationDetailed | WorkspaceDetailed | CampaignDetailed) => void
+        handleSidebar: (mode: string, entity: WorkspaceDetailed | CampaignDetailed | null) => void
     }) => {
 
     const [workspaces, setWorkspaces] = useState<Workspace[] | []>([])
     const [organizations, setOrganizations] = useState<Organization[] | []>([])
 
     useEffect(() => {
-        getWorkspaces({ only_active: true })
+        getWorkspaces({ only_active: true, page_size: 0 })
             .then(res => setWorkspaces(res.items))
-        getOrganizations({ only_active: true })
+        getOrganizations({ only_active: true, page_size: 0 })
             .then(res => setOrganizations(res.items))
     }, [])
 
@@ -135,9 +136,9 @@ export const CampaignForm = ({ existingCmp, closeSidebar, createEntityOnList, ha
 export const WorkspaceForm = ({ existingWksp, closeSidebar, handleSidebar, createEntityOnList }
     : {
         existingWksp?: Workspace, closeSidebar: () => void, createEntityOnList: (
-            entity: OrganizationDetailed | WorkspaceDetailed | CampaignDetailed | null,
+            entity: WorkspaceDetailed | CampaignDetailed | null,
         ) => void
-        handleSidebar: (mode: string, entity?: OrganizationDetailed | WorkspaceDetailed | CampaignDetailed) => void
+        handleSidebar: (mode: string, entity: WorkspaceDetailed | CampaignDetailed | null) => void
     }) => {
 
     const { register, handleSubmit, control, formState: { errors }, setError } = useForm<WorkspacePost>({
@@ -151,7 +152,7 @@ export const WorkspaceForm = ({ existingWksp, closeSidebar, handleSidebar, creat
     const [organizations, setOrganizations] = useState<Organization[] | []>([])
 
     useEffect(() => {
-        getOrganizations({ only_active: true }).then(res => setOrganizations(res.items))
+        getOrganizations({ only_active: true, page_size: 0 }).then(res => setOrganizations(res.items))
     }, [])
 
     const submit = (data: WorkspacePost) => {
