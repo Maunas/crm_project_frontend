@@ -5,14 +5,14 @@ import type { LeadFieldPost } from "../../types/leadFields"
 import { createCampaign, createWorkspace, getOrganizations, getWorkspaces, updateCampaign, updateWorkspace } from "./campaignServices"
 import { ControlledAutocomplete } from "../common/forms/CustomMultipleInputs"
 import { createLeadField } from "../leadFields/leadFieldServices"
-import type { Campaign, CampaignDetailed, CampaignPost, Organization, OrganizationDetailed, Workspace, WorkspaceDetailed, WorkspacePost } from "../../types/campaigns"
+import type { Campaign, CampaignDetailed, CampaignPost, Organization, Workspace, WorkspaceDetailed, WorkspacePost } from "../../types/campaigns"
 import { setFormErrors } from "../../generalService"
 import { RegisteredTextInput } from "../common/forms/CustomInputs"
 
-export const CampaignForm = ({ existingCmp, closeSidebar, createEntityOnList, handleSidebar }
+export const CampaignForm = ({ existingCmp, closeSidebar, updateEntityOnList, handleSidebar }
     : {
         existingCmp?: Campaign, closeSidebar: () => void, 
-        createEntityOnList: (
+        updateEntityOnList: (
             entity: WorkspaceDetailed | CampaignDetailed | null,
         ) => void,
         handleSidebar: (mode: string, entity: WorkspaceDetailed | CampaignDetailed | null) => void
@@ -74,7 +74,7 @@ export const CampaignForm = ({ existingCmp, closeSidebar, createEntityOnList, ha
                 .then((res) =>
                     Promise.all(requiredFields.map((field) => createLeadField({ ...field, campaign_id: res.id })))
                         .then(() => {
-                            createEntityOnList(res)
+                            updateEntityOnList(res)
                             handleSidebar("DETAILS_CMP", res)
                         })
                         .catch((e) => console.error(e))
@@ -85,7 +85,7 @@ export const CampaignForm = ({ existingCmp, closeSidebar, createEntityOnList, ha
         } else {
             updateCampaign(data, existingCmp.id)
                 .then((res) => {
-                    createEntityOnList(res)
+                    updateEntityOnList(res)
                     handleSidebar("DETAILS_CMP", res)
                 })
                 .catch((e) => setFormErrors(e, setError))
@@ -133,9 +133,9 @@ export const CampaignForm = ({ existingCmp, closeSidebar, createEntityOnList, ha
     )
 }
 
-export const WorkspaceForm = ({ existingWksp, closeSidebar, handleSidebar, createEntityOnList }
+export const WorkspaceForm = ({ existingWksp, closeSidebar, handleSidebar, updateEntityOnList }
     : {
-        existingWksp?: Workspace, closeSidebar: () => void, createEntityOnList: (
+        existingWksp?: Workspace, closeSidebar: () => void, updateEntityOnList: (
             entity: WorkspaceDetailed | CampaignDetailed | null,
         ) => void
         handleSidebar: (mode: string, entity: WorkspaceDetailed | CampaignDetailed | null) => void
@@ -158,12 +158,12 @@ export const WorkspaceForm = ({ existingWksp, closeSidebar, handleSidebar, creat
     const submit = (data: WorkspacePost) => {
         if (!existingWksp) {
             createWorkspace(data).then((res) => {
-                createEntityOnList(res)
+                updateEntityOnList(res)
                 handleSidebar("DETAILS_WSP", res)
             }).catch((e) => setFormErrors(e, setError))
         } else {
             updateWorkspace(data, existingWksp.id).then((res) => {
-                createEntityOnList(res)
+                updateEntityOnList(res)
                 handleSidebar("DETAILS_WSP", res)
             }).catch((e) => setFormErrors(e, setError))
         }

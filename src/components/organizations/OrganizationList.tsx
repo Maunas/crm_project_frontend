@@ -12,32 +12,19 @@ import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import { EnabledIcon } from '../common/lists/Badges'
 import { useListPagination } from '../hooks/useListPagination'
 import { PaginationComponent } from '../common/lists/PaginationComponent'
+import { useSidebar } from '../hooks/useSidebar'
 
 
 export const OrganizationList = () => {
     const [organizations, setOrganizations] = useState<Paginable<OrganizationDetailed> | null>(null)
 
-    const [sidebarMode, setSidebarMode] = useState<string | null>(null)
-    const [selectedEntity, setSelectedEntity] =
-        useState<OrganizationDetailed | null>(null)
-
+    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<OrganizationDetailed>()
 
     const { page, pageSize, pageComponentProps } = useListPagination(organizations?.total_pages || 0, 1)
-
 
     useEffect(() => {
         getOrganizations({ detailed: true, page_size: pageSize, page: page, only_active: false }).then(setOrganizations)
     }, [page, pageSize])
-
-    const handleSidebar = (mode: string, entity: OrganizationDetailed | null) => {
-        setSelectedEntity(entity)
-        if (mode === "KEEP") return
-        setSidebarMode(mode)
-    }
-    const closeSidebar = () => {
-        setSelectedEntity(null)
-        setSidebarMode(null)
-    }
 
     const updateEntityOnList = (newOrg: OrganizationDetailed, mode: string) => {
         switch (mode) {

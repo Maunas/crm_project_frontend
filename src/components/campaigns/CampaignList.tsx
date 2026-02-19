@@ -13,24 +13,20 @@ import { EnabledIcon } from '../common/lists/Badges';
 import { Link } from 'react-router-dom'
 import { useListPagination } from '../hooks/useListPagination'
 import { PaginationComponent } from '../common/lists/PaginationComponent'
+import { useSidebar } from '../hooks/useSidebar'
 
 export const WorkspaceList = () => {
     const [workspaces, setWorkspaces] = useState<Paginable<WorkspaceDetailed> | null>(null)
-    const [sidebarMode, setSidebarMode] = useState<string | null>(null)
-    const [selectedEntity, setSelectedEntity] =
-        useState<WorkspaceDetailed | CampaignDetailed | null>(null)
 
+    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<WorkspaceDetailed | CampaignDetailed>()
 
-    const handleSidebar = (mode: string, entity: WorkspaceDetailed | CampaignDetailed | null) => {
-        setSelectedEntity(entity)
-        if (mode === "KEEP") return
-        setSidebarMode(mode)
-    }
-    const closeSidebar = () => {
-        setSelectedEntity(null)
-        setSidebarMode(null)
-    }
-    const createEntityOnList = (
+    const { page, pageSize, pageComponentProps } = useListPagination(workspaces?.total_pages || 0, 2)
+
+    useEffect(() => {
+        getWorkspaces({ detailed: true, page_size: pageSize, only_active: false, organization_id: 1, page: page }).then(setWorkspaces)
+    }, [page, pageSize])
+
+    const updateEntityOnList = (
         entity: WorkspaceDetailed | CampaignDetailed | null,
         mode: string) => {
         switch (mode) {
@@ -77,16 +73,10 @@ export const WorkspaceList = () => {
         }
     }
 
-    const { page, pageSize, pageComponentProps } = useListPagination(workspaces?.total_pages || 0, 1)
-    
-    useEffect(() => {
-        getWorkspaces({ detailed: true, page_size: pageSize, only_active: false, organization_id: 1, page: page }).then(setWorkspaces)
-    }, [page, pageSize])
-
     const handleActive = (wsp: WorkspaceDetailed) => {
         if (!wsp) return
         const updateActive = (wsp: WorkspaceDetailed) => {
-            createEntityOnList({ ...wsp, active: !wsp.active }, "UPDATE_WSP")
+            updateEntityOnList({ ...wsp, active: !wsp.active }, "UPDATE_WSP")
             if (selectedEntity?.id === wsp.id) {
                 handleSidebar("KEEP", { ...selectedEntity, active: !wsp.active })
             }
@@ -97,6 +87,7 @@ export const WorkspaceList = () => {
             enableWorkspace(wsp.id).then(() => updateActive(wsp))
         }
     }
+    
     return (
         <Container maxWidth={false}>
             <Grid container spacing={2}>
@@ -157,7 +148,7 @@ export const WorkspaceList = () => {
                     <Grid size="grow" minWidth="22rem">
                         <GenericPaper>
                             <CampaignSidebar mode={sidebarMode} entity={selectedEntity} handleSidebar={handleSidebar}
-                                closeSidebar={closeSidebar} createEntityOnList={createEntityOnList} />
+                                closeSidebar={closeSidebar} updateEntityOnList={updateEntityOnList} />
                         </GenericPaper>
                     </Grid>}
             </Grid>

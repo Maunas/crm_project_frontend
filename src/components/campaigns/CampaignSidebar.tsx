@@ -10,38 +10,38 @@ interface SidebarProps {
     mode: string | null,
     entity: WorkspaceDetailed | CampaignDetailed | null,
     closeSidebar: () => void,
-    createEntityOnList: (
+    updateEntityOnList: (
         entity: WorkspaceDetailed | CampaignDetailed | null,
         mode: string,
     ) => void,
     handleSidebar: (mode: string, entity: WorkspaceDetailed | CampaignDetailed | null) => void
 }
-export const CampaignSidebar = ({ mode, entity, closeSidebar, createEntityOnList, handleSidebar }: SidebarProps) => {
+export const CampaignSidebar = ({ mode, entity, closeSidebar, updateEntityOnList, handleSidebar }: SidebarProps) => {
 
     switch (mode) {
         case "CREATE_WSP":
             return <WorkspaceForm closeSidebar={closeSidebar}
-                createEntityOnList={(entity) => createEntityOnList(entity, mode)}
+                updateEntityOnList={(entity) => updateEntityOnList(entity, mode)}
                 handleSidebar={handleSidebar} />
         case "CREATE_CMP":
             return <CampaignForm closeSidebar={closeSidebar}
-                createEntityOnList={(entity) => createEntityOnList(entity, mode)}
+                updateEntityOnList={(entity) => updateEntityOnList(entity, mode)}
                 handleSidebar={handleSidebar} />
         case "UPDATE_WSP":
             return <WorkspaceForm existingWksp={entity as WorkspaceDetailed} closeSidebar={closeSidebar}
-                createEntityOnList={(entity) => createEntityOnList(entity, mode)}
+                updateEntityOnList={(entity) => updateEntityOnList(entity, mode)}
                 handleSidebar={handleSidebar} />
         case "UPDATE_CMP":
             return <CampaignForm existingCmp={entity as CampaignDetailed} closeSidebar={closeSidebar}
-                createEntityOnList={(entity) => createEntityOnList(entity, mode)}
+                updateEntityOnList={(entity) => updateEntityOnList(entity, mode)}
                 handleSidebar={handleSidebar} />
         case "DETAILS_WSP":
             return <WorkspaceDetails entity={entity} closeSidebar={closeSidebar}
-                updateActive={(entity) => createEntityOnList(entity, "UPDATE_WSP")}
+                updateActive={(entity) => updateEntityOnList(entity, "UPDATE_WSP")}
                 handleSidebar={handleSidebar} />
         case "DETAILS_CMP":
             return <CampaignDetails entity={entity} closeSidebar={closeSidebar}
-                updateActive={(entity) => createEntityOnList(entity, "UPDATE_CMP")}
+                updateActive={(entity) => updateEntityOnList(entity, "UPDATE_CMP")}
                 handleSidebar={handleSidebar} />
     }
 
