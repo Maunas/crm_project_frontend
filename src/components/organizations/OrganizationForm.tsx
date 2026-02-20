@@ -2,7 +2,7 @@ import { useForm } from 'react-hook-form'
 import { RegisteredTextInput } from '../common/forms/CustomInputs'
 import type { Organization, OrganizationDetailed, OrganizationPost } from '../../types/campaigns'
 import { setFormErrors } from '../../generalService'
-import { createOrganization, updateOrganization } from '../campaigns/campaignServices'
+import { createOrganization, updateOrganization } from '../workspaces/campaignServices'
 import { Button, FormHelperText, Grid, Typography } from '@mui/material'
 
 interface OrganizationSidebarProps {

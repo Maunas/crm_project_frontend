@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
 import { useFieldArray, useForm, useWatch, type Control, type FieldErrors, type UseFormHandleSubmit, type UseFormRegister, type UseFormSetError } from "react-hook-form"
-import { getCampaigns } from "../campaigns/campaignServices"
+import { getCampaigns } from "../workspaces/campaignServices"
 import { ControlledAutocomplete } from "../common/forms/CustomMultipleInputs"
 import { Button, Divider, FormHelperText, Grid, Typography, ButtonGroup, TextField } from "@mui/material"
 import { getLeadFields, getNomenclatorItems } from "../leadFields/leadFieldServices"

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { getCampaigns } from "../campaigns/campaignServices";
+import { getCampaigns } from "../workspaces/campaignServices";
 import {
   createLeadField,
   createValidation,

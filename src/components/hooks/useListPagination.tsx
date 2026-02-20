@@ -8,6 +8,8 @@ export const useListPagination = (totalPages: number, pageSize: number = 24) => 
     setPage(value)
   }, [page])
 
-  return { page, pageSize, pageComponentProps: { totalPages, page, handlePage } }
+  const goToPageOne = useCallback(() => setPage(1), [])
+
+  return { page, pageSize, pageComponentProps: { totalPages, page, handlePage }, goToPageOne }
 }
 

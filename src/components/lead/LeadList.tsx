@@ -8,7 +8,7 @@ import { useForm } from 'react-hook-form'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { ControlledCheckbox, ControlledNumber, RegisteredTextInput } from '../common/forms/CustomInputs'
 import { ControlledAutocomplete } from '../common/forms/CustomMultipleInputs'
-import { getCampaigns } from '../campaigns/campaignServices'
+import { getCampaigns } from '../workspaces/campaignServices'
 import type { CampaignDetailed } from '../../types/campaigns'
 
 export const LeadList = () => {

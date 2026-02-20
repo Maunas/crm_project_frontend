@@ -7,10 +7,10 @@ import { useSidebar } from '../hooks/useSidebar'
 import { useListPagination } from '../hooks/useListPagination'
 import type { Paginable } from '../../types/common'
 import type { OrganizationDetailed } from '../../types/campaigns'
-import { disableOrganization, enableOrganization, getOrganizations } from '../campaigns/campaignServices'
+import { disableOrganization, enableOrganization, getOrganizations } from '../workspaces/campaignServices'
 import { Link } from 'react-router-dom'
 import dayjs from 'dayjs'
-import 'dayjs/locale/es' 
+import 'dayjs/locale/es'
 import { Button, ButtonGroup, Chip, Divider, Grid, IconButton, List, ListItem, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
@@ -25,7 +25,7 @@ export const OrganizationList = () => {
 
     const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<OrganizationDetailed>()
 
-    const { page, pageSize, pageComponentProps } = useListPagination(organizations?.total_pages || 0)
+    const { page, pageSize, goToPageOne, pageComponentProps } = useListPagination(organizations?.total_pages || 0)
 
     useEffect(() => {
         getOrganizations({ detailed: true, page_size: pageSize, page: page, only_active: false }).then(setOrganizations)
@@ -33,7 +33,7 @@ export const OrganizationList = () => {
 
     const updateEntityOnList = (newOrg: OrganizationDetailed, mode: string) => {
         switch (mode) {
-            case "CREATE_ORG": case "DELETE_ORG":
+            case "CREATE_ORG":
                 getOrganizations({ detailed: true, only_active: false, page_size: pageSize, page: organizations?.page ?? 1 })
                     .then(setOrganizations)
                 break;
@@ -45,6 +45,12 @@ export const OrganizationList = () => {
                 newOrganizationsItems[orgIdx] = newOrg
                 setOrganizations({ ...organizations, items: [...newOrganizationsItems] })
                 break;
+            }
+            case "DELETE_ORG": {
+                goToPageOne()
+                getOrganizations({ detailed: true, only_active: false, page_size: pageSize, page: 1 })
+                    .then(setOrganizations)
+                    break;
             }
         }
     }

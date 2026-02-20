@@ -1,5 +1,5 @@
 import axios from "axios"
-import { API_BASE_URL, orderList } from "../../generalService"
+import { API_BASE_URL } from "../../generalService"
 import type { Campaign, CampaignDetailed, CampaignPost, Organization, OrganizationDetailed, OrganizationPost, Workspace, WorkspaceDetailed, WorkspacePost } from "../../types/campaigns"
 import type { Paginable } from "../../types/common"
 
