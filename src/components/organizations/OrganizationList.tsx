@@ -9,11 +9,16 @@ import type { Paginable } from '../../types/common'
 import type { OrganizationDetailed } from '../../types/campaigns'
 import { disableOrganization, enableOrganization, getOrganizations } from '../campaigns/campaignServices'
 import { Link } from 'react-router-dom'
+import dayjs from 'dayjs'
+import 'dayjs/locale/es' 
 import { Button, ButtonGroup, Chip, Divider, Grid, IconButton, List, ListItem, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
+
+dayjs.locale('es')
+
 
 export const OrganizationList = () => {
     const [organizations, setOrganizations] = useState<Paginable<OrganizationDetailed> | null>(null)
@@ -170,20 +175,22 @@ const OrganizationDetails = ({ entity, closeSidebar, handleSidebar, handleActive
                 : <Typography variant="body1" fontStyle="italic">No tiene descripción.</Typography>
             }
             <Divider />
-            <Button variant="text" component={Link} to={`/workspaces?organization_id=${entity.id}`}>
+            <Button variant="outlined" component={Link} to={`/workspaces?organization_id=${entity.id}`}>
                 Ver Workspaces
             </Button>
             <Divider />
             <span>
                 <Typography variant="body1" fontWeight="bold">Fecha de creación:</Typography>
-                <Typography variant="body1" paddingInlineStart={2}>
-                    {entity?.created_at}
+
+                <Typography variant="body1" paddingInlineStart={2} sx={{ textTransform: "capitalize" }}>
+                    {dayjs(entity?.created_at).format('dddd DD/MM/YYYY HH:mm:ss')}
                 </Typography>
             </span>
             <span>
                 <Typography variant="body1" fontWeight="bold">Fecha de última modificación:</Typography>
-                <Typography variant="body1" paddingInlineStart={2}>
-                    {entity?.updated_at}
+
+                <Typography variant="body1" paddingInlineStart={2} sx={{ textTransform: "capitalize" }}>
+                    {dayjs(entity?.updated_at).format('dddd DD/MM/YYYY HH:mm:ss')}
                 </Typography>
             </span>
             <Divider />
