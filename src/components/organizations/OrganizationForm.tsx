@@ -5,17 +5,14 @@ import { setFormErrors } from '../../generalService'
 import { createOrganization, updateOrganization } from '../campaigns/campaignServices'
 import { Button, FormHelperText, Grid, Typography } from '@mui/material'
 
-
 interface OrganizationSidebarProps {
     existingOrg?: Organization,
     closeSidebar: () => void,
-    updateEntityOnList: (
-        entity: OrganizationDetailed,
-    ) => void,
+    updateEntityOnList: ( entity: OrganizationDetailed ) => void,
     handleSidebar: (mode: string, entity: OrganizationDetailed | null) => void
 }
-export const OrganizationFormSidebar = ({ existingOrg, closeSidebar, handleSidebar, updateEntityOnList }
-    : OrganizationSidebarProps) => {
+//Wrapper de OrganizationForm para funcionar en un Sidebar
+export const OrganizationFormSidebar = ({ existingOrg, closeSidebar, handleSidebar, updateEntityOnList } : OrganizationSidebarProps) => {
 
     const submit = (data: OrganizationPost) => {
         const updateList = (res: OrganizationDetailed) => {
@@ -75,7 +72,6 @@ const OrganizationForm = ({ existingOrg, submit, onCancel }: OrganizationProps) 
                     <RegisteredTextInput name="description" register={register} label="Descripción"
                         errorMessage={errors.description?.message} />
                 </Grid>
-
             </Grid>
             {errors?.root &&
                 <FormHelperText color="error">{errors?.root?.message}</FormHelperText>}

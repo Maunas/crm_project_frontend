@@ -16,7 +16,7 @@ export const getOrganizations = async<T extends Params>(params?: T):
     Promise<Paginable<
         T["detailed"] extends true ? OrganizationDetailed : Organization>> => {
     const org = await axios.get(`${API_BASE_URL}/organizations`, { params })
-    return { ...org.data, items: orderList(org.data.items, "id") }
+    return org.data
 }
 export const createOrganization = async (body: OrganizationPost): Promise<OrganizationDetailed> => {
     const org = await axios.post(`${API_BASE_URL}/organizations`, body)
@@ -26,11 +26,11 @@ export const updateOrganization = async (body: OrganizationPost, id: number): Pr
     const org = await axios.put(`${API_BASE_URL}/organizations/${id}`, body)
     return org.data
 }
-export const disableOrganization = async (id: number): Promise<{action:string}> => {
+export const disableOrganization = async (id: number): Promise<{ action: string }> => {
     const org = await axios.delete(`${API_BASE_URL}/organizations/${id}`)
     return org.data
 }
-export const enableOrganization = async (id: number): Promise<{actived:boolean}> => {
+export const enableOrganization = async (id: number): Promise<{ actived: boolean }> => {
     const org = await axios.put(`${API_BASE_URL}/organizations/active/${id}`)
     return org.data
 }
@@ -39,7 +39,7 @@ export const getWorkspaces = async<T extends Params>(params?: T):
     Promise<Paginable<
         T["detailed"] extends true ? WorkspaceDetailed : Workspace>> => {
     const wsp = await axios.get(`${API_BASE_URL}/workspaces`, { params })
-    return {...wsp.data, items: orderList(wsp.data.items, "id")}
+    return wsp.data
 }
 export const getWorkspace = async (id: number): Promise<WorkspaceDetailed> => {
     const wsp = await axios.get(`${API_BASE_URL}/workspaces/${id}`)
@@ -54,17 +54,17 @@ export const updateWorkspace = async (body: WorkspacePost, id: number): Promise<
     return wsp.data
 }
 
-export const disableWorkspace = async (id: number): Promise<{action:string}> => {
+export const disableWorkspace = async (id: number): Promise<{ action: string }> => {
     const org = await axios.delete(`${API_BASE_URL}/workspaces/${id}`)
     return org.data
 }
-export const enableWorkspace = async (id: number): Promise<{actived:boolean}> => {
+export const enableWorkspace = async (id: number): Promise<{ actived: boolean }> => {
     const org = await axios.put(`${API_BASE_URL}/workspaces/active/${id}`)
     return org.data
 }
 export const getCampaigns = async<T extends Params>(params?: T): Promise<T["detailed"] extends true ? Campaign[] : CampaignDetailed[]> => {
     const campaigns = await axios.get(`${API_BASE_URL}/campaigns`, { params })
-    return orderList(campaigns.data.items, "id") as (T["detailed"] extends true ? Campaign[] : CampaignDetailed[])
+    return campaigns.data
 }
 
 export const getCampaign = async (id: number): Promise<CampaignDetailed> => {

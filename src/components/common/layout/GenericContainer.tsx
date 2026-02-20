@@ -1,4 +1,4 @@
-import { Button, Container, Modal, Paper, type Breakpoint } from '@mui/material'
+import { Button, Container, Grid, Modal, Paper, type Breakpoint } from '@mui/material'
 import { useState, type ReactNode } from 'react'
 
 
@@ -23,9 +23,9 @@ export const GenericContainer = ({ children, maxWidth = "lg", containerSx = {}, 
 export const GenericPaper = ({ children, paperSx = {}, ...props }: GenericContainerProps) => {
 
     return (
-            <Paper sx={{ paddingInline: 4, paddingBlock: 2, width: "100%", ...paperSx }} {...props}>
-                {children}
-            </Paper>
+        <Paper sx={{ paddingInline: 4, paddingBlock: 2, width: "100%", ...paperSx }} {...props}>
+            {children}
+        </Paper>
     )
 }
 
@@ -54,5 +54,34 @@ export const GenericModal = ({ buttonText, buttonProps = {}, maxWidth = "lg", co
                 </GenericContainer>
             </Modal>
         </div>
+    )
+}
+
+interface ContainerWithSidebarProps {
+    isSidebarOpen: boolean,
+    rootGridProps?: object,
+    mainGridProps?: object,
+    sidebarGridProps?: object,
+    sidebarComponent: ReactNode,
+    children: ReactNode,
+}
+
+export const ContainerWithSidebar = ({ isSidebarOpen, rootGridProps, mainGridProps, sidebarGridProps, sidebarComponent, children }: ContainerWithSidebarProps) => {
+    return (
+        <Container maxWidth={isSidebarOpen ? false : "xl"}>
+            <Grid container spacing={2} {...rootGridProps}>
+                <Grid size="grow" minWidth="30rem" {...mainGridProps}>
+                    <GenericPaper>
+                        {children}
+                    </GenericPaper>
+                </Grid>
+                {isSidebarOpen &&
+                    <Grid size={5} minWidth="22rem" {...sidebarGridProps}>
+                        <GenericPaper>
+                            {sidebarComponent}
+                        </GenericPaper>
+                    </Grid>}
+            </Grid>
+        </Container>
     )
 }

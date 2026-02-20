@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { disableWorkspace, enableWorkspace, getWorkspaces } from './campaignServices'
-import { Box, Button, ButtonGroup, Container, Grid, IconButton, List, ListItem, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
+import { Box, Button, ButtonGroup, Grid, IconButton, List, ListItem, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
 import type { CampaignDetailed, WorkspaceDetailed } from '../../types/campaigns'
 import { CampaignSidebar } from './CampaignSidebar'
-import { GenericPaper } from '../common/layout/GenericContainer'
+import { ContainerWithSidebar } from '../common/layout/GenericContainer'
 import type { Paginable } from '../../types/common'
 import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
@@ -87,72 +87,63 @@ export const WorkspaceList = () => {
             enableWorkspace(wsp.id).then(() => updateActive(wsp))
         }
     }
-    
-    return (
-        <Container maxWidth={false}>
-            <Grid container spacing={2}>
-                <Grid size="grow" minWidth="30rem">
-                    <GenericPaper>
-                        <Stack spacing={2}>
-                            <Grid container spacing={2} justifyContent="space-between" alignItems="center">
-                                <Typography variant="h1">Lista de Espacios de Trabajo</Typography>
-                                <ButtonGroup variant="contained" color="primary">
-                                    <Button onClick={() => handleSidebar("CREATE_CMP", null)} >Crear Campaña</Button>
-                                    <Button onClick={() => handleSidebar("CREATE_WSP", null)} >Crear Espacio de Trabajo</Button>
-                                </ButtonGroup>
-                            </Grid>
-                            <List>
-                                {workspaces?.items && workspaces?.items?.length > 0 ?
-                                    workspaces?.items.map(wsp =>
-                                        <ListItem key={`wsp-${wsp.id}`} disablePadding secondaryAction={
-                                            <Grid container spacing={1} alignItems="center">
-                                                <IconButton edge="end" aria-label="details" onClick={() => handleSidebar("DETAILS_WSP", wsp)}>
-                                                    <SearchIcon />
-                                                </IconButton>
-                                                <IconButton edge="end" aria-label="modify" onClick={() => handleSidebar("UPDATE_WSP", wsp)}>
-                                                    <EditIcon />
-                                                </IconButton>
-                                                <IconButton edge="end" aria-label={wsp.active ? "delete" : "restore"}
-                                                    onClick={() => handleActive(wsp)}>
-                                                    {wsp.active ?
-                                                        <DeleteIcon color="error" /> :
-                                                        <RestoreFromTrashIcon color="success" />
-                                                    }
-                                                </IconButton>
-                                            </Grid>
-                                        }>
-                                            <ListItemButton onClick={() => handleSidebar("DETAILS_WSP", wsp)} className="selectable">
-                                                <ListItemText primary={<>
-                                                    <Stack spacing={1} direction="row">
-                                                        <EnabledIcon active={wsp.active} />
-                                                        <Typography fontWeight="bold">{wsp.name}</Typography>
-                                                    </Stack>
-                                                    {wsp.description &&
-                                                        <Typography paddingInlineStart={2}>{wsp.description} </Typography>}
-                                                </>} />
-                                            </ListItemButton>
-                                        </ListItem>
-                                    )
-                                    : <Grid container spacing={2} justifyContent="center" alignItems="center" direction="column">
-                                        <Typography variant="h3" color="initial">No se han encontrado espacios de trabajo...</Typography>
-                                        <Button onClick={() => handleSidebar("CREATE_WSP", null)} variant="contained">Crear Espacio</Button>
-                                    </Grid>
-                                }
 
-                            </List>
-                            <PaginationComponent {...pageComponentProps} />
-                        </Stack>
-                    </GenericPaper>
+    return (
+        <ContainerWithSidebar isSidebarOpen={!!sidebarMode} sidebarGridProps={{ size: "grow" }}
+            sidebarComponent={
+                <CampaignSidebar mode={sidebarMode} entity={selectedEntity} handleSidebar={handleSidebar}
+                    closeSidebar={closeSidebar} updateEntityOnList={updateEntityOnList} />
+            }>
+            <Stack spacing={2}>
+                <Grid container spacing={2} justifyContent="space-between" alignItems="center">
+                    <Typography variant="h1">Lista de Espacios de Trabajo</Typography>
+                    <ButtonGroup variant="contained" color="primary">
+                        <Button onClick={() => handleSidebar("CREATE_CMP", null)} >Crear Campaña</Button>
+                        <Button onClick={() => handleSidebar("CREATE_WSP", null)} >Crear Espacio de Trabajo</Button>
+                    </ButtonGroup>
                 </Grid>
-                {sidebarMode &&
-                    <Grid size="grow" minWidth="22rem">
-                        <GenericPaper>
-                            <CampaignSidebar mode={sidebarMode} entity={selectedEntity} handleSidebar={handleSidebar}
-                                closeSidebar={closeSidebar} updateEntityOnList={updateEntityOnList} />
-                        </GenericPaper>
-                    </Grid>}
-            </Grid>
-        </Container>
+                <List>
+                    {workspaces?.items && workspaces?.items?.length > 0 ?
+                        workspaces?.items.map(wsp =>
+                            <ListItem key={`wsp-${wsp.id}`} disablePadding secondaryAction={
+                                <Grid container spacing={1} alignItems="center">
+                                    <IconButton edge="end" aria-label="details" onClick={() => handleSidebar("DETAILS_WSP", wsp)}>
+                                        <SearchIcon />
+                                    </IconButton>
+                                    <IconButton edge="end" aria-label="modify" onClick={() => handleSidebar("UPDATE_WSP", wsp)}>
+                                        <EditIcon />
+                                    </IconButton>
+                                    <IconButton edge="end" aria-label={wsp.active ? "delete" : "restore"}
+                                        onClick={() => handleActive(wsp)}>
+                                        {wsp.active ?
+                                            <DeleteIcon color="error" /> :
+                                            <RestoreFromTrashIcon color="success" />
+                                        }
+                                    </IconButton>
+                                </Grid>
+                            }>
+                                <ListItemButton onClick={() => handleSidebar("DETAILS_WSP", wsp)} className="selectable">
+                                    <ListItemText primary={<>
+                                        <Stack spacing={1} direction="row">
+                                            <EnabledIcon active={wsp.active} />
+                                            <Typography fontWeight="bold">{wsp.name}</Typography>
+                                        </Stack>
+                                        {wsp.description &&
+                                            <Typography paddingInlineStart={2}>{wsp.description} </Typography>}
+                                    </>} />
+                                </ListItemButton>
+                            </ListItem>
+                        )
+                        : <Grid container spacing={2} justifyContent="center" alignItems="center" direction="column">
+                            <Typography variant="h3" color="initial">No se han encontrado espacios de trabajo...</Typography>
+                            <Button onClick={() => handleSidebar("CREATE_WSP", null)} variant="contained">Crear Espacio</Button>
+                        </Grid>
+                    }
+
+                </List>
+                <PaginationComponent {...pageComponentProps} />
+            </Stack>
+        </ContainerWithSidebar >
     )
 }
 
