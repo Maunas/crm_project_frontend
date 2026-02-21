@@ -62,7 +62,9 @@ export const enableWorkspace = async (id: number): Promise<{ actived: boolean }>
     const org = await axios.put(`${API_BASE_URL}/workspaces/active/${id}`)
     return org.data
 }
-export const getCampaigns = async<T extends Params>(params?: T): Promise<T["detailed"] extends true ? Campaign[] : CampaignDetailed[]> => {
+/******************************** Campaigns ************************************/
+export const getCampaigns = async<T extends Params>(params?: T):
+    Promise<Paginable<T["detailed"] extends true ? CampaignDetailed : Campaign>> => {
     const campaigns = await axios.get(`${API_BASE_URL}/campaigns`, { params })
     return campaigns.data
 }

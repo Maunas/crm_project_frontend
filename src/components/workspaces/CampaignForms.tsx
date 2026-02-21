@@ -2,21 +2,75 @@ import { Typography, Button, Grid, FormHelperText } from "@mui/material"
 import { useEffect, useMemo, useState } from "react"
 import { useForm, useWatch } from "react-hook-form"
 import type { LeadFieldPost } from "../../types/leadFields"
-import { createCampaign, createWorkspace, getOrganizations, getWorkspaces, updateCampaign, updateWorkspace } from "./campaignServices"
+import { createCampaign, createWorkspace, getOrganizations, getWorkspace, getWorkspaces, updateCampaign, updateWorkspace } from "./campaignServices"
 import { ControlledAutocomplete } from "../common/forms/CustomMultipleInputs"
 import { createLeadField } from "../leadFields/leadFieldServices"
 import type { Campaign, CampaignDetailed, CampaignPost, Organization, Workspace, WorkspaceDetailed, WorkspacePost } from "../../types/campaigns"
 import { setFormErrors } from "../../generalService"
 import { RegisteredTextInput } from "../common/forms/CustomInputs"
 
-export const CampaignForm = ({ existingCmp, closeSidebar, updateEntityOnList, handleSidebar }
-    : {
-        existingCmp?: Campaign, closeSidebar: () => void,
-        updateEntityOnList: (
-            entity: WorkspaceDetailed | CampaignDetailed | null,
-        ) => void,
-        handleSidebar: (mode: string, entity: WorkspaceDetailed | CampaignDetailed | null) => void
-    }) => {
+interface CampaignSidebarProps {
+    existingCmp?: Campaign,
+    closeSidebar: () => void,
+    updateEntityOnList?: (
+        entity: CampaignDetailed | null,
+    ) => void,
+    handleSidebar: (mode: string, entity: CampaignDetailed | WorkspaceDetailed | null) => void
+}
+//Wrapper de CampaignForm para funcionar en un Sidebar
+export const CampaignFormSidebar = ({ existingCmp, closeSidebar, handleSidebar, updateEntityOnList }: CampaignSidebarProps) => {
+
+    const requiredFields: Omit<LeadFieldPost, "campaign_id">[] = [
+        {
+            "order": 1,
+            "required": true,
+            "is_primary": false,
+            "is_visible": true,
+            "lead_field_section_id": 1,
+            "field_template_code": "FIRST_NAME",
+        },
+        {
+            "order": 2,
+            "required": true,
+            "is_primary": false,
+            "is_visible": true,
+            "lead_field_section_id": 1,
+            "field_template_code": "LAST_NAME",
+        }
+    ]
+
+    const submit = (data: CampaignPost) => {
+        if (!existingCmp) {
+            return createCampaign(data)
+                .then(res => {
+                    //Busca el workspace y muestra su detalle.
+                    getWorkspace(res.workspace_id)
+                        .then(wsp => handleSidebar("DETAILS_WSP", wsp))
+                    //Crea los dos campos obligatorios. Luego actualiza la lista.
+                    //Si falla, igualmente actualiza la lista, ya que está creada la campaña.
+                    Promise.all(requiredFields.map(field => createLeadField({ ...field, campaign_id: res.id })))
+                        .catch(e => {
+                            console.error(e)
+                        })
+                })
+        } else {
+            return updateCampaign(data, existingCmp.id)
+                .then(res => {
+                    if (!updateEntityOnList) return
+                    updateEntityOnList(res)
+                    closeSidebar()
+                })
+        }
+    }
+
+    return <CampaignForm existingCmp={existingCmp} submit={submit} onCancel={closeSidebar} />
+}
+interface CampaignProps {
+    existingCmp?: Campaign | CampaignDetailed,
+    submit: (data: CampaignPost) => Promise<void>,
+    onCancel: () => void
+}
+export const CampaignForm = ({ existingCmp, submit, onCancel }: CampaignProps) => {
 
     const [workspaces, setWorkspaces] = useState<Workspace[] | []>([])
     const [organizations, setOrganizations] = useState<Organization[] | []>([])
@@ -48,48 +102,10 @@ export const CampaignForm = ({ existingCmp, closeSidebar, updateEntityOnList, ha
         return workspaces.filter(workspace => workspace.organization_id === selectedOrg)
     }, [selectedOrg, workspaces])
 
-    const requiredFields: Omit<LeadFieldPost, "campaign_id">[] = [
-        {
-            "order": 1,
-            "required": true,
-            "is_primary": false,
-            "is_visible": true,
-            "lead_field_section_id": 1,
-            "field_template_code": "FIRST_NAME",
-        },
-        {
-            "order": 2,
-            "required": true,
-            "is_primary": false,
-            "is_visible": true,
-            "lead_field_section_id": 1,
-            "field_template_code": "LAST_NAME",
-        }
-    ]
-
-    const submit = (data: CampaignPost & { organization_id?: number }) => {
+    const onSubmit = (data: CampaignPost & { organization_id?: number }) => {
         delete data.organization_id
-        if (!existingCmp) {
-            createCampaign(data)
-                .then((res) =>
-                    Promise.all(requiredFields.map((field) => createLeadField({ ...field, campaign_id: res.id })))
-                        .then(() => {
-                            updateEntityOnList(res)
-                            handleSidebar("DETAILS_CMP", res)
-                        })
-                        .catch((e) => console.error(e))
-                )
-                .catch((e) => {
-                    setFormErrors(e, setError)
-                })
-        } else {
-            updateCampaign(data, existingCmp.id)
-                .then((res) => {
-                    updateEntityOnList(res)
-                    handleSidebar("DETAILS_CMP", res)
-                })
-                .catch((e) => setFormErrors(e, setError))
-        }
+        submit(data)
+            .catch(e => setFormErrors(e, setError))
     }
 
     return (
@@ -112,21 +128,21 @@ export const CampaignForm = ({ existingCmp, closeSidebar, updateEntityOnList, ha
                 </Grid>
                 <Grid size="grow" minWidth={"20rem"}>
                     <ControlledAutocomplete control={control} label="Organización" name="organization_id"
-                        getOptionLabel={(option) => option.name} errorMessage={errors.organization_id?.message}
-                        options={organizations} returnField="id" required disabled={!!existingCmp} />
+                        getOptionLabel={option => option.name} errorMessage={errors.organization_id?.message}
+                        options={organizations} returnField="id" required hidden={!!existingCmp} />
                 </Grid>
                 <Grid size="grow" minWidth={"20rem"}>
                     <ControlledAutocomplete control={control} label="Espacio de Trabajo" name="workspace_id"
-                        getOptionLabel={(option) => option.name} errorMessage={errors?.workspace_id?.message}
-                        options={filteredWorkspaces} returnField="id" disabled={!selectedOrg} required disabled={!!existingCmp} />
+                        getOptionLabel={option => option.name} errorMessage={errors?.workspace_id?.message}
+                        options={filteredWorkspaces} returnField="id" disabled={!selectedOrg} required hidden={!!existingCmp} />
                 </Grid>
             </Grid>
             {errors?.root &&
                 <FormHelperText color="error">{errors?.root?.message}</FormHelperText>}
-            <Button onClick={closeSidebar}>
+            <Button onClick={onCancel}>
                 Cancelar
             </Button>
-            <Button variant="contained" onClick={handleSubmit(submit)} sx={{ marginBlock: "1rem" }}>
+            <Button variant="contained" onClick={handleSubmit(onSubmit)} sx={{ marginBlock: "1rem" }}>
                 Guardar Campaña
             </Button>
         </form>

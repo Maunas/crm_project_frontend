@@ -1,6 +1,6 @@
 import { Stack, Typography, ButtonGroup, Button, Divider, Grid, Chip } from "@mui/material"
 import type { CampaignDetailed, WorkspaceDetailed } from "../../types/campaigns"
-import { CampaignForm, WorkspaceFormSidebar } from "./CampaignForms"
+import { CampaignFormSidebar, WorkspaceFormSidebar } from "./CampaignForms"
 import { CampaignList } from "./CampaignList"
 import dayjs from "dayjs"
 
@@ -20,15 +20,14 @@ export const CampaignSidebar = ({ mode, entity, closeSidebar, updateEntityOnList
     switch (mode) {
         case "CREATE_WSP":
             return <WorkspaceFormSidebar closeSidebar={closeSidebar}
-                updateEntityOnList={(entity) => updateEntityOnList(entity, mode)}
+                updateEntityOnList={entity => updateEntityOnList(entity, mode)}
                 handleSidebar={handleSidebar} />
         case "CREATE_CMP":
-            return <CampaignForm closeSidebar={closeSidebar}
-                updateEntityOnList={(entity) => updateEntityOnList(entity, mode)}
+            return <CampaignFormSidebar closeSidebar={closeSidebar}
                 handleSidebar={handleSidebar} />
         case "UPDATE_WSP":
             return <WorkspaceFormSidebar existingWsp={entity as WorkspaceDetailed} closeSidebar={closeSidebar}
-                updateEntityOnList={(entity) => updateEntityOnList(entity, mode)}
+                updateEntityOnList={entity => updateEntityOnList(entity, mode)}
                 handleSidebar={handleSidebar} />
         case "DETAILS_WSP":
             return <WorkspaceDetails entity={entity as WorkspaceDetailed} closeSidebar={closeSidebar}
@@ -39,7 +38,7 @@ export const CampaignSidebar = ({ mode, entity, closeSidebar, updateEntityOnList
 interface WorkspaceDetailsProps {
     entity: WorkspaceDetailed | null,
     closeSidebar: () => void,
-    handleSidebar: (mode: string, entity: WorkspaceDetailed | null) => void,
+    handleSidebar: (mode: string, entity: WorkspaceDetailed | CampaignDetailed | null) => void,
     handleActive: (entity: WorkspaceDetailed) => void
 }
 
@@ -59,7 +58,7 @@ const WorkspaceDetails = ({ entity, closeSidebar, handleSidebar, handleActive }:
             {entity.campaigns &&
                 <>
                     <Typography variant="h3" color="initial">Lista de Campañas</Typography>
-                    <CampaignList campaigns={entity.campaigns} />
+                    <CampaignList selectedWorkspaceId={entity.id} handleSidebar={handleSidebar} />
                 </>
             }
             <Divider />

@@ -126,7 +126,7 @@ export const OrganizationList = () => {
                             )}
                         </List>
                         : <Grid container spacing={2} justifyContent="center" alignItems="center" direction="column">
-                            <Typography variant="h3" color="initial">No se han encontrado organizaciones...</Typography>
+                            <Typography variant="h4" color="initial">No se han encontrado organizaciones...</Typography>
                             <Button onClick={() => handleSidebar("CREATE_ORG", null)} variant="contained">Crear Organización</Button>
                         </Grid>
                 }
