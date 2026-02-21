@@ -7,7 +7,7 @@ import { useSidebar } from '../hooks/useSidebar'
 import { useListPagination } from '../hooks/useListPagination'
 import type { Paginable } from '../../types/common'
 import type { OrganizationDetailed } from '../../types/campaigns'
-import { disableOrganization, enableOrganization, getOrganizations } from '../workspaces/campaignServices'
+import { disableOrganization, enableOrganization, getOrganizations } from '../workspaces/workspaceServices'
 import { Link } from 'react-router-dom'
 import dayjs from 'dayjs'
 import 'dayjs/locale/es'
@@ -16,9 +16,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
-
 dayjs.locale('es')
-
 
 export const OrganizationList = () => {
     const [organizations, setOrganizations] = useState<Paginable<OrganizationDetailed> | null>(null)
@@ -181,7 +179,7 @@ const OrganizationDetails = ({ entity, closeSidebar, handleSidebar, handleActive
                 : <Typography variant="body1" fontStyle="italic">No tiene descripción.</Typography>
             }
             <Divider />
-            <Button variant="outlined" component={Link} to={`/workspaces?organization_id=${entity.id}`}>
+            <Button variant="outlined" component={Link} to={`/campaigns`}>
                 Ver Workspaces
             </Button>
             <Divider />

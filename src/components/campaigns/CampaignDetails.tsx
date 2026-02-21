@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import type { LeadFieldDetailed } from '../../types/leadFields'
-import { getCampaign } from './campaignServices'
 import { Button, Chip, Container, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, ButtonGroup } from '@mui/material'
 import type { Campaign } from '../../types/campaigns'
 import { activeLeadField, deleteLeadField, getLeadFields } from '../leadFields/leadFieldServices'
@@ -10,6 +9,7 @@ import { SimulateLead } from '../lead/LeadForm'
 import EditIcon from '@mui/icons-material/Edit';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import { getCampaign } from './campaignServices'
 
 export const CampaignDetails = () => {
     const { id } = useParams()
@@ -17,7 +17,7 @@ export const CampaignDetails = () => {
     const [fields, setFields] = useState<LeadFieldDetailed[] | []>([])
 
     useEffect(() => {
-        if (id) getCampaign(parseInt(id)).then((res) => {
+        if (id) getCampaign(parseInt(id)).then(res => {
             setCampaign(res)
             getLeadFields({ detailed: true, campaign_id: parseInt(id), only_active: false }).then(res => setFields(res))
         })

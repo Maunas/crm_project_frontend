@@ -1,58 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
-import { getCampaigns } from "../workspaces/campaignServices";
-import {
-  createLeadField,
-  createValidation,
-  getFieldDataByType,
-  getFieldSections,
-  getFieldTemplates,
-  getFieldTypes,
-  getNomenclators,
-  getValidationDataByType,
-  updateLeadField,
-  updateValidation,
-} from "./leadFieldServices";
-import {
-  Divider,
-  Button,
-  Grid,
-  FormGroup,
-  Typography,
-  ButtonGroup,
-  Chip,
-  FormHelperText,
-} from "@mui/material";
-import {
-  useForm,
-  useWatch,
-  type Control,
-  type FieldErrors,
-  type UseFormRegister,
-} from "react-hook-form";
+import { createLeadField, createValidation, getFieldDataByType, getFieldSections, getFieldTemplates, getFieldTypes, getNomenclators, getValidationDataByType, updateLeadField, updateValidation } from "./leadFieldServices";
+import { Divider, Button, Grid, FormGroup, Typography, ButtonGroup, Chip, FormHelperText } from "@mui/material";
+import { useForm, useWatch, type Control, type FieldErrors, type UseFormRegister } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import {
-  ControlledAutocomplete,
-  ControlledRadio,
-} from "../common/forms/CustomMultipleInputs";
-import {
-  ControlledCheckbox,
-  ControlledTextInput,
-  RegisteredTextInput,
-} from "../common/forms/CustomInputs";
+import { ControlledAutocomplete, ControlledRadio } from "../common/forms/CustomMultipleInputs";
+import { ControlledCheckbox, ControlledTextInput, RegisteredTextInput } from "../common/forms/CustomInputs";
 import { ValidationRuleForm } from "./ValidationRuleForm";
 import type {
-  FieldValidationRulePost,
-  FieldValidationRuleTemplate,
-  LeadFieldDetailed,
-  LeadFieldPost,
-  LeadFieldSection,
-  LeadFieldTemplate,
-  LeadFieldTypeDetailed,
-  Nomenclator,
+  FieldValidationRulePost, FieldValidationRuleTemplate, LeadFieldDetailed, LeadFieldPost, LeadFieldSection, LeadFieldTemplate, LeadFieldTypeDetailed, Nomenclator,
 } from "../../types/leadFields";
 import type { Campaign } from "../../types/campaigns";
 import { GenericContainer } from "../common/layout/GenericContainer";
 import { setFormErrors } from "../../generalService";
+import { getCampaigns } from "../campaigns/campaignServices";
 
 export interface FieldValidationRuleData extends FieldValidationRulePost {
   creation_method?: string;
@@ -101,18 +61,7 @@ export const LeadFieldForm = ({
     validation_rules: leadField?.validation_rules || [],
   };
 
-  const {
-    register,
-    control,
-    handleSubmit,
-    reset,
-    setValue,
-    getValues,
-    formState: { errors },
-    setError, clearErrors
-  } = useForm<LeadFieldData>({
-    defaultValues,
-  });
+  const { register, control, handleSubmit, reset, setValue, getValues, formState: { errors }, setError, clearErrors } = useForm<LeadFieldData>({ defaultValues });
 
   const fieldId = useWatch({ name: "fieldId", control });
 
@@ -308,29 +257,9 @@ export const LeadFieldForm = ({
   );
 };
 
-interface LeadFieldFormFieldsProps {
-  templates: LeadFieldTemplate[];
-  sections: LeadFieldSection[];
-  types: LeadFieldTypeDetailed[];
-  nomenclators: Nomenclator[];
-  campaigns: Campaign[];
-  register: UseFormRegister<LeadFieldData>;
-  control: Control<LeadFieldData>;
-  campaignId: number;
-  errors: FieldErrors<LeadFieldData>;
-}
+interface LeadFieldFormFieldsProps { templates: LeadFieldTemplate[]; sections: LeadFieldSection[]; types: LeadFieldTypeDetailed[]; nomenclators: Nomenclator[]; campaigns: Campaign[]; register: UseFormRegister<LeadFieldData>; control: Control<LeadFieldData>; campaignId: number; errors: FieldErrors<LeadFieldData>; }
 
-const LeadFieldFormFields = ({
-  templates,
-  sections,
-  types,
-  nomenclators,
-  campaigns,
-  register,
-  control,
-  campaignId,
-  errors,
-}: LeadFieldFormFieldsProps) => {
+const LeadFieldFormFields = ({ templates, sections, types, nomenclators, campaigns, register, control, campaignId, errors, }: LeadFieldFormFieldsProps) => {
   const fieldTypeCode = useWatch({ name: "field_type_code", control });
   const creationMethod = useWatch({ control, name: "creation_method" });
 

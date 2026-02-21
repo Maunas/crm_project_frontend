@@ -1,8 +1,9 @@
-import { Stack, Typography, ButtonGroup, Button, Divider, Grid, Chip } from "@mui/material"
 import type { CampaignDetailed, WorkspaceDetailed } from "../../types/campaigns"
-import { CampaignFormSidebar, WorkspaceFormSidebar } from "./CampaignForms"
-import { CampaignList } from "./CampaignList"
+import { WorkspaceFormSidebar } from "./WorkspaceForms"
+import { CampaignFormSidebar } from "../campaigns/CampaignForms"
 import dayjs from "dayjs"
+import { Stack, Typography, ButtonGroup, Button, Divider, Grid, Chip } from "@mui/material"
+import { CampaignList } from "../campaigns/CampaignList"
 
 interface SidebarProps {
     mode: string | null,
@@ -15,7 +16,7 @@ interface SidebarProps {
     handleSidebar: (mode: string, entity: WorkspaceDetailed | CampaignDetailed | null) => void,
     handleActive: (entity: WorkspaceDetailed) => void
 }
-export const CampaignSidebar = ({ mode, entity, closeSidebar, updateEntityOnList, handleSidebar, handleActive }: SidebarProps) => {
+export const WorkspaceSidebar = ({ mode, entity, closeSidebar, updateEntityOnList, handleSidebar, handleActive }: SidebarProps) => {
 
     switch (mode) {
         case "CREATE_WSP":
