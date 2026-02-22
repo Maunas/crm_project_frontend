@@ -18,3 +18,13 @@ export interface Metadata {
   active: boolean;
   created_by: number;
 }
+
+/**
+ * Contienen los parámetros permitidos de cada request.
+ */
+export interface ListParams {
+    only_active?: boolean,
+    detailed?: boolean,
+    page?: number,
+    page_size?: number
+}
