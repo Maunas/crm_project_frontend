@@ -3,16 +3,16 @@ import { RegisteredTextInput } from '../common/forms/CustomInputs'
 import type { Organization, OrganizationDetailed, OrganizationPost } from '../../types/campaigns'
 import { setFormErrors } from '../../generalService'
 import { createOrganization, updateOrganization } from '../workspaces/workspaceServices'
-import { Button, FormHelperText, Grid, Typography } from '@mui/material'
+import { Button, FormHelperText, Grid, Typography, ButtonGroup } from '@mui/material'
 
 interface OrganizationSidebarProps {
     existingOrg?: Organization,
     closeSidebar: () => void,
-    updateEntityOnList: ( entity: OrganizationDetailed ) => void,
+    updateEntityOnList: (entity: OrganizationDetailed) => void,
     handleSidebar: (mode: string, entity: OrganizationDetailed | null) => void
 }
 //Wrapper de OrganizationForm para funcionar en un Sidebar
-export const OrganizationFormSidebar = ({ existingOrg, closeSidebar, handleSidebar, updateEntityOnList } : OrganizationSidebarProps) => {
+export const OrganizationFormSidebar = ({ existingOrg, closeSidebar, handleSidebar, updateEntityOnList }: OrganizationSidebarProps) => {
 
     const submit = (data: OrganizationPost) => {
         const updateList = (res: OrganizationDetailed) => {
@@ -75,12 +75,14 @@ const OrganizationForm = ({ existingOrg, submit, onCancel }: OrganizationProps) 
             </Grid>
             {errors?.root &&
                 <FormHelperText color="error">{errors?.root?.message}</FormHelperText>}
-            <Button onClick={onCancel}>
-                Cancelar
-            </Button>
-            <Button variant="contained" onClick={handleSubmit(onSubmit)}>
-                Guardar Organización
-            </Button>
+            <ButtonGroup fullWidth>
+                <Button variant="outlined" onClick={onCancel} fullWidth>
+                    Cancelar
+                </Button>
+                <Button variant="contained" onClick={handleSubmit(onSubmit)} fullWidth>
+                    Guardar Organización
+                </Button>
+            </ButtonGroup>
         </form>
     )
 }

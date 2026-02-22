@@ -18,6 +18,7 @@ import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import { useListPagination } from '../hooks/useListPagination'
 import type { Paginable } from '../../types/common'
 import { PaginationComponent } from '../common/lists/PaginationComponent'
+import { CommonButton, DisableButton } from '../common/details/DetailsCommonButton'
 
 export const CampaignDetails = () => {
     const { id } = useParams()
@@ -28,7 +29,7 @@ export const CampaignDetails = () => {
 
     const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar()
 
-    const { page, pageSize, pageComponentProps } = useListPagination(fields?.total_pages ?? 0, 2)
+    const { page, pageSize, pageComponentProps } = useListPagination(fields?.total_pages ?? 0)
 
     useEffect(() => {
         if (!id) return
@@ -62,21 +63,24 @@ export const CampaignDetails = () => {
     }
 
     const handleActiveCampaign = (campaign: CampaignDetailed) => {
+
+        const updateActive = () => {
+            updateEntity({ ...campaign, active: !campaign.active }, "UPDATE_CMP")
+        }
+
         if (campaign.active) {
             disableCampaign(campaign.id)
                 .then(res => {
                     if (res.action === "disabled") {
-                        updateEntity({ ...campaign, active: false }, "UPDATE_CMP")
+                        updateActive()
                     } else {
                         alert("Eliminado")
                         nav("/campaigns")
                     }
-                }).catch(() => alert("error"))
+                })
         } else {
             enableCampaign(campaign.id)
-                .then(() => {
-                    updateEntity({ ...campaign, active: true }, "UPDATE_CMP")
-                }).catch(() => alert("error"))
+                .then(updateActive)
         }
     }
 
@@ -91,13 +95,13 @@ export const CampaignDetails = () => {
     }
 
     return (
-        <ContainerWithSidebar isSidebarOpen={!!sidebarMode}
+        <ContainerWithSidebar isSidebarOpen={!!sidebarMode} containerSize="xl"
             sidebarComponent={
                 <CampaignDetailSidebar mode={sidebarMode} entity={selectedEntity} handleSidebar={handleSidebar}
                     closeSidebar={closeSidebar} updateEntity={updateEntity} />} >
             <Breadcrumbs aria-label="breadcrumb">
                 <Link component={RouterLink} to="/campaigns" underline="hover" color="inherit">
-                    Campañas
+                    Espacios de Trabajo
                 </Link>
                 {campaign &&
                     <Typography sx={{ color: 'text.primary' }}>{campaign.name}</Typography>}
@@ -118,18 +122,15 @@ export const CampaignDetails = () => {
                                 : <Typography variant="body1" fontStyle="italic">No tiene descripción.</Typography>
                             }
                         </Grid>
-                        <Grid container spacing={2} size="grow" minWidth="20rem">
-
+                        <Grid container spacing={2} size={{ sm: 12, md: 12, lg: 3 }} minWidth="20rem">
                             <Grid size="grow" minWidth="18rem">
                                 <Typography variant="body1" fontWeight="bold">Fecha de creación:</Typography>
-
                                 <Typography variant="body1" paddingInlineStart={2} sx={{ textTransform: "capitalize" }}>
                                     {dayjs(campaign?.created_at).format('dddd DD/MM/YYYY HH:mm:ss')}
                                 </Typography>
                             </Grid>
                             <Grid size="grow" minWidth="18rem">
                                 <Typography variant="body1" fontWeight="bold">Fecha de última modificación:</Typography>
-
                                 <Typography variant="body1" paddingInlineStart={2} sx={{ textTransform: "capitalize" }}>
                                     {dayjs(campaign?.updated_at).format('dddd DD/MM/YYYY HH:mm:ss')}
                                 </Typography>
@@ -137,22 +138,38 @@ export const CampaignDetails = () => {
                         </Grid>
                     </Grid>
                     <Divider />
-                    <Typography variant="h2" color="initial">Acciones</Typography>
-                    <Grid size="grow" width="grow" container justifyContent="center" alignItems="center" marginInline={2}>
-                        <Grid size="grow" />
-                        <Grid size="grow" minWidth="30rem" >
-                            <ButtonGroup variant="contained" fullWidth>
-                                <Button onClick={() => handleSidebar("UPDATE_CMP", campaign)} fullWidth>Modificar</Button>
-                                <Button variant='contained' color="secondary" fullWidth
-                                    onClick={() => handleActiveCampaign(campaign)}>
-                                    Deshabilitar
-                                </Button>
+                    <Grid size="grow" container justifyContent="center" alignItems="center" gap={2}>
+                        <Grid size="grow" minWidth="16rem" >
+                            <Typography variant="h2" color="initial">Acciones</Typography>
+                        </Grid >
+                        <Grid size="grow" minWidth="20rem" >
+                            <ButtonGroup fullWidth>
+                                <CommonButton handleClick={() => handleSidebar("UPDATE_CMP", campaign)} actionType="MODIFY">Modificar</CommonButton>
+                                <DisableButton active={campaign.active} handleActive={() => handleActiveCampaign(campaign)} />
                             </ButtonGroup>
                         </Grid >
-                        <Grid size="grow" />
                     </Grid>
                     <Divider />
-                    <Typography variant="h2" color="initial" width="100%">Campos de Lead</Typography>
+                    <Grid size="grow" container justifyContent="center" alignItems="center" gap={2}>
+
+                        <Grid size="grow" minWidth="16rem" >
+                            <Typography variant="h2">Lista de Campos de Lead</Typography>
+
+                        </Grid >
+
+                        <Grid size="grow" minWidth="22rem" >
+                            <ButtonGroup fullWidth>
+                                <CommonButton component={RouterLink} to={`/leadfield/new/${id}`} actionType="CREATE">Agregar Campo</CommonButton>
+                                <GenericModal buttonText='Vista previa de formulario' actionType="DETAILS" variant="outlined" containerSx={{ minWidth: "80vw" }} >
+                                    {campaign && fields?.items?.length > 0 &&
+                                        <SimulateLead campaignId={campaign.id} leadFields={fields.items} />
+                                    }
+                                </GenericModal>
+                            </ButtonGroup>
+                        </Grid >
+                    </Grid>
+
+
                     <TableContainer component={Paper} >
                         <Table aria-label="simple table" size='small'>
                             <TableHead>
@@ -218,17 +235,7 @@ export const CampaignDetails = () => {
                         </Table>
                     </TableContainer>
                     <PaginationComponent {...pageComponentProps} />
-                    <ButtonGroup variant="contained" >
 
-                        <Button component={RouterLink} variant='contained' to={`/leadfield/new/${id}`} fullWidth>
-                            Agregar nuevo campo
-                        </Button>
-                        <GenericModal buttonText='Vista previa de formulario' buttonProps={{ variant: "outlined", fullWidth: true }} containerSx={{ minWidth: "80vw" }} >
-                            {campaign && fields?.items?.length > 0 &&
-                                <SimulateLead campaignId={campaign.id} leadFields={fields.items} />
-                            }
-                        </GenericModal>
-                    </ButtonGroup>
 
                 </Stack>
             }

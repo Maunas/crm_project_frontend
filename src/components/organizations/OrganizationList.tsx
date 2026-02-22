@@ -16,6 +16,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
+import { CommonButton, DisableButton } from '../common/details/DetailsCommonButton'
 dayjs.locale('es')
 
 export const OrganizationList = () => {
@@ -85,10 +86,14 @@ export const OrganizationList = () => {
         }>
             <Stack spacing={2}>
                 <Grid container spacing={2} justifyContent="space-between" alignItems="center">
-                    <Typography variant="h1">Lista de Organizaciones</Typography>
-                    {organizations && organizations?.items?.length > 0 &&
-                        <Button onClick={() => handleSidebar("CREATE_ORG", null)} variant="contained" >Crear Organización</Button>
-                    }
+                    <Grid size="grow" minWidth="15rem">
+                        <Typography variant="h1">Lista de Organizaciones</Typography>
+                    </Grid>
+                    <Grid size="auto" minWidth="15rem">
+                        {organizations && organizations?.items?.length > 0 &&
+                            <CommonButton actionType="CREATE" handleClick={() => handleSidebar("CREATE_ORG", null)}>Crear Organización</CommonButton>
+                        }
+                    </Grid>
                 </Grid>
                 {
                     organizations && organizations?.items?.length > 0 ?
@@ -179,31 +184,27 @@ const OrganizationDetails = ({ entity, closeSidebar, handleSidebar, handleActive
                 : <Typography variant="body1" fontStyle="italic">No tiene descripción.</Typography>
             }
             <Divider />
-            <Button variant="outlined" component={Link} to={`/campaigns`}>
-                Ver Workspaces
-            </Button>
+                <CommonButton actionType="DETAILS" component={Link} to={`/campaigns`} >Ver Workspaces</CommonButton>
             <Divider />
             <Grid container spacing={2} size="grow" minWidth="50 rem">
                 <Grid size="grow" minWidth="18rem">
                     <Typography variant="body1" fontWeight="bold">Fecha de creación:</Typography>
                     <Typography variant="body1" paddingInlineStart={2} sx={{ textTransform: "capitalize" }}>
-                        {dayjs( entity?.created_at).format('dddd DD/MM/YYYY HH:mm:ss')}
+                        {dayjs(entity?.created_at).format('dddd DD/MM/YYYY HH:mm:ss')}
                     </Typography>
                 </Grid>
                 <Grid size="grow" minWidth="18rem">
                     <Typography variant="body1" fontWeight="bold">Fecha de última modificación:</Typography>
                     <Typography variant="body1" paddingInlineStart={2} sx={{ textTransform: "capitalize" }}>
-                        {dayjs( entity?.updated_at).format('dddd DD/MM/YYYY HH:mm:ss')}
+                        {dayjs(entity?.updated_at).format('dddd DD/MM/YYYY HH:mm:ss')}
                     </Typography>
                 </Grid>
             </Grid>
             <Divider />
-            <ButtonGroup variant="contained" >
-                <Button onClick={closeSidebar} variant="outlined" fullWidth>Cerrar</Button>
-                <Button onClick={() => handleActive(entity)} color="secondary" fullWidth>
-                    {entity.active ? "Deshabilitar" : "Habilitar"}
-                </Button>
-                <Button onClick={() => handleSidebar("UPDATE_ORG", entity)} fullWidth>Modificar</Button>
+            <ButtonGroup>
+                <CommonButton handleClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
+                <DisableButton active={entity.active} handleActive={() => handleActive(entity)} />
+                <CommonButton handleClick={() => handleSidebar("UPDATE_ORG", entity)} actionType="MODIFY" >Modificar</CommonButton>
             </ButtonGroup>
         </Stack>
     )

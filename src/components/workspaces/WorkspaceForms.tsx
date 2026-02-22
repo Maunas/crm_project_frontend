@@ -5,7 +5,7 @@ import type { Organization, Workspace, WorkspaceDetailed, WorkspacePost } from "
 import { setFormErrors } from "../../generalService"
 import { createWorkspace, getOrganizations, updateWorkspace } from "./workspaceServices"
 import { useForm } from "react-hook-form"
-import { Typography, Button, Grid, FormHelperText } from "@mui/material"
+import { Typography, Button, Grid, FormHelperText, ButtonGroup } from "@mui/material"
 
 interface WorkspaceSidebarProps {
     existingWsp?: Workspace,
@@ -92,12 +92,14 @@ export const WorkspaceForm = ({ existingWsp, submit, onCancel }: WorkspaceProps)
             </Grid>
             {errors?.root &&
                 <FormHelperText color="error">{errors?.root?.message}</FormHelperText>}
-            <Button onClick={onCancel}>
-                Cancelar
-            </Button>
-            <Button variant="contained" onClick={handleSubmit(onSubmit)} sx={{ marginBlock: "1rem" }}>
-                Guardar Espacio de Trabajo
-            </Button>
+            <ButtonGroup fullWidth>
+                <Button variant="outlined" onClick={onCancel} fullWidth>
+                    Cancelar
+                </Button>
+                <Button variant="contained" onClick={handleSubmit(onSubmit)} fullWidth>
+                    Guardar Espacio de Trabajo
+                </Button>
+            </ButtonGroup>
         </form>
     )
 }

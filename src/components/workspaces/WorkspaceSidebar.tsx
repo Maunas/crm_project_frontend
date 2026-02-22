@@ -4,6 +4,7 @@ import { CampaignFormSidebar } from "../campaigns/CampaignForms"
 import dayjs from "dayjs"
 import { Stack, Typography, ButtonGroup, Button, Divider, Grid, Chip } from "@mui/material"
 import { CampaignList } from "../campaigns/CampaignList"
+import { CommonButton, DisableButton } from "../common/details/DetailsCommonButton"
 
 interface SidebarProps {
     mode: string | null,
@@ -67,27 +68,23 @@ const WorkspaceDetails = ({ entity, closeSidebar, handleSidebar, handleActive }:
                 <Grid size="grow" minWidth="18rem">
                     <Typography variant="body1" fontWeight="bold">Fecha de creación:</Typography>
                     <Typography variant="body1" paddingInlineStart={2} sx={{ textTransform: "capitalize" }}>
-                        {dayjs( entity?.created_at).format('dddd DD/MM/YYYY HH:mm:ss')}
+                        {dayjs(entity?.created_at).format('dddd DD/MM/YYYY HH:mm:ss')}
                     </Typography>
                 </Grid>
                 <Grid size="grow" minWidth="18rem">
                     <Typography variant="body1" fontWeight="bold">Fecha de última modificación:</Typography>
 
                     <Typography variant="body1" paddingInlineStart={2} sx={{ textTransform: "capitalize" }}>
-                        {dayjs( entity?.updated_at).format('dddd DD/MM/YYYY HH:mm:ss')}
+                        {dayjs(entity?.updated_at).format('dddd DD/MM/YYYY HH:mm:ss')}
                     </Typography>
                 </Grid>
             </Grid>
             <Divider />
 
-            <ButtonGroup variant="contained" >
-                <Button onClick={closeSidebar} variant="outlined" fullWidth>Cerrar</Button>
-                <Button color="secondary" fullWidth onClick={() => handleActive(entity)}>
-                    {
-                        entity.active ? "Deshabilitar" : "Habilitar"
-                    }
-                </Button>
-                <Button onClick={() => handleSidebar("UPDATE_WSP", entity)} fullWidth>Modificar</Button>
+            <ButtonGroup fullWidth>
+                <CommonButton handleClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
+                <DisableButton active={entity.active} handleActive={() => handleActive(entity)} />
+                <CommonButton handleClick={() => handleSidebar("UPDATE_WSP", entity)} actionType="MODIFY" >Modificar</CommonButton>
             </ButtonGroup>
         </Stack>
     )

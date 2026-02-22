@@ -8,7 +8,7 @@ import { getOrganizations, getWorkspace, getWorkspaces } from "../workspaces/wor
 import { createCampaign, updateCampaign } from "./campaignServices"
 import { createLeadField } from "../leadFields/leadFieldServices"
 import { useForm, useWatch } from "react-hook-form"
-import { Button, FormHelperText, Grid, Typography } from "@mui/material"
+import { Button, ButtonGroup, FormHelperText, Grid, Typography } from "@mui/material"
 
 interface CampaignSidebarProps {
     existingCmp?: Campaign,
@@ -140,12 +140,15 @@ export const CampaignForm = ({ existingCmp, submit, onCancel }: CampaignProps) =
             </Grid>
             {errors?.root &&
                 <FormHelperText color="error">{errors?.root?.message}</FormHelperText>}
-            <Button onClick={onCancel}>
-                Cancelar
-            </Button>
-            <Button variant="contained" onClick={handleSubmit(onSubmit)} sx={{ marginBlock: "1rem" }}>
-                Guardar Campaña
-            </Button>
+
+            <ButtonGroup fullWidth>
+                <Button variant="outlined" onClick={onCancel} fullWidth>
+                    Cancelar
+                </Button>
+                <Button variant="contained" onClick={handleSubmit(onSubmit)} fullWidth>
+                    Guardar Campaña
+                </Button>
+            </ButtonGroup>
         </form>
     )
 }

@@ -13,6 +13,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
+import { CommonButton } from '../common/details/DetailsCommonButton';
 
 export const WorkspaceList = () => {
 
@@ -86,11 +87,19 @@ export const WorkspaceList = () => {
             }>
             <Stack spacing={2}>
                 <Grid container spacing={2} justifyContent="space-between" alignItems="center">
-                    <Typography variant="h1">Lista de Espacios de Trabajo</Typography>
-                    <ButtonGroup variant="contained" color="primary">
-                        <Button onClick={() => handleSidebar("CREATE_CMP", null)} >Crear Campaña</Button>
-                        <Button onClick={() => handleSidebar("CREATE_WSP", null)} >Crear Espacio de Trabajo</Button>
-                    </ButtonGroup>
+                    <Grid size="grow" minWidth="15rem">
+                        <Typography variant="h1">Lista de Espacios de Trabajo</Typography>
+                    </Grid>
+                    <Grid size="grow" minWidth="25rem">
+                        <ButtonGroup variant="contained" color="primary" fullWidth>
+                            <CommonButton actionType='CREATE' handleClick={() => handleSidebar("CREATE_CMP", null)}>
+                                Crear Campaña
+                            </CommonButton>
+                            <CommonButton actionType='CREATE' handleClick={() => handleSidebar("CREATE_WSP", null)}>
+                                Crear Espacio de Trabajo
+                            </CommonButton>
+                        </ButtonGroup>
+                    </Grid>
                 </Grid>
                 {workspaces?.items && workspaces?.items?.length > 0 ?
                     <List>
