@@ -1,28 +1,48 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom'
 import type { LeadFieldDetailed } from '../../types/leadFields'
-import { Button, Chip, Container, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, ButtonGroup } from '@mui/material'
-import type { Campaign } from '../../types/campaigns'
+import { Button, Chip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, ButtonGroup, Link, Breadcrumbs, Stack, Grid, Divider, Box, IconButton, Paper } from '@mui/material'
+import type { CampaignDetailed } from '../../types/campaigns'
 import { activeLeadField, deleteLeadField, getLeadFields } from '../leadFields/leadFieldServices'
-import { GenericModal } from '../common/layout/GenericContainer'
+import { ContainerWithSidebar, GenericModal } from '../common/layout/GenericContainer'
 import { SimulateLead } from '../lead/LeadForm'
 import EditIcon from '@mui/icons-material/Edit';
-import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import { getCampaign } from './campaignServices'
+import { disableCampaign, enableCampaign, getCampaign } from './campaignServices'
+import { useSidebar } from '../hooks/useSidebar'
+import dayjs from 'dayjs'
+import { CampaignFormSidebar } from './CampaignForms'
+import { EnabledIcon } from '../common/lists/Badges'
+import DeleteIcon from '@mui/icons-material/Delete';
+import SearchIcon from '@mui/icons-material/Search';
+import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
+import { useListPagination } from '../hooks/useListPagination'
+import type { Paginable } from '../../types/common'
+import { PaginationComponent } from '../common/lists/PaginationComponent'
 
 export const CampaignDetails = () => {
     const { id } = useParams()
-    const [campaign, setCampaign] = useState<Campaign | null>(null)
-    const [fields, setFields] = useState<LeadFieldDetailed[] | []>([])
+    const [campaign, setCampaign] = useState<CampaignDetailed | null>(null)
+    const [fields, setFields] = useState<Paginable<LeadFieldDetailed> | null>(null)
+
+    const nav = useNavigate()
+
+    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar()
+
+    const { page, pageSize, pageComponentProps } = useListPagination(fields?.total_pages ?? 0, 2)
 
     useEffect(() => {
-        if (id) getCampaign(parseInt(id)).then(res => {
+        if (!id) return
+        getCampaign(parseInt(id)).then(res => {
             setCampaign(res)
-            getLeadFields({ detailed: true, campaign_id: parseInt(id), only_active: false }).then(res => setFields(res))
         })
-        return () => setCampaign(null)
     }, [id])
+    useEffect(() => {
+        if (!id) return
+        getLeadFields({
+            detailed: true, campaign_id: parseInt(id), only_active: false, page: page, page_size: pageSize
+        })
+            .then(setFields)
+    }, [id, page, pageSize])
 
     const handleActive = (fieldIdx: number) => {
         const newFields = [...fields]
@@ -41,76 +61,194 @@ export const CampaignDetails = () => {
         }
     }
 
-    return (
-        <Container>
-            <Paper sx={{ padding: 2 }}>
-                <Button component={Link} to="/campaigns" variant='outlined'>Volver</Button>
+    const handleActiveCampaign = (campaign: CampaignDetailed) => {
+        if (campaign.active) {
+            disableCampaign(campaign.id)
+                .then(res => {
+                    if (res.action === "disabled") {
+                        updateEntity({ ...campaign, active: false }, "UPDATE_CMP")
+                    } else {
+                        alert("Eliminado")
+                        nav("/campaigns")
+                    }
+                }).catch(() => alert("error"))
+        } else {
+            enableCampaign(campaign.id)
+                .then(() => {
+                    updateEntity({ ...campaign, active: true }, "UPDATE_CMP")
+                }).catch(() => alert("error"))
+        }
+    }
 
+    const updateEntity = (newCampaign: CampaignDetailed, mode: string) => {
+        switch (mode) {
+            case "UPDATE_CMP": {
+                if (!campaign) break
+                setCampaign(newCampaign)
+                break;
+            }
+        }
+    }
+
+    return (
+        <ContainerWithSidebar isSidebarOpen={!!sidebarMode}
+            sidebarComponent={
+                <CampaignDetailSidebar mode={sidebarMode} entity={selectedEntity} handleSidebar={handleSidebar}
+                    closeSidebar={closeSidebar} updateEntity={updateEntity} />} >
+            <Breadcrumbs aria-label="breadcrumb">
+                <Link component={RouterLink} to="/campaigns" underline="hover" color="inherit">
+                    Campañas
+                </Link>
                 {campaign &&
-                    <>
+                    <Typography sx={{ color: 'text.primary' }}>{campaign.name}</Typography>}
+            </Breadcrumbs>
+
+            {campaign &&
+                <Stack spacing={2} >
+                    <Grid size={12} container spacing={2} justifyContent="space-between" alignItems="center">
                         <Typography variant="h1" color="initial">{campaign.name}</Typography>
-                        <Typography color="initial">{campaign.description}</Typography>
-                        <TableContainer>
-                            <Typography variant="h2" color="initial">Campos de Lead</Typography>
-                            <Table sx={{ minWidth: 650 }} aria-label="simple table">
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell>Nombre</TableCell>
-                                        <TableCell align="right">Tipo de Dato</TableCell>
-                                        <TableCell align="right">Subtipo de Dato</TableCell>
-                                        <TableCell align="right">Máscara</TableCell>
-                                        <TableCell align="right">Plantilla/Nomenclador</TableCell>
-                                        <TableCell align="right">Obligatorio</TableCell>
-                                        <TableCell align="right">Único</TableCell>
-                                        <TableCell align="right">Visible</TableCell>
-                                        <TableCell align="right">Habilitado</TableCell>
-                                        <TableCell align="right">Orden</TableCell>
-                                        <TableCell align="right">Modificar</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {fields?.sort((a, b) => a.order - b.order)
-                                        .map((row, idx) => (
-                                            <TableRow
-                                                key={row.id}
-                                                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                                            >
-                                                <TableCell component="th">{row.id} - {row.name}</TableCell>
-                                                <TableCell align="right">{row.field_type_code}</TableCell>
-                                                <TableCell align="right">{row.field_subtype_code ?? "Sin subtipo"}</TableCell>
-                                                <TableCell align="right">{row.input_mask || "Sin máscara"}</TableCell>
-                                                <TableCell align="right">{row.field_template_code || row.nomenclator?.name || "Dato manual"}</TableCell>
-                                                <TableCell align="right">{row.required ? <Chip color='success' label="Obligatorio" /> : <Chip color='error' label="Opcional" />}</TableCell>
-                                                <TableCell align="right">{row.is_primary ? <Chip color='success' label="Único" /> : <Chip color='error' label="Repetible" />}</TableCell>
-                                                <TableCell align="right">{row.is_visible ? <Chip color='success' label="Visible" /> : <Chip color='error' label="Oculto" />}</TableCell>
-                                                <TableCell align="right">{row.active ? <Chip color='success' label="Habilitado" /> : <Chip color='error' label="Deshabilitado" />}</TableCell>
-                                                <TableCell align="right">{row.order}</TableCell>
-                                                <TableCell align="right">
-                                                    <Button variant="text" component={Link} to={`/leadfield/modify/${row.id}`}>
-                                                        <EditIcon />
-                                                    </Button>
-                                                    <Button variant="text" onClick={() => handleActive(idx)}>
-                                                        {row.active ? <RemoveCircleOutlineIcon color="error" /> : <CheckCircleOutlineIcon color="success" />}
-                                                    </Button>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-                        <ButtonGroup>
-                            <Button component={Link} variant='contained' to={`/leadfield/new/${id}`}>
-                                Agregar nuevo campo
-                            </Button>
-                            <GenericModal buttonText='Vista previa de formulario' buttonProps={{ variant: "outlined" }} containerSx={{ minWidth: "80vw" }} >
-                                {campaign && fields?.length > 0 &&
-                                    <SimulateLead campaignId={campaign.id} leadFields={fields} />
-                                }
-                            </GenericModal>
-                        </ButtonGroup>
-                    </>
-                }
-            </Paper>
-        </Container>
+                        {campaign.active ? <Chip color='success' label="Habilitado" /> :
+                            <Chip color='error' label="Deshabilitado" />}
+                    </Grid>
+                    <Grid container spacing={2}>
+                        <Grid size="grow" minWidth="30rem">
+
+                            {campaign.description
+                                ? <Typography variant="body1" color="initial">{campaign.description}</Typography>
+                                : <Typography variant="body1" fontStyle="italic">No tiene descripción.</Typography>
+                            }
+                        </Grid>
+                        <Grid container spacing={2} size="grow" minWidth="20rem">
+
+                            <Grid size="grow" minWidth="18rem">
+                                <Typography variant="body1" fontWeight="bold">Fecha de creación:</Typography>
+
+                                <Typography variant="body1" paddingInlineStart={2} sx={{ textTransform: "capitalize" }}>
+                                    {dayjs(campaign?.created_at).format('dddd DD/MM/YYYY HH:mm:ss')}
+                                </Typography>
+                            </Grid>
+                            <Grid size="grow" minWidth="18rem">
+                                <Typography variant="body1" fontWeight="bold">Fecha de última modificación:</Typography>
+
+                                <Typography variant="body1" paddingInlineStart={2} sx={{ textTransform: "capitalize" }}>
+                                    {dayjs(campaign?.updated_at).format('dddd DD/MM/YYYY HH:mm:ss')}
+                                </Typography>
+                            </Grid>
+                        </Grid>
+                    </Grid>
+                    <Divider />
+                    <Typography variant="h2" color="initial">Acciones</Typography>
+                    <Grid size="grow" width="grow" container justifyContent="center" alignItems="center" marginInline={2}>
+                        <Grid size="grow" />
+                        <Grid size="grow" minWidth="30rem" >
+                            <ButtonGroup variant="contained" fullWidth>
+                                <Button onClick={() => handleSidebar("UPDATE_CMP", campaign)} fullWidth>Modificar</Button>
+                                <Button variant='contained' color="secondary" fullWidth
+                                    onClick={() => handleActiveCampaign(campaign)}>
+                                    Deshabilitar
+                                </Button>
+                            </ButtonGroup>
+                        </Grid >
+                        <Grid size="grow" />
+                    </Grid>
+                    <Divider />
+                    <Typography variant="h2" color="initial" width="100%">Campos de Lead</Typography>
+                    <TableContainer component={Paper} >
+                        <Table aria-label="simple table" size='small'>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell></TableCell>
+                                    <TableCell>Nombre</TableCell>
+                                    <TableCell align="right">Tipo</TableCell>
+                                    <TableCell align="right">Subtipo</TableCell>
+                                    <TableCell align="right">Obligatorio</TableCell>
+                                    <TableCell align="right">Único</TableCell>
+                                    <TableCell align="right">Visible</TableCell>
+                                    <TableCell align="right">Acciones</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {fields?.items?.sort((a, b) => a.order - b.order)
+                                    .map((row, idx) => (
+                                        <TableRow
+                                            key={row.id}
+                                            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                        >
+                                            <TableCell component="th">{row.order}</TableCell>
+                                            <TableCell component="th">
+                                                <Stack spacing={1} direction="row">
+                                                    <EnabledIcon active={row.active} />
+                                                    <Typography fontWeight="bold">{row.name} </Typography>
+                                                </Stack>
+                                            </TableCell>
+                                            <TableCell align="right">{row.field_type_code}</TableCell>
+                                            <TableCell align="right">{row.field_subtype_code ?? "Sin subtipo"}</TableCell>
+
+                                            <TableCell align="right">
+                                                <EnabledIcon active={row.required} trueTooltip='Obligatorio' falseTooltip='Opcional' />
+                                            </TableCell>
+                                            <TableCell align="right">
+                                                <EnabledIcon active={row.is_primary} trueTooltip='Único' falseTooltip='Repetible' />
+                                            </TableCell>
+                                            <TableCell align="right">
+                                                <EnabledIcon active={row.is_visible} trueTooltip='Visible' falseTooltip='Oculto' />
+                                            </TableCell>
+                                            <TableCell align="right">
+                                                <Stack direction="row" justifyContent="end">
+                                                    <IconButton size='small' edge="end" onClick={() => handleSidebar("DETAILS_ORG", org)}>
+                                                        <SearchIcon />
+                                                    </IconButton>
+                                                    {idx > 1 &&
+                                                        <>
+                                                            <IconButton size='small' edge="end" component={RouterLink} to={`/leadfield/modify/${row.id}`}>
+                                                                <EditIcon />
+                                                            </IconButton>
+                                                            <IconButton size='small' edge="end" onClick={() => handleActive(idx)}>
+                                                                {row.active ?
+                                                                    <DeleteIcon color="error" /> :
+                                                                    <RestoreFromTrashIcon color="success" />
+                                                                }
+                                                            </IconButton>
+                                                        </>}
+                                                </Stack>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                    <PaginationComponent {...pageComponentProps} />
+                    <ButtonGroup variant="contained" >
+
+                        <Button component={RouterLink} variant='contained' to={`/leadfield/new/${id}`} fullWidth>
+                            Agregar nuevo campo
+                        </Button>
+                        <GenericModal buttonText='Vista previa de formulario' buttonProps={{ variant: "outlined", fullWidth: true }} containerSx={{ minWidth: "80vw" }} >
+                            {campaign && fields?.items?.length > 0 &&
+                                <SimulateLead campaignId={campaign.id} leadFields={fields.items} />
+                            }
+                        </GenericModal>
+                    </ButtonGroup>
+
+                </Stack>
+            }
+        </ContainerWithSidebar>
     )
+}
+
+interface SidebarProps {
+    mode: string | null,
+    entity: CampaignDetailed | LeadFieldDetailed | null,
+    closeSidebar: () => void,
+    updateEntity: (entity: CampaignDetailed | LeadFieldDetailed, mode: string) => void,
+    handleSidebar: (mode: string, entity: CampaignDetailed | LeadFieldDetailed | null) => void,
+    handleActive: (org: CampaignDetailed | LeadFieldDetailed) => void,
+}
+const CampaignDetailSidebar = ({ mode, entity, closeSidebar, updateEntity, handleSidebar, handleActive }: SidebarProps) => {
+    switch (mode) {
+        case "UPDATE_CMP":
+            return <CampaignFormSidebar existingCmp={entity as CampaignDetailed}
+                closeSidebar={closeSidebar} handleSidebar={handleSidebar}
+                updateEntityOnList={(entity) => updateEntity(entity, mode)} />
+    }
 }

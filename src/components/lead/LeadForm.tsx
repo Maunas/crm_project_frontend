@@ -225,10 +225,11 @@ export const LeadFormValues = ({ leadFields, simulate = false, register, control
                 <FormHelperText error sx={{ marginBlock: 1 }}>{errors?.root.message}</FormHelperText>
             }
             <ButtonGroup sx={{ marginBlock: 1 }}>
-                <Button variant="outlined" color="primary" component={Link}
-                    to={idLead ? `/leads/${idLead}` : "/leads"}>
-                    Cancelar
-                </Button>
+                {!simulate &&
+                    <Button variant="outlined" color="primary" component={Link}
+                        to={idLead ? `/leads/${idLead}` : "/leads"}>
+                        Cancelar
+                    </Button>}
                 { //Disponible en todas como debug, bloquear al terminar
                     //simulate &&
                     <Button variant={simulate ? "contained" : "outlined"} color="primary" onClick={handleSubmit((data) => submitData(data, true))}>

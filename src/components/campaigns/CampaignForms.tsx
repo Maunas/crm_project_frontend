@@ -14,7 +14,7 @@ interface CampaignSidebarProps {
     existingCmp?: Campaign,
     closeSidebar: () => void,
     updateEntityOnList?: (
-        entity: CampaignDetailed | null,
+        entity: CampaignDetailed,
     ) => void,
     handleSidebar: (mode: string, entity: CampaignDetailed | WorkspaceDetailed | null) => void
 }

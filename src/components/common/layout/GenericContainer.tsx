@@ -39,8 +39,8 @@ export const GenericModal = ({ buttonText, buttonProps = {}, maxWidth = "lg", co
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
     return (
-        <div>
-            {<Button {...buttonProps} onClick={handleOpen}>{buttonText}</Button>}
+        <>
+            <Button onClick={handleOpen} {...buttonProps}>{buttonText}</Button>
             <Modal
                 open={open}
                 onClose={handleClose}
@@ -53,7 +53,7 @@ export const GenericModal = ({ buttonText, buttonProps = {}, maxWidth = "lg", co
                     {children}
                 </GenericContainer>
             </Modal>
-        </div>
+        </>
     )
 }
 
@@ -63,12 +63,13 @@ interface ContainerWithSidebarProps {
     mainGridProps?: object,
     sidebarGridProps?: object,
     sidebarComponent: ReactNode,
+    containerSize?: false | Breakpoint,
     children: ReactNode,
 }
 
-export const ContainerWithSidebar = ({ isSidebarOpen, rootGridProps, mainGridProps, sidebarGridProps, sidebarComponent, children }: ContainerWithSidebarProps) => {
+export const ContainerWithSidebar = ({ isSidebarOpen, rootGridProps, mainGridProps, sidebarGridProps, sidebarComponent, containerSize, children }: ContainerWithSidebarProps) => {
     return (
-        <Container maxWidth={isSidebarOpen ? false : "xl"}>
+        <Container maxWidth={isSidebarOpen ? false : containerSize ?? "lg"}>
             <Grid container spacing={2} {...rootGridProps}>
                 <Grid size="grow" minWidth="30rem" {...mainGridProps}>
                     <GenericPaper>

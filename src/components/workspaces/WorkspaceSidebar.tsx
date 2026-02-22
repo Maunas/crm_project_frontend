@@ -63,18 +63,21 @@ const WorkspaceDetails = ({ entity, closeSidebar, handleSidebar, handleActive }:
                 </>
             }
             <Divider />
-            <span>
-                <Typography variant="body1" fontWeight="bold">Fecha de creación:</Typography>
-                <Typography variant="body1" paddingInlineStart={2} textTransform="capitalize">
-                    {dayjs(entity?.created_at).format("dddd DD/MM/YYYY HH:mm")}
-                </Typography>
-            </span>
-            <span>
-                <Typography variant="body1" fontWeight="bold">Fecha de última modificación:</Typography>
-                <Typography variant="body1" paddingInlineStart={2} textTransform="capitalize">
-                    {dayjs(entity?.updated_at).format("dddd DD/MM/YYYY HH:mm")}
-                </Typography>
-            </span>
+            <Grid container spacing={2} >
+                <Grid size="grow" minWidth="18rem">
+                    <Typography variant="body1" fontWeight="bold">Fecha de creación:</Typography>
+                    <Typography variant="body1" paddingInlineStart={2} sx={{ textTransform: "capitalize" }}>
+                        {dayjs( entity?.created_at).format('dddd DD/MM/YYYY HH:mm:ss')}
+                    </Typography>
+                </Grid>
+                <Grid size="grow" minWidth="18rem">
+                    <Typography variant="body1" fontWeight="bold">Fecha de última modificación:</Typography>
+
+                    <Typography variant="body1" paddingInlineStart={2} sx={{ textTransform: "capitalize" }}>
+                        {dayjs( entity?.updated_at).format('dddd DD/MM/YYYY HH:mm:ss')}
+                    </Typography>
+                </Grid>
+            </Grid>
             <Divider />
 
             <ButtonGroup variant="contained" >

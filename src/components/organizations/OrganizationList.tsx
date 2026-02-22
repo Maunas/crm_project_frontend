@@ -48,7 +48,7 @@ export const OrganizationList = () => {
                 goToPageOne()
                 getOrganizations({ detailed: true, only_active: false, page_size: pageSize, page: 1 })
                     .then(setOrganizations)
-                    break;
+                break;
             }
         }
     }
@@ -183,20 +183,20 @@ const OrganizationDetails = ({ entity, closeSidebar, handleSidebar, handleActive
                 Ver Workspaces
             </Button>
             <Divider />
-            <span>
-                <Typography variant="body1" fontWeight="bold">Fecha de creación:</Typography>
-
-                <Typography variant="body1" paddingInlineStart={2} sx={{ textTransform: "capitalize" }}>
-                    {dayjs(entity?.created_at).format('dddd DD/MM/YYYY HH:mm:ss')}
-                </Typography>
-            </span>
-            <span>
-                <Typography variant="body1" fontWeight="bold">Fecha de última modificación:</Typography>
-
-                <Typography variant="body1" paddingInlineStart={2} sx={{ textTransform: "capitalize" }}>
-                    {dayjs(entity?.updated_at).format('dddd DD/MM/YYYY HH:mm:ss')}
-                </Typography>
-            </span>
+            <Grid container spacing={2} size="grow" minWidth="50 rem">
+                <Grid size="grow" minWidth="18rem">
+                    <Typography variant="body1" fontWeight="bold">Fecha de creación:</Typography>
+                    <Typography variant="body1" paddingInlineStart={2} sx={{ textTransform: "capitalize" }}>
+                        {dayjs( entity?.created_at).format('dddd DD/MM/YYYY HH:mm:ss')}
+                    </Typography>
+                </Grid>
+                <Grid size="grow" minWidth="18rem">
+                    <Typography variant="body1" fontWeight="bold">Fecha de última modificación:</Typography>
+                    <Typography variant="body1" paddingInlineStart={2} sx={{ textTransform: "capitalize" }}>
+                        {dayjs( entity?.updated_at).format('dddd DD/MM/YYYY HH:mm:ss')}
+                    </Typography>
+                </Grid>
+            </Grid>
             <Divider />
             <ButtonGroup variant="contained" >
                 <Button onClick={closeSidebar} variant="outlined" fullWidth>Cerrar</Button>

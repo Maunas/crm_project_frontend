@@ -32,3 +32,11 @@ export const updateCampaign = async (body: CampaignPost, id: number): Promise<Ca
     return campaign.data
 }
 
+export const disableCampaign = async (id: number): Promise<{ action: string }> => {
+    const cmp = await axios.delete(`${API_BASE_URL}/campaigns/${id}`)
+    return cmp.data
+}
+export const enableCampaign = async (id: number): Promise<{ actived: boolean }> => {
+    const cmp = await axios.put(`${API_BASE_URL}/campaigns/active/${id}`)
+    return cmp.data
+}
