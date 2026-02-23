@@ -24,7 +24,7 @@ export const GenericContainer = ({ children, maxWidth = "lg", containerSx = {}, 
 export const GenericPaper = ({ children, paperSx = {}, ...props }: GenericContainerProps) => {
 
     return (
-        <Paper sx={{ paddingInline: 4, paddingBlock: 2, width: "100%", ...paperSx }} {...props}>
+        <Paper sx={{ paddingInline: 5, paddingBlock: 3, width: "100%", ...paperSx }} {...props}>
             {children}
         </Paper>
     )

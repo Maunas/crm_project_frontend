@@ -1,79 +1,65 @@
 import { useEffect, useState } from 'react'
 import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom'
 import type { LeadFieldDetailed } from '../../types/leadFields'
-import { Button, Chip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, ButtonGroup, Link, Breadcrumbs, Stack, Grid, Divider, Box, IconButton, Paper } from '@mui/material'
+import { Chip, Typography, ButtonGroup, Link, Breadcrumbs, Stack, Grid, Divider } from '@mui/material'
 import type { CampaignDetailed } from '../../types/campaigns'
-import { activeLeadField, deleteLeadField, getLeadFields } from '../leadFields/leadFieldServices'
-import { ContainerWithSidebar, GenericModal } from '../common/layout/GenericContainer'
-import { SimulateLead } from '../lead/LeadForm'
-import EditIcon from '@mui/icons-material/Edit';
+import { ContainerWithSidebar } from '../common/layout/GenericContainer'
 import { disableCampaign, enableCampaign, getCampaign } from './campaignServices'
 import { useSidebar } from '../hooks/useSidebar'
 import dayjs from 'dayjs'
 import { CampaignFormSidebar } from './CampaignForms'
-import { EnabledIcon } from '../common/lists/Badges'
-import DeleteIcon from '@mui/icons-material/Delete';
-import SearchIcon from '@mui/icons-material/Search';
-import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
-import { useListPagination } from '../hooks/useListPagination'
-import type { Paginable } from '../../types/common'
-import { PaginationComponent } from '../common/lists/PaginationComponent'
 import { CommonButton, DisableButton } from '../common/details/DetailsCommonButton'
+import { LeadFieldTable } from '../leadFields/LeadFieldTable'
+import { LeadFieldDetail } from '../leadFields/LeadFieldDetail'
+import type { Paginable } from '../../types/common'
 
 export const CampaignDetails = () => {
     const { id } = useParams()
     const [campaign, setCampaign] = useState<CampaignDetailed | null>(null)
-    const [fields, setFields] = useState<Paginable<LeadFieldDetailed> | null>(null)
 
+    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<CampaignDetailed | LeadFieldDetailed>()
     const nav = useNavigate()
 
-    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar()
-
-    const { page, pageSize, pageComponentProps } = useListPagination(fields?.total_pages ?? 0)
-
     useEffect(() => {
+        closeSidebar()
         if (!id) return
         getCampaign(parseInt(id)).then(res => {
             setCampaign(res)
         })
-    }, [id])
-    useEffect(() => {
-        if (!id) return
-        getLeadFields({
-            detailed: true, campaign_id: parseInt(id), only_active: false, page: page, page_size: pageSize
-        })
-            .then(setFields)
-    }, [id, page, pageSize])
+    }, [id, closeSidebar])
 
-    const handleActive = (fieldIdx: number) => {
-        const newFields = [...fields]
-        if (fields[fieldIdx].active) {
-            deleteLeadField(fields[fieldIdx].id)
-                .then(() => {
-                    newFields[fieldIdx].active = false
-                    setFields(newFields)
-                }).catch(() => alert("error"))
-        } else {
-            activeLeadField(fields[fieldIdx].id)
-                .then(() => {
-                    newFields[fieldIdx].active = true
-                    setFields(newFields)
-                }).catch(() => alert("error"))
+    //Necesaria la lista e n este componente, en lugar de LeadFieldTable,
+    // para facilitar la modificación de la lista desde el sidebar.
+    const [leadFields, setLeadFields] = useState<Paginable<LeadFieldDetailed> | null>(null)
+
+    const updateEntity = (mode: string, entity: CampaignDetailed | LeadFieldDetailed) => {
+        switch (mode) {
+            case "UPDATE_CMP": {
+                if (!campaign) break
+                setCampaign(entity as CampaignDetailed)
+                break;
+            }
+            case "UPDATE_FIELD": {
+                if (selectedEntity && entity.id === selectedEntity.id) handleSidebar("KEEP", entity)
+                if (!leadFields?.items || !(leadFields?.items?.length > 0)) return
+                const newLeadField = [...leadFields.items]
+                const fieldIdx = leadFields.items.findIndex(field => field.id === entity.id)
+                if (fieldIdx === -1) return
+                newLeadField[fieldIdx] = entity as LeadFieldDetailed
+                setLeadFields({ ...leadFields, items: newLeadField })
+            }
         }
     }
 
     const handleActiveCampaign = (campaign: CampaignDetailed) => {
-
         const updateActive = () => {
-            updateEntity({ ...campaign, active: !campaign.active }, "UPDATE_CMP")
+            updateEntity("UPDATE_CMP", { ...campaign, active: !campaign.active })
         }
-
         if (campaign.active) {
             disableCampaign(campaign.id)
                 .then(res => {
-                    if (res.action === "disabled") {
-                        updateActive()
-                    } else {
+                    if (res.action === "disabled") updateActive()
+                    else {
                         alert("Eliminado")
                         nav("/campaigns")
                     }
@@ -84,21 +70,11 @@ export const CampaignDetails = () => {
         }
     }
 
-    const updateEntity = (newCampaign: CampaignDetailed, mode: string) => {
-        switch (mode) {
-            case "UPDATE_CMP": {
-                if (!campaign) break
-                setCampaign(newCampaign)
-                break;
-            }
-        }
-    }
-
     return (
         <ContainerWithSidebar isSidebarOpen={!!sidebarMode} containerSize="xl"
             sidebarComponent={
-                <CampaignDetailSidebar mode={sidebarMode} entity={selectedEntity} handleSidebar={handleSidebar}
-                    closeSidebar={closeSidebar} updateEntity={updateEntity} />} >
+                <CampaignDetailSidebar mode={sidebarMode} entity={selectedEntity}
+                    handleSidebar={handleSidebar} closeSidebar={closeSidebar} updateEntity={updateEntity} />} >
             <Breadcrumbs aria-label="breadcrumb">
                 <Link component={RouterLink} to="/campaigns" underline="hover" color="inherit">
                     Espacios de Trabajo
@@ -150,93 +126,10 @@ export const CampaignDetails = () => {
                         </Grid >
                     </Grid>
                     <Divider />
-                    <Grid size="grow" container justifyContent="center" alignItems="center" gap={2}>
-
-                        <Grid size="grow" minWidth="16rem" >
-                            <Typography variant="h2">Lista de Campos de Lead</Typography>
-
-                        </Grid >
-
-                        <Grid size="grow" minWidth="22rem" >
-                            <ButtonGroup fullWidth>
-                                <CommonButton component={RouterLink} to={`/leadfield/new/${id}`} actionType="CREATE">Agregar Campo</CommonButton>
-                                <GenericModal buttonText='Vista previa de formulario' actionType="DETAILS" variant="outlined" containerSx={{ minWidth: "80vw" }} >
-                                    {campaign && fields?.items?.length > 0 &&
-                                        <SimulateLead campaignId={campaign.id} leadFields={fields.items} />
-                                    }
-                                </GenericModal>
-                            </ButtonGroup>
-                        </Grid >
-                    </Grid>
-
-
-                    <TableContainer component={Paper} >
-                        <Table aria-label="simple table" size='small'>
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell></TableCell>
-                                    <TableCell>Nombre</TableCell>
-                                    <TableCell align="right">Tipo</TableCell>
-                                    <TableCell align="right">Subtipo</TableCell>
-                                    <TableCell align="right">Obligatorio</TableCell>
-                                    <TableCell align="right">Único</TableCell>
-                                    <TableCell align="right">Visible</TableCell>
-                                    <TableCell align="right">Acciones</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {fields?.items?.sort((a, b) => a.order - b.order)
-                                    .map((row, idx) => (
-                                        <TableRow
-                                            key={row.id}
-                                            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                                        >
-                                            <TableCell component="th">{row.order}</TableCell>
-                                            <TableCell component="th">
-                                                <Stack spacing={1} direction="row">
-                                                    <EnabledIcon active={row.active} />
-                                                    <Typography fontWeight="bold">{row.name} </Typography>
-                                                </Stack>
-                                            </TableCell>
-                                            <TableCell align="right">{row.field_type_code}</TableCell>
-                                            <TableCell align="right">{row.field_subtype_code ?? "Sin subtipo"}</TableCell>
-
-                                            <TableCell align="right">
-                                                <EnabledIcon active={row.required} trueTooltip='Obligatorio' falseTooltip='Opcional' />
-                                            </TableCell>
-                                            <TableCell align="right">
-                                                <EnabledIcon active={row.is_primary} trueTooltip='Único' falseTooltip='Repetible' />
-                                            </TableCell>
-                                            <TableCell align="right">
-                                                <EnabledIcon active={row.is_visible} trueTooltip='Visible' falseTooltip='Oculto' />
-                                            </TableCell>
-                                            <TableCell align="right">
-                                                <Stack direction="row" justifyContent="end">
-                                                    <IconButton size='small' edge="end" onClick={() => handleSidebar("DETAILS_ORG", org)}>
-                                                        <SearchIcon />
-                                                    </IconButton>
-                                                    {idx > 1 &&
-                                                        <>
-                                                            <IconButton size='small' edge="end" component={RouterLink} to={`/leadfield/modify/${row.id}`}>
-                                                                <EditIcon />
-                                                            </IconButton>
-                                                            <IconButton size='small' edge="end" onClick={() => handleActive(idx)}>
-                                                                {row.active ?
-                                                                    <DeleteIcon color="error" /> :
-                                                                    <RestoreFromTrashIcon color="success" />
-                                                                }
-                                                            </IconButton>
-                                                        </>}
-                                                </Stack>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                    <PaginationComponent {...pageComponentProps} />
-
-
+                    {leadFields &&
+                        <LeadFieldTable campaign={campaign} leadFields={leadFields} setLeadFields={setLeadFields}
+                            handleSidebar={handleSidebar} updateEntity={updateEntity} />
+                    }
                 </Stack>
             }
         </ContainerWithSidebar>
@@ -247,15 +140,21 @@ interface SidebarProps {
     mode: string | null,
     entity: CampaignDetailed | LeadFieldDetailed | null,
     closeSidebar: () => void,
-    updateEntity: (entity: CampaignDetailed | LeadFieldDetailed, mode: string) => void,
+    updateEntity: (mode: string, entity: CampaignDetailed | LeadFieldDetailed) => void,
     handleSidebar: (mode: string, entity: CampaignDetailed | LeadFieldDetailed | null) => void,
-    handleActive: (org: CampaignDetailed | LeadFieldDetailed) => void,
 }
-const CampaignDetailSidebar = ({ mode, entity, closeSidebar, updateEntity, handleSidebar, handleActive }: SidebarProps) => {
+const CampaignDetailSidebar = ({ mode, entity, closeSidebar, updateEntity, handleSidebar }: SidebarProps) => {
     switch (mode) {
         case "UPDATE_CMP":
             return <CampaignFormSidebar existingCmp={entity as CampaignDetailed}
                 closeSidebar={closeSidebar} handleSidebar={handleSidebar}
                 updateEntityOnList={(entity) => updateEntity(entity, mode)} />
+        case "DETAILS_FIELD":
+            return <LeadFieldDetail leadField={entity as LeadFieldDetailed}
+                closeSidebar={closeSidebar} handleSidebar={handleSidebar} updateEntity={updateEntity} />
+        case "CREATE_FIELD":
+            return <Typography>Create LeadField</Typography>
+        case "UPDATE_FIELD":
+            return <Typography>Modify LeadField</Typography>
     }
 }

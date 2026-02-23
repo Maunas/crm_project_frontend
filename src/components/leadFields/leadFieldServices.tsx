@@ -113,12 +113,12 @@ export const updateLeadField = async (
     return leadField.data;
 };
 
-export const deleteLeadField = async (id: number): Promise<LeadField> => {
+export const disableLeadField = async (id: number): Promise<{ action: string }> => {
     const leadField = await axios.delete(`${API_BASE_URL}/lead_fields/${id}`);
     return leadField.data;
 };
 
-export const activeLeadField = async (id: number): Promise<LeadField> => {
+export const enableLeadField = async (id: number): Promise<{ actived: boolean }> => {
     const leadField = await axios.put(`${API_BASE_URL}/lead_fields/active/${id}`);
     return leadField.data;
 };

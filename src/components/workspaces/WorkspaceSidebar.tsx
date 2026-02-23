@@ -2,7 +2,7 @@ import type { CampaignDetailed, WorkspaceDetailed } from "../../types/campaigns"
 import { WorkspaceFormSidebar } from "./WorkspaceForms"
 import { CampaignFormSidebar } from "../campaigns/CampaignForms"
 import dayjs from "dayjs"
-import { Stack, Typography, ButtonGroup, Button, Divider, Grid, Chip } from "@mui/material"
+import { Stack, Typography, ButtonGroup, Divider, Grid, Chip } from "@mui/material"
 import { CampaignList } from "../campaigns/CampaignList"
 import { CommonButton, DisableButton } from "../common/details/DetailsCommonButton"
 
