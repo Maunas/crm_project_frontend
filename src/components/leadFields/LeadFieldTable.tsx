@@ -20,7 +20,7 @@ interface LeadFieldTableProps {
     leadFields: Paginable<LeadFieldDetailed> | null,
     updateLeadFields: (page: number, pageSize: number) => void,
     updateEntity: (mode: string, entity: CampaignDetailed | LeadFieldDetailed) => void,
-    handleSidebar: (mode: string, entity: CampaignDetailed | LeadFieldDetailed | null) => void,
+    handleSidebar: (mode: string, entity: LeadFieldDetailed | null) => void,
 }
 
 export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateEntity, handleSidebar }: LeadFieldTableProps) => {
@@ -58,7 +58,7 @@ export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateE
 
                 <Grid size="grow" minWidth="22rem" >
                     <ButtonGroup fullWidth>
-                        <CommonButton onClick={() => handleSidebar("CREATE_FIELD", campaign)} actionType="CREATE">Agregar Campo</CommonButton>
+                        <CommonButton onClick={() => handleSidebar("CREATE_FIELD", null)} actionType="CREATE">Agregar Campo</CommonButton>
                         <GenericModal buttonText='Vista previa de formulario' actionType="DETAILS" variant="outlined" containerSx={{ minWidth: "80vw" }} >
                             {campaign && leadFields?.items && leadFields?.items?.length > 0 &&
                                 <SimulateLead campaignId={campaign.id} leadFields={leadFields.items} />
@@ -117,7 +117,7 @@ export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateE
                                                 </IconButton>
                                                 {idx > 1 &&
                                                     <>
-                                                        <IconButton size='small' edge="end" onClick={() => handleSidebar("MODIFY_FIELD", row)}>
+                                                        <IconButton size='small' edge="end" onClick={() => handleSidebar("UPDATE_FIELD", row)}>
                                                             <EditIcon />
                                                         </IconButton>
                                                         <IconButton size='small' edge="end" onClick={() => handleActive(row)}>

@@ -9,12 +9,13 @@ import { disableLeadField, enableLeadField } from './leadFieldServices';
 
 interface LeadFieldDetailProps {
     leadField: LeadFieldDetailed,
-    handleSidebar: (mode: string, entity: CampaignDetailed | LeadFieldDetailed | null) => void,
+    updateLeadFields: ()=>void,
+    handleSidebar: (mode: string, entity: LeadFieldDetailed | null) => void,
     updateEntity: (mode: string, entity: CampaignDetailed | LeadFieldDetailed) => void,
     closeSidebar: () => void,
 }
 
-export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeSidebar }: LeadFieldDetailProps) => {
+export const LeadFieldDetail = ({ leadField, updateEntity, updateLeadFields, handleSidebar, closeSidebar }: LeadFieldDetailProps) => {
 
     const handleActive = (field: LeadFieldDetailed) => {
         const updateActive = () => {
@@ -24,6 +25,10 @@ export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeS
             disableLeadField(field.id)
                 .then(res => {
                     if (res.action === "disabled") updateActive()
+                    else {
+                        updateLeadFields() //Se hace manualmente. Si la página ya era la 1, no actua useEffect.
+                        closeSidebar()
+                    }
                 })
         }
         else enableLeadField(field.id).then(updateActive)
@@ -142,7 +147,7 @@ export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeS
                 <CommonButton handleClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
                 {leadField.order > 2 &&
                     <>
-                        <DisableButton active={leadField.active} handleActive={() => { handleActive(leadField) }} />
+                        <DisableButton active={leadField.active} handleActive={() => handleActive(leadField)} />
                         <CommonButton handleClick={() => handleSidebar("UPDATE_FIELD", leadField)} actionType="MODIFY" >Modificar</CommonButton>
                     </>
                 }
