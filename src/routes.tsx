@@ -8,7 +8,6 @@ import { GenericContainer } from "./components/common/layout/GenericContainer";
 import { CreateLead } from "./components/lead/LeadForm";
 import { UpdateLead } from "./components/lead/UpdateLead";
 import { LeadList } from "./components/lead/LeadList";
-import { CreateLeadField, ModifyLeadField } from "./components/leadFields/ModifyLeadFields";
 import { OrganizationList } from "./components/organizations/OrganizationList";
 
 export const router = createBrowserRouter([
@@ -57,14 +56,6 @@ export const router = createBrowserRouter([
             {
                 path: "/organizations/",
                 Component: OrganizationList
-            },
-            {
-                path: "/leadfield/new/:campaignId",
-                Component: CreateLeadField
-            },
-            {
-                path: "/leadfield/modify/:leadFieldId",
-                Component: ModifyLeadField
             },
             {
                 path: "/campaigns/:id",

@@ -1,11 +1,11 @@
-import { Chip, Grid, Stack, Typography, Divider, Link, ButtonGroup } from '@mui/material'
-import type { LeadFieldDetailed } from '../../types/leadFields'
-import { Link as RouterLink } from 'react-router-dom'
-import dayjs from 'dayjs'
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { CommonButton, DisableButton } from '../common/details/DetailsCommonButton';
+import type { LeadFieldDetailed } from '../../types/leadFields'
 import type { CampaignDetailed } from '../../types/campaigns';
 import { disableLeadField, enableLeadField } from './leadFieldServices';
+import { Link as RouterLink } from 'react-router-dom'
+import dayjs from 'dayjs'
+import { Chip, Grid, Stack, Typography, Divider, Link, ButtonGroup } from '@mui/material'
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 
 interface LeadFieldDetailProps {
     leadField: LeadFieldDetailed,

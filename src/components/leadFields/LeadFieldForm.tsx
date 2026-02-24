@@ -1,15 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
-import { createLeadField, getFieldDataByType, getFieldSections, getFieldTemplates, getFieldTypes, getNomenclators, updateLeadField } from "./leadFieldServices";
-import { Button, Grid, FormGroup, Typography, ButtonGroup, FormHelperText, Stack, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio } from "@mui/material";
-import { useForm, useWatch, type Control, type FieldErrors, type UseFormRegister } from "react-hook-form";
-import { ControlledAutocomplete } from "../common/forms/CustomMultipleInputs";
 import { ControlledCheckbox, ControlledTextInput, RegisteredTextInput } from "../common/forms/CustomInputs";
+import { ControlledAutocomplete } from "../common/forms/CustomMultipleInputs";
 import type {
   FieldValidationRulePost, FieldValidationRuleTemplate, LeadFieldDetailed, LeadFieldPost, LeadFieldSection, LeadFieldTemplate, LeadFieldTypeDetailed, Nomenclator,
 } from "../../types/leadFields";
 import type { Campaign, CampaignDetailed } from "../../types/campaigns";
 import { setFormErrors } from "../../generalService";
+import { createLeadField, getFieldDataByType, getFieldSections, getFieldTemplates, getFieldTypes, getNomenclators, updateLeadField } from "./leadFieldServices";
 import { getCampaigns } from "../campaigns/campaignServices";
+import { useForm, useWatch, type Control, type FieldErrors, type UseFormRegister } from "react-hook-form";
+import { Button, Grid, FormGroup, Typography, ButtonGroup, FormHelperText, Stack, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio } from "@mui/material";
 
 
 interface LeadFieldSidebarProps {
@@ -257,7 +257,7 @@ const LeadFieldFormFields = ({ templates, sections, types, nomenclators, campaig
     () => (types ? types?.find(i => i.code === fieldTypeCode) : null),
     [types, fieldTypeCode],
   );
-  
+
   return (
     <Grid container spacing={2} justifyContent="center">
       <input

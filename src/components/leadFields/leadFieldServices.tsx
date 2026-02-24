@@ -2,9 +2,9 @@ import axios from "axios";
 import type {
     LeadField, LeadFieldDetailed, LeadFieldPost, LeadFieldType, LeadFieldTypeDetailed, LeadFieldTemplate, Nomenclator, LeadFieldSection, LeadFieldSectionDetailed, NomenclatorDetailed, FieldValidationRule, FieldValidationRuleTemplate, FieldValidationRulePost, NomenclatorItem, NomenclatorItemDetailed,
 } from "../../types/leadFields";
-import { API_BASE_URL, orderList } from "../../generalService";
-import type { FieldValidationRuleData } from "./LeadFieldForm";
 import type { ListParams, Paginable } from "../../types/common";
+import type { FieldValidationRuleData } from "./LeadFieldForm";
+import { API_BASE_URL, orderList } from "../../generalService";
 
 export const getFieldDataByType = (data: LeadFieldPost, isTemplate = false,): LeadFieldPost => {
     const requiredData: LeadFieldPost = {

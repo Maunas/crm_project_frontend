@@ -1,7 +1,7 @@
 import axios from "axios"
-import { API_BASE_URL } from "../../generalService"
 import type { Paginable } from "../../types/common"
 import type { Campaign, CampaignDetailed, CampaignPost } from "../../types/campaigns"
+import { API_BASE_URL } from "../../generalService"
 
 interface Params {
     detailed?: boolean,

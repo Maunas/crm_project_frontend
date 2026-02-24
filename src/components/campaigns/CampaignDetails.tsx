@@ -1,19 +1,19 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom'
-import type { LeadFieldDetailed } from '../../types/leadFields'
-import { Chip, Typography, ButtonGroup, Link, Breadcrumbs, Stack, Grid, Divider } from '@mui/material'
-import type { CampaignDetailed } from '../../types/campaigns'
 import { ContainerWithSidebar } from '../common/layout/GenericContainer'
-import { disableCampaign, enableCampaign, getCampaign } from './campaignServices'
-import { useSidebar } from '../hooks/useSidebar'
-import dayjs from 'dayjs'
-import { UpdateCampaignFormSidebar } from './CampaignForms'
 import { CommonButton, DisableButton } from '../common/details/DetailsCommonButton'
+import { UpdateCampaignFormSidebar } from './CampaignForms'
 import { LeadFieldTable } from '../leadFields/LeadFieldTable'
 import { LeadFieldDetail } from '../leadFields/LeadFieldDetail'
-import type { Paginable } from '../../types/common'
 import { LeadFieldFormSidebar } from '../leadFields/LeadFieldForm'
+import type { Paginable } from '../../types/common'
+import type { CampaignDetailed } from '../../types/campaigns'
+import type { LeadFieldDetailed } from '../../types/leadFields'
+import { disableCampaign, enableCampaign, getCampaign } from './campaignServices'
 import { getLeadFields } from '../leadFields/leadFieldServices'
+import { useSidebar } from '../hooks/useSidebar'
+import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom'
+import dayjs from 'dayjs'
+import { Chip, Typography, ButtonGroup, Link, Breadcrumbs, Stack, Grid, Divider } from '@mui/material'
 
 export const CampaignDetails = () => {
     const { id } = useParams()
@@ -86,7 +86,7 @@ export const CampaignDetails = () => {
     return (
         <ContainerWithSidebar isSidebarOpen={!!sidebarMode} containerSize="xl"
             sidebarComponent={campaign &&
-                <CampaignDetailSidebar mode={sidebarMode} entity={selectedEntity} campaign={campaign} updateLeadFields={()=>updateLeadFields(1,leadFields!.page_size!)}
+                <CampaignDetailSidebar mode={sidebarMode} entity={selectedEntity} campaign={campaign} updateLeadFields={() => updateLeadFields(1, leadFields!.page_size!)}
                     handleSidebar={handleSidebar} closeSidebar={closeSidebar} updateEntity={updateEntity} />} >
             <Breadcrumbs aria-label="breadcrumb">
                 <Link component={RouterLink} to="/campaigns" underline="hover" color="inherit">
@@ -151,7 +151,7 @@ interface SidebarProps {
     mode: string | null,
     entity: LeadFieldDetailed | null,
     campaign: CampaignDetailed,
-    updateLeadFields: ()=>void,
+    updateLeadFields: () => void,
     handleSidebar: (mode: string, entity: LeadFieldDetailed | null) => void,
     closeSidebar: () => void,
     updateEntity: (mode: string, entity: CampaignDetailed | LeadFieldDetailed) => void,

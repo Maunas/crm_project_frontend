@@ -1,19 +1,19 @@
-import { ButtonGroup, Grid, IconButton, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material"
+import { useEffect } from "react"
+import { GenericModal } from "../common/layout/GenericContainer"
 import { EnabledIcon } from "../common/lists/Badges"
 import { CommonButton } from "../common/details/DetailsCommonButton"
-import { GenericModal } from "../common/layout/GenericContainer"
+import { PaginationComponent } from "../common/lists/PaginationComponent"
 import { SimulateLead } from "../lead/LeadForm"
-import { useEffect } from "react"
 import type { Paginable } from "../../types/common"
 import type { LeadFieldDetailed } from "../../types/leadFields"
-import { useListPagination } from "../hooks/useListPagination"
+import type { CampaignDetailed } from "../../types/campaigns"
 import { disableLeadField, enableLeadField } from "./leadFieldServices"
-import { PaginationComponent } from "../common/lists/PaginationComponent"
+import { useListPagination } from "../hooks/useListPagination"
+import { ButtonGroup, Grid, IconButton, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material"
 import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
-import type { CampaignDetailed } from "../../types/campaigns"
 
 interface LeadFieldTableProps {
     campaign: CampaignDetailed,
@@ -86,7 +86,7 @@ export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateE
                     <TableBody>
                         {leadFields?.items?.length > 0 &&
                             leadFields?.items?.sort((a, b) => a.order - b.order)
-                                .map((row, idx) => (
+                                .map((row) => (
                                     <TableRow
                                         key={row.id}
                                         sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
