@@ -7,7 +7,6 @@ import type { FieldValidationRuleData } from "./LeadFieldForm";
 import type { ListParams, Paginable } from "../../types/common";
 
 export const getFieldDataByType = (data: LeadFieldPost, isTemplate = false,): LeadFieldPost => {
-
     const requiredData: LeadFieldPost = {
         name: data.name,
         order: data.order,
@@ -90,7 +89,7 @@ export const getLeadFields = async <T extends ListParams>(
     params?: T,
 ): Promise<Paginable<T["detailed"] extends true ? LeadFieldDetailed : LeadField>> => {
     const leadField = await axios.get(`${API_BASE_URL}/lead_fields`, { params });
-    return { ...leadField.data, items: orderList(leadField.data.items, "order")};
+    return { ...leadField.data, items: orderList(leadField.data.items, "order") };
 };
 
 export const getLeadField = async (id: number): Promise<LeadFieldDetailed> => {
@@ -98,17 +97,12 @@ export const getLeadField = async (id: number): Promise<LeadFieldDetailed> => {
     return leadField.data;
 };
 
-export const createLeadField = async (
-    body: LeadFieldPost,
-): Promise<LeadField> => {
+export const createLeadField = async (body: LeadFieldPost): Promise<LeadFieldDetailed> => {
     const leadField = await axios.post(`${API_BASE_URL}/lead_fields`, body);
     return leadField.data;
 };
 
-export const updateLeadField = async (
-    body: LeadFieldPost,
-    id: number,
-): Promise<LeadField> => {
+export const updateLeadField = async (body: LeadFieldPost, id: number): Promise<LeadFieldDetailed> => {
     const leadField = await axios.put(`${API_BASE_URL}/lead_fields/${id}`, body);
     return leadField.data;
 };
@@ -128,25 +122,21 @@ export const getFieldTemplates = async (): Promise<LeadFieldTemplate[]> => {
     return tmp.data;
 };
 
-export const getFieldTypes = async <T extends ListParams>(
-    params?: T,
-): Promise<
-    T["detailed"] extends true ? LeadFieldTypeDetailed[] : LeadFieldType[]
-> => {
+export const getFieldTypes = async <T extends ListParams>(params?: T): Promise<Paginable<
+    T["detailed"] extends true ? LeadFieldTypeDetailed : LeadFieldType
+>> => {
     const tmp = await axios.get(`${API_BASE_URL}/lead_field_types`, { params });
-    return orderList(tmp.data.items, "id");
+    return { ...tmp.data, items: orderList(tmp.data.items, "id") };
 };
 
-export const getNomenclators = async <T extends ListParams>(
-    params?: T,
-): Promise<
-    T["detailed"] extends true ? NomenclatorDetailed[] : Nomenclator[]
-> => {
-    const wksp = await axios.get(`${API_BASE_URL}/nomenclators`, { params });
-    return orderList(wksp.data.items);
+export const getNomenclators = async <T extends NomenclatorParams>(params?: T): Promise<Paginable<
+    T["detailed"] extends true ? NomenclatorDetailed : Nomenclator
+>> => {
+    const noms = await axios.get(`${API_BASE_URL}/nomenclators`, { params });
+    return { ...noms.data, items: orderList(noms.data.items) };
 };
 
-export const getNomenclatorItems = async <T extends ListParams>(
+export const getNomenclatorItems = async <T extends NomenclatorItemParams>(
     params?: T,
 ): Promise<
     T["detailed"] extends true ? NomenclatorItemDetailed[] : NomenclatorItem[]
@@ -184,13 +174,9 @@ export const updateValidation = async (
     return val.data;
 };
 
-export const getFieldSections = async <T extends ListParams>(
-    params?: T,
-): Promise<
-    T["detailed"] extends true ? LeadFieldSectionDetailed[] : LeadFieldSection[]
-> => {
-    const sections = await axios.get(`${API_BASE_URL}/lead_field_sections`, {
-        params,
-    });
-    return orderList(sections.data.items, "id");
+export const getFieldSections = async <T extends ListParams>(params?: T): Promise<Paginable<
+    T["detailed"] extends true ? LeadFieldSectionDetailed : LeadFieldSection
+>> => {
+    const sections = await axios.get(`${API_BASE_URL}/lead_field_sections`, { params });
+    return { ...sections.data, items: orderList(sections.data.items, "id") };
 };

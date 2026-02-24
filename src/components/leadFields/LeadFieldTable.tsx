@@ -3,11 +3,11 @@ import { EnabledIcon } from "../common/lists/Badges"
 import { CommonButton } from "../common/details/DetailsCommonButton"
 import { GenericModal } from "../common/layout/GenericContainer"
 import { SimulateLead } from "../lead/LeadForm"
-import { useCallback, useEffect } from "react"
+import { useEffect } from "react"
 import type { Paginable } from "../../types/common"
 import type { LeadFieldDetailed } from "../../types/leadFields"
 import { useListPagination } from "../hooks/useListPagination"
-import { disableLeadField, enableLeadField, getLeadFields } from "./leadFieldServices"
+import { disableLeadField, enableLeadField } from "./leadFieldServices"
 import { PaginationComponent } from "../common/lists/PaginationComponent"
 import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
@@ -17,27 +17,19 @@ import type { CampaignDetailed } from "../../types/campaigns"
 
 interface LeadFieldTableProps {
     campaign: CampaignDetailed,
-    leadFields: Paginable<LeadFieldDetailed>,
-    setLeadFields: React.Dispatch<React.SetStateAction<Paginable<LeadFieldDetailed> | null>>,
+    leadFields: Paginable<LeadFieldDetailed> | null,
+    updateLeadFields: (page: number, pageSize: number) => void,
     updateEntity: (mode: string, entity: CampaignDetailed | LeadFieldDetailed) => void,
     handleSidebar: (mode: string, entity: CampaignDetailed | LeadFieldDetailed | null) => void,
 }
 
-export const LeadFieldTable = ({ campaign, leadFields, setLeadFields, updateEntity, handleSidebar }: LeadFieldTableProps) => {
+export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateEntity, handleSidebar }: LeadFieldTableProps) => {
 
     const { page, pageSize, goToPageOne, pageComponentProps } = useListPagination(leadFields?.total_pages ?? 0)
 
-    const updateLeadFields = useCallback(() => {
-        getLeadFields({
-            detailed: true, campaign_id: campaign.id, only_active: false, page: page, page_size: pageSize
-        })
-            .then(setLeadFields)
-    }, [page, pageSize, campaign, setLeadFields])
-
     useEffect(() => {
-        if (!campaign) return
-        updateLeadFields()
-    }, [campaign, updateLeadFields])
+        updateLeadFields(page, pageSize)
+    }, [page, pageSize, updateLeadFields])
 
     const handleActive = (field: LeadFieldDetailed) => {
         const updateActive = () => {
@@ -49,14 +41,14 @@ export const LeadFieldTable = ({ campaign, leadFields, setLeadFields, updateEnti
                     if (res.action === "disabled") updateActive()
                     else {
                         goToPageOne()
-                        updateLeadFields()
+                        updateLeadFields(1, pageSize) //Se hace manualmente. Si la página ya era la 1, no actua useEffect.
                     }
                 })
         }
         else enableLeadField(field.id).then(updateActive)
     }
 
-    return (
+    if (leadFields) return (
         <>
             <Grid size="grow" container justifyContent="center" alignItems="center" gap={2}>
 
@@ -66,7 +58,7 @@ export const LeadFieldTable = ({ campaign, leadFields, setLeadFields, updateEnti
 
                 <Grid size="grow" minWidth="22rem" >
                     <ButtonGroup fullWidth>
-                        <CommonButton onClick={() => handleSidebar("CREATE_FIELD", null)} actionType="CREATE">Agregar Campo</CommonButton>
+                        <CommonButton onClick={() => handleSidebar("CREATE_FIELD", campaign)} actionType="CREATE">Agregar Campo</CommonButton>
                         <GenericModal buttonText='Vista previa de formulario' actionType="DETAILS" variant="outlined" containerSx={{ minWidth: "80vw" }} >
                             {campaign && leadFields?.items && leadFields?.items?.length > 0 &&
                                 <SimulateLead campaignId={campaign.id} leadFields={leadFields.items} />

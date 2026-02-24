@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom'
 import type { LeadFieldDetailed } from '../../types/leadFields'
 import { Chip, Typography, ButtonGroup, Link, Breadcrumbs, Stack, Grid, Divider } from '@mui/material'
@@ -7,11 +7,13 @@ import { ContainerWithSidebar } from '../common/layout/GenericContainer'
 import { disableCampaign, enableCampaign, getCampaign } from './campaignServices'
 import { useSidebar } from '../hooks/useSidebar'
 import dayjs from 'dayjs'
-import { CampaignFormSidebar } from './CampaignForms'
+import { UpdateCampaignFormSidebar } from './CampaignForms'
 import { CommonButton, DisableButton } from '../common/details/DetailsCommonButton'
 import { LeadFieldTable } from '../leadFields/LeadFieldTable'
 import { LeadFieldDetail } from '../leadFields/LeadFieldDetail'
 import type { Paginable } from '../../types/common'
+import { LeadFieldFormSidebar } from '../leadFields/LeadFieldForm'
+import { getLeadFields } from '../leadFields/leadFieldServices'
 
 export const CampaignDetails = () => {
     const { id } = useParams()
@@ -32,12 +34,18 @@ export const CampaignDetails = () => {
     // para facilitar la modificación de la lista desde el sidebar.
     const [leadFields, setLeadFields] = useState<Paginable<LeadFieldDetailed> | null>(null)
 
+    const updateLeadFields = useCallback((page: number, pageSize: number) => {
+        if (!campaign) return
+        getLeadFields({
+            detailed: true, campaign_id: campaign.id, only_active: false, page: page, page_size: pageSize
+        }).then(setLeadFields)
+    }, [campaign, setLeadFields])
+
     const updateEntity = (mode: string, entity: CampaignDetailed | LeadFieldDetailed) => {
         switch (mode) {
             case "UPDATE_CMP": {
                 if (!campaign) break
-                setCampaign(entity as CampaignDetailed)
-                break;
+                return setCampaign(entity as CampaignDetailed)
             }
             case "UPDATE_FIELD": {
                 if (selectedEntity && entity.id === selectedEntity.id) handleSidebar("KEEP", entity)
@@ -46,7 +54,11 @@ export const CampaignDetails = () => {
                 const fieldIdx = leadFields.items.findIndex(field => field.id === entity.id)
                 if (fieldIdx === -1) return
                 newLeadField[fieldIdx] = entity as LeadFieldDetailed
-                setLeadFields({ ...leadFields, items: newLeadField })
+                return setLeadFields({ ...leadFields, items: newLeadField })
+            }
+            case "CREATE_FIELD": {
+                if (!leadFields) break
+                return updateLeadFields(leadFields.page, leadFields.page_size)
             }
         }
     }
@@ -126,10 +138,8 @@ export const CampaignDetails = () => {
                         </Grid >
                     </Grid>
                     <Divider />
-                    {leadFields &&
-                        <LeadFieldTable campaign={campaign} leadFields={leadFields} setLeadFields={setLeadFields}
-                            handleSidebar={handleSidebar} updateEntity={updateEntity} />
-                    }
+                    <LeadFieldTable campaign={campaign} leadFields={leadFields} updateLeadFields={updateLeadFields}
+                        handleSidebar={handleSidebar} updateEntity={updateEntity} />
                 </Stack>
             }
         </ContainerWithSidebar>
@@ -146,15 +156,14 @@ interface SidebarProps {
 const CampaignDetailSidebar = ({ mode, entity, closeSidebar, updateEntity, handleSidebar }: SidebarProps) => {
     switch (mode) {
         case "UPDATE_CMP":
-            return <CampaignFormSidebar existingCmp={entity as CampaignDetailed}
-                closeSidebar={closeSidebar} handleSidebar={handleSidebar}
-                updateEntityOnList={(entity) => updateEntity(entity, mode)} />
+            return <UpdateCampaignFormSidebar existingCmp={entity as CampaignDetailed}
+                closeSidebar={closeSidebar} updateEntityOnList={(entity) => updateEntity(mode, entity)} />
         case "DETAILS_FIELD":
             return <LeadFieldDetail leadField={entity as LeadFieldDetailed}
                 closeSidebar={closeSidebar} handleSidebar={handleSidebar} updateEntity={updateEntity} />
         case "CREATE_FIELD":
-            return <Typography>Create LeadField</Typography>
+            return <LeadFieldFormSidebar campaign={entity as CampaignDetailed} updateEntityOnList={(entity) => updateEntity(mode, entity)} closeSidebar={closeSidebar} handleSidebar={handleSidebar} />
         case "UPDATE_FIELD":
-            return <Typography>Modify LeadField</Typography>
+            return <Typography>Create LeadField</Typography>
     }
 }

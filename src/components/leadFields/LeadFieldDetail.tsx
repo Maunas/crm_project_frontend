@@ -98,7 +98,7 @@ export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeS
                     </Typography>
                 </span>
             }
-            <Grid container spacing={2} >
+            <Grid container spacing={2}>
                 <Grid size="grow" minWidth="18rem">
                     {leadField?.default_value &&
                         <>

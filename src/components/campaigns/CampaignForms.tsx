@@ -10,16 +10,34 @@ import { createLeadField } from "../leadFields/leadFieldServices"
 import { useForm, useWatch } from "react-hook-form"
 import { Button, ButtonGroup, FormHelperText, Grid, Typography } from "@mui/material"
 
-interface CampaignSidebarProps {
-    existingCmp?: Campaign,
-    closeSidebar: () => void,
+
+interface UpdateCampaignSidebarProps {
+    existingCmp: CampaignDetailed,
     updateEntityOnList?: (
         entity: CampaignDetailed,
     ) => void,
+    closeSidebar: () => void,
+}
+//Wrapper de CampaignForm para modificar desde un Sidebar
+export const UpdateCampaignFormSidebar = ({ existingCmp, closeSidebar, updateEntityOnList }: UpdateCampaignSidebarProps) => {
+    const submit = (data: CampaignPost) => {
+        return updateCampaign(data, existingCmp.id)
+            .then(res => {
+                if (!updateEntityOnList) return
+                updateEntityOnList(res)
+                closeSidebar()
+            })
+    }
+    return <CampaignForm existingCmp={existingCmp} submit={submit} onCancel={closeSidebar} />
+}
+
+interface CreateCampaignSidebarProps {
+    updateEntityOnList?: (entity: CampaignDetailed) => void,
+    closeSidebar: () => void,
     handleSidebar: (mode: string, entity: CampaignDetailed | WorkspaceDetailed | null) => void
 }
-//Wrapper de CampaignForm para funcionar en un Sidebar
-export const CampaignFormSidebar = ({ existingCmp, closeSidebar, handleSidebar, updateEntityOnList }: CampaignSidebarProps) => {
+//Wrapper de CampaignForm para crear desde un Sidebar
+export const CreateCampaignFormSidebar = ({ closeSidebar, handleSidebar }: CreateCampaignSidebarProps) => {
 
     const requiredFields: Omit<LeadFieldPost, "campaign_id">[] = [
         {
@@ -41,30 +59,21 @@ export const CampaignFormSidebar = ({ existingCmp, closeSidebar, handleSidebar, 
     ]
 
     const submit = (data: CampaignPost) => {
-        if (!existingCmp) {
-            return createCampaign(data)
-                .then(res => {
-                    //Busca el workspace y muestra su detalle.
-                    getWorkspace(res.workspace_id)
-                        .then(wsp => handleSidebar("DETAILS_WSP", wsp))
-                    //Crea los dos campos obligatorios. Luego actualiza la lista.
-                    //Si falla, igualmente actualiza la lista, ya que está creada la campaña.
-                    Promise.all(requiredFields.map(field => createLeadField({ ...field, campaign_id: res.id })))
-                        .catch(e => {
-                            console.error(e)
-                        })
-                })
-        } else {
-            return updateCampaign(data, existingCmp.id)
-                .then(res => {
-                    if (!updateEntityOnList) return
-                    updateEntityOnList(res)
-                    closeSidebar()
-                })
-        }
+        return createCampaign(data)
+            .then(res => {
+                //Busca el workspace y muestra su detalle.
+                getWorkspace(res.workspace_id)
+                    .then(wsp => handleSidebar("DETAILS_WSP", wsp))
+                //Crea los dos campos obligatorios. Luego actualiza la lista.
+                //Si falla, igualmente actualiza la lista, ya que está creada la campaña.
+                Promise.all(requiredFields.map(field => createLeadField({ ...field, campaign_id: res.id })))
+                    .catch(e => {
+                        console.error(e)
+                    })
+            })
     }
 
-    return <CampaignForm existingCmp={existingCmp} submit={submit} onCancel={closeSidebar} />
+    return <CampaignForm submit={submit} onCancel={closeSidebar} />
 }
 interface CampaignProps {
     existingCmp?: Campaign | CampaignDetailed,

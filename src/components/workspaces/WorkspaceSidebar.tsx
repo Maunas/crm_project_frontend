@@ -1,10 +1,10 @@
 import type { CampaignDetailed, WorkspaceDetailed } from "../../types/campaigns"
 import { WorkspaceFormSidebar } from "./WorkspaceForms"
-import { CampaignFormSidebar } from "../campaigns/CampaignForms"
 import dayjs from "dayjs"
 import { Stack, Typography, ButtonGroup, Divider, Grid, Chip } from "@mui/material"
 import { CampaignList } from "../campaigns/CampaignList"
 import { CommonButton, DisableButton } from "../common/details/DetailsCommonButton"
+import { CreateCampaignFormSidebar } from "../campaigns/CampaignForms"
 
 interface SidebarProps {
     mode: string | null,
@@ -25,7 +25,7 @@ export const WorkspaceSidebar = ({ mode, entity, closeSidebar, updateEntityOnLis
                 updateEntityOnList={entity => updateEntityOnList(entity, mode)}
                 handleSidebar={handleSidebar} />
         case "CREATE_CMP":
-            return <CampaignFormSidebar closeSidebar={closeSidebar}
+            return <CreateCampaignFormSidebar closeSidebar={closeSidebar}
                 handleSidebar={handleSidebar} />
         case "UPDATE_WSP":
             return <WorkspaceFormSidebar existingWsp={entity as WorkspaceDetailed} closeSidebar={closeSidebar}
