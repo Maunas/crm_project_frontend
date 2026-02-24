@@ -4,6 +4,7 @@ import type { Organization, OrganizationDetailed, OrganizationPost } from '../..
 import { setFormErrors } from '../../generalService'
 import { createOrganization, updateOrganization } from '../workspaces/workspaceServices'
 import { Button, FormHelperText, Grid, Typography, ButtonGroup } from '@mui/material'
+import { useEffect, useMemo } from 'react'
 
 interface OrganizationSidebarProps {
     existingOrg?: Organization,
@@ -42,12 +43,16 @@ interface OrganizationProps {
 
 const OrganizationForm = ({ existingOrg, submit, onCancel }: OrganizationProps) => {
 
-    const { register, handleSubmit, formState: { errors }, setError } = useForm<OrganizationPost>({
-        defaultValues: {
-            name: existingOrg?.name,
-            description: existingOrg?.description,
-        }
+    const defaultValues = useMemo(() => ({
+        name: existingOrg?.name ?? null,
+        description: existingOrg?.description ?? null,
+    }), [existingOrg])
+
+    const { register, handleSubmit, reset, formState: { errors }, setError } = useForm<OrganizationPost>({
+        defaultValues
     })
+
+    useEffect(()=>{reset(defaultValues)},[reset, defaultValues])
 
     const onSubmit = (data: OrganizationPost) => {
         submit(data)

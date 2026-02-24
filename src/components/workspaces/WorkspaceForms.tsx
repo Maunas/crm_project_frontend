@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { RegisteredTextInput } from "../common/forms/CustomInputs"
 import { ControlledAutocomplete } from "../common/forms/CustomMultipleInputs"
 import type { Organization, Workspace, WorkspaceDetailed, WorkspacePost } from "../../types/campaigns"
@@ -44,13 +44,15 @@ interface WorkspaceProps {
 
 export const WorkspaceForm = ({ existingWsp, submit, onCancel }: WorkspaceProps) => {
 
-    const { register, handleSubmit, control, formState: { errors }, setError } = useForm<WorkspacePost>({
-        defaultValues: {
-            name: existingWsp?.name,
-            description: existingWsp?.description,
-            organization_id: existingWsp?.organization_id,
-        }
-    })
+    const defaultValues = useMemo(() => ({
+        name: existingWsp?.name ?? null,
+        description: existingWsp?.description ?? null,
+        organization_id: existingWsp?.organization_id ?? null,
+    }), [existingWsp])
+
+    const { register, handleSubmit, reset, control, formState: { errors }, setError } = useForm<WorkspacePost>({ defaultValues })
+
+    useEffect(()=>{reset(defaultValues)},[reset, defaultValues])
 
     const [organizations, setOrganizations] = useState<Organization[] | []>([])
 

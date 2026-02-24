@@ -25,7 +25,7 @@ interface LeadFieldTableProps {
 
 export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateEntity, handleSidebar }: LeadFieldTableProps) => {
 
-    const { page, pageSize, goToPageOne, pageComponentProps } = useListPagination(leadFields?.total_pages ?? 0)
+    const { page, pageSize, goToPageOne, pageComponentProps } = useListPagination(leadFields?.total_pages ?? 0,10)
 
     useEffect(() => {
         updateLeadFields(page, pageSize)
@@ -115,7 +115,7 @@ export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateE
                                                 <IconButton size='small' edge="end" onClick={() => handleSidebar("DETAILS_FIELD", row)}>
                                                     <SearchIcon />
                                                 </IconButton>
-                                                {idx > 1 &&
+                                                {row.order > 2 &&
                                                     <>
                                                         <IconButton size='small' edge="end" onClick={() => handleSidebar("UPDATE_FIELD", row)}>
                                                             <EditIcon />

@@ -92,15 +92,17 @@ export const CampaignForm = ({ existingCmp, submit, onCancel }: CampaignProps) =
             .then(res => setOrganizations(res.items))
     }, [])
 
-    const { register, handleSubmit, control, formState: { errors }, setError }
-        = useForm<CampaignPost & { organization_id?: number }>({
-            defaultValues: {
-                name: existingCmp?.name,
-                description: existingCmp?.description,
-                workspace_id: existingCmp?.workspace_id,
-                organization_id: existingCmp?.organization_id,
-            }
-        })
+    const defaultValues = useMemo(() => ({
+        name: existingCmp?.name,
+        description: existingCmp?.description,
+        workspace_id: existingCmp?.workspace_id,
+        organization_id: existingCmp?.organization_id,
+    }), [existingCmp])
+
+    const { register, handleSubmit, reset, control, formState: { errors }, setError }
+        = useForm<CampaignPost & { organization_id?: number }>({ defaultValues })
+
+    useEffect(() => { reset(defaultValues) }, [reset, defaultValues])
 
     const selectedOrg = useWatch({
         control,
