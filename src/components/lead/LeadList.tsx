@@ -1,19 +1,19 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import type { Lead } from '../../types/leads'
 import { getLeads } from './leadService'
-import { Accordion, AccordionDetails, AccordionSummary, Button, Divider, Pagination, Typography, Grid, TableContainer, Paper, Table, TableRow, TableCell, TableBody, TableHead, TablePagination } from '@mui/material'
-import { Link, useNavigate, useNavigation } from 'react-router-dom'
+import { Accordion, AccordionDetails, AccordionSummary, Button, Pagination, Typography, Grid, TableContainer, Paper, Table, TableRow, TableCell, TableBody, TableHead } from '@mui/material'
+import { Link, useNavigate } from 'react-router-dom'
 import type { Paginable } from '../../types/common'
 import { useForm } from 'react-hook-form'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { ControlledCheckbox, ControlledNumber, RegisteredTextInput } from '../common/forms/CustomInputs'
+import { ControlledCheckbox, ControlledNumber } from '../common/forms/CustomInputs'
 import { ControlledAutocomplete } from '../common/forms/CustomMultipleInputs'
-import { getCampaigns } from '../campaigns/campaignServices'
 import type { CampaignDetailed } from '../../types/campaigns'
+import { getCampaigns } from '../campaigns/campaignServices'
 
 export const LeadList = () => {
 
-    const [leads, setLeads] = useState<Paginable<Lead[]> | null>(null)
+    const [leads, setLeads] = useState<Paginable<Lead> | null>(null)
     const [campaigns, setCampaigns] = useState<CampaignDetailed[] | null>(null)
     const [filters, setFilters] = useState<object>({ campaign_id: 1, only_active: false, page_size: 20 })
 

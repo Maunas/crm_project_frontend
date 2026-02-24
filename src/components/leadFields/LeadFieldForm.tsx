@@ -1,139 +1,114 @@
 import { useEffect, useMemo, useState } from "react";
-import { getCampaigns } from "../campaigns/campaignServices";
-import {
-  createLeadField,
-  createValidation,
-  getFieldDataByType,
-  getFieldSections,
-  getFieldTemplates,
-  getFieldTypes,
-  getNomenclators,
-  getValidationDataByType,
-  updateLeadField,
-  updateValidation,
-} from "./leadFieldServices";
-import {
-  Divider,
-  Button,
-  Grid,
-  FormGroup,
-  Typography,
-  ButtonGroup,
-  Chip,
-  FormHelperText,
-} from "@mui/material";
-import {
-  useForm,
-  useWatch,
-  type Control,
-  type FieldErrors,
-  type UseFormRegister,
-} from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
-import {
-  ControlledAutocomplete,
-  ControlledRadio,
-} from "../common/forms/CustomMultipleInputs";
-import {
-  ControlledCheckbox,
-  ControlledTextInput,
-  RegisteredTextInput,
-} from "../common/forms/CustomInputs";
-import { ValidationRuleForm } from "./ValidationRuleForm";
+import { ControlledCheckbox, ControlledTextInput, RegisteredTextInput } from "../common/forms/CustomInputs";
+import { ControlledAutocomplete } from "../common/forms/CustomMultipleInputs";
 import type {
-  FieldValidationRulePost,
-  FieldValidationRuleTemplate,
-  LeadFieldDetailed,
-  LeadFieldPost,
-  LeadFieldSection,
-  LeadFieldTemplate,
-  LeadFieldTypeDetailed,
-  Nomenclator,
+  FieldValidationRulePost, FieldValidationRuleTemplate, LeadFieldDetailed, LeadFieldPost, LeadFieldSection, LeadFieldTemplate, LeadFieldTypeDetailed, Nomenclator,
 } from "../../types/leadFields";
-import type { Campaign } from "../../types/campaigns";
-import { GenericContainer } from "../common/layout/GenericContainer";
+import type { Campaign, CampaignDetailed } from "../../types/campaigns";
 import { setFormErrors } from "../../generalService";
+import { createLeadField, getFieldDataByType, getFieldSections, getFieldTemplates, getFieldTypes, getNomenclators, updateLeadField } from "./leadFieldServices";
+import { getCampaigns } from "../campaigns/campaignServices";
+import { useForm, useWatch, type Control, type FieldErrors, type UseFormRegister } from "react-hook-form";
+import { Button, Grid, FormGroup, Typography, ButtonGroup, FormHelperText, Stack, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio } from "@mui/material";
+
+
+interface LeadFieldSidebarProps {
+  existingLF?: LeadFieldDetailed,
+  campaign: CampaignDetailed,
+  updateEntityOnList: (entity: LeadFieldDetailed) => void,
+  handleSidebar: (
+    mode: string,
+    entity: LeadFieldDetailed,
+  ) => void,
+  closeSidebar: () => void,
+}
+//Wrapper de CampaignForm para crear desde un Sidebar
+export const LeadFieldFormSidebar = ({ existingLF, campaign, updateEntityOnList, closeSidebar, handleSidebar }: LeadFieldSidebarProps) => {
+
+  const submit = (data: LeadFieldPost, reset: boolean = false) => {
+    const updateInfo = (data: LeadFieldDetailed) => {
+      updateEntityOnList(data)
+      handleSidebar("DETAILS_FIELD", data)
+    }
+    if (!existingLF) {
+      return createLeadField(data).then(res => {
+        if (reset) updateEntityOnList(res) //No cierra el sidebar
+        else updateInfo(res)
+      })
+    } else {
+      return updateLeadField(data, existingLF.id).then(updateInfo)
+    }
+  }
+  return <LeadFieldForm existingLF={existingLF} campaign={campaign} submit={submit} onCancel={closeSidebar} />
+}
 
 export interface FieldValidationRuleData extends FieldValidationRulePost {
   creation_method?: string;
   template?: FieldValidationRuleTemplate;
 }
-export interface LeadFieldData extends LeadFieldPost {
+export interface LeadFieldPostCreation extends LeadFieldPost {
   creation_method?: string;
-  validation_rules: FieldValidationRuleData[];
 }
 
 interface LeadFieldFormProps {
-  leadField?: LeadFieldDetailed | null;
-  campaignId: number;
+  existingLF?: LeadFieldDetailed,
+  campaign: Campaign,
+  submit: (data: LeadFieldPost, reset?: boolean) => Promise<void>,
+  onCancel: () => void,
 }
-export const LeadFieldForm = ({
-  leadField = null,
-  campaignId,
-}: LeadFieldFormProps) => {
+export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFieldFormProps) => {
+
   const [fieldTemplates, setFieldTemplates] = useState<LeadFieldTemplate[]>([]);
   const [fieldSections, setFieldSections] = useState<LeadFieldSection[]>([]);
   const [fieldTypes, setFieldTypes] = useState<LeadFieldTypeDetailed[]>([]);
   const [nomenclators, setNomenclators] = useState<Nomenclator[]>([]);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
 
-  const nav = useNavigate();
-
-  const defaultValues: LeadFieldData = {
-    fieldId: leadField?.id || null,
-    campaign_id: campaignId,
-    name: leadField?.name || null,
-    lead_field_section_id: leadField?.lead_field_section?.id || null,
-    field_type_code: leadField?.field_type_code || null,
-    field_subtype_code: leadField?.field_subtype_code || null,
-    calculation_expression: leadField?.calculation_expression || null,
-    default_value: leadField?.default_value || null,
-    input_mask: leadField?.input_mask || null,
-    nomenclator_id: leadField?.nomenclator?.id || null,
-    related_campaign_id: leadField?.related_campaign?.id || null,
-    required: leadField?.required || false,
-    is_primary: leadField?.is_primary || false,
-    is_visible: leadField?.is_visible || true,
-    creation_method:
-      !leadField || leadField.field_template_code ? "template" : "manual",
-    field_template_code:
-      leadField?.field_template_code || leadField ? null : {},
-    validation_rules: leadField?.validation_rules || [],
-  };
-
-  const {
-    register,
-    control,
-    handleSubmit,
-    reset,
-    setValue,
-    getValues,
-    formState: { errors },
-    setError, clearErrors
-  } = useForm<LeadFieldData>({
-    defaultValues,
-  });
-
-  const fieldId = useWatch({ name: "fieldId", control });
 
   useEffect(() => {
     getFieldTemplates().then(setFieldTemplates);
-    getFieldSections({ only_active: true }).then(setFieldSections);
-    getFieldTypes({ detailed: true }).then(setFieldTypes);
-    getCampaigns({ only_active: true }).then(setCampaigns);
+    getFieldSections({ only_active: true, page_size: 0 }).then(res => setFieldSections(res.items));
+    getFieldTypes({ detailed: true, page_size: 0 }).then(res => setFieldTypes(res.items));
+    getCampaigns({ only_active: true, page_size: 0 }).then(res => setCampaigns(res.items));
   }, []);
 
   useEffect(() => {
-    if (!campaignId) return;
-    getNomenclators({ global_nomenclator: true, campaign_id: campaignId }).then(
-      setNomenclators,
+    if (!campaign.id) return;
+    getNomenclators({ global_nomenclator: true, campaign_id: campaign.id, page_size: 0 }).then(
+      res => setNomenclators(res.items),
     );
-  }, [campaignId]);
+  }, [campaign.id]);
 
-  const findError = (error) => {
-    return setFormErrors(error, setError)
-  };
+  const defaultValues: LeadFieldPostCreation = useMemo(() => (
+    {
+      campaign_id: campaign.id,
+      name: existingLF?.name ?? null,
+      lead_field_section_id: existingLF?.lead_field_section?.id ?? 1,
+      field_type_code: existingLF?.field_type_code ?? null,
+      field_subtype_code: existingLF?.field_subtype_code ?? null,
+      calculation_expression: existingLF?.calculation_expression ?? null,
+      default_value: existingLF?.default_value ?? null,
+      input_mask: existingLF?.input_mask ?? null,
+      nomenclator_id: existingLF?.nomenclator?.id ?? null,
+      related_campaign_id: existingLF?.related_campaign?.id ?? null,
+      required: existingLF?.required ?? false,
+      is_primary: existingLF?.is_primary ?? false,
+      is_visible: existingLF?.is_visible ?? true,
+      field_template_code: existingLF?.field_template_code ?? "FIRST_NAME",
+      creation_method: existingLF
+        ? existingLF?.field_template_code ? "template" : "manual"
+        : "template" //Inicializa en template para creación
+    })
+    , [existingLF, campaign])
 
+
+  const { register, control, handleSubmit, reset, formState: { errors }, setError } = useForm<LeadFieldPostCreation>({ defaultValues });
+
+  //Activa cuando cambian el LeadField seleccionado o la campaña.
+  useEffect(() => { reset(defaultValues) }, [reset, defaultValues])
+
+
+  /* Validaciones
   const findValError = (error, val, idx) => {
     return setFormErrors(error, setError,
       (error) => {
@@ -161,35 +136,12 @@ export const LeadFieldForm = ({
       }
     )
   };
+  */
 
-  const saveLeadField = async (data: LeadFieldData) => {
-    const newData = getFieldDataByType(
-      data,
-      data.creation_method === "template",
-    );
-    let newLeadField;
-    //Update
-    if (fieldId) {
-      newLeadField = await updateLeadField(newData, fieldId).catch((e) => {
-        findError(e);
-        throw e;
-      });
-    }
-    //Create
-    else {
-      newLeadField = await createLeadField(newData)
-        .then((leadField) => {
-          setValue("fieldId", leadField.id)
-          setValue("name", leadField.name)
-          return leadField
-        })
-        .catch((e) => {
-          findError(e);
-          throw e;
-        });
-    }
+
+  /*
     if (!data?.validation_rules) return newLeadField;
-
+  
     const newValidationList = await Promise.all(
       data?.validation_rules.map((val, idx) =>
         submitValidation(val, newLeadField?.id)
@@ -218,93 +170,63 @@ export const LeadFieldForm = ({
       return createValidation(newVal);
     }
   };
+  */
+  const creationMethod = useWatch({ name: "creation_method", control });
 
-  const submit = async () => {
-    clearErrors(); // Clears all validation errors
-    const data = getValues();
-    await saveLeadField(data);
-    nav(`/campaigns/${campaignId}`);
+  const onSaveLeadField = async (data: LeadFieldPostCreation, reset: boolean = false) => {
+    const newData = getFieldDataByType(data, creationMethod === "template");
+    return submit(newData, reset)
+      .catch(e => {
+        setFormErrors(e, setError)
+        throw (e)
+      });
+  }
+
+  const onSubmitAndReset = async (data: LeadFieldPostCreation) => {
+    return onSaveLeadField(data, true)
+      .then(() => {
+        alert("Creado");
+        reset(defaultValues);
+      })
   };
 
-  const submitAndReset = async () => {
-    clearErrors(); // Clears all validation errors
-    const data = getValues();
-    await saveLeadField(data);
-    alert("Creado");
-    reset(defaultValues);
-  };
-
-  const currentCampaign = useMemo(() => {
-    if (!campaigns || !campaignId) return null;
-    return campaigns.find((campaign) => campaign?.id === campaignId);
-  }, [campaigns, campaignId]);
 
   return (
-    <GenericContainer>
-      <>
-        {!leadField ? (
+    <form>
+      <Stack spacing={2}>
+        {!existingLF ? (
           <>
             <Typography variant="h1" color="initial">
-              Crear Campo para: {currentCampaign?.name}
+              Crear Campo para: "{campaign?.name}"
             </Typography>
-            {fieldId && <Chip sx={{ mb: 2 }} color="success" label="Creado" />}
           </>
         ) : (
           <Typography variant="h1" color="initial">
-            Modificar el Campo {leadField?.name} para: {currentCampaign?.name}
+            Modificar el Campo {existingLF?.name} para: {campaign?.name}
           </Typography>
         )}
-        <form>
-          <LeadFieldFormFields
-            templates={fieldTemplates}
-            sections={fieldSections}
-            nomenclators={nomenclators}
-            campaigns={campaigns}
-            types={fieldTypes}
-            errors={errors}
-            register={register}
-            control={control}
-            campaignId={campaignId}
-          />
 
-          <Divider sx={{ paddingBlock: 2 }} />
+        <LeadFieldFormFields templates={fieldTemplates} sections={fieldSections}
+          nomenclators={nomenclators} campaigns={campaigns} types={fieldTypes}
+          errors={errors} register={register} control={control}
+          campaignId={campaign.id} 
+        />
 
-          <ValidationRuleForm
-            control={control}
-            register={register}
-            setValue={setValue}
-            reset={reset}
-            errors={errors}
-            clearErrors={clearErrors}
-          />
-          {errors.root && (
-            <FormHelperText error sx={{ marginBlock: 1 }}>
-              {errors?.root?.message}
-            </FormHelperText>
+        <ButtonGroup>
+          <Button variant="outlined" onClick={onCancel}>
+            Cancelar
+          </Button>
+          <Button variant="contained" onClick={handleSubmit((data) => onSaveLeadField(data))}>
+            Guardar Cambios
+          </Button>
+          {!existingLF && (
+            <Button variant="contained" onClick={handleSubmit(onSubmitAndReset)} >
+              Guardar y crear otro
+            </Button>
           )}
-          <ButtonGroup>
-            <Button
-              variant="outlined"
-              component={Link}
-              to={`/campaigns/${campaignId}`}
-            >
-              Volver
-            </Button>
-            <Button variant="contained" onClick={handleSubmit(submit)}>
-              Guardar Cambios
-            </Button>
-            {!leadField && (
-              <Button
-                variant="contained"
-                onClick={handleSubmit(submitAndReset)}
-              >
-                Guardar y crear otro
-              </Button>
-            )}
-          </ButtonGroup>
-        </form>
-      </>
-    </GenericContainer>
+        </ButtonGroup>
+      </Stack>
+    </form>
   );
 };
 
@@ -314,33 +236,25 @@ interface LeadFieldFormFieldsProps {
   types: LeadFieldTypeDetailed[];
   nomenclators: Nomenclator[];
   campaigns: Campaign[];
-  register: UseFormRegister<LeadFieldData>;
-  control: Control<LeadFieldData>;
+  register: UseFormRegister<LeadFieldPostCreation>;
+  control: Control<LeadFieldPostCreation>;
   campaignId: number;
-  errors: FieldErrors<LeadFieldData>;
+  errors: FieldErrors<LeadFieldPostCreation>;
 }
 
-const LeadFieldFormFields = ({
-  templates,
-  sections,
-  types,
-  nomenclators,
-  campaigns,
-  register,
-  control,
-  campaignId,
-  errors,
-}: LeadFieldFormFieldsProps) => {
-  const fieldTypeCode = useWatch({ name: "field_type_code", control });
-  const creationMethod = useWatch({ control, name: "creation_method" });
+const LeadFieldFormFields = ({ templates, sections, types, nomenclators, campaigns,
+  register, control, campaignId, errors }: LeadFieldFormFieldsProps) => {
 
+    const creationMethod = useWatch({ name: "creation_method", control });
   const creationMethodRadioOptions = [
     { label: "Por Plantilla", value: "template" },
     { label: "Manual", value: "manual" },
   ];
+
+  const fieldTypeCode = useWatch({ name: "field_type_code", control });
   //Busca el objeto del Tipo seleccionado a partir de su código
   const fieldTypeObject = useMemo(
-    () => (types ? types?.find((i) => i.code === fieldTypeCode) : null),
+    () => (types ? types?.find(i => i.code === fieldTypeCode) : null),
     [types, fieldTypeCode],
   );
 
@@ -357,7 +271,7 @@ const LeadFieldFormFields = ({
             label="Nombre del Campo"
             name="name"
             required
-            errorMessage={errors.name?.message}
+            errorMessage={errors?.name?.message}
           />
         </Grid>
         <Grid size="grow" minWidth="20rem" justifyContent="center">
@@ -369,7 +283,7 @@ const LeadFieldFormFields = ({
             returnField="id"
             getOptionLabel={(option) => option.name}
             required
-            errorMessage={errors.lead_field_section_id?.message}
+            errorMessage={errors?.lead_field_section_id?.message}
           />
         </Grid>
         <Grid size="grow" minWidth="20rem" justifyContent="center">
@@ -398,14 +312,18 @@ const LeadFieldFormFields = ({
 
       <Grid size={12} container minWidth="20rem">
         <Grid size={4} minWidth="20rem" justifyContent="center">
-          <ControlledRadio
-            control={control}
-            name="creation_method"
-            options={creationMethodRadioOptions}
-            returnField="value"
-            radioLabel={(option) => option.label}
-            label="Método de Creación"
-          />
+          <FormControl required>
+            <FormLabel id="creationMethod">Método de Creación</FormLabel>
+            <RadioGroup row id={"creationMethod"}
+              value={creationMethod} defaultValue={creationMethod}
+              onChange={(_, value) => setCreationMethod(value)} >
+              {creationMethodRadioOptions.map(option =>
+                <FormControlLabel
+                  key={option.label} value={option.value} control={<Radio />} label={option.label} />
+              )}
+            </RadioGroup>
+          </FormControl>
+
         </Grid>
 
         {creationMethod === "template" ? (
@@ -509,7 +427,7 @@ const LeadFieldFormFields = ({
         )}
         {(creationMethod === "template" ||
           (fieldTypeCode &&
-            ["NUMBER", "INT", "STRING", "BOOL"].includes(fieldTypeCode))) && (
+            ["NUMBER", "INT", "STRING", "BOOL", "RATING"].includes(fieldTypeCode))) && (
             <Grid size="grow" minWidth="20rem">
               <ControlledTextInput
                 control={control}
@@ -520,6 +438,11 @@ const LeadFieldFormFields = ({
             </Grid>
           )}
       </Grid>
+      {errors.root && (
+        <FormHelperText error sx={{ marginBlock: 1 }}>
+          {errors?.root?.message}
+        </FormHelperText>
+      )}
     </Grid>
   );
 };

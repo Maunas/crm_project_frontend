@@ -1,116 +1,175 @@
-import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useCallback, useEffect, useState } from 'react'
+import { ContainerWithSidebar } from '../common/layout/GenericContainer'
+import { CommonButton, DisableButton } from '../common/details/DetailsCommonButton'
+import { UpdateCampaignFormSidebar } from './CampaignForms'
+import { LeadFieldTable } from '../leadFields/LeadFieldTable'
+import { LeadFieldDetail } from '../leadFields/LeadFieldDetail'
+import { LeadFieldFormSidebar } from '../leadFields/LeadFieldForm'
+import type { Paginable } from '../../types/common'
+import type { CampaignDetailed } from '../../types/campaigns'
 import type { LeadFieldDetailed } from '../../types/leadFields'
-import { getCampaign } from './campaignServices'
-import { Button, Chip, Container, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, ButtonGroup } from '@mui/material'
-import type { Campaign } from '../../types/campaigns'
-import { activeLeadField, deleteLeadField, getLeadFields } from '../leadFields/leadFieldServices'
-import { GenericModal } from '../common/layout/GenericContainer'
-import { SimulateLead } from '../lead/LeadForm'
-import EditIcon from '@mui/icons-material/Edit';
-import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import { disableCampaign, enableCampaign, getCampaign } from './campaignServices'
+import { getLeadFields } from '../leadFields/leadFieldServices'
+import { useSidebar } from '../hooks/useSidebar'
+import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom'
+import dayjs from 'dayjs'
+import { Chip, Typography, ButtonGroup, Link, Breadcrumbs, Stack, Grid, Divider } from '@mui/material'
 
 export const CampaignDetails = () => {
     const { id } = useParams()
-    const [campaign, setCampaign] = useState<Campaign | null>(null)
-    const [fields, setFields] = useState<LeadFieldDetailed[] | []>([])
+    const [campaign, setCampaign] = useState<CampaignDetailed | null>(null)
+
+    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<LeadFieldDetailed>()
+    const nav = useNavigate()
 
     useEffect(() => {
-        if (id) getCampaign(parseInt(id)).then((res) => {
+        closeSidebar()
+        if (!id) return
+        getCampaign(parseInt(id)).then(res => {
             setCampaign(res)
-            getLeadFields({ detailed: true, campaign_id: parseInt(id), only_active: false }).then(res => setFields(res))
         })
-        return () => setCampaign(null)
-    }, [id])
+    }, [id, closeSidebar])
 
-    const handleActive = (fieldIdx: number) => {
-        const newFields = [...fields]
-        if (fields[fieldIdx].active) {
-            deleteLeadField(fields[fieldIdx].id)
-                .then(() => {
-                    newFields[fieldIdx].active = false
-                    setFields(newFields)
-                }).catch(() => alert("error"))
+    //Necesaria la lista e n este componente, en lugar de LeadFieldTable,
+    // para facilitar la modificación de la lista desde el sidebar.
+    const [leadFields, setLeadFields] = useState<Paginable<LeadFieldDetailed> | null>(null)
+
+    const updateLeadFields = useCallback((page: number, pageSize: number) => {
+        if (!campaign) return
+        getLeadFields({
+            detailed: true, campaign_id: campaign.id, only_active: false, page: page, page_size: pageSize
+        }).then(setLeadFields)
+    }, [campaign, setLeadFields])
+
+    const updateEntity = (mode: string, entity: CampaignDetailed | LeadFieldDetailed) => {
+        switch (mode) {
+            case "UPDATE_CMP": {
+                if (!campaign) break
+                return setCampaign(entity as CampaignDetailed)
+            }
+            case "UPDATE_FIELD": {
+                const newLeadField = entity as LeadFieldDetailed
+                if (selectedEntity && entity.id === selectedEntity.id) handleSidebar("KEEP", newLeadField)
+                if (!leadFields?.items || !(leadFields?.items?.length > 0)) return
+                const newLeadFields = [...leadFields.items]
+                const fieldIdx = leadFields.items.findIndex(field => field.id === entity.id)
+                if (fieldIdx === -1) return
+                newLeadFields[fieldIdx] = newLeadField
+                return setLeadFields({ ...leadFields, items: newLeadFields })
+            }
+            case "CREATE_FIELD": {
+                if (!leadFields) break
+                return updateLeadFields(leadFields.page, leadFields.page_size)
+            }
+        }
+    }
+
+    const handleActiveCampaign = (campaign: CampaignDetailed) => {
+        const updateActive = () => {
+            updateEntity("UPDATE_CMP", { ...campaign, active: !campaign.active })
+        }
+        if (campaign.active) {
+            disableCampaign(campaign.id)
+                .then(res => {
+                    if (res.action === "disabled") updateActive()
+                    else {
+                        alert("Eliminado")
+                        nav("/campaigns")
+                    }
+                })
         } else {
-            activeLeadField(fields[fieldIdx].id)
-                .then(() => {
-                    newFields[fieldIdx].active = true
-                    setFields(newFields)
-                }).catch(() => alert("error"))
+            enableCampaign(campaign.id)
+                .then(updateActive)
         }
     }
 
     return (
-        <Container>
-            <Paper sx={{ padding: 2 }}>
-                <Button component={Link} to="/campaigns" variant='outlined'>Volver</Button>
-
+        <ContainerWithSidebar isSidebarOpen={!!sidebarMode} containerSize="xl"
+            sidebarComponent={campaign &&
+                <CampaignDetailSidebar mode={sidebarMode} entity={selectedEntity} campaign={campaign} updateLeadFields={() => updateLeadFields(1, leadFields!.page_size!)}
+                    handleSidebar={handleSidebar} closeSidebar={closeSidebar} updateEntity={updateEntity} />} >
+            <Breadcrumbs aria-label="breadcrumb">
+                <Link component={RouterLink} to="/campaigns" underline="hover" color="inherit">
+                    Espacios de Trabajo
+                </Link>
                 {campaign &&
-                    <>
+                    <Typography sx={{ color: 'text.primary' }}>{campaign.name}</Typography>}
+            </Breadcrumbs>
+
+            {campaign &&
+                <Stack spacing={2} >
+                    <Grid size={12} container spacing={2} justifyContent="space-between" alignItems="center">
                         <Typography variant="h1" color="initial">{campaign.name}</Typography>
-                        <Typography color="initial">{campaign.description}</Typography>
-                        <TableContainer>
-                            <Typography variant="h2" color="initial">Campos de Lead</Typography>
-                            <Table sx={{ minWidth: 650 }} aria-label="simple table">
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell>Nombre</TableCell>
-                                        <TableCell align="right">Tipo de Dato</TableCell>
-                                        <TableCell align="right">Subtipo de Dato</TableCell>
-                                        <TableCell align="right">Máscara</TableCell>
-                                        <TableCell align="right">Plantilla/Nomenclador</TableCell>
-                                        <TableCell align="right">Obligatorio</TableCell>
-                                        <TableCell align="right">Único</TableCell>
-                                        <TableCell align="right">Visible</TableCell>
-                                        <TableCell align="right">Habilitado</TableCell>
-                                        <TableCell align="right">Orden</TableCell>
-                                        <TableCell align="right">Modificar</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {fields?.sort((a, b) => a.order - b.order)
-                                        .map((row, idx) => (
-                                            <TableRow
-                                                key={row.id}
-                                                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                                            >
-                                                <TableCell component="th">{row.id} - {row.name}</TableCell>
-                                                <TableCell align="right">{row.field_type_code}</TableCell>
-                                                <TableCell align="right">{row.field_subtype_code ?? "Sin subtipo"}</TableCell>
-                                                <TableCell align="right">{row.input_mask || "Sin máscara"}</TableCell>
-                                                <TableCell align="right">{row.field_template_code || row.nomenclator?.name || "Dato manual"}</TableCell>
-                                                <TableCell align="right">{row.required ? <Chip color='success' label="Obligatorio" /> : <Chip color='error' label="Opcional" />}</TableCell>
-                                                <TableCell align="right">{row.is_primary ? <Chip color='success' label="Único" /> : <Chip color='error' label="Repetible" />}</TableCell>
-                                                <TableCell align="right">{row.is_visible ? <Chip color='success' label="Visible" /> : <Chip color='error' label="Oculto" />}</TableCell>
-                                                <TableCell align="right">{row.active ? <Chip color='success' label="Habilitado" /> : <Chip color='error' label="Deshabilitado" />}</TableCell>
-                                                <TableCell align="right">{row.order}</TableCell>
-                                                <TableCell align="right">
-                                                    <Button variant="text" component={Link} to={`/leadfield/modify/${row.id}`}>
-                                                        <EditIcon />
-                                                    </Button>
-                                                    <Button variant="text" onClick={() => handleActive(idx)}>
-                                                        {row.active ? <RemoveCircleOutlineIcon color="error" /> : <CheckCircleOutlineIcon color="success" />}
-                                                    </Button>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-                        <ButtonGroup>
-                            <Button component={Link} variant='contained' to={`/leadfield/new/${id}`}>
-                                Agregar nuevo campo
-                            </Button>
-                            <GenericModal buttonText='Vista previa de formulario' buttonProps={{ variant: "outlined" }} containerSx={{ minWidth: "80vw" }} >
-                                {campaign && fields?.length > 0 &&
-                                    <SimulateLead campaignId={campaign.id} leadFields={fields} />
-                                }
-                            </GenericModal>
-                        </ButtonGroup>
-                    </>
-                }
-            </Paper>
-        </Container>
+                        {campaign.active ? <Chip color='success' label="Habilitado" /> :
+                            <Chip color='error' label="Deshabilitado" />}
+                    </Grid>
+                    <Grid container spacing={2}>
+                        <Grid size="grow" minWidth="30rem">
+
+                            {campaign.description
+                                ? <Typography variant="body1" color="initial">{campaign.description}</Typography>
+                                : <Typography variant="body1" fontStyle="italic">No tiene descripción.</Typography>
+                            }
+                        </Grid>
+                        <Grid container spacing={2} size={{ sm: 12, md: 12, lg: 3 }} minWidth="20rem">
+                            <Grid size="grow" minWidth="18rem">
+                                <Typography variant="body1" fontWeight="bold">Fecha de creación:</Typography>
+                                <Typography variant="body1" paddingInlineStart={2} sx={{ textTransform: "capitalize" }}>
+                                    {dayjs(campaign?.created_at).format('dddd DD/MM/YYYY HH:mm:ss')}
+                                </Typography>
+                            </Grid>
+                            <Grid size="grow" minWidth="18rem">
+                                <Typography variant="body1" fontWeight="bold">Fecha de última modificación:</Typography>
+                                <Typography variant="body1" paddingInlineStart={2} sx={{ textTransform: "capitalize" }}>
+                                    {dayjs(campaign?.updated_at).format('dddd DD/MM/YYYY HH:mm:ss')}
+                                </Typography>
+                            </Grid>
+                        </Grid>
+                    </Grid>
+                    <Divider />
+                    <Grid size="grow" container justifyContent="center" alignItems="center" gap={2}>
+                        <Grid size="grow" minWidth="16rem" >
+                            <Typography variant="h2" color="initial">Acciones</Typography>
+                        </Grid >
+                        <Grid size="grow" minWidth="20rem" >
+                            <ButtonGroup fullWidth>
+                                <CommonButton handleClick={() => handleSidebar("UPDATE_CMP", null)} actionType="MODIFY">Modificar</CommonButton>
+                                <DisableButton active={campaign.active} handleActive={() => handleActiveCampaign(campaign)} />
+                            </ButtonGroup>
+                        </Grid >
+                    </Grid>
+                    <Divider />
+                    <LeadFieldTable campaign={campaign} leadFields={leadFields} updateLeadFields={updateLeadFields}
+                        handleSidebar={handleSidebar} updateEntity={updateEntity} />
+                </Stack>
+            }
+        </ContainerWithSidebar>
     )
+}
+
+interface SidebarProps {
+    mode: string | null,
+    entity: LeadFieldDetailed | null,
+    campaign: CampaignDetailed,
+    updateLeadFields: () => void,
+    handleSidebar: (mode: string, entity: LeadFieldDetailed | null) => void,
+    closeSidebar: () => void,
+    updateEntity: (mode: string, entity: CampaignDetailed | LeadFieldDetailed) => void,
+}
+const CampaignDetailSidebar = ({ mode, entity, campaign, updateLeadFields, handleSidebar, closeSidebar, updateEntity }: SidebarProps) => {
+    switch (mode) {
+        case "UPDATE_CMP":
+            return <UpdateCampaignFormSidebar existingCmp={campaign}
+                closeSidebar={closeSidebar} updateEntityOnList={(entity) => updateEntity(mode, entity)} />
+        case "DETAILS_FIELD":
+            return <LeadFieldDetail leadField={entity as LeadFieldDetailed} updateLeadFields={updateLeadFields}
+                closeSidebar={closeSidebar} handleSidebar={handleSidebar} updateEntity={updateEntity} />
+        case "CREATE_FIELD":
+            return <LeadFieldFormSidebar campaign={campaign} closeSidebar={closeSidebar} handleSidebar={handleSidebar}
+                updateEntityOnList={(entity) => updateEntity(mode, entity)} />
+        case "UPDATE_FIELD":
+            return <LeadFieldFormSidebar existingLF={entity as LeadFieldDetailed} campaign={campaign}
+                updateEntityOnList={(entity) => updateEntity(mode, entity)}
+                closeSidebar={closeSidebar} handleSidebar={handleSidebar} />
+    }
 }

@@ -17,12 +17,13 @@ interface ControlledACProps extends BasicControlFormInput {
     getOptionKey?: (option: object) => string,
     sx?: object | null,
     disabled?: boolean,
+    hidden?: boolean,
     loading?: boolean
     multiple?: boolean,
     autocomplete?: string
 }
 
-export const ControlledAutocomplete = ({ label, name, control, options, required = false, errorMessage = null, disabled = false, loading = false,
+export const ControlledAutocomplete = ({ label, name, control, options, required = false, errorMessage = null, disabled = false, loading = false, hidden = false,
     getOptionLabel, getOptionKey = option => option.id, returnField = null, sx = {}, multiple = false, autocomplete = "one-time-code" }: ControlledACProps) => {
     const handleChange = (field: ControllerRenderProps<FieldValues, string>, values: object | object[] | null) => {
         //Por defecto, si no hay valores devuelve null o []
@@ -70,9 +71,11 @@ export const ControlledAutocomplete = ({ label, name, control, options, required
                     loading={loading}
                     options={options ?? []}
                     multiple={multiple}
+                    hidden={hidden}
                     renderInput={(params) =>
                         <>
-                            <TextField {...params} label={label} sx={sx} required={required} error={!!errorMessage} autoComplete={autocomplete}
+                            <TextField {...params} label={label} sx={sx} required={required}
+                                error={!!errorMessage} autoComplete={autocomplete} 
                                 slotProps={{
                                     input: {
                                         ...params.InputProps,

@@ -75,7 +75,7 @@ interface SidebarProps {
     children?: ReactNode
 }
 
-export default function Sidebar({ children }: SidebarProps) {
+export default function LayoutSidebar({ children }: SidebarProps) {
     const theme = useTheme();
     const [open, setOpen] = React.useState(false);
 
@@ -99,7 +99,7 @@ export default function Sidebar({ children }: SidebarProps) {
                 <Divider />
                 <Navbar open={open} />
             </Drawer>
-            <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+            <Box component="main" sx={{ flexGrow: 1 , overflowX: "auto", p: 3 }}>
                 <DrawerHeader sx={{ backgroundColor: theme.palette.background.default }} />
                 {children}
             </Box>

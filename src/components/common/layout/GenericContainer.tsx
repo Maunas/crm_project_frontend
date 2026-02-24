@@ -1,5 +1,6 @@
-import { Button, Container, Modal, Paper, type Breakpoint } from '@mui/material'
-import { useState, type ReactNode } from 'react'
+import { Container, Grid, Modal, Paper, type Breakpoint } from '@mui/material'
+import { useState, type ComponentProps, type ReactNode } from 'react'
+import { CommonButton } from '../details/DetailsCommonButton'
 
 
 interface GenericContainerProps {
@@ -23,24 +24,23 @@ export const GenericContainer = ({ children, maxWidth = "lg", containerSx = {}, 
 export const GenericPaper = ({ children, paperSx = {}, ...props }: GenericContainerProps) => {
 
     return (
-            <Paper sx={{ paddingInline: 4, paddingBlock: 2, width: "100%", ...paperSx }} {...props}>
-                {children}
-            </Paper>
+        <Paper sx={{ paddingInline: 5, paddingBlock: 3, width: "100%", ...paperSx }} {...props}>
+            {children}
+        </Paper>
     )
 }
 
-interface GenericModalProps extends GenericContainerProps {
+interface GenericModalProps extends GenericContainerProps, ComponentProps<typeof CommonButton> {
     buttonText: string,
-    buttonProps?: object,
 }
 
-export const GenericModal = ({ buttonText, buttonProps = {}, maxWidth = "lg", containerSx = {}, paperSx = {}, children }: GenericModalProps) => {
+export const GenericModal = ({ buttonText, maxWidth = "lg", containerSx = {}, paperSx = {}, children, ...btnProps }: GenericModalProps) => {
     const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
     return (
-        <div>
-            {<Button {...buttonProps} onClick={handleOpen}>{buttonText}</Button>}
+        <>
+            <CommonButton handleClick={handleOpen} {...btnProps}>{buttonText}</CommonButton>
             <Modal
                 open={open}
                 onClose={handleClose}
@@ -53,6 +53,36 @@ export const GenericModal = ({ buttonText, buttonProps = {}, maxWidth = "lg", co
                     {children}
                 </GenericContainer>
             </Modal>
-        </div>
+        </>
+    )
+}
+
+interface ContainerWithSidebarProps {
+    isSidebarOpen: boolean,
+    rootGridProps?: object,
+    mainGridProps?: object,
+    sidebarGridProps?: object,
+    sidebarComponent: ReactNode,
+    containerSize?: false | Breakpoint,
+    children: ReactNode,
+}
+
+export const ContainerWithSidebar = ({ isSidebarOpen, rootGridProps, mainGridProps, sidebarGridProps, sidebarComponent, containerSize, children }: ContainerWithSidebarProps) => {
+    return (
+        <Container maxWidth={isSidebarOpen ? false : containerSize ?? "lg"}>
+            <Grid container spacing={2} {...rootGridProps}>
+                <Grid size="grow" minWidth="30rem" {...mainGridProps}>
+                    <GenericPaper>
+                        {children}
+                    </GenericPaper>
+                </Grid>
+                {isSidebarOpen &&
+                    <Grid size={5} minWidth="30rem" {...sidebarGridProps}>
+                        <GenericPaper>
+                            {sidebarComponent}
+                        </GenericPaper>
+                    </Grid>}
+            </Grid>
+        </Container>
     )
 }

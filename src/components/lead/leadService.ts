@@ -11,7 +11,7 @@ interface Params {
 }
 
 export const getLeads = async <T extends Params>( params?: T )
-: Promise<Paginable<T["detailed"] extends true ? LeadDetailed[] : Lead[]>> => {
+: Promise<Paginable<T["detailed"] extends true ? LeadDetailed : Lead>> => {
   const lead = await axios.get(`${API_BASE_URL}/leads`, { params });
   return {...lead.data, items: orderList(lead.data.items)};
 };

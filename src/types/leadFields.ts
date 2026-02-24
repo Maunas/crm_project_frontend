@@ -18,26 +18,26 @@ export interface LeadFieldValueDetailed extends LeadFieldValue, Metadata {
 }
 
 export interface LeadFieldPost {
-  name?: string;
+  name?: string | null;
   campaign_id: number;
   order?: number;
   required: boolean;
   is_primary: boolean;
   is_visible: boolean;
-  lead_field_section_id: number;
-  default_value?: string;
-  input_mask?: string;
+  lead_field_section_id: number | null;
+  default_value?: string | null;
+  input_mask?: string | null;
   //Plantilla
   field_template_code?: string | null;
   //Manual con Subtype
-  field_type_code?: string;
-  field_subtype_code?: string;
+  field_type_code?: string | null;
+  field_subtype_code?: string | null;
   //Selector o Checkbox
-  nomenclator_id?: number;
+  nomenclator_id?: number | null;
   //Lead
-  related_campaign_id?: number;
+  related_campaign_id?: number | null;
   //Calculated
-  calculation_expression?: string;
+  calculation_expression?: string | null;
 }
 
 export interface LeadField extends LeadFieldPost {

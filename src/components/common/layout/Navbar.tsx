@@ -1,8 +1,7 @@
 import { List, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material'
 import PersonIcon from '@mui/icons-material/Person';
 import WorkIcon from '@mui/icons-material/Work';
-import SsidChartIcon from '@mui/icons-material/SsidChart';
-import SettingsIcon from '@mui/icons-material/Settings';
+import StoreIcon from '@mui/icons-material/Store';
 import { Link } from 'react-router-dom';
 
 interface NavbarProps {
@@ -13,8 +12,7 @@ export const Navbar = ({ open }: NavbarProps) => {
   const options = [
     { name: "Leads", icon: <PersonIcon />, link:"/leads" },
     { name: "Campañas", icon: <WorkIcon />, link:"/campaigns" },
-    { name: "Reportes", icon: <SsidChartIcon />, link:"" },
-    { name: "Personalizaciones", icon: <SettingsIcon />, link:"" },
+    { name: "Reportes", icon: <StoreIcon />, link:"/organizations" },
   ]
 
   return (

@@ -1,149 +1,54 @@
-import { useEffect, useMemo, useState } from 'react'
-import { getOrganizations, getWorkspaces } from './campaignServices'
-import { Box, Button, ButtonGroup, Container, Grid, Pagination, Paper, Typography } from '@mui/material'
-import { Link } from 'react-router-dom'
-import type { Campaign, CampaignDetailed, OrganizationDetailed, WorkspaceDetailed } from '../../types/campaigns'
-import SubdirectoryArrowRightIcon from '@mui/icons-material/SubdirectoryArrowRight';
-import { CampaignSidebar } from './CampaignSidebar'
-import { GenericPaper } from '../common/layout/GenericContainer'
-import type { Paginable } from '../../types/common'
-
-export const OrganizationList = () => {
-    const [organizations, setOrganizations] = useState<Paginable<OrganizationDetailed[]> | null>(null)
-    const [workspaces, setWorkspaces] = useState<Paginable<WorkspaceDetailed[]> | []>([])
-    const [sidebarMode, setSidebarMode] = useState<string | null>(null)
-    const [selectedEntity, setSelectedEntity] =
-        useState<OrganizationDetailed | WorkspaceDetailed | CampaignDetailed | null>(null)
-
-    const handleSidebar = (mode: string,
-        entity?: OrganizationDetailed | WorkspaceDetailed | CampaignDetailed) => {
-        if (!entity) setSelectedEntity(null)
-        else setSelectedEntity(entity)
-        setSidebarMode(mode)
-    }
-    const closeSidebar = () => {
-        setSelectedEntity(null)
-        setSidebarMode(null)
-    }
-    const createEntityOnList = (entity, mode) => {
-        switch (mode) {
-            case "CREATE_ORG":
-                getOrganizations({ detailed: true, page_size: 12, page: organizations.page })
-                    .then(setOrganizations)
-                break;
-            case "CREATE_WSP":
-                setWorkspaces({ ...workspaces, items: [...workspaces.items, entity] })
-                break;
-            case "CREATE_CMP": {
-                const workspacesItems = [...workspaces.items]
-                const workspaceIdx = workspacesItems.findIndex(wsp => wsp.id === entity.workspace_id)
-                workspacesItems[workspaceIdx] = {
-                    ...workspacesItems[workspaceIdx],
-                    campaigns: [...workspacesItems[workspaceIdx].campaigns, entity]
-                }
-                setWorkspaces({ ...workspaces, items: [...workspacesItems] })
-                break;
-            }
-
-        }
-    }
-    useEffect(() => {
-        getWorkspaces({ detailed: true }).then(setWorkspaces)
-        getOrganizations({ detailed: true, page_size: 12 }).then(setOrganizations)
-    }, [])
-
-    interface OrganizationFull extends OrganizationDetailed {
-        workspaces: WorkspaceDetailed[]
-    }
-
-    const detailedOrgs: OrganizationFull[] = useMemo(() => {
-        if (!(workspaces?.items?.length > 0 && organizations?.items?.length > 0)) return []
-        const detailedOrgs = new Map()
-
-        organizations.items.forEach(org => {
-            detailedOrgs.set(org.id, { ...org, workspaces: [] })
-        })
-        workspaces.items.forEach((workspace) => {
-            const org = detailedOrgs.get(workspace.organization_id)
-            if (org) org.workspaces.push(workspace)
-        })
-        return Array.from(detailedOrgs.values())
-    }, [workspaces, organizations])
-
-    const [page, setPage] = useState<number>(1)
-    const handlePage = (e: React.ChangeEvent<unknown>, value: number) => {
-        if (value === page) return
-        getOrganizations({ detailed: true, page_size: 12, page: value }).then((res) => {
-            setPage(value)
-            setOrganizations(res)
-        })
-    }
-
-    return (
-        <Container maxWidth={false}>
-            <Grid container spacing={2}>
-                <Grid size="grow" minWidth="30rem">
-                    <GenericPaper>
-                        <ButtonGroup variant="contained" >
-                            <Button onClick={() => handleSidebar("CREATE_CMP")} >Crear Campaña</Button>
-                            <Button onClick={() => handleSidebar("CREATE_WSP")} >Crear Espacio de Trabajo</Button>
-                            <Button onClick={() => handleSidebar("CREATE_ORG")} >Crear Organización</Button>
-                        </ButtonGroup>
-                        {detailedOrgs?.length > 0 &&
-                            detailedOrgs.map((org, idx) =>
-                                <Box key={`org${idx}`}>
-                                    <Typography color="initial">{org.name}{org.description && `: ${org.description}`}</Typography>
-                                    <WorkspaceList workspaces={org.workspaces} />
-                                </Box>
-                            )}
-                        <Pagination count={organizations?.total_pages} page={page}
-                            shape="rounded" color="secondary" onChange={handlePage} />
-                    </GenericPaper>
-                </Grid>
-                {sidebarMode &&
-                    <Grid size={5} minWidth="22rem">
-                        <GenericPaper>
-                            <CampaignSidebar mode={sidebarMode} entity={selectedEntity}
-                                closeSidebar={closeSidebar} createEntityOnList={createEntityOnList} />
-                        </GenericPaper>
-                    </Grid>}
-            </Grid>
-        </Container>
-    )
-}
-
-interface WorkspaceListProps {
-    workspaces?: WorkspaceDetailed[]
-}
-
-export const WorkspaceList = ({ workspaces = [] }: WorkspaceListProps) => {
-    return (
-        <>
-            {workspaces?.length > 0 &&
-                workspaces.map((workspace, idx) =>
-                    <Box key={`workspace${idx}`} sx={{ padding: ".5rem 2rem" }}>
-                        <Grid container >
-                            <SubdirectoryArrowRightIcon />
-                            <Typography color="initial">{workspace.name}{workspace.description && `: ${workspace.description}`}</Typography>
-                        </Grid>
-                        <CampaignList campaigns={workspace.campaigns} />
-                    </Box>
-                )}
-        </>
-    )
-}
+import { useEffect, useMemo, useState } from "react"
+import { EnabledIcon } from "../common/lists/Badges"
+import { PaginationComponent } from "../common/lists/PaginationComponent"
+import type { Paginable } from "../../types/common"
+import type { CampaignDetailed, WorkspaceDetailed } from "../../types/campaigns"
+import { getCampaigns } from "./campaignServices"
+import { useListPagination } from "../hooks/useListPagination"
+import { Link } from "react-router-dom"
+import { Button, Grid, Stack, Typography } from "@mui/material"
 
 interface CampaignListProps {
-    campaigns?: Campaign[]
+    selectedWorkspaceId: number,
+    handleSidebar: (mode: string, entity: WorkspaceDetailed | CampaignDetailed | null) => void
 }
-export const CampaignList = ({ campaigns = [] }: CampaignListProps) => {
-    if (campaigns?.length > 0) return (
+export const CampaignList = ({ selectedWorkspaceId, handleSidebar }: CampaignListProps) => {
+
+    const [campaigns, setCampaigns] = useState<Paginable<CampaignDetailed> | null>(null)
+
+    const { page, pageSize, pageComponentProps } = useListPagination(campaigns?.total_pages || 0, 12)
+
+    useEffect(() => {
+        getCampaigns({
+            workspace_id: selectedWorkspaceId, detailed: true, only_active: false,
+            page: page || 1, page_size: pageSize
+        }).then(setCampaigns)
+    }, [selectedWorkspaceId, page, pageSize])
+
+    const filteredCampaigns = useMemo(() => campaigns?.items ?
+        campaigns.items.filter(cmp => cmp.workspace_id === selectedWorkspaceId) : []
+        , [campaigns, selectedWorkspaceId])
+
+    if (filteredCampaigns && filteredCampaigns.length > 0) return (
         <>
-            {campaigns.map((campaign, idx) =>
-                <Button key={`campaign${idx}`} variant="text" component={Link} to={`/campaigns/${campaign.id}`}>
-                    <Typography component="p">{campaign.name}</Typography>
-                </Button>
-            )}
+            <Grid sx={{ marginLeft: 6 }} container>
+                {filteredCampaigns.map((cmp, idx) =>
+                    <Grid key={`cmp-${idx}`} size="grow" minWidth="15rem">
+                        <Button key={`cmp-${idx}`} variant="text" component={Link} to={`/campaigns/${cmp.id}`} fullWidth >
+                            <Stack spacing={1} direction="row" width="100%">
+                                <EnabledIcon active={cmp.active} />
+                                <Typography fontWeight="bold">{cmp.name}</Typography>
+                            </Stack>
+                        </Button>
+                    </Grid>
+                )}
+            </Grid>
+            <PaginationComponent {...pageComponentProps} />
         </>
     )
+    return <Grid container spacing={2} justifyContent="center" alignItems="center" direction="column">
+        <Typography variant="h4" color="initial">No se han encontrado campañas para este espacio de trabajo...</Typography>
+        <Button onClick={() => handleSidebar("CREATE_CMP", null)} variant="contained">Agregar Campaña</Button>
+    </Grid>
+
 }
