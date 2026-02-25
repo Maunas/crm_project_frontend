@@ -52,30 +52,18 @@ export const ControlledTextInput = ({
   autoComplete = "one-time-code",
 }: ControlledTextProps) => {
   return (
-    <Controller
-      control={control}
-      name={name}
-      render={({ field }) => (
-        <>
-          <TextField
-            {...field}
-            autoComplete={autoComplete}
-            id={id ?? name}
-            label={label ?? name}
-            value={field.value ?? ""}
-            required={required}
-            type={type}
-            error={!!errorMessage}
-            fullWidth
-          />
-          {errorMessage && (
-            <FormHelperText error sx={{ marginBlock: 1 }}>
-              {errorMessage}
-            </FormHelperText>
-          )}
-        </>
-      )}
-    ></Controller>
+    <Controller control={control} name={name} render={({ field }) => (
+      <>
+        <TextField {...field}
+          value={field.value ?? ""}
+          label={label} id={id ?? name} type={type}
+          required={required} error={!!errorMessage} autoComplete={autoComplete} fullWidth
+        />
+        {errorMessage && (
+          <FormErrorMessage>{errorMessage}</FormErrorMessage>
+        )}
+      </>
+    )} />
   );
 };
 
@@ -318,17 +306,8 @@ export const SingleFileField = ({
 }: FileProps) => {
   return (
     <>
-      <TextField
-        {...register(name)}
-        autoComplete={autoComplete}
-        type="file"
-        accept={accept}
-        fullWidth
-        id={id ?? name}
-        label={label ?? name}
-        required={required}
-        error={!!errorMessage}
-        slotProps={{ inputLabel: { shrink: true } }}
+      <TextField {...register(name)} label={label ?? ""} id={id ?? name} type="file"
+        required={required} error={!!errorMessage} autoComplete={autoComplete} fullWidth slotProps={{ inputLabel: { shrink: true } }}
       />
       {errorMessage && (
         <FormHelperText error sx={{ marginBlock: 1 }}>
@@ -358,12 +337,7 @@ export const RegisteredTextInput = ({
 }: RegisteredTextProps) => {
   return (
     <>
-      <TextField
-        {...register(name, {setValueAs: (val)=>val === "" ? undefined : val})}
-        autoComplete={autoComplete}
-        fullWidth
-        type={type}
-        id={id ?? name}
+      <TextField {...register(name)}
         label={label ?? name}
         required={required}
         error={!!errorMessage}
