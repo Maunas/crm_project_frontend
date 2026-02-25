@@ -8,7 +8,8 @@ import { getOrganizations, getWorkspace, getWorkspaces } from "../workspaces/wor
 import { createCampaign, updateCampaign } from "./campaignServices"
 import { createLeadField } from "../leadFields/leadFieldServices"
 import { useForm, useWatch } from "react-hook-form"
-import { Button, ButtonGroup, FormHelperText, Grid, Typography } from "@mui/material"
+import { Button, ButtonGroup, Grid, Typography } from "@mui/material"
+import { FormErrorMessage } from "../../styles/styledMUIFormComponents"
 
 
 interface UpdateCampaignSidebarProps {
@@ -62,7 +63,7 @@ export const CreateCampaignFormSidebar = ({ closeSidebar, handleSidebar }: Creat
         return createCampaign(data)
             .then(res => {
                 //Busca el workspace y muestra su detalle.
-                getWorkspace(res.workspace_id)
+                getWorkspace(res.workspace_id!)
                     .then(wsp => handleSidebar("DETAILS_WSP", wsp))
                 //Crea los dos campos obligatorios. Luego actualiza la lista.
                 //Si falla, igualmente actualiza la lista, ya que está creada la campaña.
@@ -138,19 +139,23 @@ export const CampaignForm = ({ existingCmp, submit, onCancel }: CampaignProps) =
                     <RegisteredTextInput name="description" register={register} label="Descripción"
                         errorMessage={errors.description?.message} />
                 </Grid>
-                <Grid size="grow" minWidth={"20rem"}>
-                    <ControlledAutocomplete control={control} label="Organización" name="organization_id"
-                        getOptionLabel={option => option.name} errorMessage={errors.organization_id?.message}
-                        options={organizations} returnField="id" required hidden={!!existingCmp} />
-                </Grid>
-                <Grid size="grow" minWidth={"20rem"}>
-                    <ControlledAutocomplete control={control} label="Espacio de Trabajo" name="workspace_id"
-                        getOptionLabel={option => option.name} errorMessage={errors?.workspace_id?.message}
-                        options={filteredWorkspaces} returnField="id" disabled={!selectedOrg} required hidden={!!existingCmp} />
-                </Grid>
+                {!existingCmp &&
+                    <Grid size="grow" minWidth={"20rem"}>
+                        <ControlledAutocomplete control={control} label="Organización" name="organization_id" options={organizations}
+                            getOptionLabel={option => option.name!} getOptionKey={option => `${option.id}`} returnField="id"
+                            errorMessage={errors.organization_id?.message} required />
+                    </Grid>
+                }
+                {!existingCmp &&
+                    <Grid size="grow" minWidth={"20rem"}>
+                        <ControlledAutocomplete control={control} label="Espacio de Trabajo" name="workspace_id" options={filteredWorkspaces}
+                            getOptionLabel={option => option.name!} getOptionKey={option => `${option.id}`} returnField="id"
+                            errorMessage={errors?.workspace_id?.message} disabled={!selectedOrg} required />
+                    </Grid>
+                }
             </Grid>
             {errors?.root &&
-                <FormHelperText color="error">{errors?.root?.message}</FormHelperText>}
+                <FormErrorMessage>{errors?.root?.message}</FormErrorMessage>}
 
             <ButtonGroup fullWidth>
                 <Button variant="outlined" onClick={onCancel} fullWidth>

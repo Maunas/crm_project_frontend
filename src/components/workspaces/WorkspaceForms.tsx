@@ -5,7 +5,8 @@ import type { Organization, Workspace, WorkspaceDetailed, WorkspacePost } from "
 import { setFormErrors } from "../../generalService"
 import { createWorkspace, getOrganizations, updateWorkspace } from "./workspaceServices"
 import { useForm } from "react-hook-form"
-import { Typography, Button, Grid, FormHelperText, ButtonGroup } from "@mui/material"
+import { Typography, Button, Grid, ButtonGroup } from "@mui/material"
+import { FormErrorMessage } from "../../styles/styledMUIFormComponents"
 
 interface WorkspaceSidebarProps {
     existingWsp?: Workspace,
@@ -52,7 +53,7 @@ export const WorkspaceForm = ({ existingWsp, submit, onCancel }: WorkspaceProps)
 
     const { register, handleSubmit, reset, control, formState: { errors }, setError } = useForm<WorkspacePost>({ defaultValues })
 
-    useEffect(()=>{reset(defaultValues)},[reset, defaultValues])
+    useEffect(() => { reset(defaultValues) }, [reset, defaultValues])
 
     const [organizations, setOrganizations] = useState<Organization[] | []>([])
 
@@ -85,15 +86,17 @@ export const WorkspaceForm = ({ existingWsp, submit, onCancel }: WorkspaceProps)
                         errorMessage={errors.description?.message} />
                 </Grid>
 
-                <Grid size="grow" minWidth={"20rem"}>
-                    <ControlledAutocomplete control={control} name="organization_id" label="Organización"
-                        getOptionLabel={option => option.name} options={organizations} hidden={!!existingWsp}
-                        returnField="id" errorMessage={errors.organization_id?.message} required />
-                </Grid>
+                {!existingWsp &&
+                    <Grid size="grow" minWidth={"20rem"}>
+                        <ControlledAutocomplete control={control} name="organization_id" label="Organización" options={organizations}
+                            getOptionLabel={option => option.name!} getOptionKey={option => `${option.id}`}
+                            returnField="id" errorMessage={errors.organization_id?.message} required />
+                    </Grid>}
 
             </Grid>
             {errors?.root &&
-                <FormHelperText color="error">{errors?.root?.message}</FormHelperText>}
+                <FormErrorMessage >{errors?.root?.message}</FormErrorMessage>
+            }
             <ButtonGroup fullWidth>
                 <Button variant="outlined" onClick={onCancel} fullWidth>
                     Cancelar
