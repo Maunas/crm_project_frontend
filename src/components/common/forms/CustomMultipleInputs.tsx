@@ -1,63 +1,64 @@
-import { Autocomplete, Checkbox, CircularProgress, FormControl, FormControlLabel, FormGroup, FormHelperText, FormLabel, Radio, RadioGroup, TextField } from '@mui/material'
+import { Autocomplete, Checkbox, CircularProgress, FormControl, FormControlLabel, FormGroup, FormLabel, Radio, RadioGroup, TextField } from '@mui/material'
 import { useEffect, useState } from 'react'
-import { Controller, type Control, type ControllerRenderProps, type FieldValues } from 'react-hook-form'
+import { Controller, type Control, type ControllerRenderProps, type FieldValues, type Path } from 'react-hook-form'
+import { FormErrorMessage } from '../../../styles/styledMUIFormComponents'
 
-interface BasicControlFormInput {
+interface BasicMultileInputProps<Option> {
     label?: string,
-    name: string,
-    control: Control<object>,
-    options: object[],
+    options: Option[],
     required?: boolean,
     errorMessage?: string | null,
-    returnField?: string | null,
 }
 
-interface ControlledACProps extends BasicControlFormInput {
-    getOptionLabel: (option: object) => string,
-    getOptionKey?: (option: object) => string,
-    sx?: object | null,
+interface BasicControlFormInput<T extends FieldValues, Option> extends BasicMultileInputProps<Option> {
+    control: Control<T>,
+    name: Path<T>,
+    returnField?: keyof Option | null,
+}
+
+interface ControlledACProps<T extends FieldValues, Option> extends BasicControlFormInput<T, Option> {
+    getOptionLabel: (option: Option) => string,
+    getOptionKey: (option: Option) => string,
     disabled?: boolean,
     hidden?: boolean,
-    loading?: boolean
     multiple?: boolean,
     autocomplete?: string
 }
 
-export const ControlledAutocomplete = ({ label, name, control, options, required = false, errorMessage = null, disabled = false, loading = false, hidden = false,
-    getOptionLabel, getOptionKey = option => option.id, returnField = null, sx = {}, multiple = false, autocomplete = "one-time-code" }: ControlledACProps) => {
-    const handleChange = (field: ControllerRenderProps<FieldValues, string>, values: object | object[] | null) => {
+export const ControlledAutocomplete = <T extends FieldValues, Option>
+    ({ control, name, label, options, getOptionLabel, getOptionKey, returnField = null,
+        required = false, multiple = false, disabled = false, hidden = false,
+        errorMessage = null, autocomplete = "one-time-code", ...props }: ControlledACProps<T, Option>) => {
+
+    const handleChange = (field: ControllerRenderProps<T, Path<T>>, values: Option | Option[] | null) => {
         //Por defecto, si no hay valores devuelve null o []
         if (!values) {
             field.onChange(multiple ? [] : null)
             return
         }
-
         //Si no hay returnField, devuelve el objeto, o arreglo de objetos.
         if (returnField === null) {
             field.onChange(values)
             return
         }
-
         //Si hay returnField, se devuelve un campo específico, o un arreglo del campo específico.
         if (!multiple) {
-            field.onChange(values[returnField])
+            field.onChange((values as Option)[returnField])
         } else {
-            field.onChange(values.map(value => value[returnField]))
+            field.onChange((values as Option[]).map(value => value[returnField]))
         }
     }
 
-    const handleValue = (field: ControllerRenderProps<FieldValues, string>) => {
+    const handleValue = (field: ControllerRenderProps<T, Path<T>>) => {
         //Por defecto, si no hay valores devuelve null o []
         if (!field.value || field.value === "") return (multiple ? [] : null)
 
         //Devuelve la opción, o arreglo de opciones, elegidos. (Autocomplete necesita el objeto entero.)
-        if (returnField === null) {
-            return field.value
-        }
+        if (returnField === null) return field.value
 
         //Busca el objeto (find) o el arreglo de objetos (filter) a partir del atributo seleccionado.
         if (!multiple) {
-            return options.find(item => field.value === item?.[returnField]) ?? null
+            return options.find(option => field.value === option?.[returnField]) ?? null
         } else {
             return options.filter(option => field.value.includes(option?.[returnField]))
         }
@@ -66,56 +67,46 @@ export const ControlledAutocomplete = ({ label, name, control, options, required
     return (
         <Controller name={name} control={control} disabled={disabled}
             render={({ field }) => (
-                <Autocomplete
-                    {...field}
-                    loading={loading}
+                <Autocomplete {...field} multiple={multiple} hidden={hidden}
                     options={options ?? []}
-                    multiple={multiple}
-                    hidden={hidden}
+                    onChange={(_, value) => handleChange(field, value)}
+                    value={handleValue(field)}
+                    getOptionLabel={getOptionLabel}
+                    getOptionKey={getOptionKey}
+                    isOptionEqualToValue={(option, value) => getOptionKey(option) === getOptionKey(value)}
                     renderInput={(params) =>
                         <>
-                            <TextField {...params} label={label} sx={sx} required={required}
-                                error={!!errorMessage} autoComplete={autocomplete} 
+                            <TextField {...params} label={label} required={required}
+                                error={!!errorMessage} autoComplete={autocomplete}
                                 slotProps={{
                                     input: {
                                         ...params.InputProps,
                                         endAdornment: (
-                                            <>
-                                                {loading ? <CircularProgress color="inherit" size={20} /> : null}
-                                                {params.InputProps.endAdornment}
-                                            </>
+                                            params.InputProps.endAdornment
                                         ),
                                     },
                                 }}
+                                {...props}
                             />
                             {errorMessage &&
-                                <FormHelperText error sx={{ marginBlock: 1 }}>{errorMessage}</FormHelperText>
+                                <FormErrorMessage>{errorMessage}</FormErrorMessage>
                             }
                         </>
                     }
-                    getOptionLabel={getOptionLabel}
-                    getOptionKey={getOptionKey}
-                    isOptionEqualToValue={(option, value) =>
-                        getOptionKey(option) === getOptionKey(value)}
-                    onChange={(_, value) => handleChange(field, value)}
-                    value={handleValue(field)}
                 />
             )}
-        >
-        </Controller>
+        />
     )
 }
 
 interface LoaderProps {
     label?: string,
-    sx?: object | null
 }
-export const AutocompleteLoader = ({ label, sx }: LoaderProps) => {
+export const AutocompleteLoader = ({ label, ...props }: LoaderProps) => {
     return (
         <Autocomplete
-            options={[]} loading disabled
-            renderInput={(params) =>
-                <TextField {...params} label={label} sx={sx}
+            options={[]} loading disabled renderInput={(params) =>
+                <TextField {...params} label={label} {...props}
                     slotProps={{
                         input: {
                             endAdornment: (
@@ -129,111 +120,97 @@ export const AutocompleteLoader = ({ label, sx }: LoaderProps) => {
     )
 }
 
-interface ControlledRadioProps extends Omit<BasicControlFormInput, "returnField"> {
+interface ControlledRadioProps<T extends FieldValues, Option> extends Omit<BasicControlFormInput<T, Option>, "returnField"> {
+    getRadioLabel: (option: Option) => string,
+    keyField: keyof Option,
+    returnField: keyof Option,
     row?: boolean,
-    radioLabel?: (option: object) => string,
-    keyField?: string,
-    returnField?: string,
-    int?: boolean
+    isReturnInt?: boolean
 }
-export const ControlledRadio = ({ label, name, control, options, required = false, errorMessage = null, row = true, int = false,
-    returnField = "value", radioLabel = (option) => `${option.value}`, keyField = "label" }: ControlledRadioProps) => {
+export const ControlledRadio = <T extends FieldValues, Option>
+    ({ control, label, name, options, required = false, errorMessage = null, row = true,
+        returnField, isReturnInt = false, keyField, getRadioLabel }: ControlledRadioProps<T, Option>) => {
     return (
-        <Controller control={control} name={name}
-            render={({ field }) => {
-                return (
-                    <FormControl required={required} error={!!errorMessage}>
-                        <FormLabel id={name}>{label}</FormLabel>
-                        <RadioGroup row={row}
-                            {...field}
-                            id={name}
-                            value={field.value ?? null}
-                            onChange={(e, value) => field.onChange(int ? Number(value) : value)}
-                        >
-
-                            {options?.length > 0 &&
-                                options.map((option) =>
-                                    <FormControlLabel key={option?.[keyField]} value={int ? Number(option[returnField]) : option[returnField]}
-                                        control={<Radio />} label={radioLabel(option)} />
-                                )}
-                        </RadioGroup>
-                        {errorMessage &&
-                            <FormHelperText error sx={{ marginBlock: 1 }}>{errorMessage}</FormHelperText>
-                        }
-                    </FormControl>
-                )
-            }
-            }>
-        </Controller>
+        <Controller control={control} name={name} render={({ field }) => {
+            return (
+                <FormControl required={required} error={!!errorMessage}>
+                    <FormLabel id={name}>{label}</FormLabel>
+                    <RadioGroup {...field} row={row} id={name}
+                        value={field.value ?? null}
+                        onChange={(_, value) => field.onChange(isReturnInt ? Number(value) : value)}
+                    >
+                        {options?.length > 0 &&
+                            options.map(option =>
+                                <FormControlLabel key={`${option[keyField]}`}
+                                    value={isReturnInt ? Number(option[returnField]) : option[returnField]}
+                                    control={<Radio />} label={getRadioLabel(option)} />
+                            )}
+                    </RadioGroup>
+                    {errorMessage &&
+                        <FormErrorMessage>{errorMessage}</FormErrorMessage>
+                    }
+                </FormControl>
+            )
+        }} />
     )
 }
 
-
-interface BasicControlFormInput {
-    label?: string,
-    name: string,
-    control: Control<object>,
-    options: object[],
-    required?: boolean,
-    errorMessage?: string | null,
-}
-interface CtrlGroupedCheckboxProps extends BasicControlFormInput {
+interface CtrlGroupedCheckboxProps<T extends FieldValues, Option> extends BasicControlFormInput<T, Option> {
+    getCheckboxLabel: (option: Option) => string
+    keyField: keyof Option,
     row?: boolean,
-    idField?: string,
-    checkboxLabel?: (option: object) => string
 }
-export const ControlledGroupedCheckbox = ({ label, name, control, options, required = false, errorMessage = null, returnField = null,
-    row = true, idField, checkboxLabel }: CtrlGroupedCheckboxProps) => {
+export const ControlledGroupedCheckbox = <T extends FieldValues, Option>
+    ({ control, label, name, options, required = false, errorMessage = null, returnField = null,
+        row = true, keyField, getCheckboxLabel }: CtrlGroupedCheckboxProps<T, Option>) => {
 
     return (
         <Controller name={name} control={control} render={({ field }) =>
             <>
-                <GroupedCheckbox field={field} label={label} options={options} row={row} required={required} errorMessage={errorMessage}
-                    returnField={returnField} idField={idField} checkboxLabel={checkboxLabel} />
+                <GroupedCheckbox field={field} label={label} options={options}
+                    returnField={returnField} keyField={keyField} getCheckboxLabel={getCheckboxLabel}
+                    row={row} required={required} errorMessage={errorMessage} />
                 {errorMessage &&
-                    <FormHelperText error sx={{ marginBlock: 1 }}>{errorMessage}</FormHelperText>
+                    <FormErrorMessage>{errorMessage}</FormErrorMessage>
                 }
             </>
         } />
     )
 }
 
-interface GroupedCheckboxProps {
-    label?: string,
-    field: ControllerRenderProps,
-    options: object[],
-    required?: boolean,
-    errorMessage?: string | null
-    returnField?: string | null,
+interface GroupedCheckboxProps<T extends FieldValues, Option> extends BasicMultileInputProps<Option> {
+    field: ControllerRenderProps<T, Path<T>>,
+    returnField?: keyof Option | null,
+    keyField: keyof Option,
+    getCheckboxLabel: (option: Option) => string,
     row?: boolean,
-    idField?: string,
-    checkboxLabel?: (option: object) => string,
 }
-const GroupedCheckbox = ({ label, field, options, required = false, errorMessage = null, returnField = null,
-    row = true, idField = "id", checkboxLabel = (option) => option.value }: GroupedCheckboxProps) => {
 
-    const [checkboxState, setCheckboxState] = useState(new Map())
+//Los checkbox tienen sus campos individualmente. Este componente crea un mapa para devolver los valores como un arreglo.
+const GroupedCheckbox = <T extends FieldValues, Option>
+    ({ field, label, options, required = false, errorMessage = null, returnField = null,
+        row = true, keyField, getCheckboxLabel }: GroupedCheckboxProps<T, Option>) => {
 
-    useEffect(() => {
-        if (!field?.value || field?.value?.length === 0) return
-        const valueArray = field.value.map(value => ([
-            options.find(op => (op?.[returnField] ?? op) === value)?.[idField],
+    const [checkboxState, setCheckboxState] = useState(() => {
+        //Inicializa el estado con los valores por defecto, o un mapa vacio si no hay
+        if (!field?.value || field?.value?.length === 0) return new Map()
+        const valueArray = field.value.map((value: unknown) => ([
+            options.find(op => (returnField ? op[returnField] : op) === value)?.[keyField],
             value
         ]))
-        const defaultValues = new Map(valueArray)
-        setCheckboxState(defaultValues)
-    }, [])
+        return new Map(valueArray)
+    })
 
     useEffect(() => {
         field.onChange(Array.from(checkboxState.values()))
-    }, [checkboxState])
+    }, [checkboxState, field])
 
-    const handleChange = (e, value, option) => {
+    const handleChange = (_: React.ChangeEvent<HTMLInputElement, Element>, value: boolean, option: Option) => {
         const newCheckboxState = new Map(checkboxState)
         if (value) {
-            newCheckboxState.set(option?.[idField], returnField ? option?.[returnField] : option)
+            newCheckboxState.set(option[keyField], returnField ? option[returnField] : option)
         } else {
-            newCheckboxState.delete(option?.[idField])
+            newCheckboxState.delete(option[keyField])
         }
         setCheckboxState(newCheckboxState)
     }
@@ -243,10 +220,10 @@ const GroupedCheckbox = ({ label, field, options, required = false, errorMessage
             <FormLabel>{label}</FormLabel>
             <FormGroup row={row} >
                 {options?.map(option => (
-                    <FormControlLabel key={option?.[idField]} label={checkboxLabel(option)}
+                    <FormControlLabel key={`${option[keyField]}`} label={getCheckboxLabel(option)}
                         control={
-                            <Checkbox checked={checkboxState.has(option?.[idField])} onChange={(e, value) => handleChange(e, value, option)}
-                                name={option?.[idField]} />
+                            <Checkbox checked={checkboxState.has(option?.[keyField])} onChange={(e, value) => handleChange(e, value, option)}
+                                name={`${option[keyField]}`} />
                         }
                     />)
                 )}

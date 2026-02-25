@@ -20,7 +20,7 @@ import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 /**
  * This component is a placeholder for FormControl to correctly set the shrink label state on SSR.
  */
-function SSRInitialFilled(_: BaseNumberField.Root.Props) {
+function SSRInitialFilled() {
   return null;
 }
 SSRInitialFilled.muiName = 'Input';
@@ -125,13 +125,7 @@ export default function NumberField({
   );
 }
 
-export function NumberSpinner({
-  id: idProp,
-  label,
-  error,
-  size = 'medium',
-  required = false,
-  ...other
+export function NumberSpinner({ id: idProp, label, error, size = 'medium', required = false, ...other
 }: BaseNumberField.Root.Props & {
   label?: React.ReactNode;
   size?: 'small' | 'medium';
@@ -154,6 +148,7 @@ export function NumberSpinner({
           error={error}
           variant="outlined"
           sx={{
+            width: "100%",
             '& .MuiButton-root': {
               borderColor: 'divider',
               minWidth: 0,
@@ -205,6 +200,8 @@ export function NumberSpinner({
               sx={{
                 borderTopRightRadius: 0,
                 borderBottomRightRadius: 0,
+                paddingInline: "1rem",
+                width: "auto",
                 borderRight: '0px',
                 '&.Mui-disabled': {
                   borderRight: '0px',
@@ -259,6 +256,8 @@ export function NumberSpinner({
               sx={{
                 borderTopLeftRadius: 0,
                 borderBottomLeftRadius: 0,
+                paddingInline: "1rem",
+                width: "auto",
                 borderLeft: '0px',
                 '&.Mui-disabled': {
                   borderLeft: '0px',
