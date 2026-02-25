@@ -1,246 +1,144 @@
-import {
-  Checkbox,
-  FormControl,
-  FormControlLabel,
-  FormHelperText,
-  FormLabel,
-  Grid,
-  IconButton,
-  InputAdornment,
-  InputLabel,
-  OutlinedInput,
-  Rating,
-  Slider,
-  TextField,
-  Typography,
-} from "@mui/material";
-import {
-  Controller,
-  type Control,
-  type UseFormRegister,
-} from "react-hook-form";
+import { useState, type HTMLInputTypeAttribute } from "react";
 import NumberField, { NumberSpinner } from "./NumberField";
-import { useState } from "react";
+import { Controller, type Control, type FieldValues, type Path, type UseFormRegister, } from "react-hook-form";
+import { Box, Checkbox, FormControl, FormControlLabel, FormLabel, Grid, IconButton, InputAdornment, InputLabel, OutlinedInput, Rating, Slider, TextField, Typography, } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { FormErrorMessage } from "../../../styles/styledMUIFormComponents";
 
-interface BasicFormInput {
+interface BasicFormInput<T extends FieldValues> {
   label?: string;
-  name: string;
+  name: Path<T>;
   required?: boolean;
-  errorMessage?: string | boolean | null;
+  errorMessage?: string;
   autoComplete?: string;
 }
-interface RegisterFormInput extends BasicFormInput {
-  register: UseFormRegister<object>;
+interface RegisterFormInput<T extends FieldValues> extends BasicFormInput<T> {
+  register: UseFormRegister<T>;
 }
-interface ControlFormInput extends BasicFormInput {
-  control: Control<object>;
+interface ControlFormInput<T extends FieldValues> extends BasicFormInput<T> {
+  control: Control<T>;
 }
 
-interface ControlledTextProps extends ControlFormInput {
+interface ControlledTextProps<T extends FieldValues> extends ControlFormInput<T> {
   id?: string;
-  type?: string | null;
+  type?: string;
 }
-export const ControlledTextInput = ({
-  control,
-  name,
-  type = "text",
-  label,
-  id,
-  required = false,
-  errorMessage = null,
-  autoComplete = "one-time-code",
-}: ControlledTextProps) => {
+export const ControlledTextInput = <T extends FieldValues>
+  ({ control, label, name, required = false, errorMessage, autoComplete = "one-time-code", id, type = "text" }: ControlledTextProps<T>) => {
   return (
-    <Controller
-      control={control}
-      name={name}
-      render={({ field }) => (
-        <>
-          <TextField
-            {...field}
-            autoComplete={autoComplete}
-            id={id ?? name}
-            label={label ?? name}
-            value={field.value ?? ""}
-            required={required}
-            type={type}
-            error={!!errorMessage}
-            fullWidth
-          />
-          {errorMessage && (
-            <FormHelperText error sx={{ marginBlock: 1 }}>
-              {errorMessage}
-            </FormHelperText>
-          )}
-        </>
-      )}
-    ></Controller>
+    <Controller control={control} name={name} render={({ field }) => (
+      <>
+        <TextField {...field}
+          value={field.value}
+          label={label} id={id ?? name} type={type}
+          required={required} error={!!errorMessage} autoComplete={autoComplete} fullWidth
+        />
+        {errorMessage && (
+          <FormErrorMessage>{errorMessage}</FormErrorMessage>
+        )}
+      </>
+    )} />
   );
 };
 
-interface ControlledSliderProps extends ControlFormInput {
+interface ControlledSliderProps<T extends FieldValues> extends ControlFormInput<T> {
   defaultValue?: number;
   min?: number;
   max?: number;
   step?: number;
   type?: "slider" | "rating";
 }
-export const ControlledSlider = ({
-  name,
-  control,
-  label,
-  min = 0,
-  max,
-  defaultValue = 0,
-  step = 1,
-  type = "slider",
-  required = false,
-  errorMessage = null,
-}: ControlledSliderProps) => {
+export const ControlledSlider = <T extends FieldValues>
+  ({ control, label, name, required = false, errorMessage, min = 0, max, defaultValue = 0, step = 1, type = "slider" }: ControlledSliderProps<T>) => {
   return (
-    <Controller
-      name={name}
-      control={control}
-      render={({ field }) => (
-        <FormControl error={!!errorMessage}>
-          <Grid container spacing={2} alignItems="center">
-            <Grid size="grow" alignItems="center" sx={{ paddingInline: 2 }}>
-              {label && (
-                <Typography component="legend">
-                  {label}
-                  {required && "*"}
-                </Typography>
-              )}
+    <Controller name={name} control={control} render={({ field }) => (
+      <FormControl error={!!errorMessage} fullWidth>
+        <Grid container spacing={4} alignItems="center" justifyContent="space-around">
+          <Grid size="grow" alignItems="center" maxWidth="13rem">
+            {label && (
+              <Typography component="legend">
+                {label} {!required && "(Opcional)"}
+              </Typography>
+            )}
 
-              {type === "slider" && (
-                <Slider
-                  {...field}
+            {type === "slider" && (
+              <Box sx={{ pl: 2 }}>
+                <Slider {...field}
                   value={field.value || defaultValue}
-                  color="secondary"
-                  min={min}
-                  max={max}
-                  step={step}
+                  color="secondary" min={min} max={max} step={step}
                 />
-              )}
+              </Box>
+            )}
 
-              {type === "rating" && (
-                <Rating
-                  {...field}
-                  value={field.value || defaultValue}
-                  precision={step}
-                  size="large"
-                  max={max}
-                />
-              )}
-            </Grid>
-            <NumberSpinner
-              {...field}
+            {type === "rating" && (
+              <Rating {...field}
+                value={field.value || defaultValue}
+                max={max} precision={step} size="large"
+              />
+            )}
+          </Grid>
+          <Grid size="grow" alignItems="center" maxWidth="13rem">
+            <NumberSpinner {...field}
               value={field.value || defaultValue}
               onValueChange={(value) => field.onChange(value)}
-              min={type === "rating" ? 0 : min}
-              max={max}
-              step={step}
-              size="small"
+              min={type === "rating" ? 0 : min} max={max} step={step} size="small"
             />
           </Grid>
-          {errorMessage && (
-            <FormHelperText error sx={{ marginBlock: 1 }}>
-              {errorMessage}
-            </FormHelperText>
-          )}
-        </FormControl>
-      )}
+        </Grid>
+        {errorMessage && (
+          <FormErrorMessage>{errorMessage}</FormErrorMessage>
+        )}
+      </FormControl>
+    )}
     />
   );
 };
 
-interface ControlledNumberProps extends Omit<ControlledSliderProps, "type"> {
+interface ControlledNumberProps<T extends FieldValues> extends Omit<ControlledSliderProps<T>, "type"> {
   type?: "field" | "spinner";
 }
-export const ControlledNumber = ({
-  name,
-  control,
-  label,
-  min,
-  max,
-  step,
-  type = "field",
-  required = false,
-  errorMessage = null,
-}: ControlledNumberProps) => {
+export const ControlledNumber = <T extends FieldValues>
+  ({ control, label, name, required = false, errorMessage, min, max, step, type = "field" }: ControlledNumberProps<T>) => {
   return (
-    <Controller
-      name={name}
-      control={control}
-      render={({ field }) => (
-        <>
-          {type === "field" && (
-            <NumberField
-              {...field}
-              sx={{ width: "100%" }}
-              error={!!errorMessage}
-              value={field.value ?? ""}
-              onValueChange={(value) => field.onChange(value)}
-              label={label}
-              min={min}
-              max={max}
-              step={step}
-              required={required}
-            />
-          )}
-          {type === "spinner" && (
-            <NumberSpinner
-              {...field}
-              sx={{ width: "100%" }}
-              error={!!errorMessage}
-              onValueChange={(value) => field.onChange(value)}
-              label={label}
-              min={min}
-              max={max}
-              step={step}
-              required={required}
-            />
-          )}
-          {errorMessage && (
-            <FormHelperText error sx={{ marginBlock: 1 }}>
-              {errorMessage}
-            </FormHelperText>
-          )}
-        </>
-      )}
+    <Controller name={name} control={control} render={({ field }) => (
+      <>
+        {type === "field" && (
+          <NumberField {...field} label={label}
+            value={Number(field.value ?? "")}
+            onValueChange={(value) => field.onChange(value)}
+            min={min} max={max} step={step} required={required} error={!!errorMessage}
+          />
+        )}
+        {type === "spinner" && (
+          <NumberSpinner {...field} label={label}
+            value={Number(field.value ?? "")}
+            onValueChange={(value) => field.onChange(value)}
+            min={min} max={max} step={step} required={required} error={!!errorMessage}
+          />
+        )}
+        {errorMessage && (
+          <FormErrorMessage>{errorMessage}</FormErrorMessage>
+        )}
+      </>
+    )}
     />
   );
 };
 
-interface ControlledCheckboxProps extends ControlFormInput {
+interface ControlledCheckboxProps<T extends FieldValues> extends ControlFormInput<T> {
   title?: string;
-  defaultValue?: boolean;
 }
 
-export const ControlledCheckbox = ({
-  label,
-  name,
-  control,
-  title,
-  required = false,
-  errorMessage = null,
-  defaultValue = false
-}: ControlledCheckboxProps) => {
+export const ControlledCheckbox = <T extends FieldValues>
+  ({ control, label, name, required = false, errorMessage, title }: ControlledCheckboxProps<T>) => {
   return (
     <FormControl error={!!errorMessage}>
       <FormLabel error={!!errorMessage}>{title}</FormLabel>
-      <FormControlLabel
-        label={label}
-        required={required}
+      <FormControlLabel label={label} required={required}
         control={
-          <Controller
-            name={name}
-            control={control}
-            defaultValue={defaultValue ?? false}
+          <Controller name={name} control={control}
             render={({ field }) => (
-              <Checkbox
-                {...field}
+              <Checkbox {...field}
                 checked={field.value ?? false}
                 onChange={(_, checked) => field.onChange(checked ?? false)}
               />
@@ -249,44 +147,28 @@ export const ControlledCheckbox = ({
         }
       />
       {errorMessage && (
-        <FormHelperText error sx={{ marginBlock: 1 }}>
-          {errorMessage}
-        </FormHelperText>
+        <FormErrorMessage>{errorMessage}</FormErrorMessage>
       )}
     </FormControl>
   );
 };
 
-export const PasswordField = ({
-  label,
-  name,
-  register,
-  required = true,
-  errorMessage = null,
-  autoComplete = "one-time-code",
-}: RegisterFormInput) => {
+export const PasswordField = <T extends FieldValues>
+  ({ register, label, name, required = false, errorMessage, autoComplete = "one-time-code" }: RegisterFormInput<T>) => {
   const [showPassword, setShowPassword] = useState(false);
-
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
   return (
-    <FormControl fullWidth error={!!errorMessage} required={required}>
+    <FormControl required={required} error={!!errorMessage} fullWidth>
       <InputLabel htmlFor={name}>{label}</InputLabel>
-      <OutlinedInput
-        id={name}
-        label={label}
+      <OutlinedInput id={name} label={label}
         type={showPassword ? "text" : "password"}
-        error={!!errorMessage}
-        autoComplete={autoComplete}
-        {...register(name)}
+        error={!!errorMessage} autoComplete={autoComplete} {...register(name)}
         endAdornment={
           <InputAdornment position="end">
             <IconButton
-              aria-label={
-                showPassword ? "Ocultar contraseña." : "Ver contraseña."
-              }
-              onClick={handleClickShowPassword}
-              edge="end"
+              aria-label={showPassword ? "Ocultar contraseña." : "Ver contraseña."}
+              onClick={handleClickShowPassword} edge="end"
             >
               {showPassword ? <VisibilityOff /> : <Visibility />}
             </IconButton>
@@ -294,85 +176,59 @@ export const PasswordField = ({
         }
       />
       {errorMessage && (
-        <FormHelperText error sx={{ marginBlock: 1 }}>
-          {errorMessage}
-        </FormHelperText>
+        <FormErrorMessage>{errorMessage}</FormErrorMessage>
       )}
     </FormControl>
   );
 };
 
-interface FileProps extends RegisterFormInput {
-  accept?: string;
+interface FileProps<T extends FieldValues> extends RegisterFormInput<T> {
   id?: string;
 }
-export const SingleFileField = ({
-  name,
-  label,
-  register,
-  id,
-  required = false,
-  errorMessage = null,
-  autoComplete = "one-time-code",
-  accept = "",
-}: FileProps) => {
+export const SingleFileField = <T extends FieldValues>
+  ({ register, name, label, required = false, errorMessage, autoComplete = "one-time-code", id }: FileProps<T>) => {
   return (
     <>
-      <TextField
-        {...register(name)}
-        autoComplete={autoComplete}
-        type="file"
-        accept={accept}
-        fullWidth
+      <TextField {...register(name)}
         id={id ?? name}
-        label={label ?? name}
+        label={label ?? ""}
+        type="file"
         required={required}
         error={!!errorMessage}
+        autoComplete={autoComplete}
+        fullWidth
         slotProps={{ inputLabel: { shrink: true } }}
       />
       {errorMessage && (
-        <FormHelperText error sx={{ marginBlock: 1 }}>
-          {errorMessage}
-        </FormHelperText>
+        <FormErrorMessage>{errorMessage}</FormErrorMessage>
       )}
     </>
   );
 };
 
-interface RegisteredTextProps extends RegisterFormInput {
+interface RegisteredTextProps<T extends FieldValues> extends RegisterFormInput<T> {
   id?: string | null;
-  type?: string | null;
-  onChange: ()=>void
+  type?: HTMLInputTypeAttribute;
+  onChange?: () => void
 }
 
-export const RegisteredTextInput = ({
-  name,
-  label,
-  register,
-  type = "text",
-  id = null,
-  required = false,
-  errorMessage = null,
-  autoComplete = "one-time-code",
-  onChange = ()=>{}
-}: RegisteredTextProps) => {
+export const RegisteredTextInput = <T extends FieldValues>
+  ({ register, name, label, required = false, errorMessage, autoComplete = "one-time-code",
+    id = null, type = "text", onChange = () => { } }: RegisteredTextProps<T>) => {
   return (
     <>
-      <TextField
-        {...register(name, {setValueAs: (val)=>val === "" ? undefined : val})}
-        autoComplete={autoComplete}
-        fullWidth
-        type={type}
-        id={id ?? name}
+      <TextField {...register(name, { setValueAs: (val) => val === "" ? undefined : val })}
         label={label ?? name}
+        id={id ?? name}
+        type={type}
+        onChange={onChange}
         required={required}
         error={!!errorMessage}
-        onChange={onChange}
+        autoComplete={autoComplete}
+        fullWidth
       />
       {errorMessage && typeof errorMessage === "string" && (
-        <FormHelperText error sx={{ marginBlock: 1 }}>
-          {errorMessage}
-        </FormHelperText>
+        <FormErrorMessage>{errorMessage}</FormErrorMessage>
       )}
     </>
   );

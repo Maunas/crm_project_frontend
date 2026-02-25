@@ -3,8 +3,9 @@ import { RegisteredTextInput } from '../common/forms/CustomInputs'
 import type { Organization, OrganizationDetailed, OrganizationPost } from '../../types/campaigns'
 import { setFormErrors } from '../../generalService'
 import { createOrganization, updateOrganization } from '../workspaces/workspaceServices'
-import { Button, FormHelperText, Grid, Typography, ButtonGroup } from '@mui/material'
+import { Button, Grid, Typography, ButtonGroup } from '@mui/material'
 import { useEffect, useMemo } from 'react'
+import { FormErrorMessage } from '../../styles/styledMUIFormComponents'
 
 interface OrganizationSidebarProps {
     existingOrg?: Organization,
@@ -48,11 +49,9 @@ const OrganizationForm = ({ existingOrg, submit, onCancel }: OrganizationProps) 
         description: existingOrg?.description ?? null,
     }), [existingOrg])
 
-    const { register, handleSubmit, reset, formState: { errors }, setError } = useForm<OrganizationPost>({
-        defaultValues
-    })
+    const { register, handleSubmit, reset, formState: { errors }, setError } = useForm<OrganizationPost>({ defaultValues })
 
-    useEffect(()=>{reset(defaultValues)},[reset, defaultValues])
+    useEffect(() => { reset(defaultValues) }, [reset, defaultValues])
 
     const onSubmit = (data: OrganizationPost) => {
         submit(data)
@@ -79,7 +78,7 @@ const OrganizationForm = ({ existingOrg, submit, onCancel }: OrganizationProps) 
                 </Grid>
             </Grid>
             {errors?.root &&
-                <FormHelperText color="error">{errors?.root?.message}</FormHelperText>}
+                <FormErrorMessage>{errors?.root?.message}</FormErrorMessage>}
             <ButtonGroup fullWidth>
                 <Button variant="outlined" onClick={onCancel} fullWidth>
                     Cancelar

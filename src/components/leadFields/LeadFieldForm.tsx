@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { ControlledCheckbox, ControlledTextInput, RegisteredTextInput } from "../common/forms/CustomInputs";
-import { ControlledAutocomplete } from "../common/forms/CustomMultipleInputs";
+import { ControlledCheckbox, ControlledTextInput } from "../common/forms/CustomInputs";
+import { ControlledAutocomplete, ControlledRadio } from "../common/forms/CustomMultipleInputs";
 import type {
   FieldValidationRulePost, FieldValidationRuleTemplate, LeadFieldDetailed, LeadFieldPost, LeadFieldSection, LeadFieldTemplate, LeadFieldTypeDetailed, Nomenclator,
 } from "../../types/leadFields";
@@ -9,7 +9,8 @@ import { setFormErrors } from "../../generalService";
 import { createLeadField, getFieldDataByType, getFieldSections, getFieldTemplates, getFieldTypes, getNomenclators, updateLeadField } from "./leadFieldServices";
 import { getCampaigns } from "../campaigns/campaignServices";
 import { useForm, useWatch, type Control, type FieldErrors, type UseFormRegister } from "react-hook-form";
-import { Button, Grid, FormGroup, Typography, ButtonGroup, FormHelperText, Stack, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio } from "@mui/material";
+import { Button, Grid, FormGroup, Typography, ButtonGroup, Stack } from "@mui/material";
+import { FormErrorMessage } from "../../styles/styledMUIFormComponents";
 
 
 interface LeadFieldSidebarProps {
@@ -209,7 +210,7 @@ export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFi
         <LeadFieldFormFields templates={fieldTemplates} sections={fieldSections}
           nomenclators={nomenclators} campaigns={campaigns} types={fieldTypes}
           errors={errors} register={register} control={control}
-          campaignId={campaign.id} 
+          campaignId={campaign.id}
         />
 
         <ButtonGroup>
@@ -245,7 +246,7 @@ interface LeadFieldFormFieldsProps {
 const LeadFieldFormFields = ({ templates, sections, types, nomenclators, campaigns,
   register, control, campaignId, errors }: LeadFieldFormFieldsProps) => {
 
-    const creationMethod = useWatch({ name: "creation_method", control });
+  const creationMethod = useWatch({ name: "creation_method", control });
   const creationMethodRadioOptions = [
     { label: "Por Plantilla", value: "template" },
     { label: "Manual", value: "manual" },
@@ -281,7 +282,8 @@ const LeadFieldFormFields = ({ templates, sections, types, nomenclators, campaig
             control={control}
             options={sections}
             returnField="id"
-            getOptionLabel={(option) => option.name}
+            getOptionLabel={option => option.name!}
+            getOptionKey={option => `${option.id}`}
             required
             errorMessage={errors?.lead_field_section_id?.message}
           />
@@ -312,18 +314,8 @@ const LeadFieldFormFields = ({ templates, sections, types, nomenclators, campaig
 
       <Grid size={12} container minWidth="20rem">
         <Grid size={4} minWidth="20rem" justifyContent="center">
-          <FormControl required>
-            <FormLabel id="creationMethod">Método de Creación</FormLabel>
-            <RadioGroup row id={"creationMethod"}
-              value={creationMethod} defaultValue={creationMethod}
-              onChange={(_, value) => setCreationMethod(value)} >
-              {creationMethodRadioOptions.map(option =>
-                <FormControlLabel
-                  key={option.label} value={option.value} control={<Radio />} label={option.label} />
-              )}
-            </RadioGroup>
-          </FormControl>
-
+          <ControlledRadio control={control} name="creation_method" label="Método de Creación" options={creationMethodRadioOptions}
+            getRadioLabel={option => option.label} keyField="value" returnField="value" row />
         </Grid>
 
         {creationMethod === "template" ? (
@@ -368,9 +360,10 @@ const LeadFieldFormFields = ({ templates, sections, types, nomenclators, campaig
                     control={control}
                     options={fieldTypeObject?.subtypes}
                     returnField="code"
-                    getOptionLabel={(option) =>
+                    getOptionLabel={option =>
                       `${option.code} - ${option.description}`
                     }
+                    getOptionKey={option => option.code}
                   />
                 </Grid>
               )}
@@ -384,7 +377,8 @@ const LeadFieldFormFields = ({ templates, sections, types, nomenclators, campaig
                   control={control}
                   options={nomenclators}
                   returnField="id"
-                  getOptionLabel={(option) => option.name}
+                  getOptionLabel={option => option.name}
+                  getOptionKey={option => `${option.id}`}
                 />
               </Grid>
             )}
@@ -398,16 +392,17 @@ const LeadFieldFormFields = ({ templates, sections, types, nomenclators, campaig
                   control={control}
                   options={campaigns}
                   returnField="id"
-                  getOptionLabel={(option) => option.name}
+                  getOptionLabel={option => option.name!}
+                  getOptionKey={option => `${option.id}`}
                 />
               </Grid>
             )}
             {fieldTypeCode === "CALCULATED" && (
               <Grid size="grow" minWidth="20rem" justifyContent="center">
-                <RegisteredTextInput
+                <ControlledTextInput
                   name="calculation_expression"
                   label="Fórmula"
-                  register={register}
+                  control={control}
                   errorMessage={errors?.calculation_expression?.message}
                   required
                 />
@@ -415,10 +410,10 @@ const LeadFieldFormFields = ({ templates, sections, types, nomenclators, campaig
             )}
             {fieldTypeCode === "STRING" && (
               <Grid size="grow" minWidth="20rem" justifyContent="center">
-                <RegisteredTextInput
+                <ControlledTextInput
                   name="input_mask"
                   label="Máscara de Input"
-                  register={register}
+                  control={control}
                   errorMessage={errors?.input_mask?.message}
                 />
               </Grid>
@@ -439,9 +434,7 @@ const LeadFieldFormFields = ({ templates, sections, types, nomenclators, campaig
           )}
       </Grid>
       {errors.root && (
-        <FormHelperText error sx={{ marginBlock: 1 }}>
-          {errors?.root?.message}
-        </FormHelperText>
+        <FormErrorMessage>{errors?.root?.message}</FormErrorMessage>
       )}
     </Grid>
   );

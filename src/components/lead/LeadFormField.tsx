@@ -2,8 +2,7 @@ import { type Control, type UseFormRegister } from "react-hook-form"
 import type { LeadPostData, LeadPostValueData } from "./LeadForm"
 import {
     LeadFormAddress, LeadFormBool, LeadFormCheckbox, LeadFormFile, LeadFormMoney, LeadFormNumber, LeadFormPassword, LeadFormRating, LeadFormRelatedLead,
-    LeadFormSelector, LeadFormText,
-    LeadFormTextArea
+    LeadFormSelector, LeadFormText
 } from "./LeadFormFieldTypes"
 import type { Lead } from "../../types/leads"
 import type { NomenclatorItem } from "../../types/leadFields"
@@ -16,10 +15,10 @@ interface LeadFormFieldTypeProps {
     leadField: LeadPostValueData,
     relatedLeads: Map<number, Lead[]>,
     selectors: Map<number, NomenclatorItem[]>,
-    errorMessage?: string | null
+    errorMessage?: string
 }
 
-export const LeadFormFieldType = ({ register, idx, control, leadField, relatedLeads, selectors, errorMessage = null }: LeadFormFieldTypeProps) => {
+export const LeadFormFieldType = ({ register, idx, control, leadField, relatedLeads, selectors, errorMessage }: LeadFormFieldTypeProps) => {
 
     const name = `values.${idx}.value`
 
@@ -55,8 +54,8 @@ export const LeadFormFieldType = ({ register, idx, control, leadField, relatedLe
             return (<LeadFormNumber label={leadField.fieldData.name} name={name} control={control}
                 required={leadField.fieldData.required} errorMessage={errorMessage} />)
         case "RICH_TEXT":
-            return (<LeadFormTextArea label={leadField.fieldData.name} name={name} register={register}
-                required={leadField.fieldData.required} errorMessage={errorMessage} />)
+            return (<LeadFormText label={leadField.fieldData.name} name={name} register={register}
+                required={leadField.fieldData.required} errorMessage={errorMessage} multiline />)
         case "RATING":
             return (<LeadFormRating label={leadField.fieldData.name} leadField={leadField} name={name} control={control}
                 required={leadField.fieldData.required} errorMessage={errorMessage} />)

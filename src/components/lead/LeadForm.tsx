@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { useFieldArray, useForm, useWatch, type Control, type FieldErrors, type UseFormHandleSubmit, type UseFormRegister, type UseFormSetError } from "react-hook-form"
 import { ControlledAutocomplete } from "../common/forms/CustomMultipleInputs"
-import { Button, Divider, FormHelperText, Grid, Typography, ButtonGroup } from "@mui/material"
+import { Button, Divider, Grid, Typography, ButtonGroup } from "@mui/material"
 import { getLeadFields, getNomenclatorItems } from "../leadFields/leadFieldServices"
 import { LeadFormFieldType } from "./LeadFormField"
 import type { LeadField, LeadFieldDetailed, NomenclatorItem, NomenclatorItemDetailed } from "../../types/leadFields"
@@ -10,6 +10,7 @@ import type { Lead, LeadDetailed, LeadPost, LeadPostValue } from "../../types/le
 import { createLead, getLeads, simulateCreateLead, updateLead } from "./leadService"
 import { Link, useNavigate } from "react-router-dom"
 import { getCampaigns } from "../campaigns/campaignServices"
+import { FormErrorMessage } from "../../styles/styledMUIFormComponents"
 
 //Para permitir mantener los datos de cada campo
 export interface LeadPostValueData extends LeadPostValue {
@@ -222,7 +223,7 @@ export const LeadFormValues = ({ leadFields, simulate = false, register, control
                 }
             </Grid>
             {errors?.root &&
-                <FormHelperText error sx={{ marginBlock: 1 }}>{errors?.root.message}</FormHelperText>
+                <FormErrorMessage>{errors?.root.message}</FormErrorMessage>
             }
             <ButtonGroup sx={{ marginBlock: 1 }}>
                 {!simulate &&
