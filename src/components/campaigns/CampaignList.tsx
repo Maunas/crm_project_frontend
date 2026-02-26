@@ -16,14 +16,14 @@ export const CampaignList = ({ selectedWorkspaceId, handleSidebar }: CampaignLis
 
     const [campaigns, setCampaigns] = useState<Paginable<CampaignDetailed> | null>(null)
 
-    const { page, pageSize, pageComponentProps } = useListPagination(campaigns?.total_pages || 0, 12)
+    const { fetchPage, pageSize, pageComponentProps } = useListPagination(campaigns, 12)
 
     useEffect(() => {
         getCampaigns({
             workspace_id: selectedWorkspaceId, detailed: true, only_active: false,
-            page: page || 1, page_size: pageSize
+            page: fetchPage || 1, page_size: pageSize
         }).then(setCampaigns)
-    }, [selectedWorkspaceId, page, pageSize])
+    }, [selectedWorkspaceId, fetchPage, pageSize])
 
     const filteredCampaigns = useMemo(() => campaigns?.items ?
         campaigns.items.filter(cmp => cmp.workspace_id === selectedWorkspaceId) : []
