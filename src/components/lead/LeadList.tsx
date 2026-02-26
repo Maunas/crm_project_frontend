@@ -1,19 +1,19 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { Lead } from '../../types/leads'
-import { getLeads } from './leadService'
-import { Accordion, AccordionDetails, AccordionSummary, Button, Typography, Grid, TableContainer, Paper, Table, TableRow, TableCell, TableBody, TableHead } from '@mui/material'
-import { Link as RouterLink, useNavigate } from 'react-router-dom'
-import type { LeadListParams, Paginable } from '../../types/common'
-import { useForm, useWatch } from 'react-hook-form'
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { ControlledCheckbox, ControlledNumber } from '../common/forms/CustomInputs'
 import { ControlledAutocomplete } from '../common/forms/CustomMultipleInputs'
-import type { Campaign, Workspace } from '../../types/campaigns'
-import { getCampaigns } from '../campaigns/campaignServices'
-import { useListPagination } from '../hooks/useListPagination'
 import { PaginationComponent } from '../common/lists/PaginationComponent'
-import { getWorkspaces } from '../workspaces/workspaceServices'
+import type { LeadListParams, Paginable } from '../../types/common'
+import type { Lead } from '../../types/leads'
 import type { LeadFieldValue } from '../../types/leadFields'
+import type { Campaign, Workspace } from '../../types/campaigns'
+import { useListPagination } from '../hooks/useListPagination'
+import { getLeads } from './leadService'
+import { getWorkspaces } from '../workspaces/workspaceServices'
+import { getCampaigns } from '../campaigns/campaignServices'
+import { useForm, useWatch } from 'react-hook-form'
+import { Link as RouterLink, useNavigate } from 'react-router-dom'
+import { Accordion, AccordionDetails, AccordionSummary, Button, Typography, Grid, TableContainer, Paper, Table, TableRow, TableCell, TableBody, TableHead, Stack } from '@mui/material'
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
 export const LeadList = () => {
 
@@ -51,7 +51,7 @@ export const LeadList = () => {
     }
 
     return (
-        <>
+        <Stack spacing={2}>
             <Grid container justifyContent="space-between" alignItems="center">
                 <Typography variant="h1">Lista de Leads</Typography>
                 <Grid>
@@ -99,7 +99,7 @@ export const LeadList = () => {
                 <LeadTable leads={leads.items} />
             }
             <PaginationComponent {...pageComponentProps} />
-        </>
+        </Stack>
     )
 }
 interface LeadTableProps {

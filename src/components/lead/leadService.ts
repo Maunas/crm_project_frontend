@@ -10,10 +10,10 @@ interface Params {
   campaign_id?: number;
 }
 
-export const getLeads = async <T extends Params>( params?: T )
-: Promise<Paginable<T["detailed"] extends true ? LeadDetailed : Lead>> => {
+export const getLeads = async <T extends Params>(params?: T)
+  : Promise<Paginable<T["detailed"] extends true ? LeadDetailed : Lead>> => {
   const lead = await axios.get(`${API_BASE_URL}/leads`, { params });
-  return {...lead.data, items: orderList(lead.data.items)};
+  return { ...lead.data, items: orderList(lead.data.items) };
 };
 
 export const getLead = async (id: number): Promise<LeadDetailed> => {
@@ -30,8 +30,16 @@ export const createLead = async (body: FormData): Promise<Lead> => {
   return lead.data;
 };
 
-
-export const updateLead = async (body: FormData, id:number): Promise<Lead> => {
+export const updateLead = async (body: FormData, id: number): Promise<Lead> => {
   const lead = await axios.put(`${API_BASE_URL}/leads/${id}`, body);
+  return lead.data;
+};
+
+export const enableLead = async (id: number): Promise<{ actived: boolean }> => {
+  const lead = await axios.put(`${API_BASE_URL}/leads/active/${id}`);
+  return lead.data;
+};
+export const disableLead = async (id: number): Promise<{ action: string }> => {
+  const lead = await axios.delete(`${API_BASE_URL}/leads/${id}`);
   return lead.data;
 };

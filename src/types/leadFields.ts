@@ -8,8 +8,8 @@ export interface LeadFieldValue {
   value?: string;
   lead_id: number;
   field: LeadField;
-  nomenclator_items?: NomenclatorItem[];
-  related_leads?: Lead[]
+  nomenclator_items: NomenclatorItem[];
+  related_leads: Lead[]
 }
 
 export interface LeadFieldValueDetailed extends LeadFieldValue, Metadata {
