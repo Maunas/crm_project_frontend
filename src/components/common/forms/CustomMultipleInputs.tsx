@@ -22,12 +22,13 @@ interface ControlledACProps<T extends FieldValues, Option> extends BasicControlF
     disabled?: boolean,
     hidden?: boolean,
     multiple?: boolean,
+    disableClearable?: boolean,
     autocomplete?: string
 }
 
 export const ControlledAutocomplete = <T extends FieldValues, Option>
     ({ control, name, label, options, getOptionLabel, getOptionKey, returnField = null,
-        required = false, multiple = false, disabled = false, hidden = false,
+        required = false, multiple = false, disabled = false, hidden = false, disableClearable = false,
         errorMessage = null, autocomplete = "one-time-code", ...props }: ControlledACProps<T, Option>) => {
 
     const handleChange = (field: ControllerRenderProps<T, Path<T>>, values: Option | Option[] | null) => {
@@ -64,15 +65,16 @@ export const ControlledAutocomplete = <T extends FieldValues, Option>
         }
     }
 
+    if ((!options || options.length === 0) && !disabled) return <AutocompleteLoader label={label} />
+
     return (
         <Controller name={name} control={control} disabled={disabled}
             render={({ field }) => (
-                <Autocomplete {...field} multiple={multiple} hidden={hidden}
+                <Autocomplete {...field} multiple={multiple} hidden={hidden} disableClearable={disableClearable}
                     options={options ?? []}
                     onChange={(_, value) => handleChange(field, value)}
                     value={handleValue(field)}
-                    getOptionLabel={getOptionLabel}
-                    getOptionKey={getOptionKey}
+                    getOptionLabel={getOptionLabel} getOptionKey={getOptionKey}
                     isOptionEqualToValue={(option, value) => getOptionKey(option) === getOptionKey(value)}
                     renderInput={(params) =>
                         <>

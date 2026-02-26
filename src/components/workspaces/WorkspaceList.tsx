@@ -21,11 +21,11 @@ export const WorkspaceList = () => {
 
     const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<WorkspaceDetailed | CampaignDetailed>()
 
-    const { page, pageSize, goToPageOne, pageComponentProps } = useListPagination(workspaces?.total_pages || 0)
+    const { fetchPage, pageSize, pageComponentProps } = useListPagination(workspaces)
 
     useEffect(() => {
-        getWorkspaces({ detailed: true, page_size: pageSize, only_active: false, page: page }).then(setWorkspaces)
-    }, [page, pageSize])
+        getWorkspaces({ detailed: true, page_size: pageSize, only_active: false, page: fetchPage }).then(setWorkspaces)
+    }, [fetchPage, pageSize])
 
     const updateEntityOnList = (
         entity: WorkspaceDetailed | CampaignDetailed | null,
@@ -46,7 +46,6 @@ export const WorkspaceList = () => {
                 break;
             }
             case "DELETE_WSP": {
-                goToPageOne()
                 getWorkspaces({ detailed: true, page_size: pageSize, only_active: false, page: 1 }).then(setWorkspaces)
                 break;
             }

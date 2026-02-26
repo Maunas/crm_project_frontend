@@ -29,7 +29,7 @@ export const ControlledTextInput = <T extends FieldValues>
     <Controller control={control} name={name} render={({ field }) => (
       <>
         <TextField {...field}
-          value={field.value}
+          value={field.value ?? ""}
           label={label} id={id ?? name} type={type}
           required={required} error={!!errorMessage} autoComplete={autoComplete} fullWidth
         />
@@ -189,15 +189,8 @@ export const SingleFileField = <T extends FieldValues>
   ({ register, name, label, required = false, errorMessage, autoComplete = "one-time-code", id }: FileProps<T>) => {
   return (
     <>
-      <TextField {...register(name)}
-        id={id ?? name}
-        label={label ?? ""}
-        type="file"
-        required={required}
-        error={!!errorMessage}
-        autoComplete={autoComplete}
-        fullWidth
-        slotProps={{ inputLabel: { shrink: true } }}
+      <TextField {...register(name)} label={label ?? ""} id={id ?? name} type="file"
+        required={required} error={!!errorMessage} autoComplete={autoComplete} fullWidth slotProps={{ inputLabel: { shrink: true } }}
       />
       {errorMessage && (
         <FormErrorMessage>{errorMessage}</FormErrorMessage>
@@ -217,15 +210,8 @@ export const RegisteredTextInput = <T extends FieldValues>
     id = null, type = "text", onChange = () => { } }: RegisteredTextProps<T>) => {
   return (
     <>
-      <TextField {...register(name, { setValueAs: (val) => val === "" ? undefined : val })}
-        label={label ?? name}
-        id={id ?? name}
-        type={type}
-        onChange={onChange}
-        required={required}
-        error={!!errorMessage}
-        autoComplete={autoComplete}
-        fullWidth
+      <TextField {...register(name)} label={label ?? name} id={id ?? name} type={type} onChange={onChange}
+        required={required} error={!!errorMessage} autoComplete={autoComplete} fullWidth
       />
       {errorMessage && typeof errorMessage === "string" && (
         <FormErrorMessage>{errorMessage}</FormErrorMessage>

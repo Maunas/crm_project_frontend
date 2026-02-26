@@ -1,23 +1,24 @@
 import { useEffect, useMemo, useState } from "react"
-import { Link as RouterLink, useParams } from "react-router-dom"
-import { getLead } from "./leadService.ts"
-import { Accordion, AccordionDetails, AccordionSummary, Box, Chip, Container, Divider, Grid, Paper, Typography, Button, Link, Rating, Slider } from "@mui/material"
-import type { Lead } from "../../types/leads"
+import { GenericModal } from "../common/layout/GenericContainer.tsx"
+import type { LeadDetailed } from "../../types/leads"
 import type { LeadFieldValue } from "../../types/leadFields"
 import { getFieldType } from "../../generalService.ts"
+import { disableLead, enableLead, getLead } from "./leadService.ts"
+import DOMPurify from 'dompurify';
+import Markdown from 'react-markdown'
+import { Link as RouterLink, useNavigate, useParams } from "react-router-dom"
+import { Accordion, AccordionDetails, AccordionSummary, Box, Chip, Container, Divider, Grid, Paper, Typography, Button, Link, Rating, Slider, ButtonGroup } from "@mui/material"
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import DOMPurify from 'dompurify';
-import Markdown from 'react-markdown'
-import { GenericModal } from "../common/layout/GenericContainer.tsx"
 
 export const LeadDetails = () => {
 
     const { id } = useParams()
-    const [lead, setLead] = useState<Lead | null>(null)
+    const [lead, setLead] = useState<LeadDetailed | null>(null)
+    const nav = useNavigate()
 
     useEffect(() => {
         if (id) getLead(parseInt(id)).then(setLead)
@@ -27,11 +28,19 @@ export const LeadDetails = () => {
         if (!lead?.field_values) return []
         return lead.field_values.filter(i => (i.field.is_visible &&
             (i.value || i.nomenclator_items?.length > 0 || i.related_leads?.length > 0)))
-            .sort((a: LeadFieldValue, b: LeadFieldValue) => a.field.order - b.field.order)
+            .sort((a, b) => a.field.order - b.field.order)
     }
         , [lead])
 
-        return (
+    const handleActive = (lead: LeadDetailed) => {
+        if (!lead.active) enableLead(lead.id).then(() => setLead({ ...lead, active: true }))
+        else disableLead(lead.id).then(res => {
+            if (res.action === "deleted") return nav("/leads")
+            else return setLead({ ...lead, active: false })
+        })
+    }
+
+    return (
         <Container maxWidth={false}>
             <Grid container spacing={3}>
                 <Grid size={{ xs: 12, md: 4, lg: 4 }} minWidth="20rem" >
@@ -42,10 +51,17 @@ export const LeadDetails = () => {
                                     <Typography variant="h1">{fieldValues[0]?.value ?? "Lead no encontrado"} {fieldValues[1]?.value ?? ""}</Typography>
                                     <Chip label={lead?.active ? "Habilitado" : "Deshabilitado"} color={lead?.active ? "success" : "error"} />
                                 </Box>
-                                <Button variant="contained" color="primary" component={RouterLink} to={`/leads/modify/${lead?.id}`}
-                                    sx={{ marginBlock: 1 }}>
-                                    Modificar Lead
-                                </Button>
+                                <ButtonGroup fullWidth>
+                                    <Button variant="outlined" color={lead.active ? "error" : "success"} onClick={() => handleActive(lead)}
+                                        sx={{ marginBlock: 1 }}>
+                                        {lead.active ? "Deshabilitar" : "Habilitar"}
+                                    </Button>
+                                    <Button variant="contained" color="primary" component={RouterLink} to={`/leads/modify/${lead?.id}`}
+                                        sx={{ marginBlock: 1 }}>
+                                        Modificar Lead
+                                    </Button>
+                                </ButtonGroup>
+
                             </Paper>
                             <Paper sx={{ p: 1, borderRadius: "1em" }}>
                                 <LeadFieldSections fieldValues={fieldValues} />
@@ -59,11 +75,11 @@ export const LeadDetails = () => {
                                     </AccordionSummary>
                                     <AccordionDetails sx={{ paddingTop: 0 }}>
                                         <Divider sx={{ marginBottom: "1rem" }} ></Divider>
-                                    <Typography sx={{ fontWeight: "bold" }} component="h3">Fecha de Creación:</Typography>
+                                        <Typography sx={{ fontWeight: "bold" }} component="h3">Fecha de Creación:</Typography>
 
-                                        <LeadFieldByType fieldValue={{}} value={lead?.created_at} type="DATE" />
-                                    <Typography sx={{ fontWeight: "bold" }} component="h3">Fecha de Última Modificación:</Typography>
-                                        <LeadFieldByType fieldValue={{}} value={lead?.updated_at} type="DATE" />
+                                        <LeadFieldByType value={lead?.created_at} type="DATE" />
+                                        <Typography sx={{ fontWeight: "bold" }} component="h3">Fecha de Última Modificación:</Typography>
+                                        <LeadFieldByType value={lead?.updated_at} type="DATE" />
                                     </AccordionDetails>
                                 </Accordion>
                             </Paper>
@@ -81,7 +97,7 @@ export const LeadDetails = () => {
 }
 
 interface LeadFieldSectionsProps {
-    fieldValues: LeadFieldValue[]
+    fieldValues?: LeadFieldValue[]
 }
 
 export const LeadFieldSections = ({ fieldValues }: LeadFieldSectionsProps) => {
@@ -124,11 +140,10 @@ export const LeadFieldSections = ({ fieldValues }: LeadFieldSectionsProps) => {
                             {section?.fields.map((fieldValue, idx) =>
                                 <Box key={idx}>
                                     <Typography sx={{ fontWeight: "bold" }} component="h3">{fieldValue?.field?.name}:</Typography>
-                                    <LeadFieldByType fieldValue={fieldValue} type={fieldValue.field.field_type_code}
-                                        value={fieldValue.value} template={fieldValue.field.field_template_code} />
+                                    <LeadFieldByType fieldValue={fieldValue} type={fieldValue.field.field_type_code!}
+                                        value={fieldValue.value!} template={fieldValue.field.field_template_code} />
                                 </Box>
                             )}
-
                         </AccordionDetails>
                     </Accordion>
                 )
@@ -138,8 +153,8 @@ export const LeadFieldSections = ({ fieldValues }: LeadFieldSectionsProps) => {
 }
 
 interface LeadFieldProps {
-    fieldValue: LeadFieldValue,
-    value: string | number | boolean,
+    fieldValue?: LeadFieldValue,
+    value: string,
     type: string,
     template?: string | null
 }
@@ -160,6 +175,12 @@ export const LeadFieldByType = ({ fieldValue, value, type, template = null }: Le
         }
     }
     switch (type) {
+        case "FILE":
+            return <Link sx={{ paddingLeft: ".5rem" }} href={`${value}`} target="_blank" rel="noopener">
+                {//Obtiene el nombre del archivo, formateado
+                value.split("/").at(-1)?.split(".")[0].replaceAll("%20", " ")
+                }
+            </Link>
         case "ADDRESS":
             if (fieldValue?.field?.field_subtype_code === "MAPS_URL") {
                 return <><Link sx={{ paddingLeft: ".5rem" }} href={`${value}`} target="_blank" rel="noopener">
@@ -172,7 +193,7 @@ export const LeadFieldByType = ({ fieldValue, value, type, template = null }: Le
                 </Link>
             }
         case "RATING":
-            return <RatingField value={value} subtype={fieldValue?.field?.field_subtype_code} />
+            return <RatingField value={value} subtype={fieldValue!.field.field_subtype_code!} />
         case "PASSWORD":
             return <PasswordField value={value} />
         case "EMAIL":
@@ -186,26 +207,32 @@ export const LeadFieldByType = ({ fieldValue, value, type, template = null }: Le
         case "RICH_TEXT":
             if (fieldValue?.field?.field_subtype_code === "HTML") {
                 const purifiedHTML = DOMPurify.sanitize(value)
-                return <GenericModal buttonText='Ver HTML' buttonProps={{ variant: "outlined" }} containerSx={{ minWidth: "80vw" }} >
+                return <GenericModal buttonText='Ver HTML' variant="outlined" containerSx={{ minWidth: "80vw" }} >
                     {purifiedHTML
-                        ? <div sx={{ paddingLeft: ".5rem" }} dangerouslySetInnerHTML={{ __html: purifiedHTML }} />
+                        ? <div style={{ paddingLeft: ".5rem" }} dangerouslySetInnerHTML={{ __html: purifiedHTML }} />
                         : <Typography variant="body1" color="error">Contenido HTML no seguro, no se puede mostrar.</Typography>}
                 </GenericModal>
             } else {
                 return <>
-                    <GenericModal buttonText='Ver Markdown' buttonProps={{ variant: "outlined" }} containerSx={{ minWidth: "80vw" }} >
+                    <GenericModal buttonText='Ver Markdown' variant="outlined" containerSx={{ minWidth: "80vw" }} >
                         <Markdown >{value as string}</Markdown>
                     </GenericModal>
                 </>
             }
         case "LEAD":
-            return <Link sx={{ paddingLeft: ".5rem" }} component={RouterLink}
-                to={`/leads/${fieldValue?.related_leads?.[0]?.id}`} >
-                {fieldValue?.related_leads?.[0]?.field_values?.[0]?.value} {fieldValue?.related_leads?.[0]?.field_values?.[1]?.value}
-            </Link>
+            return <ul style={{ margin: 0 }}>
+                {fieldValue?.related_leads && fieldValue?.related_leads?.length > 0 &&
+                    fieldValue?.related_leads.map(lead =>
+                        <li key={lead.id}>
+                            <Link component={RouterLink} to={`/leads/${lead.id}`} sx={{ paddingLeft: ".5rem" }}>
+                                {lead.field_values[0]?.value} {lead.field_values[1]?.value}
+                            </Link>
+                        </li>
+                    )}
+            </ul >
         case "SELECTOR": case "CHECKBOX":
             return <ul style={{ margin: 0 }}>
-                {fieldValue?.nomenclator_items?.length > 0 &&
+                {fieldValue?.nomenclator_items && fieldValue.nomenclator_items?.length > 0 &&
                     fieldValue.nomenclator_items.map(i =>
                         <Typography sx={{ paddingLeft: ".5rem" }} key={i.code}>
                             <li> {i.value}</li>
@@ -230,7 +257,7 @@ export const LeadFieldByType = ({ fieldValue, value, type, template = null }: Le
 }
 
 
-const PasswordField = ({ value }) => {
+const PasswordField = ({ value }: { value: string }) => {
     const [showPassword, setShowPassword] = useState<boolean>(false);
     return (
         <Grid container spacing={2} alignItems="center">
@@ -245,7 +272,7 @@ const PasswordField = ({ value }) => {
         </Grid>
     )
 }
-const CardField = ({ value }) => {
+const CardField = ({ value }: { value: string }) => {
     const [showPassword, setShowPassword] = useState<boolean>(false);
     return (
         <Grid container spacing={2} alignItems="center">
@@ -262,26 +289,26 @@ const CardField = ({ value }) => {
         </Grid>
     )
 }
-const RatingField = ({ value, subtype }) => {
+const RatingField = ({ value, subtype }: { value: string, subtype: string }) => {
 
     return (
         <Grid container alignItems="center" spacing={2}>
             {subtype === "STAR_RATING" &&
-                <Rating name="read-only" value={value} readOnly />
+                <Rating name="read-only" value={Number(value)} readOnly />
             }
             {subtype === "NPS" &&
                 <Grid size={8}>
                     <Slider
-                         min={1} max={10} step={1}
-                        value={value}
+                        min={1} max={10} step={1}
+                        value={Number(value)}
                     />
                 </Grid>
             }
             {subtype === "SCORE" &&
                 <Grid size={8}>
                     <Slider
-                         min={0} max={100} step={1}
-                        defaultValue={value}
+                        min={0} max={100} step={1}
+                        defaultValue={Number(value)}
                     />
                 </Grid>
             }

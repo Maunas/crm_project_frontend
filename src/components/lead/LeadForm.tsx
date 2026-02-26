@@ -26,7 +26,7 @@ export const CreateLead = () => {
     const [leadFields, setLeadFields] = useState<LeadField[]>([])
 
     useEffect(() => {
-        getCampaigns({ "page_size": 200 }).then(setCampaigns)
+        getCampaigns({ "page_size": 0, only_active: true }).then(res=>setCampaigns(res.items))
     }, [])
 
     const { register, control, handleSubmit, setError, formState: { errors } } = useForm<LeadPostData>()
@@ -35,8 +35,8 @@ export const CreateLead = () => {
 
     useEffect(() => {
         if (campaignId) {
-            getLeadFields({ only_active: true, campaign_id: campaignId, "page_size": 200 }).then(res =>
-                setLeadFields(res.sort((a, b) => a.order - b.order))
+            getLeadFields({ only_active: true, campaign_id: campaignId, "page_size": 0 }).then(res =>
+                setLeadFields(res.items.sort((a, b) => a.order - b.order))
             )
         }
     }, [campaignId])
@@ -45,7 +45,7 @@ export const CreateLead = () => {
         <form autoComplete="off">
             <Typography variant="h1" color="initial">Nuevo Lead</Typography>
             <ControlledAutocomplete control={control} label="Campaña" name="campaign_id" required
-                getOptionLabel={option => option.name} options={campaigns} returnField="id"
+                getOptionLabel={option => option.name!} getOptionKey={option => `${option.id}`} options={campaigns} returnField="id"
                 errorMessage={errors?.campaign_id?.message}
             />
             <Divider sx={{ marginBlock: 2 }} />

@@ -25,11 +25,11 @@ interface LeadFieldTableProps {
 
 export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateEntity, handleSidebar }: LeadFieldTableProps) => {
 
-    const { page, pageSize, goToPageOne, pageComponentProps } = useListPagination(leadFields?.total_pages ?? 0,10)
+    const { fetchPage, pageSize, pageComponentProps } = useListPagination(leadFields, 10)
 
     useEffect(() => {
-        updateLeadFields(page, pageSize)
-    }, [page, pageSize, updateLeadFields])
+        updateLeadFields(fetchPage, pageSize)
+    }, [fetchPage, pageSize, updateLeadFields])
 
     const handleActive = (field: LeadFieldDetailed) => {
         const updateActive = () => {
@@ -40,8 +40,7 @@ export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateE
                 .then(res => {
                     if (res.action === "disabled") updateActive()
                     else {
-                        goToPageOne()
-                        updateLeadFields(1, pageSize) //Se hace manualmente. Si la página ya era la 1, no actua useEffect.
+                        updateLeadFields(1, pageSize)
                     }
                 })
         }
