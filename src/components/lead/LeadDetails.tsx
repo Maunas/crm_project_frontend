@@ -175,6 +175,12 @@ export const LeadFieldByType = ({ fieldValue, value, type, template = null }: Le
         }
     }
     switch (type) {
+        case "FILE":
+            return <Link sx={{ paddingLeft: ".5rem" }} href={`${value}`} target="_blank" rel="noopener">
+                {//Obtiene el nombre del archivo, formateado
+                value.split("/").at(-1)?.split(".")[0].replaceAll("%20", " ")
+                }
+            </Link>
         case "ADDRESS":
             if (fieldValue?.field?.field_subtype_code === "MAPS_URL") {
                 return <><Link sx={{ paddingLeft: ".5rem" }} href={`${value}`} target="_blank" rel="noopener">
