@@ -1,50 +1,52 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { Lead } from '../../types/leads'
 import { getLeads } from './leadService'
-import { Accordion, AccordionDetails, AccordionSummary, Button, Pagination, Typography, Grid, TableContainer, Paper, Table, TableRow, TableCell, TableBody, TableHead } from '@mui/material'
+import { Accordion, AccordionDetails, AccordionSummary, Button, Typography, Grid, TableContainer, Paper, Table, TableRow, TableCell, TableBody, TableHead } from '@mui/material'
 import { Link, useNavigate } from 'react-router-dom'
-import type { Paginable } from '../../types/common'
-import { useForm } from 'react-hook-form'
+import type { LeadListParams, Paginable } from '../../types/common'
+import { useForm, useWatch } from 'react-hook-form'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { ControlledCheckbox, ControlledNumber } from '../common/forms/CustomInputs'
 import { ControlledAutocomplete } from '../common/forms/CustomMultipleInputs'
-import type { CampaignDetailed } from '../../types/campaigns'
+import type { Campaign, Workspace } from '../../types/campaigns'
 import { getCampaigns } from '../campaigns/campaignServices'
+import { useListPagination } from '../hooks/useListPagination'
+import { PaginationComponent } from '../common/lists/PaginationComponent'
+import { getWorkspaces } from '../workspaces/workspaceServices'
 
 export const LeadList = () => {
 
     const [leads, setLeads] = useState<Paginable<Lead> | null>(null)
-    const [campaigns, setCampaigns] = useState<CampaignDetailed[] | null>(null)
-    const [filters, setFilters] = useState<object>({ campaign_id: 1, only_active: false, page_size: 20 })
+    const [workspaces, setWorkspaces] = useState<Workspace[] | null>(null)
+    const [campaigns, setCampaigns] = useState<Campaign[] | null>(null)
+    const [filters, setFilters] = useState<LeadListParams>({ campaign_id: 1, only_active: false, page_size: 20 })
+
+    const { fetchPage, pageComponentProps } = useListPagination(leads)
 
     useEffect(() => {
-        getCampaigns({ only_active: false }).then(setCampaigns)
-    }, [])
+        getLeads({ page: fetchPage, ...filters }).then(setLeads)
+    }, [fetchPage])
 
-    const [page, setPage] = useState<number>(1)
-    const handlePage = (e: React.ChangeEvent<unknown>, value: number) => {
-        if (value === page) return
-        getLeads({ page: value, ...filters }).then((res) => {
-            setPage(value)
-            setLeads(res)
-        })
-    }
-
-    const { control, handleSubmit } = useForm({
-        defaultValues: { campaign_id: 1, only_active: false, page_size: 20 }
+    const { control, handleSubmit } = useForm<LeadListParams>({
+        defaultValues: { campaign_id: filters.campaign_id, only_active: filters.only_active, page_size: filters.page_size }
     })
 
-    const applyFilters = (data) => {
-        const newFilters = { ...filters, ...data }
-        setFilters(newFilters)
-    }
+    useEffect(() => {
+        getWorkspaces({ only_active: true, page_size: 0 }).then(res => setWorkspaces(res.items))
+    }, [])
+
+    const selectedWorkspace = useWatch<LeadListParams>({ name: "workspace_id", control })
 
     useEffect(() => {
-        getLeads({ page: 1, ...filters }).then((res) => {
-            setPage(1)
-            setLeads(res)
-        })
-    }, [filters])
+        if (!selectedWorkspace) return
+        getCampaigns({ only_active: true, workspace_id: selectedWorkspace, page_size: 0 }).then(res => setCampaigns(res.items))
+    }, [selectedWorkspace])
+
+    const applyFilters = (data: LeadListParams) => {
+        const newFilters = { ...filters, ...data }
+        setFilters(newFilters)
+        getLeads({ page: 1, ...newFilters }).then(setLeads)
+    }
 
     console.log(leads)
 
@@ -66,23 +68,35 @@ export const LeadList = () => {
                     <Typography variant="h2" >Filtros</Typography>
                 </AccordionSummary>
                 <AccordionDetails sx={{ paddingTop: 0 }}>
-                    {campaigns?.length > 0 &&
-                        <form >
-                            <ControlledAutocomplete name='campaign_id' control={control} options={campaigns}
-                                getOptionLabel={o => o.name} label='Campaña' returnField="id" />
-                            <ControlledCheckbox control={control} name="only_active" label="Mostrar sólo Leads habilitados"
-                                defaultValue={true} />
-                            <ControlledNumber control={control} name="page_size" label="Items por página" min={1} step={5} />
-                            <Button variant="contained" color="secondary" onClick={handleSubmit(applyFilters)}>
-                                Aplicar Filtros
-                            </Button>
-                        </form>}
+
+                    <form >
+                        <Grid container spacing={2}>
+                            <Grid size="grow" minWidth="20rem">
+                                <ControlledAutocomplete name='workspace_id' control={control} options={workspaces ?? []}
+                                    getOptionLabel={o => o.name!} getOptionKey={o => `${o.id}`} label='Workspace' returnField="id" disableClearable/>
+                            </Grid>
+                            <Grid size="grow" minWidth="20rem">
+                                <ControlledAutocomplete name='campaign_id' control={control} options={campaigns?.filter(c => c.workspace_id === selectedWorkspace) ?? []}
+                                    getOptionLabel={o => o.name!} getOptionKey={o => `${o.id}`} label='Campaña' returnField="id" 
+                                    disabled={!selectedWorkspace} disableClearable />
+                            </Grid>
+                            <Grid size="grow" minWidth="20rem">
+                                <ControlledCheckbox control={control} name="only_active" label="Mostrar sólo Leads habilitados" />
+                            </Grid>
+                            <Grid size="grow" minWidth="20rem">
+                                <ControlledNumber control={control} name="page_size" label="Items por página" min={5} step={5} />
+                            </Grid>
+                        </Grid>
+                        <Button variant="contained" color="secondary" onClick={handleSubmit(applyFilters)}>
+                            Aplicar Filtros
+                        </Button>
+                    </form>
                 </AccordionDetails>
             </Accordion>
-            {leads && leads?.items?.length>0 &&
+            {leads && leads?.items?.length > 0 &&
                 <LeadTable leads={leads.items} />
             }
-            <Pagination page={page} onChange={handlePage} count={leads?.total_pages} color="secondary" />
+            <PaginationComponent {...pageComponentProps} />
         </>
     )
 }
@@ -131,15 +145,15 @@ export const LeadTable = ({ leads }: LeadTableProps) => {
                             areFirstFieldNames &&
                             <TableCell>Nombre Completo</TableCell>
                         }
-                        { fieldNames?.length > 0 &&
-                            fieldNames.map((name,idx) =>
-                                <TableCell align={!areFirstFieldNames && idx === 0 ? "left": "right"} key={name} >{name}</TableCell>
+                        {fieldNames?.length > 0 &&
+                            fieldNames.map((name, idx) =>
+                                <TableCell align={!areFirstFieldNames && idx === 0 ? "left" : "right"} key={name} >{name}</TableCell>
                             )}
                     </TableRow>
                 </TableHead>
                 <TableBody>
                     {leads.map(lead => (
-                        <TableRow onClick={()=>nav(`/leads/${lead.id}`)} style={{ cursor: "pointer" }}
+                        <TableRow onClick={() => nav(`/leads/${lead.id}`)} style={{ cursor: "pointer" }}
                             key={lead.id}
                             sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                         >
@@ -167,8 +181,8 @@ export const LeadTable = ({ leads }: LeadTableProps) => {
                                             lead.field_values
                                                 .sort((a, b) => a.field?.order - b.field?.order)
                                                 .slice(0, 8)
-                                                .map((value,idx) =>
-                                                    <TableCell key={value.id} align={idx === 0 ? "left": "right"}>
+                                                .map((value, idx) =>
+                                                    <TableCell key={value.id} align={idx === 0 ? "left" : "right"}>
                                                         {getValue(value)}
                                                     </TableCell>
                                                 )

@@ -6,7 +6,6 @@ interface PaginationComponentProps {
   handlePage: (event: React.ChangeEvent<unknown>, value: number) => void
 }
 export const PaginationComponent = ({ totalPages, page, handlePage }: PaginationComponentProps) => {
-  if (totalPages <= 1) return null
   return (
     <Pagination
       count={totalPages}

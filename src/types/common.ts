@@ -28,3 +28,8 @@ export interface ListParams {
     page?: number,
     page_size?: number
 }
+
+export interface LeadListParams extends ListParams {
+    workspace_id?: number
+    campaign_id?: number
+}

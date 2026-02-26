@@ -210,15 +210,8 @@ export const RegisteredTextInput = <T extends FieldValues>
     id = null, type = "text", onChange = () => { } }: RegisteredTextProps<T>) => {
   return (
     <>
-      <TextField {...register(name)}
-        label={label ?? name}
-        id={id ?? name}
-        type={type}
-        onChange={onChange}
-        required={required}
-        error={!!errorMessage}
-        autoComplete={autoComplete}
-        fullWidth
+      <TextField {...register(name)} label={label ?? name} id={id ?? name} type={type} onChange={onChange}
+        required={required} error={!!errorMessage} autoComplete={autoComplete} fullWidth
       />
       {errorMessage && typeof errorMessage === "string" && (
         <FormErrorMessage>{errorMessage}</FormErrorMessage>
