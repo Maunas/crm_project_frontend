@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useId, useMemo, useState } from "react"
 import { GenericModal } from "../common/layout/GenericContainer.tsx"
 import type { LeadDetailed } from "../../types/leads"
 import type { LeadFieldValue } from "../../types/leadFields"
@@ -13,6 +13,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import { useModal } from "../hooks/useModal.tsx"
 
 export const LeadDetails = () => {
 
@@ -102,6 +103,8 @@ interface LeadFieldSectionsProps {
 
 export const LeadFieldSections = ({ fieldValues }: LeadFieldSectionsProps) => {
 
+    const { modalProps } = useModal()
+
     interface LeadDetailsSection {
         name: string,
         fields: LeadFieldValue[]
@@ -141,7 +144,7 @@ export const LeadFieldSections = ({ fieldValues }: LeadFieldSectionsProps) => {
                                 <Box key={idx}>
                                     <Typography sx={{ fontWeight: "bold" }} component="h3">{fieldValue?.field?.name}:</Typography>
                                     <LeadFieldByType fieldValue={fieldValue} type={fieldValue.field.field_type_code!}
-                                        value={fieldValue.value!} template={fieldValue.field.field_template_code} />
+                                        value={fieldValue.value!} template={fieldValue.field.field_template_code} modalProps={modalProps} />
                                 </Box>
                             )}
                         </AccordionDetails>
@@ -156,10 +159,18 @@ interface LeadFieldProps {
     fieldValue?: LeadFieldValue,
     value: string,
     type: string,
-    template?: string | null
+    template?: string | null,
+    modalProps: {
+        open: string | number | boolean;
+        handleOpen: (idModal: string | number) => void;
+        handleClose: () => void;
+    }
 }
 
-export const LeadFieldByType = ({ fieldValue, value, type, template = null }: LeadFieldProps) => {
+export const LeadFieldByType = ({ fieldValue, value, type, modalProps, template = null }: LeadFieldProps) => {
+
+    const idModal = useId()
+
     if (template) {
         switch (template) {
             case "INSTAGRAM_USER":
@@ -178,7 +189,7 @@ export const LeadFieldByType = ({ fieldValue, value, type, template = null }: Le
         case "FILE":
             return <Link sx={{ paddingLeft: ".5rem" }} href={`${value}`} target="_blank" rel="noopener">
                 {//Obtiene el nombre del archivo, formateado
-                value.split("/").at(-1)?.split(".")[0].replaceAll("%20", " ")
+                    value.split("/").at(-1)?.split(".")[0].replaceAll("%20", " ")
                 }
             </Link>
         case "ADDRESS":
@@ -207,15 +218,23 @@ export const LeadFieldByType = ({ fieldValue, value, type, template = null }: Le
         case "RICH_TEXT":
             if (fieldValue?.field?.field_subtype_code === "HTML") {
                 const purifiedHTML = DOMPurify.sanitize(value)
-                return <GenericModal buttonText='Ver HTML' variant="outlined" containerSx={{ minWidth: "80vw" }} >
+                return <GenericModal idModal={idModal} modalProps={modalProps}
+                    buttonText='Ver HTML' variant="outlined" containerSx={{ minWidth: "80vw" }} >
                     {purifiedHTML
                         ? <div style={{ paddingLeft: ".5rem" }} dangerouslySetInnerHTML={{ __html: purifiedHTML }} />
                         : <Typography variant="body1" color="error">Contenido HTML no seguro, no se puede mostrar.</Typography>}
+                    <Grid container justifyContent="end">
+                        <Button variant="outlined" onClick={modalProps.handleClose}>Cerrar Modal</Button>
+                    </Grid>
                 </GenericModal>
             } else {
                 return <>
-                    <GenericModal buttonText='Ver Markdown' variant="outlined" containerSx={{ minWidth: "80vw" }} >
+                    <GenericModal idModal={idModal} modalProps={modalProps}
+                        buttonText='Ver Markdown' variant="outlined" containerSx={{ minWidth: "80vw" }} >
                         <Markdown >{value as string}</Markdown>
+                        <Grid container justifyContent="end">
+                            <Button variant="outlined" onClick={modalProps.handleClose}>Cerrar Modal</Button>
+                        </Grid>
                     </GenericModal>
                 </>
             }

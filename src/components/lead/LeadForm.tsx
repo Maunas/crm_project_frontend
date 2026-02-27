@@ -3,7 +3,7 @@ import { useFieldArray, useForm } from "react-hook-form"
 import { Button, Grid, ButtonGroup, Stack } from "@mui/material"
 import { getLeadFields, getNomenclatorItems } from "../leadFields/leadFieldServices"
 import { LeadFormFieldType } from "./LeadFormField"
-import type { LeadField, LeadFieldDetailed, NomenclatorItem } from "../../types/leadFields"
+import type { LeadField, LeadFieldDetailed, LeadFieldValue, NomenclatorItem } from "../../types/leadFields"
 import type { Lead, LeadDetailed, LeadPost, LeadPostValue } from "../../types/leads"
 import { createFormDataFromLead, getLeads, setLeadFormErrors, updateSelectorOptions } from "./leadService"
 import { FormErrorMessage } from "../../styles/styledMUIFormComponents"
@@ -17,16 +17,15 @@ export interface LeadPostForm extends LeadPost {
 }
 
 interface LeadFormProps {
-    existingLead?: LeadDetailed,
-    existingLeadFields?: LeadFieldDetailed[],
+    existingValues?: LeadFieldValue,
     campaignId?: number,
     onSubmit: (data: FormData) => Promise<void>,
     submitBtnLabel?: string,
-    onCancel: () => void,
+    onCancel?: () => void,
     setCampaignError?: React.Dispatch<React.SetStateAction<string | undefined>>
 }
 
-export const LeadForm = ({ existingLead, existingLeadFields, campaignId, onSubmit, submitBtnLabel = "Guardar Lead", onCancel, setCampaignError }: LeadFormProps) => {
+export const LeadForm = ({ existingValues, campaignId, onSubmit, submitBtnLabel = "Guardar Lead", onCancel, setCampaignError }: LeadFormProps) => {
 
     const { register, control, setValue, handleSubmit, setError, clearErrors, formState: { errors } } = useForm<LeadPostForm>({
         defaultValues: {
@@ -54,9 +53,9 @@ console.log(errors)
         if (setCampaignError) { setCampaignError(errors?.campaign_id?.message) }
     }, [errors.campaign_id, setCampaignError])
 
-    const [leadFields, setLeadFields] = useState<LeadField[]>(existingLeadFields ?? [])
+    const [leadFields, setLeadFields] = useState<LeadField[]>([])
 
-    //Actualiza los leadFields respecto al campaignId seleccionado
+    //Actualiza los leadFields respecto al campaignId seleccionado. Si ya hay existingLeadFields, no busca.
     useEffect(() => {
         if (campaignId) {
             getLeadFields({ only_active: true, campaign_id: campaignId, "page_size": 0 }).then(res =>
@@ -69,17 +68,11 @@ console.log(errors)
     useEffect(() => {
         //Acomoda los leadFields para funcionar con useFieldArray
         const formatLeadFields = (leadFields: LeadField[]) => {
-            if (existingLead) {
-                return (
-                    existingLead?.field_values
-                        .filter(fieldValue => fieldValue.field.field_type_code !== "CALCULATED")
-                        .map(fieldValue => ({ field_id: fieldValue.field_id, fieldData: fieldValue.field, value: fieldValue.value }) as LeadPostFormValues))
-            }
             return leadFields?.filter(field => field.field_type_code !== "CALCULATED")
                 .map(field => ({ field_id: field.id, fieldData: field }) as LeadPostFormValues)
         }
         replace(formatLeadFields(leadFields))
-    }, [replace, leadFields, existingLead])
+    }, [replace, leadFields])
 
     // Objetos que contienen todos los leads de campañas relacionadas, y todos los nomencladores necesarios para el formulario.
     // Se identifican en un Map or sus ids.
@@ -115,7 +108,7 @@ console.log(errors)
                 {errors.root &&
                     <FormErrorMessage>{errors.root.message}</FormErrorMessage>}
                 <ButtonGroup>
-                    <Button onClick={onCancel} >Cancelar</Button>
+                    {onCancel && <Button onClick={onCancel} >Cancelar</Button>}
                     {campaignId &&
                         <Button onClick={handleSubmit(submit)} variant="contained">{submitBtnLabel}</Button>}
                 </ButtonGroup>

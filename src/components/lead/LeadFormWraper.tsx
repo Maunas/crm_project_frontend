@@ -2,11 +2,11 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import type { Campaign, Workspace } from "../../types/campaigns"
 import { useNavigate, useParams } from "react-router-dom"
 import { getCampaigns } from "../campaigns/campaignServices"
-import { createLead, getLead } from "./leadService"
-import { Autocomplete, Divider, Grid, Stack, TextField, Typography } from "@mui/material"
+import { createLead, getLead, simulateCreateLead } from "./leadService"
+import { Autocomplete, Divider, FormHelperText, Grid, Stack, TextField, Typography } from "@mui/material"
 import { FormErrorMessage } from "../../styles/styledMUIFormComponents"
 import { LeadForm } from "./LeadForm"
-import type { LeadFieldDetailed } from "../../types/leadFields"
+import type { LeadField, LeadFieldDetailed } from "../../types/leadFields"
 import { useForm } from "react-hook-form"
 import type { LeadDetailed } from "../../types/leads"
 import { getWorkspaces } from "../workspaces/workspaceServices"
@@ -35,7 +35,6 @@ export const CreateLeadFormPage = () => {
     }, [nav])
 
     return (
-
         <form autoComplete="off">
             <Stack spacing={2}>
                 <Typography variant="h1" color="initial">Nuevo Lead</Typography>
@@ -67,21 +66,21 @@ export const CreateLeadFormPage = () => {
 
 interface SimulateProps {
     campaignId: number,
-    leadFields: LeadFieldDetailed[]
+    onCancel: () => void
 }
-export const SimulateLeadFormModal = ({ campaignId, leadFields }: SimulateProps) => {
+export const SimulateLeadFormModal = ({ campaignId, onCancel }: SimulateProps) => {
 
-    const { register, control, handleSubmit, setError, formState: { errors } } = useForm<LeadPostForm>()
-
-    const filteredLeadFields = useMemo(() => leadFields.filter(field => field.active), [leadFields])
+    const onSubmit = useCallback((data: FormData) => {
+        return simulateCreateLead(data)
+            .then(() => alert("El formulario se envió correctamente."))
+    }, [])
 
     return (
         <form autoComplete="off">
-            <Typography variant="h1" color="initial">Simulación de Nuevo Lead: Campaña {campaignId}</Typography>
-            <input type="text" id="campaign_id" value={campaignId} hidden
-                {...register("campaign_id", { valueAsNumber: true })} />
-            <LeadForm leadFields={filteredLeadFields} simulate
-                register={register} control={control} handleSubmit={handleSubmit} setError={setError} errors={errors} />
+            <Stack spacing={2}>
+                <Typography variant="h1" color="initial">Simulación de Nuevo Lead: Campaña {campaignId}</Typography>
+                <LeadForm campaignId={campaignId} onSubmit={onSubmit} onCancel={onCancel} submitBtnLabel="Validar Datos" />
+            </Stack>
         </form>
     )
 }
