@@ -1,3 +1,5 @@
+import type { Path } from "react-hook-form";
+
 /**
  * Define la estructura de una lista con paginación. Se llama como: Paginable<Lead>.
  */
@@ -23,13 +25,31 @@ export interface Metadata {
  * Contienen los parámetros permitidos de cada request.
  */
 export interface ListParams {
-    only_active?: boolean,
-    detailed?: boolean,
-    page?: number,
-    page_size?: number
+  only_active?: boolean,
+  detailed?: boolean,
+  page?: number,
+  page_size?: number
 }
 
 export interface LeadListParams extends ListParams {
-    workspace_id?: number
-    campaign_id?: number
+  workspace_id?: number
+  campaign_id?: number
+}
+
+/**
+ * Contiene los formatos de mensaje de error.
+ */
+export interface ErrorMessage<T> {
+  field: Path<T> | "general", //Puede venir un error con campo "general", debe equivaler a root.
+  message: string
+}
+export interface ErrorBody<T> {
+  message?: string //Error en el cuerpo
+  response?: {
+    data: {
+      detail: string | //Si el error no tiene identificador
+      ErrorMessage<T> | //Un solo error de formulario
+      [ErrorMessage<T>] //Lista de errores de formulario
+    }
+  }
 }

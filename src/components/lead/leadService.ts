@@ -1,9 +1,10 @@
 import axios from "axios";
-import { API_BASE_URL, orderList } from "../../generalService";
+import { API_BASE_URL, orderList, setFormErrors } from "../../generalService";
 import type { Lead, LeadDetailed, LeadPostValue } from "../../types/leads";
-import type { LeadListParams, Paginable } from "../../types/common";
+import type { ErrorBody, ErrorMessage, LeadListParams, Paginable } from "../../types/common";
 import type { LeadPostForm } from "./LeadForm";
 import type { LeadField } from "../../types/leadFields";
+import type { FieldArrayWithId, UseFormSetError } from "react-hook-form";
 
 export const getLeads = async <T extends LeadListParams>(params?: T)
   : Promise<Paginable<T["detailed"] extends true ? LeadDetailed : Lead>> => {
@@ -53,6 +54,7 @@ export const createFormData = <T extends { fieldName: string, data: object }>(fi
   return formData
 }
 
+//Organiza los datos de Lead para acomodar los archivos File en un FormData
 export const createFormDataFromLead = (data: LeadPostForm) => {
   const fields: { fieldName: string, data: object }[] = []
   const dataValues: LeadPostValue[] = []
@@ -78,9 +80,7 @@ export const createFormDataFromLead = (data: LeadPostForm) => {
   return createFormData(fields)
 }
 
-/*************  FormData  ****************/
-
-//Busca todos las opciones de los posibles selectores de un formulario. Busca en todos ellos 
+//Busca todos las opciones de los selectores necesarios para un formulario. Busca en todos ellos.
 export const updateSelectorOptions = async<T>
   (leadFields: LeadField[], idField: keyof LeadField, currentMap: Map<number, T[]>, filterTypes: string[], fetchFunction: (id: number) => Promise<T[]>) => {
   const newMap = new Map<number, T[]>()
@@ -103,4 +103,23 @@ export const updateSelectorOptions = async<T>
   //Cuando terminen todas las promesas, devuelve el mapa de opciones
   await Promise.all(promises)
   return newMap
+}
+
+export const setLeadFormErrors = (fields: FieldArrayWithId<LeadPostForm, "values", "id">[],
+  error: ErrorBody<LeadPostForm>, setError: UseFormSetError<LeadPostForm>) => {
+
+  const leadErrorMapping = (errorArray: ErrorMessage<LeadPostForm>[]) => {
+    errorArray.forEach(error => {
+      //Revisa si el error no viene de un campo no relacionado a values.
+      if (error.field === "campaign_id") setError("campaign_id", { message: error.message })
+      if (["general", "root"].includes(error.field)) setError("root", { message: error.message });
+      //Busca el indice del field para asignarle el error.
+      const fieldIdx = fields.findIndex(field => error.field === field.fieldData.name)
+      //Si no coincide con un nombre, va a root.
+      if (fieldIdx === -1) setError("root", { message: error.message });
+      setError(`values.${fieldIdx}.value`, { message: error.message })
+    })
+  }
+
+  setFormErrors(error, setError, leadErrorMapping)
 }
