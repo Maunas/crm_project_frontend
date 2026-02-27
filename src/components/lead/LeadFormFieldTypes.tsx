@@ -148,8 +148,14 @@ export const LeadFormSelector = <T extends FieldValues>
     else return <AutocompleteLoader label={label} />
 }
 
+interface LeadFormCheckboxProps<T extends FieldValues> extends ControlFormInput<T> {
+    leadField: LeadPostValueData,
+    optionMap: Map<number, NomenclatorItem[]>,
+    autoComplete?: string,
+    returnField: keyof T
+}
 export const LeadFormCheckbox = <T extends FieldValues>
-    ({ label, name, control, required = false, errorMessage, leadField, optionMap }: LeadFormSelectorProps<T>) => {
+    ({ label, name, control, required = false, errorMessage, leadField, optionMap, returnField }: LeadFormCheckboxProps<T>) => {
 
     const optionMapId = leadField?.fieldData?.nomenclator_id
 
@@ -157,13 +163,13 @@ export const LeadFormCheckbox = <T extends FieldValues>
 
     if (leadField.fieldData.field_subtype_code === "CHECKBOX_SIMPLE") return (
         <ControlledRadio control={control} name={name} label={label} options={optionMap.get(optionMapId)!}
-            keyField="id" returnField="id" isReturnInt getRadioLabel={option => option.value}
+            keyField="id" returnField={returnField} isReturnInt getRadioLabel={option => option.value}
             required={required} errorMessage={errorMessage} />
     )
 
     if (leadField.fieldData.field_subtype_code === "CHECKBOX_MULTIPLE") return (
         <ControlledGroupedCheckbox control={control} name={name} label={label} options={optionMap.get(optionMapId)!}
-            returnField="id" keyField="id" getCheckboxLabel={option => option.value}
+            returnField="id" keyField={returnField} getCheckboxLabel={option => option.value}
             required={required} errorMessage={errorMessage} row />
     )
 }

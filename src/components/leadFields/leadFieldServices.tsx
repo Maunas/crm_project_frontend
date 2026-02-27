@@ -136,20 +136,11 @@ export const getNomenclators = async <T extends NomenclatorParams>(params?: T): 
     return { ...noms.data, items: orderList(noms.data.items) };
 };
 
-export const getNomenclatorItems = async <T extends NomenclatorItemParams>(
-    params?: T,
-): Promise<
-    T["detailed"] extends true ? NomenclatorItemDetailed[] : NomenclatorItem[]
-> => {
-    const leadField = await axios.get(`${API_BASE_URL}/nomenclator_items`, {
-        params,
-    });
-    //Ajuste temporal
-    const items = leadField.data.items.map((field: NomenclatorItem) => ({
-        ...field,
-        value: field.value.replace(" Province", ""),
-    }));
-    return orderList(items, "id");
+export const getNomenclatorItems = async <T extends NomenclatorItemParams>( params?: T ): Promise<Paginable<
+    T["detailed"] extends true ? NomenclatorItemDetailed : NomenclatorItem
+>> => {
+    const leadField = await axios.get(`${API_BASE_URL}/nomenclator_items`, { params });
+    return { ...leadField.data, items: orderList(leadField.data.items, "id") };
 };
 
 export const getValidationTemplates = async (): Promise<

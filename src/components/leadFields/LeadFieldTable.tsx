@@ -3,7 +3,6 @@ import { GenericModal } from "../common/layout/GenericContainer"
 import { EnabledIcon } from "../common/lists/Badges"
 import { CommonButton } from "../common/details/DetailsCommonButton"
 import { PaginationComponent } from "../common/lists/PaginationComponent"
-import { SimulateLead } from "../lead/LeadForm"
 import type { Paginable } from "../../types/common"
 import type { LeadFieldDetailed } from "../../types/leadFields"
 import type { CampaignDetailed } from "../../types/campaigns"
@@ -14,6 +13,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
+import { SimulateLeadFormModal } from "../lead/LeadFormWraper"
 
 interface LeadFieldTableProps {
     campaign: CampaignDetailed,
@@ -60,7 +60,7 @@ export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateE
                         <CommonButton onClick={() => handleSidebar("CREATE_FIELD", null)} actionType="CREATE">Agregar Campo</CommonButton>
                         <GenericModal buttonText='Vista previa de formulario' actionType="DETAILS" variant="outlined" containerSx={{ minWidth: "80vw" }} >
                             {campaign && leadFields?.items && leadFields?.items?.length > 0 &&
-                                <SimulateLead campaignId={campaign.id} leadFields={leadFields.items} />
+                                <SimulateLeadFormModal campaignId={campaign.id} leadFields={leadFields.items} />
                             }
                         </GenericModal>
                     </ButtonGroup>

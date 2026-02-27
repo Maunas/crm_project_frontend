@@ -5,8 +5,7 @@ import { LeadDetails } from "./components/lead/LeadDetails";
 import { CampaignDetails } from "./components/campaigns/CampaignDetails";
 import { WorkspaceList } from "./components/workspaces/WorkspaceList";
 import { GenericContainer } from "./components/common/layout/GenericContainer";
-import { CreateLead } from "./components/lead/LeadForm";
-import { UpdateLead } from "./components/lead/UpdateLead";
+import { CreateLeadFormPage, UpdateLeadFormPage } from "./components/lead/LeadFormWraper";
 import { LeadList } from "./components/lead/LeadList";
 import { OrganizationList } from "./components/organizations/OrganizationList";
 
@@ -39,11 +38,11 @@ export const router = createBrowserRouter([
             },
             {
                 path: "/leads/new",
-                element: <GenericContainer containerSx={{ minWidth: "85%" }}><CreateLead /></GenericContainer>
+                element: <GenericContainer containerSx={{ minWidth: "85%" }}><CreateLeadFormPage /></GenericContainer>
             },
             {
                 path: "/leads/modify/:id",
-                element: <GenericContainer containerSx={{ minWidth: "85%" }}><UpdateLead /></GenericContainer>
+                element: <GenericContainer containerSx={{ minWidth: "85%" }}><UpdateLeadFormPage /></GenericContainer>
             },
             {
                 path: "/leads/:id",

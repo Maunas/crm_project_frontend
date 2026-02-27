@@ -58,7 +58,8 @@ export const setFormErrors = <T extends FieldValues,>(error: ErrorBody<T>, setEr
     if (mapFunction) return mapFunction(error);
     //Setea los errores en el formulario.
     else return errorDetail?.map((error: ErrorMessage<T>) => {
-      setError(error.field, { message: error.message });
+      if (error.field === "general") setError("root", { message: error.message });
+      else setError(error.field, { message: error.message });
     })
   }
   //Un solo error de formulario

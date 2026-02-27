@@ -68,7 +68,7 @@ export const LeadFormFieldType = ({ register, idx, control, leadField, relatedLe
         case "BOOL":
             return (<LeadFormBool label={leadField.fieldData.name} name={name} control={control} errorMessage={errorMessage} />)
         case "FILE":
-            return (<LeadFormFile label={leadField.fieldData.name} name={name} register={register} leadField={leadField}
+            return (<LeadFormFile label={leadField.fieldData.name} name={name} register={register}
                 required={leadField.fieldData.required} errorMessage={errorMessage} />)
         default:
             return <LeadFormText label={leadField.fieldData.name} name={name} register={register}
