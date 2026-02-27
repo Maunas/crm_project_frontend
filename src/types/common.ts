@@ -30,11 +30,16 @@ export interface ListParams {
   page?: number,
   page_size?: number
 }
-
-export interface LeadListParams extends ListParams {
+export interface WorkspaceParams extends ListParams {
+  organization_id?: number
+}
+export interface CampaignParams extends ListParams {
   workspace_id?: number
+}
+export interface LeadListParams extends CampaignParams {
   campaign_id?: number
 }
+
 
 /**
  * Contiene los formatos de mensaje de error.
