@@ -81,12 +81,14 @@ export interface FieldValidationRulePost {
   error_message: string;
   template_code?: string | null;
   template_params?: {[param_name: string]:string};
-  field_id?: number;
+  field_id: number;
 }
 
 export interface FieldValidationRule extends FieldValidationRulePost {
   id: number;
 }
+
+export interface FieldValidationRuleDetailed extends FieldValidationRule, Metadata {}
 
 export interface FieldValidationRuleTemplate {
   name: string;

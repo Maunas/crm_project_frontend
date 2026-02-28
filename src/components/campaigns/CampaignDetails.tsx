@@ -14,6 +14,7 @@ import { useSidebar } from '../hooks/useSidebar'
 import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom'
 import dayjs from 'dayjs'
 import { Chip, Typography, ButtonGroup, Link, Breadcrumbs, Stack, Grid, Divider } from '@mui/material'
+import { ValidationFormSidebar } from '../validations/ValidationForm'
 
 export const CampaignDetails = () => {
     const { id } = useParams()
@@ -171,5 +172,9 @@ const CampaignDetailSidebar = ({ mode, entity, campaign, updateLeadFields, handl
             return <LeadFieldFormSidebar existingLF={entity as LeadFieldDetailed} campaign={campaign}
                 updateEntityOnList={(entity) => updateEntity(mode, entity)}
                 closeSidebar={closeSidebar} handleSidebar={handleSidebar} />
+        case "UPDATE_VAL":
+            return <ValidationFormSidebar leadField={entity as LeadFieldDetailed}
+                updateEntityOnList={(entity) => updateEntity("UPDATE_FIELD", entity)}
+                handleSidebar={handleSidebar} closeSidebar={closeSidebar} />
     }
 }

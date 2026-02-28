@@ -5,6 +5,7 @@ import type {
 import type { ListParams, Paginable } from "../../types/common";
 import type { FieldValidationRuleData } from "./LeadFieldForm";
 import { API_BASE_URL, orderList } from "../../generalService";
+import type { FieldValidationListPostInstance } from "../validations/ValidationForm";
 
 interface LeadFieldParams extends ListParams {
     campaign_id?: number;
@@ -76,24 +77,18 @@ export const getNomenclatorItems = async <T extends NomenclatorItemParams>(param
     return { ...leadField.data, items: orderList(leadField.data.items, "id") };
 };
 
-export const getValidationTemplates = async (): Promise<
-    FieldValidationRuleTemplate[]
-> => {
+/****************************************** Validation **************************************** */
+export const getValidationTemplates = async (): Promise<FieldValidationRuleTemplate[]> => {
     const val = await axios.get(`${API_BASE_URL}/templates/validation_rules`);
     return val.data;
 };
 
-export const createValidation = async (
-    body: FieldValidationRulePost,
-): Promise<FieldValidationRule[]> => {
+export const createValidation = async (body: FieldValidationRulePost): Promise<FieldValidationRule> => {
     const val = await axios.post(`${API_BASE_URL}/validation_rules`, body);
     return val.data;
 };
 
-export const updateValidation = async (
-    body: FieldValidationRulePost,
-    id: number,
-): Promise<FieldValidationRule[]> => {
+export const updateValidation = async (body: FieldValidationRulePost, id: number): Promise<FieldValidationRule> => {
     const val = await axios.put(`${API_BASE_URL}/validation_rules/${id}`, body);
     return val.data;
 };
@@ -150,9 +145,9 @@ export const getFieldDataByType = (data: LeadFieldPost, isTemplate = false,): Le
 };
 
 //Organiza los datos de Validation, para evitar enviar campos incompatibles con el método de creación (template/manual)
-export const getValidationDataByType = (data: FieldValidationRuleData, isTemplate = false,): FieldValidationRulePost => {
+export const getValidationDataByType = (data: FieldValidationListPostInstance, isTemplate = false): FieldValidationRulePost => {
 
-    const requiredData: FieldValidationRuleData = {
+    const requiredData: FieldValidationRulePost = {
         name: data.name,
         error_message: data.error_message,
         field_id: data.field_id,
