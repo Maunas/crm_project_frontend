@@ -44,9 +44,12 @@ export const ValidationFormSidebar = ({ leadField, updateEntityOnList, closeSide
         updateEntityOnList(newLeadField)
         handleSidebar("DETAILS_FIELD", newLeadField)
     }
+    const onErrorAll = (val: FieldValidationRule[]) => {
+        updateEntityOnList({ ...leadField, validation_rules: val })
+    }
 
     return (
-        <ValidationRuleForm leadField={leadField} onSubmit={onSubmit} onSubmitAll={onSubmitAll} onCancel={closeSidebar} />
+        <ValidationRuleForm leadField={leadField} onSubmit={onSubmit} onSubmitAll={onSubmitAll} onErrorAll={onErrorAll} onCancel={closeSidebar} />
     )
 }
 
@@ -55,9 +58,10 @@ interface ValidationRuleFormProps {
     onCancel: () => void
     onSubmit: (data: FieldValidationListPostInstance) => Promise<FieldValidationRule | { action: string; }>
     onSubmitAll: (data: FieldValidationRule[]) => void
+    onErrorAll: (data: FieldValidationRule[]) => void
 }
 
-export const ValidationRuleForm = ({ leadField, onSubmit, onSubmitAll, onCancel }: ValidationRuleFormProps) => {
+export const ValidationRuleForm = ({ leadField, onSubmit, onSubmitAll, onErrorAll, onCancel }: ValidationRuleFormProps) => {
 
     const setCreationMethod = (validation_rules: FieldValidationRule[]) => {
         return validation_rules.map(val => ({
@@ -84,13 +88,15 @@ export const ValidationRuleForm = ({ leadField, onSubmit, onSubmitAll, onCancel 
     }, []);
 
     const submit = (data: FieldValidationListPost) => {
+        const newData: FieldValidationRule[] = []
         return Promise.all(
             data.validation_rules.map((val, idx) => {
                 return onSubmit(val)
                     .then(savedVal => {
                         console.log({ ...val, ...savedVal })
-                        if (!val.to_delete) {
+                        if (!val.to_delete && "id" in savedVal) {
                             setValue(`validation_rules.${idx}.id`, savedVal.id)
+                            newData.push(savedVal)
                         }
                         else remove(idx)
                         return savedVal
@@ -98,6 +104,7 @@ export const ValidationRuleForm = ({ leadField, onSubmit, onSubmitAll, onCancel 
                     .catch(e => { console.log(e) })
             })
         ).then(all => onSubmitAll(all.filter(val => "id" in val)))
+            .catch(() => onErrorAll(newData))
     }
 
     return (
