@@ -205,7 +205,8 @@ const GroupedCheckbox = <T extends FieldValues, Option>
 
     useEffect(() => {
         field.onChange(Array.from(checkboxState.values()))
-    }, [checkboxState, field])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [checkboxState])
 
     const handleChange = (_: React.ChangeEvent<HTMLInputElement, Element>, value: boolean, option: Option) => {
         const newCheckboxState = new Map(checkboxState)

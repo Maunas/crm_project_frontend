@@ -46,10 +46,11 @@ export const disableLead = async (id: number): Promise<{ action: string }> => {
 /*************  FormData  ****************/
 
 /** Crea un objeto FormData a partir de los datos de un formulario. Debe ser en formato { fieldName: string, data: object } */
-export const createFormData = <T extends { fieldName: string, data: object }>(fields: T[]) => {
+export const createFormData = <T extends { fieldName: string, data: object | File }>(fields: T[]) => {
   const formData = new FormData()
   fields.forEach(item => {
-    formData.set(item.fieldName, JSON.stringify(item.data))
+    if (item.fieldName === "data") formData.set(item.fieldName, JSON.stringify(item.data))
+    else formData.set(item.fieldName, (item.data as File))
   })
   return formData
 }
@@ -122,4 +123,9 @@ export const setLeadFormErrors = (fields: FieldArrayWithId<LeadPostForm, "values
   }
 
   setFormErrors(error, setError, leadErrorMapping)
+}
+
+export const getSelectorField = <T>(selector: T[], field: keyof T, isMultiple: boolean) => {
+  if (!isMultiple) return selector[0][field]
+  return selector.map(item => item[field])
 }

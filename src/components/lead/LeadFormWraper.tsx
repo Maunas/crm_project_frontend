@@ -2,14 +2,13 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import type { Campaign, Workspace } from "../../types/campaigns"
 import { useNavigate, useParams } from "react-router-dom"
 import { getCampaigns } from "../campaigns/campaignServices"
-import { createLead, getLead, simulateCreateLead } from "./leadService"
-import { Autocomplete, Divider, FormHelperText, Grid, Stack, TextField, Typography } from "@mui/material"
+import { createLead, getLead, simulateCreateLead, updateLead } from "./leadService"
+import { Autocomplete, Divider, Grid, Stack, TextField, Typography } from "@mui/material"
 import { FormErrorMessage } from "../../styles/styledMUIFormComponents"
 import { LeadForm } from "./LeadForm"
-import type { LeadField, LeadFieldDetailed } from "../../types/leadFields"
-import { useForm } from "react-hook-form"
 import type { LeadDetailed } from "../../types/leads"
 import { getWorkspaces } from "../workspaces/workspaceServices"
+import type { LeadField, LeadFieldDetailed, LeadFieldValue } from "../../types/leadFields"
 
 /** Wrapper para presentar LeadForm de creación en una página. */
 export const CreateLeadFormPage = () => {
@@ -17,6 +16,7 @@ export const CreateLeadFormPage = () => {
     const [campaigns, setCampaigns] = useState<Campaign[]>([])
     const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null)
     const [campaignError, setCampaignError] = useState<string | undefined>(undefined)
+
     const [workspaces, setWorkspaces] = useState<Workspace[]>([])
     const [selectedWorkspace, setSelectedWorkspace] = useState<Workspace | null>(null)
     const nav = useNavigate()
@@ -89,44 +89,59 @@ export const UpdateLeadFormPage = () => {
 
     const { id } = useParams()
     const [lead, setLead] = useState<LeadDetailed | null>(null)
+    const nav = useNavigate()
 
     useEffect(() => {
         getLead(Number(id)).then(setLead)
     }, [id])
 
-    const { register, control, handleSubmit, setError, formState: { errors } } = useForm<LeadPostForm>()
+    //Convierte LeadFieldDetailed a LeadField
+    const detailedToNormalLeadField = (leadField: LeadFieldDetailed) => {
+        let newFieldData: LeadField = {
+            ...leadField,
+            lead_field_section_id: leadField.lead_field_section.id
+        }
+        if (leadField.nomenclator) newFieldData = {
+            ...newFieldData,
+            nomenclator_id: leadField.nomenclator.id
+        }
+        if (leadField.related_campaign) newFieldData = {
+            ...newFieldData,
+            related_campaign_id: leadField.related_campaign.id
+        }
+        return newFieldData as LeadField
+    }
 
-    const formattedLeadValues = useMemo(() => {
-        if (!lead) return []
+
+    //Convierte LeadFieldDetailed a LeadField
+    const formattedLeadFields: LeadField[] = useMemo(() => {
+        if (!lead || !lead.field_values) return []
         return lead.field_values.filter(value => value.field.active)
-            .map((fieldValue) => {
-                if (fieldValue.value || fieldValue.value === "") return fieldValue
-                const type = fieldValue?.field?.field_type_code
-                const subtype = fieldValue?.field?.field_subtype_code
-                const leads = fieldValue?.related_leads
-                if (type === "LEAD" && leads && leads.length > 0) return {
-                    ...fieldValue,
-                    value: leads[0]?.id ?? null
-                }
-                const nomenclators = fieldValue?.nomenclator_items
-                if (subtype && nomenclators && nomenclators.length > 0) return {
-                    ...fieldValue,
-                    value: ["CHECKBOX_MULTIPLE", "SELECTOR_MULTIPLE"].includes(subtype)
-                        ? nomenclators.map(item => item.id)
-                        : nomenclators[0]?.id ?? null
-                }
-                return fieldValue
+            .map(fieldValue => detailedToNormalLeadField(fieldValue.field))
+    }, [lead])
+
+    //Convierte LeadFieldValueDetailed a LeadFieldValue
+    const formattedLeadValues: LeadFieldValue[] = useMemo(() => {
+        if (!lead || !lead.field_values) return []
+        return lead.field_values.filter(value => value.active && value.field.active)
+            .map(fieldValue => {
+                const fieldData = fieldValue.field
+                const newFieldData = detailedToNormalLeadField(fieldData)
+                return ({ ...fieldValue, field: newFieldData }) as LeadFieldValue
             })
     }, [lead])
 
-    if (lead) return (
-        <form autoComplete="off">
-            <Typography variant="h1">{`Actualizando Lead: ${lead?.field_values[0].value} ${lead?.field_values[1].value}`}</Typography>
-            <input type="text" id="campaign_id" value={lead?.campaign_id} hidden
-                {...register("campaign_id", { valueAsNumber: true })} />
-            <LeadForm leadFields={formattedLeadValues} idLead={Number(id)}
-                register={register} control={control} handleSubmit={handleSubmit} setError={setError} errors={errors} />
+    const onSubmit = useCallback((data: FormData) => {
+        return updateLead(data, lead!.id).then(lead => nav(`/leads/${lead.id}`))
+    }, [nav, lead])
 
+    if (lead && lead.campaign_id) return (
+        <form autoComplete="off">
+            <Stack spacing={2}>
+                <Typography variant="h1">{`Modificar Lead: ${lead?.field_values[0].value} ${lead?.field_values[1].value}`}</Typography>
+                <LeadForm existingValues={formattedLeadValues} existingLeadFields={formattedLeadFields}
+                    campaignId={lead.campaign_id} onSubmit={onSubmit} onCancel={() => nav(`/leads/${lead.id}`)} />
+            </Stack>
         </form>
     )
 }

@@ -3,9 +3,9 @@ import { useFieldArray, useForm } from "react-hook-form"
 import { Button, Grid, ButtonGroup, Stack } from "@mui/material"
 import { getLeadFields, getNomenclatorItems } from "../leadFields/leadFieldServices"
 import { LeadFormFieldType } from "./LeadFormField"
-import type { LeadField, LeadFieldDetailed, LeadFieldValue, NomenclatorItem } from "../../types/leadFields"
-import type { Lead, LeadDetailed, LeadPost, LeadPostValue } from "../../types/leads"
-import { createFormDataFromLead, getLeads, setLeadFormErrors, updateSelectorOptions } from "./leadService"
+import type { LeadField, LeadFieldValue, NomenclatorItem } from "../../types/leadFields"
+import type { Lead, LeadPost, LeadPostValue } from "../../types/leads"
+import { createFormDataFromLead, getLeads, getSelectorField, setLeadFormErrors, updateSelectorOptions } from "./leadService"
 import { FormErrorMessage } from "../../styles/styledMUIFormComponents"
 
 //Para permitir mantener los datos de cada campo
@@ -17,7 +17,8 @@ export interface LeadPostForm extends LeadPost {
 }
 
 interface LeadFormProps {
-    existingValues?: LeadFieldValue,
+    existingValues?: LeadFieldValue[],
+    existingLeadFields?: LeadField[],
     campaignId?: number,
     onSubmit: (data: FormData) => Promise<void>,
     submitBtnLabel?: string,
@@ -25,7 +26,7 @@ interface LeadFormProps {
     setCampaignError?: React.Dispatch<React.SetStateAction<string | undefined>>
 }
 
-export const LeadForm = ({ existingValues, campaignId, onSubmit, submitBtnLabel = "Guardar Lead", onCancel, setCampaignError }: LeadFormProps) => {
+export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSubmit, submitBtnLabel = "Guardar Lead", onCancel, setCampaignError }: LeadFormProps) => {
 
     const { register, control, setValue, handleSubmit, setError, clearErrors, formState: { errors } } = useForm<LeadPostForm>({
         defaultValues: {
@@ -39,7 +40,7 @@ export const LeadForm = ({ existingValues, campaignId, onSubmit, submitBtnLabel 
     const submit = (data: LeadPostForm) => {
         onSubmit(createFormDataFromLead(data)).catch(e => setLeadFormErrors(fields, e, setError))
     }
-console.log(errors)
+
     //Actualiza el valor de campaignId recibido para ser usado or el formulario
     useEffect(() => {
         if (campaignId) {
@@ -53,26 +54,49 @@ console.log(errors)
         if (setCampaignError) { setCampaignError(errors?.campaign_id?.message) }
     }, [errors.campaign_id, setCampaignError])
 
-    const [leadFields, setLeadFields] = useState<LeadField[]>([])
+    const [leadFields, setLeadFields] = useState<LeadField[]>(existingLeadFields ?? [])
 
     //Actualiza los leadFields respecto al campaignId seleccionado. Si ya hay existingLeadFields, no busca.
     useEffect(() => {
-        if (campaignId) {
+        if (campaignId && !existingLeadFields) {
             getLeadFields({ only_active: true, campaign_id: campaignId, "page_size": 0 }).then(res =>
                 setLeadFields(res.items.sort((a, b) => a.order - b.order))
             )
         }
-    }, [campaignId])
+    }, [campaignId, existingLeadFields])
 
     //Cuando se cargan los leadFields, se formatean y ubican en fieldArray
     useEffect(() => {
-        //Acomoda los leadFields para funcionar con useFieldArray
-        const formatLeadFields = (leadFields: LeadField[]) => {
-            return leadFields?.filter(field => field.field_type_code !== "CALCULATED")
-                .map(field => ({ field_id: field.id, fieldData: field }) as LeadPostFormValues)
+        //Si ya hay valores, formatea los values para asignarlos al fieldArray. Asigna listas de ids a value.
+        if (existingValues) {
+            replace(
+                existingValues.filter(value => value.field.field_type_code !== "CALCULATED")
+                .map(fieldValue => {
+                    let value: unknown = fieldValue.value
+                    //Si no hay valor, es selector o related_leads. Trae el id, o arreglo de ids
+                    if (!value && fieldValue.nomenclator_items.length > 0) {
+                        value = getSelectorField(fieldValue.nomenclator_items, "id", ["SELECTOR_MULTIPLE", "CHECKBOX_MULTIPLE"].includes(fieldValue.field.field_subtype_code!))
+                    }
+                    else if (!value && fieldValue.related_leads.length > 0) {
+                        value =  getSelectorField(fieldValue.related_leads, "id", true)
+                    }
+                    return ({
+                        field_id: fieldValue.field_id,
+                        fieldData: fieldValue.field,
+                        value: value
+                    }) as LeadPostFormValues
+                })
+            )
+            //Si no hay valores, solo trae los datos de los leadFields.
+        } else {
+            replace(
+                leadFields?.filter(field => field.field_type_code !== "CALCULATED")
+                    .map(field => ({
+                        field_id: field.id,
+                        fieldData: field
+                    }) as LeadPostFormValues))
         }
-        replace(formatLeadFields(leadFields))
-    }, [replace, leadFields])
+    }, [replace, leadFields, existingValues])
 
     // Objetos que contienen todos los leads de campañas relacionadas, y todos los nomencladores necesarios para el formulario.
     // Se identifican en un Map or sus ids.
