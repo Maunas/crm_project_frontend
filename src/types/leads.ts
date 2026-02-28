@@ -3,7 +3,7 @@ import type { LeadFieldValue, LeadFieldValueDetailed } from "./leadFields";
 
 export interface LeadPostValue {
   field_id: number;
-  value: string;
+  value: string | object[] | FileList ;
 }
 export interface LeadPost {
   campaign_id: number;

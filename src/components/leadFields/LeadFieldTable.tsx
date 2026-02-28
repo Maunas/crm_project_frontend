@@ -3,7 +3,6 @@ import { GenericModal } from "../common/layout/GenericContainer"
 import { EnabledIcon } from "../common/lists/Badges"
 import { CommonButton } from "../common/details/DetailsCommonButton"
 import { PaginationComponent } from "../common/lists/PaginationComponent"
-import { SimulateLead } from "../lead/LeadForm"
 import type { Paginable } from "../../types/common"
 import type { LeadFieldDetailed } from "../../types/leadFields"
 import type { CampaignDetailed } from "../../types/campaigns"
@@ -14,6 +13,8 @@ import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
+import { SimulateLeadFormModal } from "../lead/LeadFormWraper"
+import { useModal } from "../hooks/useModal"
 
 interface LeadFieldTableProps {
     campaign: CampaignDetailed,
@@ -47,6 +48,8 @@ export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateE
         else enableLeadField(field.id).then(updateActive)
     }
 
+    const { modalProps } = useModal()
+
     if (leadFields) return (
         <>
             <Grid size="grow" container justifyContent="center" alignItems="center" gap={2}>
@@ -58,9 +61,10 @@ export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateE
                 <Grid size="grow" minWidth="22rem" >
                     <ButtonGroup fullWidth>
                         <CommonButton onClick={() => handleSidebar("CREATE_FIELD", null)} actionType="CREATE">Agregar Campo</CommonButton>
-                        <GenericModal buttonText='Vista previa de formulario' actionType="DETAILS" variant="outlined" containerSx={{ minWidth: "80vw" }} >
-                            {campaign && leadFields?.items && leadFields?.items?.length > 0 &&
-                                <SimulateLead campaignId={campaign.id} leadFields={leadFields.items} />
+                        <GenericModal modalProps={modalProps} idModal="simulateLead" buttonText='Vista previa de formulario'
+                            actionType="DETAILS" variant="outlined" containerSx={{ minWidth: "80vw" }} >
+                            {campaign &&
+                                <SimulateLeadFormModal campaignId={campaign.id} onCancel={modalProps.handleClose}/>
                             }
                         </GenericModal>
                     </ButtonGroup>

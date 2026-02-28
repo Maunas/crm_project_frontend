@@ -1,5 +1,5 @@
 import { Container, Grid, Modal, Paper, type Breakpoint } from '@mui/material'
-import { useState, type ComponentProps, type ReactNode } from 'react'
+import { type ComponentProps, type ReactNode } from 'react'
 import { CommonButton } from '../details/DetailsCommonButton'
 
 
@@ -32,17 +32,22 @@ export const GenericPaper = ({ children, paperSx = {}, ...props }: GenericContai
 
 interface GenericModalProps extends GenericContainerProps, ComponentProps<typeof CommonButton> {
     buttonText: string,
+    modalProps: {
+        open: boolean | string | number,
+        handleOpen: (idModal: string | number) => void,
+        handleClose: () => void
+    },
+    idModal: string | number
 }
 
-export const GenericModal = ({ buttonText, maxWidth = "lg", containerSx = {}, paperSx = {}, children, ...btnProps }: GenericModalProps) => {
-    const [open, setOpen] = useState(false);
-    const handleOpen = () => setOpen(true);
-    const handleClose = () => setOpen(false);
+export const GenericModal = ({ idModal, modalProps: { open, handleOpen, handleClose },
+    buttonText, maxWidth = "lg", containerSx = {}, paperSx = {}, children, ...btnProps
+}: GenericModalProps) => {
     return (
         <>
-            <CommonButton handleClick={handleOpen} {...btnProps}>{buttonText}</CommonButton>
+            <CommonButton handleClick={() => handleOpen(idModal)} {...btnProps}>{buttonText}</CommonButton>
             <Modal
-                open={open}
+                open={open === idModal}
                 onClose={handleClose}
                 aria-labelledby="modal-modal-title"
                 aria-describedby="modal-modal-description"

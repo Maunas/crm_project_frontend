@@ -14,7 +14,6 @@ export interface LeadFieldValue {
 
 export interface LeadFieldValueDetailed extends LeadFieldValue, Metadata {
   field: LeadFieldDetailed;
-
 }
 
 export interface LeadFieldPost {

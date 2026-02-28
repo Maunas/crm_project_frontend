@@ -1,17 +1,11 @@
 import axios from "axios"
-import type { Paginable } from "../../types/common"
+import type { CampaignParams, Paginable } from "../../types/common"
 import type { Campaign, CampaignDetailed, CampaignPost } from "../../types/campaigns"
 import { API_BASE_URL } from "../../generalService"
 
-interface Params {
-    detailed?: boolean,
-    only_active?: boolean,
-    page?: number,
-    page_size?: number
-}
 
 /******************************** Campaigns ************************************/
-export const getCampaigns = async<T extends Params>(params?: T):
+export const getCampaigns = async<T extends CampaignParams>(params?: T):
     Promise<Paginable<T["detailed"] extends true ? CampaignDetailed : Campaign>> => {
     const campaigns = await axios.get(`${API_BASE_URL}/campaigns`, { params })
     return campaigns.data

@@ -1,5 +1,6 @@
-import type { FieldValues, Path, UseFormSetError } from "react-hook-form";
+import type { FieldValues, UseFormSetError } from "react-hook-form";
 import axios from "axios"
+import type { ErrorBody, ErrorMessage } from "./types/common";
 export const API_BASE_URL = "http://localhost:8000";
 
 export const generalSearch = async (query: string) => {
@@ -32,20 +33,8 @@ export function orderList(list: [{ [orderField]: number }], orderField: string =
   });
 }
 
-interface ErrorMessage<T> { field: Path<T>, message: string }
-interface ErrorBody<T> {
-  message?: string //Error en el cuerpo
-  response?: {
-    data: {
-      detail: string | //Si el error no tiene identificador
-      ErrorMessage<T> | //Un solo error de formulario
-      [ErrorMessage<T>] //Lista de errores de formulario
-    }
-  }
-}
-
 export const setFormErrors = <T extends FieldValues,>(error: ErrorBody<T>, setError: UseFormSetError<T>,
-  mapFunction: null | ((error: ErrorBody<T>) => void) = null) => {
+  mapFunction: null | ((error: ErrorMessage<T>[]) => void) = null) => {
 
   const errorDetail = error?.response?.data?.detail;
   //Si el error está en el cuerpo (Ej: Error de axios)
@@ -55,12 +44,14 @@ export const setFormErrors = <T extends FieldValues,>(error: ErrorBody<T>, setEr
   //Lista de errores de formulario
   if (Array.isArray(errorDetail)) {
     //Ejecuta una funcion personalizada
-    if (mapFunction) return mapFunction(error);
+    if (mapFunction) return mapFunction(errorDetail);
     //Setea los errores en el formulario.
-    else return errorDetail?.map((error: ErrorMessage<T>) => {
-      setError(error.field, { message: error.message });
+    else return errorDetail?.forEach((error: ErrorMessage<T>) => {
+      if (error.field === "general") setError("root", { message: error.message });
+      else setError(error.field, { message: error.message });
     })
   }
   //Un solo error de formulario
-  setError(errorDetail.field, { message: errorDetail.message });
+  if (errorDetail.field === "general") setError("root", { message: error.message });
+  else setError(errorDetail.field, { message: errorDetail.message });
 }

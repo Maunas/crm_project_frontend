@@ -1,18 +1,11 @@
 import axios from "axios"
 import { API_BASE_URL } from "../../generalService"
-import type { Paginable } from "../../types/common"
+import type { ListParams, Paginable, WorkspaceParams } from "../../types/common"
 import type { Organization, OrganizationDetailed, OrganizationPost, Workspace, WorkspaceDetailed, WorkspacePost } from "../../types/campaigns"
-
-interface Params {
-    detailed?: boolean,
-    only_active?: boolean,
-    page?: number,
-    page_size?: number
-}
 
 /**************************** Organizations ****************************/
 //Multitipo en Typescript. Se crea un tipo T a partir de Params, si T["detailed"] es verdadero, da el tipo Detailed.
-export const getOrganizations = async<T extends Params>(params?: T):
+export const getOrganizations = async<T extends ListParams>(params?: T):
     Promise<Paginable<
         T["detailed"] extends true ? OrganizationDetailed : Organization>> => {
     const org = await axios.get(`${API_BASE_URL}/organizations`, { params })
@@ -35,7 +28,7 @@ export const enableOrganization = async (id: number): Promise<{ actived: boolean
     return org.data
 }
 /******************************** Workspaces ************************************/
-export const getWorkspaces = async<T extends Params>(params?: T):
+export const getWorkspaces = async<T extends WorkspaceParams>(params?: T):
     Promise<Paginable<
         T["detailed"] extends true ? WorkspaceDetailed : Workspace>> => {
     const wsp = await axios.get(`${API_BASE_URL}/workspaces`, { params })
