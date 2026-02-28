@@ -30,36 +30,34 @@ interface ValidationSidebarProps {
 
 export const ValidationFormSidebar = ({ leadField, updateEntityOnList, closeSidebar, handleSidebar }: ValidationSidebarProps) => {
 
-    const onSubmit = (data: FieldValidationListPost) => {
-        return Promise.all(
-            data.validation_rules.map(val => {
-                if (val.to_delete && val.id) return deleteValidation(val.id).then(res => res)
-                if (val.id) {
-                    return updateValidation(getValidationDataByType(val, val.creation_method === "template"), val.id).then(res => res)
-                } else {
-                    return createValidation(getValidationDataByType(val, val.creation_method === "template")).then(res => res)
-                }
-            })
-        ).then(newList => {
-            const newLeadField = { ...leadField, validation_rules: newList.filter(rule => "id" in rule) } //Filtra los eliminados
-            updateEntityOnList(newLeadField)
-            handleSidebar("DETAILS_FIELD", newLeadField)
-        })
-            .catch(e => { console.log("error", e); throw e })
+    const onSubmit = (val: FieldValidationListPostInstance) => {
+        if (val.to_delete && val.id) return deleteValidation(val.id)
+        if (val.id) {
+            return updateValidation(getValidationDataByType(val, val.creation_method === "template"), val.id)
+        } else {
+            return createValidation(getValidationDataByType(val, val.creation_method === "template"))
+        }
+    }
+
+    const onSubmitAll = (val: FieldValidationRule[]) => {
+        const newLeadField = { ...leadField, validation_rules: val }
+        updateEntityOnList(newLeadField)
+        handleSidebar("DETAILS_FIELD", newLeadField)
     }
 
     return (
-        <ValidationRuleForm leadField={leadField} onSubmit={onSubmit} onCancel={closeSidebar} />
+        <ValidationRuleForm leadField={leadField} onSubmit={onSubmit} onSubmitAll={onSubmitAll} onCancel={closeSidebar} />
     )
 }
 
 interface ValidationRuleFormProps {
     leadField: LeadFieldDetailed
     onCancel: () => void
-    onSubmit: (data: FieldValidationListPost) => Promise<void>
+    onSubmit: (data: FieldValidationListPostInstance) => Promise<FieldValidationRule | { action: string; }>
+    onSubmitAll: (data: FieldValidationRule[]) => void
 }
 
-export const ValidationRuleForm = ({ leadField, onSubmit, onCancel }: ValidationRuleFormProps) => {
+export const ValidationRuleForm = ({ leadField, onSubmit, onSubmitAll, onCancel }: ValidationRuleFormProps) => {
 
     const setCreationMethod = (validation_rules: FieldValidationRule[]) => {
         return validation_rules.map(val => ({
@@ -69,17 +67,15 @@ export const ValidationRuleForm = ({ leadField, onSubmit, onCancel }: Validation
         )
     }
 
-    const { control, register, handleSubmit, setValue, getValues, clearErrors, formState: { errors } } = useForm<FieldValidationListPost>()
+    const { control, register, handleSubmit, setValue, getValues, clearErrors, formState: { errors } } = useForm<FieldValidationListPost>({
+        defaultValues: { validation_rules: setCreationMethod(leadField.validation_rules) }
+    })
 
-    const { append, remove, replace, fields } = useFieldArray({ control, name: "validation_rules", keyName: "array_id" });
+    const { append, remove, fields } = useFieldArray({ control, name: "validation_rules", keyName: "array_id" });
 
     useEffect(() => {
         if (!leadField) onCancel()
     }, [leadField, onCancel])
-
-    useEffect(() => {
-        replace(setCreationMethod(leadField.validation_rules))
-    }, [leadField.validation_rules, replace])
 
     const [templates, setTemplates] = useState<FieldValidationRuleTemplate[]>([]);
 
@@ -88,7 +84,20 @@ export const ValidationRuleForm = ({ leadField, onSubmit, onCancel }: Validation
     }, []);
 
     const submit = (data: FieldValidationListPost) => {
-        onSubmit(data).catch(e => console.log(e))
+        return Promise.all(
+            data.validation_rules.map((val, idx) => {
+                return onSubmit(val)
+                    .then(savedVal => {
+                        console.log({ ...val, ...savedVal })
+                        if (!val.to_delete) {
+                            setValue(`validation_rules.${idx}.id`, savedVal.id)
+                        }
+                        else remove(idx)
+                        return savedVal
+                    })
+                    .catch(e => { console.log(e) })
+            })
+        ).then(all => onSubmitAll(all.filter(val => "id" in val)))
     }
 
     return (
@@ -186,7 +195,7 @@ export const ValidationInstance = ({ idx, templates, register, control, setValue
             <Grid container justifyContent="center" marginBlock={2}>
                 <Grid size="grow">
                     <Stack gap={1} direction="row" alignItems="center" >
-                        <Typography variant="h4">Validación {idx + 1}</Typography>
+                        <Typography variant="h4" color={toDelete ? "error" : "textPrimary"} >Validación {idx + 1}</Typography>
                         {existingValId && <EnabledIcon active={!!existingValId && !toDelete} trueTooltip="Creado" falseTooltip="Para eliminar" />}
                     </Stack>
                 </Grid>
