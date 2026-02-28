@@ -1,12 +1,12 @@
 import { ControlledCheckbox, ControlledNumber, ControlledSlider, PasswordField, SingleFileField } from "../common/forms/CustomInputs";
 import { AutocompleteLoader, ControlledAutocomplete, ControlledGroupedCheckbox, ControlledRadio } from "../common/forms/CustomMultipleInputs";
-import type { LeadPostValueData } from "./LeadForm";
 import type { Lead } from "../../types/leads";
 import type { NomenclatorItem } from "../../types/leadFields";
 import { type Control, type FieldValues, type Path, type UseFormRegister } from "react-hook-form";
 import dayjs from "dayjs";
 import { FormControl, InputAdornment, InputLabel, OutlinedInput, TextField } from "@mui/material"
 import { FormErrorMessage } from "../../styles/styledMUIFormComponents";
+import type { LeadPostFormValues } from "./LeadForm";
 
 interface BasicFormInput<T extends FieldValues> {
     label?: string,
@@ -73,7 +73,7 @@ export const LeadFormFile = <T extends FieldValues>
 }
 
 interface RegPropWithLeadField<T extends FieldValues> extends RegisterFormInput<T> {
-    leadField: LeadPostValueData
+    leadField: LeadPostFormValues
 }
 export const LeadFormAddress = <T extends FieldValues>
     ({ register, name, label, leadField, required = false, errorMessage, autoComplete = "one-time-code" }: RegPropWithLeadField<T>) => {
@@ -107,7 +107,7 @@ export const LeadFormBool = <T extends FieldValues>
 }
 
 interface CtlPropsWithLeadField<T extends FieldValues> extends ControlFormInput<T> {
-    leadField: LeadPostValueData
+    leadField: LeadPostFormValues
 }
 export const LeadFormRating = <T extends FieldValues>
     ({ control, name, label, leadField, required = false, errorMessage }: CtlPropsWithLeadField<T>) => {
@@ -127,7 +127,7 @@ export const LeadFormNumber = <T extends FieldValues>
 }
 
 interface LeadFormSelectorProps<T extends FieldValues> extends ControlFormInput<T> {
-    leadField: LeadPostValueData,
+    leadField: LeadPostFormValues,
     optionMap: Map<number, NomenclatorItem[]>,
     autoComplete?: string
 }
@@ -167,13 +167,13 @@ export const LeadFormRelatedLead = <T extends FieldValues>
 }
 
 interface LeadFormCheckboxProps<T extends FieldValues> extends ControlFormInput<T> {
-    leadField: LeadPostValueData,
+    leadField: LeadPostFormValues,
     optionMap: Map<number, NomenclatorItem[]>,
     autoComplete?: string,
-    returnField: keyof T
+    returnField: keyof NomenclatorItem
 }
 export const LeadFormCheckbox = <T extends FieldValues>
-    ({ label, name, control, required = false, errorMessage, leadField, optionMap, returnField }: LeadFormCheckboxProps<T>) => {
+    ({ control, label, name, required = false, errorMessage, leadField, optionMap, returnField }: LeadFormCheckboxProps<T>) => {
 
     const optionMapId = leadField?.fieldData?.nomenclator_id
 

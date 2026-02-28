@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react"
-import { useFieldArray, useForm } from "react-hook-form"
-import { Button, Grid, ButtonGroup, Stack } from "@mui/material"
-import { getLeadFields, getNomenclatorItems } from "../leadFields/leadFieldServices"
-import { LeadFormFieldType } from "./LeadFormField"
-import type { LeadField, LeadFieldValue, NomenclatorItem } from "../../types/leadFields"
-import type { Lead, LeadPost, LeadPostValue } from "../../types/leads"
-import { createFormDataFromLead, getLeads, getSelectorField, setLeadFormErrors, updateSelectorOptions } from "./leadService"
 import { FormErrorMessage } from "../../styles/styledMUIFormComponents"
+import { LeadFormAddress, LeadFormBool, LeadFormCheckbox, LeadFormFile, LeadFormMoney, LeadFormNumber, LeadFormPassword, LeadFormRating, LeadFormRelatedLead, LeadFormSelector, LeadFormText } from "./LeadFormFieldTypes"
+import type { Lead, LeadPost, LeadPostValue } from "../../types/leads"
+import type { LeadField, LeadFieldValue, NomenclatorItem } from "../../types/leadFields"
+import { createFormDataFromLead, getLeads, getSelectorField, setLeadFormErrors, updateSelectorOptions } from "./leadService"
+import { getLeadFields, getNomenclatorItems } from "../leadFields/leadFieldServices"
+import { useFieldArray, useForm, type Control, type Path, type UseFormRegister } from "react-hook-form"
+import { Button, Grid, ButtonGroup, Stack } from "@mui/material"
 
 //Para permitir mantener los datos de cada campo
 export interface LeadPostFormValues extends LeadPostValue {
@@ -139,4 +139,74 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
             </Stack>
         </>
     )
+}
+
+/***************************************** Mostrar un campo respecto al tipo de dato. ******************************************* */
+interface LeadFormFieldTypeProps {
+    register: UseFormRegister<LeadPostForm>,
+    control: Control<LeadPostForm>,
+    idx: number,
+    leadField: LeadPostFormValues,
+    relatedLeads: Map<number, Lead[]>,
+    selectors: Map<number, NomenclatorItem[]>,
+    errorMessage?: string
+}
+
+const LeadFormFieldType = ({ register, control, idx, leadField, relatedLeads, selectors, errorMessage }: LeadFormFieldTypeProps) => {
+
+    const name: Path<LeadPostForm> = `values.${idx}.value`
+    const label = leadField.fieldData.name ?? undefined
+
+    switch (leadField.fieldData.field_type_code) {
+        case "LEAD":
+            return (<LeadFormRelatedLead label={label} name={name} control={control} optionMap={relatedLeads}
+                leadField={leadField} required={leadField.fieldData.required} errorMessage={errorMessage} />)
+        case "SELECTOR":
+            return (<LeadFormSelector label={label} name={name} control={control} optionMap={selectors}
+                leadField={leadField} required={leadField.fieldData.required} errorMessage={errorMessage} />)
+        case "CHECKBOX":
+            return (<LeadFormCheckbox label={label} name={name} control={control} optionMap={selectors}
+                leadField={leadField} returnField="id" required={leadField.fieldData.required} errorMessage={errorMessage} />)
+        case "URL":
+            return (<LeadFormText label={label} name={name} register={register} type="url"
+                required={leadField.fieldData.required} errorMessage={errorMessage} />)
+        case "ADDRESS":
+            return (<LeadFormAddress label={label} name={name} register={register} leadField={leadField}
+                required={leadField.fieldData.required} errorMessage={errorMessage} />)
+        case "PHONE":
+            return (<LeadFormText label={label} name={name} register={register} type="tel"
+                required={leadField.fieldData.required} errorMessage={errorMessage} />)
+        case "EMAIL":
+            return (<LeadFormText label={label} name={name} register={register} type="email"
+                required={leadField.fieldData.required} errorMessage={errorMessage} />)
+        case "DATE":
+            return (<LeadFormText label={label} name={name} register={register} type="date"
+                required={leadField.fieldData.required} errorMessage={errorMessage} />)
+        case "DATE_TIME":
+            return (<LeadFormText label={label} name={name} register={register} type="datetime-local"
+                required={leadField.fieldData.required} errorMessage={errorMessage} />)
+        case "NUMBER": case "INT":
+            return (<LeadFormNumber label={label} name={name} control={control}
+                required={leadField.fieldData.required} errorMessage={errorMessage} />)
+        case "RICH_TEXT":
+            return (<LeadFormText label={label} name={name} register={register}
+                required={leadField.fieldData.required} errorMessage={errorMessage} multiline />)
+        case "RATING":
+            return (<LeadFormRating label={label} leadField={leadField} name={name} control={control}
+                required={leadField.fieldData.required} errorMessage={errorMessage} />)
+        case "MONEY":
+            return (<LeadFormMoney label={label} name={name} register={register}
+                required={leadField.fieldData.required} errorMessage={errorMessage} />)
+        case "PASSWORD":
+            return (<LeadFormPassword label={label} name={name} register={register}
+                required={leadField.fieldData.required} errorMessage={errorMessage} />)
+        case "BOOL":
+            return (<LeadFormBool label={label} name={name} control={control} errorMessage={errorMessage} />)
+        case "FILE":
+            return (<LeadFormFile label={label} name={name} register={register}
+                required={leadField.fieldData.required} errorMessage={errorMessage} />)
+        default:
+            return <LeadFormText label={label} name={name} register={register}
+                required={leadField.fieldData.required} errorMessage={errorMessage} />
+    }
 }
