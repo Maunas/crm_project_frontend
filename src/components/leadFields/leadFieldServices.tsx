@@ -3,7 +3,6 @@ import type {
     LeadField, LeadFieldDetailed, LeadFieldPost, LeadFieldType, LeadFieldTypeDetailed, LeadFieldTemplate, Nomenclator, LeadFieldSection, LeadFieldSectionDetailed, NomenclatorDetailed, FieldValidationRule, FieldValidationRuleTemplate, FieldValidationRulePost, NomenclatorItem, NomenclatorItemDetailed,
 } from "../../types/leadFields";
 import type { ListParams, Paginable } from "../../types/common";
-import type { FieldValidationRuleData } from "./LeadFieldForm";
 import { API_BASE_URL, orderList } from "../../generalService";
 import type { FieldValidationListPostInstance } from "../validations/ValidationForm";
 
@@ -93,6 +92,10 @@ export const updateValidation = async (body: FieldValidationRulePost, id: number
     return val.data;
 };
 
+export const deleteValidation = async (id: number): Promise<{action: string}> => {
+    const val = await axios.delete(`${API_BASE_URL}/validation_rules/${id}`);
+    return val.data;
+};
 export const getFieldSections = async <T extends ListParams>(params?: T): Promise<Paginable<
     T["detailed"] extends true ? LeadFieldSectionDetailed : LeadFieldSection
 >> => {
