@@ -6,6 +6,9 @@ import type { ListParams, Paginable } from "../../types/common";
 import type { FieldValidationRuleData } from "./LeadFieldForm";
 import { API_BASE_URL, orderList } from "../../generalService";
 
+interface LeadFieldParams extends ListParams {
+    campaign_id?: number;
+}
 interface NomenclatorParams extends ListParams {
     campaign_id?: number;
     global_nomenclator?: boolean;
@@ -15,7 +18,7 @@ interface NomenclatorItemParams extends ListParams {
     parent_item_id?: number;
 }
 
-export const getLeadFields = async <T extends ListParams>(
+export const getLeadFields = async <T extends LeadFieldParams>(
     params?: T,
 ): Promise<Paginable<T["detailed"] extends true ? LeadFieldDetailed : LeadField>> => {
     const leadField = await axios.get(`${API_BASE_URL}/lead_fields`, { params });
