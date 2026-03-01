@@ -7,7 +7,6 @@ import { createValidation, deleteValidation, getValidationDataByType, getValidat
 import { useFieldArray, useForm, useWatch, type Control, type FieldErrors, type UseFieldArrayRemove, type UseFormClearErrors, type UseFormGetValues, type UseFormRegister, type UseFormSetValue } from "react-hook-form";
 import { Button, Divider, Grid, Stack, Typography, ButtonGroup } from "@mui/material";
 import { FormErrorMessage } from "../../styles/styledMUIFormComponents";
-import type { DeleteResponse } from "../../types/common";
 
 export interface FieldValidationListPostInstance extends FieldValidationRulePost {
     required_params: string[];
@@ -90,43 +89,36 @@ export const ValidationRuleForm = ({ leadField, onSubmit, onSubmitAll, onErrorAl
     }, []);
 
     const submit = async (data: FieldValidationListPost) => {
-        //Promise.allSettled guarda los resultados de todas las peticiones, con:
-        //{status:"fullfilled" value: respuesta} En exito
-        //{status:"rejected" reason: error} En error
-        const results = await Promise.allSettled(
+        let errorFlag = false
+        const idxToDelete: number[] = []
+        const newLeadFieldValidationList: FieldValidationRule[] = [] //Para la lista dentro del detalle de leadField
+
+        //Promise.allSettled guarda los resultados de todas las peticiones, sin interrumpir si falla.
+        await Promise.allSettled(
             data.validation_rules.map((val, idx) => {
                 return onSubmit(val)
                     .then(savedVal => {
                         //Si no elimina, guarda los datos nuevos de los campos creados para habilitar su modificación
                         if (!val.to_delete && "id" in savedVal) {
                             setValue(`validation_rules.${idx}`, { ...val, ...savedVal })
-                            return savedVal
+                            newLeadFieldValidationList.push(savedVal)
                         }
-                        else return (savedVal as DeleteResponse).action //Guarda solo el string "deleted"
+                        else idxToDelete.push(idx) //Guarda los indices a eliminar
                     })
                     .catch(e => {
                         setValFormErrors(idx, val.creation_method === "template", e, setError)
+                        //Si falla la modificación, guarda el valor anterior al formulario
+                        if (val.id) newLeadFieldValidationList.push(leadField.validation_rules[idx])
+                        errorFlag = true
                         throw (e)
                     })
             })
         )
-        let errorFlag = false
-        const idxToDelete: number[] = []
-        const newLeadFieldValidationList: FieldValidationRule[] = [] //Para la lista dentro del detalle de leadField
-        results.forEach((result, idx) => {
-            if (result.status === "rejected") {
-                errorFlag = true
-                //Guarda los valores previos al formulario
-                if (leadField.validation_rules[idx]) newLeadFieldValidationList.push(leadField.validation_rules[idx])
-            }
-            else if (typeof result.value === "string") idxToDelete.push(idx) //Si falla lo quita del formulario
-
-            else newLeadFieldValidationList.push(result.value)
-        })
-        remove(idxToDelete) //Se eliminan todos a la vez para evitar errores despues de setear errores.
+        //Se eliminan todos los campos a la vez, despues de setear todos los errores, para evitar inconsistencias.
+        remove(idxToDelete) 
         return errorFlag ? onErrorAll(newLeadFieldValidationList) : onSubmitAll(newLeadFieldValidationList)
     }
-    
+
     return (
         <Stack spacing={2}>
             <Stack>
