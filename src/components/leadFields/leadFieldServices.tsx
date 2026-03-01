@@ -1,10 +1,9 @@
 import axios from "axios";
 import type {
-    LeadField, LeadFieldDetailed, LeadFieldPost, LeadFieldType, LeadFieldTypeDetailed, LeadFieldTemplate, Nomenclator, LeadFieldSection, LeadFieldSectionDetailed, NomenclatorDetailed, FieldValidationRule, FieldValidationRuleTemplate, FieldValidationRulePost, NomenclatorItem, NomenclatorItemDetailed,
+    LeadField, LeadFieldDetailed, LeadFieldPost, LeadFieldType, LeadFieldTypeDetailed, LeadFieldTemplate, Nomenclator, LeadFieldSection, LeadFieldSectionDetailed, NomenclatorDetailed, NomenclatorItem, NomenclatorItemDetailed,
 } from "../../types/leadFields";
-import type { ListParams, Paginable } from "../../types/common";
+import type { DeleteResponse, EnableResponse, ListParams, Paginable } from "../../types/common";
 import { API_BASE_URL, orderList } from "../../generalService";
-import type { FieldValidationListPostInstance } from "../validations/ValidationForm";
 
 interface LeadFieldParams extends ListParams {
     campaign_id?: number;
@@ -40,12 +39,12 @@ export const updateLeadField = async (body: LeadFieldPost, id: number): Promise<
     return leadField.data;
 };
 
-export const disableLeadField = async (id: number): Promise<{ action: string }> => {
+export const disableLeadField = async (id: number): Promise<DeleteResponse> => {
     const leadField = await axios.delete(`${API_BASE_URL}/lead_fields/${id}`);
     return leadField.data;
 };
 
-export const enableLeadField = async (id: number): Promise<{ actived: boolean }> => {
+export const enableLeadField = async (id: number): Promise<EnableResponse> => {
     const leadField = await axios.put(`${API_BASE_URL}/lead_fields/active/${id}`);
     return leadField.data;
 };
@@ -76,26 +75,6 @@ export const getNomenclatorItems = async <T extends NomenclatorItemParams>(param
     return { ...leadField.data, items: orderList(leadField.data.items, "id") };
 };
 
-/****************************************** Validation **************************************** */
-export const getValidationTemplates = async (): Promise<FieldValidationRuleTemplate[]> => {
-    const val = await axios.get(`${API_BASE_URL}/templates/validation_rules`);
-    return val.data;
-};
-
-export const createValidation = async (body: FieldValidationRulePost): Promise<FieldValidationRule> => {
-    const val = await axios.post(`${API_BASE_URL}/validation_rules`, body);
-    return val.data;
-};
-
-export const updateValidation = async (body: FieldValidationRulePost, id: number): Promise<FieldValidationRule> => {
-    const val = await axios.put(`${API_BASE_URL}/validation_rules/${id}`, body);
-    return val.data;
-};
-
-export const deleteValidation = async (id: number): Promise<{action: string}> => {
-    const val = await axios.delete(`${API_BASE_URL}/validation_rules/${id}`);
-    return val.data;
-};
 export const getFieldSections = async <T extends ListParams>(params?: T): Promise<Paginable<
     T["detailed"] extends true ? LeadFieldSectionDetailed : LeadFieldSection
 >> => {
@@ -144,35 +123,5 @@ export const getFieldDataByType = (data: LeadFieldPost, isTemplate = false,): Le
             };
         default:
             return manualData;
-    }
-};
-
-//Organiza los datos de Validation, para evitar enviar campos incompatibles con el método de creación (template/manual)
-export const getValidationDataByType = (data: FieldValidationListPostInstance, isTemplate = false): FieldValidationRulePost => {
-
-    const requiredData: FieldValidationRulePost = {
-        name: data.name,
-        error_message: data.error_message,
-        field_id: data.field_id,
-    };
-    //Si es por template, devuelve el código de template y sus parametros
-    if (isTemplate) {
-        //Asegura que, de no haber llenado template o sus params, no sean undefined, si no vacío.
-        const params = data.template_params ?? {};
-        const required = data.required_params ?? [];
-
-        //Convierte los parametros recibidos a un arreglo, y filtra para dejar solo los requeridos.
-        const filteredParams = Object.entries(params).filter(([key]) =>
-            required.includes(key),
-        );
-        return {
-            ...requiredData,
-            template_code: data?.template_code,
-            //Luego vuelve a convertir a objeto con Object.fromEntries
-            template_params: Object.fromEntries(filteredParams),
-        };
-    } else {
-        //Si es manual, solo devuelve la expresión.
-        return { ...requiredData, expression: data.expression };
     }
 };

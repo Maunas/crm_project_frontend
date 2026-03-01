@@ -45,7 +45,7 @@ export interface LeadListParams extends CampaignParams {
  * Contiene los formatos de mensaje de error.
  */
 export interface ErrorMessage<T> {
-  field: Path<T> | "general", //Puede venir un error con campo "general", debe equivaler a root.
+  field: Path<T>,
   message: string
 }
 export interface ErrorBody<T> {
@@ -57,4 +57,12 @@ export interface ErrorBody<T> {
       [ErrorMessage<T>] //Lista de errores de formulario
     }
   }
+}
+
+export interface DeleteResponse {
+  action: string
+}
+
+export interface EnableResponse {
+  actived: boolean
 }

@@ -175,6 +175,6 @@ const CampaignDetailSidebar = ({ mode, entity, campaign, updateLeadFields, handl
         case "UPDATE_VAL":
             return <ValidationFormSidebar leadField={entity as LeadFieldDetailed}
                 updateEntityOnList={(entity) => updateEntity("UPDATE_FIELD", entity)}
-                handleSidebar={handleSidebar} closeSidebar={closeSidebar} />
+                handleSidebar={handleSidebar}/>
     }
 }

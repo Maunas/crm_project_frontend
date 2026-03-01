@@ -108,7 +108,7 @@ interface LeadTableProps {
     campaignId: number
 }
 export const LeadTable = ({ leads, campaignId }: LeadTableProps) => {
-    const NUMBER_OF_FIELDS = 8
+    const NUMBER_OF_FIELDS = 50
 
     const [leadColumns, setLeadColumns] = useState<LeadField[]>([])
 

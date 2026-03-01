@@ -1,7 +1,7 @@
 import axios from "axios";
 import { API_BASE_URL, orderList, setFormErrors } from "../../generalService";
 import type { Lead, LeadDetailed, LeadPostValue } from "../../types/leads";
-import type { ErrorBody, ErrorMessage, LeadListParams, Paginable } from "../../types/common";
+import type { DeleteResponse, EnableResponse, ErrorBody, ErrorMessage, LeadListParams, Paginable } from "../../types/common";
 import type { LeadPostForm } from "./LeadForm";
 import type { LeadField } from "../../types/leadFields";
 import type { FieldArrayWithId, UseFormSetError } from "react-hook-form";
@@ -31,11 +31,11 @@ export const updateLead = async (body: FormData, id: number): Promise<Lead> => {
   return lead.data;
 };
 
-export const enableLead = async (id: number): Promise<{ actived: boolean }> => {
+export const enableLead = async (id: number): Promise<EnableResponse> => {
   const lead = await axios.put(`${API_BASE_URL}/leads/active/${id}`);
   return lead.data;
 };
-export const disableLead = async (id: number): Promise<{ action: string }> => {
+export const disableLead = async (id: number): Promise<DeleteResponse> => {
   const lead = await axios.delete(`${API_BASE_URL}/leads/${id}`);
   return lead.data;
 };
@@ -112,16 +112,14 @@ export const setLeadFormErrors = (fields: FieldArrayWithId<LeadPostForm, "values
   const leadErrorMapping = (errorArray: ErrorMessage<LeadPostForm>[]) => {
     errorArray.forEach(error => {
       //Revisa si el error no viene de un campo no relacionado a values.
-      if (error.field === "campaign_id") setError("campaign_id", { message: error.message })
-      if (["general", "root"].includes(error.field)) setError("root", { message: error.message });
+      if (error.field === "campaign_id") return setError("campaign_id", { message: error.message })
       //Busca el indice del field para asignarle el error.
       const fieldIdx = fields.findIndex(field => error.field === field.fieldData.name)
       //Si no coincide con un nombre, va a root.
-      if (fieldIdx === -1) setError("root", { message: error.message });
-      setError(`values.${fieldIdx}.value`, { message: error.message })
+      if (fieldIdx === -1) return setError("root", { message: error.message });
+      return setError(`values.${fieldIdx}.value`, { message: error.message })
     })
   }
-
   setFormErrors(error, setError, leadErrorMapping)
 }
 

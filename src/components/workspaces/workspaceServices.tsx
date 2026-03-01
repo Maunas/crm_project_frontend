@@ -1,6 +1,6 @@
 import axios from "axios"
 import { API_BASE_URL } from "../../generalService"
-import type { ListParams, Paginable, WorkspaceParams } from "../../types/common"
+import type { DeleteResponse, EnableResponse, ListParams, Paginable, WorkspaceParams } from "../../types/common"
 import type { Organization, OrganizationDetailed, OrganizationPost, Workspace, WorkspaceDetailed, WorkspacePost } from "../../types/campaigns"
 
 /**************************** Organizations ****************************/
@@ -19,11 +19,11 @@ export const updateOrganization = async (body: OrganizationPost, id: number): Pr
     const org = await axios.put(`${API_BASE_URL}/organizations/${id}`, body)
     return org.data
 }
-export const disableOrganization = async (id: number): Promise<{ action: string }> => {
+export const disableOrganization = async (id: number): Promise<DeleteResponse> => {
     const org = await axios.delete(`${API_BASE_URL}/organizations/${id}`)
     return org.data
 }
-export const enableOrganization = async (id: number): Promise<{ actived: boolean }> => {
+export const enableOrganization = async (id: number): Promise<EnableResponse> => {
     const org = await axios.put(`${API_BASE_URL}/organizations/active/${id}`)
     return org.data
 }
@@ -47,11 +47,11 @@ export const updateWorkspace = async (body: WorkspacePost, id: number): Promise<
     return wsp.data
 }
 
-export const disableWorkspace = async (id: number): Promise<{ action: string }> => {
+export const disableWorkspace = async (id: number): Promise<DeleteResponse> => {
     const org = await axios.delete(`${API_BASE_URL}/workspaces/${id}`)
     return org.data
 }
-export const enableWorkspace = async (id: number): Promise<{ actived: boolean }> => {
+export const enableWorkspace = async (id: number): Promise<EnableResponse> => {
     const org = await axios.put(`${API_BASE_URL}/workspaces/active/${id}`)
     return org.data
 }

@@ -48,10 +48,14 @@ export const setFormErrors = <T extends FieldValues,>(error: ErrorBody<T>, setEr
     //Setea los errores en el formulario.
     else return errorDetail?.forEach((error: ErrorMessage<T>) => {
       if (error.field === "general") setError("root", { message: error.message });
-      else setError(error.field, { message: error.message });
+      else {
+        setError(error.field, { message: error.message });
+      }
     })
   }
   //Un solo error de formulario
   if (errorDetail.field === "general") setError("root", { message: error.message });
-  else setError(errorDetail.field, { message: errorDetail.message });
+  else {
+    setError(errorDetail.field, { message: errorDetail.message });
+  }
 }
