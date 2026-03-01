@@ -1,11 +1,13 @@
-import { useFieldArray, useForm, useWatch, type Control, type FieldErrors, type UseFieldArrayRemove, type UseFormClearErrors, type UseFormGetValues, type UseFormRegister, type UseFormSetValue } from "react-hook-form";
-import type { FieldValidationRule, FieldValidationRulePost, FieldValidationRuleTemplate, LeadFieldDetailed } from "../../types/leadFields";
 import { useEffect, useMemo, useState } from "react";
-import { createValidation, deleteValidation, getValidationDataByType, getValidationTemplates, updateValidation } from "../leadFields/leadFieldServices";
-import { Button, Divider, Grid, Stack, Typography, ButtonGroup } from "@mui/material";
 import { ControlledTextInput, RegisteredTextInput } from "../common/forms/CustomInputs";
 import { ControlledAutocomplete, ControlledRadio } from "../common/forms/CustomMultipleInputs";
 import { EnabledIcon } from "../common/lists/Badges";
+import type { FieldValidationRule, FieldValidationRulePost, FieldValidationRuleTemplate, LeadFieldDetailed } from "../../types/leadFields";
+import { createValidation, deleteValidation, getValidationDataByType, getValidationTemplates, setValFormErrors, updateValidation } from "./validationService";
+import { useFieldArray, useForm, useWatch, type Control, type FieldErrors, type UseFieldArrayRemove, type UseFormClearErrors, type UseFormGetValues, type UseFormRegister, type UseFormSetValue } from "react-hook-form";
+import { Button, Divider, Grid, Stack, Typography, ButtonGroup } from "@mui/material";
+import { FormErrorMessage } from "../../styles/styledMUIFormComponents";
+import type { DeleteResponse } from "../../types/common";
 
 export interface FieldValidationListPostInstance extends FieldValidationRulePost {
     required_params: string[];
@@ -14,22 +16,20 @@ export interface FieldValidationListPostInstance extends FieldValidationRulePost
     id?: number
 }
 
-export interface FieldValidationListPost {
+export type FieldValidationListPost = {
     validation_rules: FieldValidationListPostInstance[],
 }
 
-interface ValidationSidebarProps {
+export interface ValidationSidebarProps {
     leadField: LeadFieldDetailed,
     updateEntityOnList: (entity: LeadFieldDetailed) => void,
     handleSidebar: (
         mode: string,
         entity: LeadFieldDetailed,
     ) => void,
-    closeSidebar: () => void,
 }
 
-export const ValidationFormSidebar = ({ leadField, updateEntityOnList, closeSidebar, handleSidebar }: ValidationSidebarProps) => {
-
+export const ValidationFormSidebar = ({ leadField, updateEntityOnList, handleSidebar }: ValidationSidebarProps) => {
     const onSubmit = (val: FieldValidationListPostInstance) => {
         if (val.to_delete && val.id) return deleteValidation(val.id)
         if (val.id) {
@@ -38,18 +38,20 @@ export const ValidationFormSidebar = ({ leadField, updateEntityOnList, closeSide
             return createValidation(getValidationDataByType(val, val.creation_method === "template"))
         }
     }
-
+    //Actualiza el leadfield, abre el detalle
     const onSubmitAll = (val: FieldValidationRule[]) => {
         const newLeadField = { ...leadField, validation_rules: val }
         updateEntityOnList(newLeadField)
         handleSidebar("DETAILS_FIELD", newLeadField)
     }
+    //Actualiza el leadField, el formulario queda abierto
     const onErrorAll = (val: FieldValidationRule[]) => {
         updateEntityOnList({ ...leadField, validation_rules: val })
     }
 
     return (
-        <ValidationRuleForm leadField={leadField} onSubmit={onSubmit} onSubmitAll={onSubmitAll} onErrorAll={onErrorAll} onCancel={closeSidebar} />
+        <ValidationRuleForm leadField={leadField} onSubmit={onSubmit} onSubmitAll={onSubmitAll} onErrorAll={onErrorAll}
+            onCancel={() => handleSidebar("DETAILS_FIELD", leadField)} />
     )
 }
 
@@ -71,7 +73,7 @@ export const ValidationRuleForm = ({ leadField, onSubmit, onSubmitAll, onErrorAl
         )
     }
 
-    const { control, register, handleSubmit, setValue, getValues, clearErrors, formState: { errors } } = useForm<FieldValidationListPost>({
+    const { control, register, handleSubmit, setError, setValue, getValues, clearErrors, formState: { errors } } = useForm<FieldValidationListPost>({
         defaultValues: { validation_rules: setCreationMethod(leadField.validation_rules) }
     })
 
@@ -87,29 +89,51 @@ export const ValidationRuleForm = ({ leadField, onSubmit, onSubmitAll, onErrorAl
         getValidationTemplates().then(setTemplates);
     }, []);
 
-    const submit = (data: FieldValidationListPost) => {
-        const newData: FieldValidationRule[] = []
-        return Promise.all(
+    const submit = async (data: FieldValidationListPost) => {
+        //Promise.allSettled guarda los resultados de todas las peticiones, con:
+        //{status:"fullfilled" value: respuesta} En exito
+        //{status:"rejected" reason: error} En error
+        const results = await Promise.allSettled(
             data.validation_rules.map((val, idx) => {
                 return onSubmit(val)
                     .then(savedVal => {
-                        console.log({ ...val, ...savedVal })
+                        //Si no elimina, guarda los datos nuevos de los campos creados para habilitar su modificación
                         if (!val.to_delete && "id" in savedVal) {
-                            setValue(`validation_rules.${idx}.id`, savedVal.id)
-                            newData.push(savedVal)
+                            setValue(`validation_rules.${idx}`, { ...val, ...savedVal })
+                            return savedVal
                         }
-                        else remove(idx)
-                        return savedVal
+                        else return (savedVal as DeleteResponse).action //Guarda solo el string "deleted"
                     })
-                    .catch(e => { console.log(e) })
+                    .catch(e => {
+                        setValFormErrors(idx, val.creation_method === "template", e, setError)
+                        throw (e)
+                    })
             })
-        ).then(all => onSubmitAll(all.filter(val => "id" in val)))
-            .catch(() => onErrorAll(newData))
-    }
+        )
+        let errorFlag = false
+        const idxToDelete: number[] = []
+        const newLeadFieldValidationList: FieldValidationRule[] = [] //Para la lista dentro del detalle de leadField
+        results.forEach((result, idx) => {
+            if (result.status === "rejected") {
+                errorFlag = true
+                //Guarda los valores previos al formulario
+                if (leadField.validation_rules[idx]) newLeadFieldValidationList.push(leadField.validation_rules[idx])
+            }
+            else if (typeof result.value === "string") idxToDelete.push(idx) //Si falla lo quita del formulario
 
+            else newLeadFieldValidationList.push(result.value)
+        })
+        remove(idxToDelete) //Se eliminan todos a la vez para evitar errores despues de setear errores.
+        return errorFlag ? onErrorAll(newLeadFieldValidationList) : onSubmitAll(newLeadFieldValidationList)
+    }
+    
     return (
         <Stack spacing={2}>
-            <Typography variant="h2">Reglas de Validación</Typography>
+            <Stack>
+                <Typography variant="h2">{leadField.name}</Typography>
+                <Typography variant="h3">Reglas de Validación</Typography>
+            </Stack>
+            <Divider />
             {fields?.length > 0 ?
                 fields.map((field, idx) => (
                     <ValidationInstance key={field.array_id} idx={idx} templates={templates}
@@ -124,6 +148,7 @@ export const ValidationRuleForm = ({ leadField, onSubmit, onSubmitAll, onErrorAl
                     append({
                         name: "",
                         error_message: "",
+                        expression: "",
                         creation_method: "template",
                         template_params: {},
                         required_params: [],
@@ -286,25 +311,28 @@ export const ValidationInstance = ({ idx, templates, register, control, setValue
                                             required errorMessage={errors?.validation_rules?.[idx]?.template_code?.message}
                                         />
                                     </Grid>
-                                    {selectedTemplate &&
-                                        selectedTemplate.required_params?.length > 0 &&
-                                        <Grid container spacing={2} size="grow" minWidth="8rem">
-                                            {selectedTemplate?.required_params.map((param) => (
-                                                <Grid container size="grow" minWidth="4rem" spacing={2} key={`${idx}-${param}`} >
-                                                    <RegisteredTextInput register={register} name={`validation_rules.${idx}.template_params.${param}`}
-                                                        label={param} id={`validation_rules.${idx}.template_params.${param}-${selectedTemplate.name}`}
-                                                        required errorMessage={errors?.validation_rules?.[idx]?.template_params?.[param]?.message}
-                                                    />
-                                                </Grid>
-                                            ))}
-                                        </Grid>
-                                    }
+
                                 </>
+
                             )}
                         </Grid>
+                        {selectedTemplate &&
+                            selectedTemplate.required_params?.length > 0 &&
+                            <Grid container spacing={2} size="grow" minWidth="8rem">
+                                {selectedTemplate?.required_params.map((param) => (
+                                    <Grid container size="grow" minWidth="4rem" spacing={2} key={`${idx}-${param}`} >
+                                        <RegisteredTextInput register={register} name={`validation_rules.${idx}.template_params.${param}`}
+                                            label={param} id={`validation_rules.${idx}.template_params.${param}-${selectedTemplate.name}`}
+                                            required errorMessage={errors?.validation_rules?.[idx]?.template_params?.[param]?.message}
+                                        />
+                                    </Grid>
+                                ))}
+                            </Grid>
+                        }
                     </>
                 }
             </Grid>
+            <FormErrorMessage>{errors.validation_rules?.[idx]?.root?.message}</FormErrorMessage>
             <Divider sx={{ marginBlock: "1rem" }} />
         </>
     );
