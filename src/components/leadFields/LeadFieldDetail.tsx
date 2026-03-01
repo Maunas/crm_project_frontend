@@ -6,10 +6,11 @@ import { Link as RouterLink } from 'react-router-dom'
 import dayjs from 'dayjs'
 import { Chip, Grid, Stack, Typography, Divider, Link, ButtonGroup } from '@mui/material'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import { ValidationList } from '../validations/ValidationList';
 
 interface LeadFieldDetailProps {
     leadField: LeadFieldDetailed,
-    updateLeadFields: ()=>void,
+    updateLeadFields: () => void,
     handleSidebar: (mode: string, entity: LeadFieldDetailed | null) => void,
     updateEntity: (mode: string, entity: CampaignDetailed | LeadFieldDetailed) => void,
     closeSidebar: () => void,
@@ -126,6 +127,8 @@ export const LeadFieldDetail = ({ leadField, updateEntity, updateLeadFields, han
 
                 </Grid>
             </Grid>
+            <Divider />
+            <ValidationList leadField={leadField} handleSidebar={handleSidebar} />
             <Divider />
             <Grid container spacing={2} >
                 <Grid size="grow" minWidth="18rem">

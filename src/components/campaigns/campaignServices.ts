@@ -1,5 +1,5 @@
 import axios from "axios"
-import type { CampaignParams, Paginable } from "../../types/common"
+import type { CampaignParams, DeleteResponse, EnableResponse, Paginable } from "../../types/common"
 import type { Campaign, CampaignDetailed, CampaignPost } from "../../types/campaigns"
 import { API_BASE_URL } from "../../generalService"
 
@@ -26,11 +26,11 @@ export const updateCampaign = async (body: CampaignPost, id: number): Promise<Ca
     return campaign.data
 }
 
-export const disableCampaign = async (id: number): Promise<{ action: string }> => {
+export const disableCampaign = async (id: number): Promise<DeleteResponse> => {
     const cmp = await axios.delete(`${API_BASE_URL}/campaigns/${id}`)
     return cmp.data
 }
-export const enableCampaign = async (id: number): Promise<{ actived: boolean }> => {
+export const enableCampaign = async (id: number): Promise<EnableResponse> => {
     const cmp = await axios.put(`${API_BASE_URL}/campaigns/active/${id}`)
     return cmp.data
 }
