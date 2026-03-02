@@ -50,7 +50,6 @@ export const CampaignDetails = () => {
             }
             case "UPDATE_FIELD": {
                 const newLeadField = entity as LeadFieldDetailed
-                if (selectedEntity && entity.id === selectedEntity.id) handleSidebar("KEEP", newLeadField)
                 if (!leadFields?.items || !(leadFields?.items?.length > 0)) return
                 const newLeadFields = [...leadFields.items]
                 const fieldIdx = leadFields.items.findIndex(field => field.id === entity.id)
@@ -60,6 +59,11 @@ export const CampaignDetails = () => {
             }
             case "CREATE_FIELD": {
                 if (!leadFields) break
+                return updateLeadFields(leadFields.page, leadFields.page_size)
+            }
+            case "DELETE_FIELD": {
+                if (!leadFields) break
+                if (selectedEntity && entity.id === selectedEntity.id) closeSidebar()
                 return updateLeadFields(leadFields.page, leadFields.page_size)
             }
         }
@@ -87,7 +91,7 @@ export const CampaignDetails = () => {
     return (
         <ContainerWithSidebar isSidebarOpen={!!sidebarMode} containerSize="xl"
             sidebarComponent={campaign &&
-                <CampaignDetailSidebar mode={sidebarMode} entity={selectedEntity} campaign={campaign} updateLeadFields={() => updateLeadFields(1, leadFields!.page_size!)}
+                <CampaignDetailSidebar mode={sidebarMode} entity={selectedEntity} campaign={campaign}
                     handleSidebar={handleSidebar} closeSidebar={closeSidebar} updateEntity={updateEntity} />} >
             <Breadcrumbs aria-label="breadcrumb">
                 <Link component={RouterLink} to="/campaigns" underline="hover" color="inherit">
@@ -152,18 +156,17 @@ interface SidebarProps {
     mode: string | null,
     entity: LeadFieldDetailed | null,
     campaign: CampaignDetailed,
-    updateLeadFields: () => void,
     handleSidebar: (mode: string, entity: LeadFieldDetailed | null) => void,
     closeSidebar: () => void,
     updateEntity: (mode: string, entity: CampaignDetailed | LeadFieldDetailed) => void,
 }
-const CampaignDetailSidebar = ({ mode, entity, campaign, updateLeadFields, handleSidebar, closeSidebar, updateEntity }: SidebarProps) => {
+const CampaignDetailSidebar = ({ mode, entity, campaign, handleSidebar, closeSidebar, updateEntity }: SidebarProps) => {
     switch (mode) {
         case "UPDATE_CMP":
             return <UpdateCampaignFormSidebar existingCmp={campaign}
                 closeSidebar={closeSidebar} updateEntityOnList={(entity) => updateEntity(mode, entity)} />
         case "DETAILS_FIELD":
-            return <LeadFieldDetail leadField={entity as LeadFieldDetailed} updateLeadFields={updateLeadFields}
+            return <LeadFieldDetail leadField={entity as LeadFieldDetailed}
                 closeSidebar={closeSidebar} handleSidebar={handleSidebar} updateEntity={updateEntity} />
         case "CREATE_FIELD":
             return <LeadFieldFormSidebar campaign={campaign} closeSidebar={closeSidebar} handleSidebar={handleSidebar}
@@ -175,6 +178,6 @@ const CampaignDetailSidebar = ({ mode, entity, campaign, updateLeadFields, handl
         case "UPDATE_VAL":
             return <ValidationFormSidebar leadField={entity as LeadFieldDetailed}
                 updateEntityOnList={(entity) => updateEntity("UPDATE_FIELD", entity)}
-                handleSidebar={handleSidebar}/>
+                handleSidebar={handleSidebar} />
     }
 }

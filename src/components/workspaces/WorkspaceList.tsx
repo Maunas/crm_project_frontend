@@ -21,18 +21,18 @@ export const WorkspaceList = () => {
 
     const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<WorkspaceDetailed | CampaignDetailed>()
 
-    const { fetchPage, pageSize, pageComponentProps } = useListPagination(workspaces)
+    const { fetchPage, pageSize, refresh, pageComponentProps } = useListPagination(workspaces)
 
     useEffect(() => {
         getWorkspaces({ detailed: true, page_size: pageSize, only_active: false, page: fetchPage }).then(setWorkspaces)
-    }, [fetchPage, pageSize])
+    }, [fetchPage, refresh, pageSize])
 
     const updateEntityOnList = (
         entity: WorkspaceDetailed | CampaignDetailed | null,
         mode: string) => {
         switch (mode) {
             case "CREATE_WSP": {
-                getWorkspaces({ detailed: true, page_size: pageSize, only_active: false, page: workspaces?.page ?? 1 }).then(setWorkspaces)
+                getWorkspaces({ detailed: true, page_size: pageSize, only_active: false, page: workspaces?.page }).then(setWorkspaces)
                 break;
             }
             case "UPDATE_WSP": {
@@ -46,7 +46,8 @@ export const WorkspaceList = () => {
                 break;
             }
             case "DELETE_WSP": {
-                getWorkspaces({ detailed: true, page_size: pageSize, only_active: false, page: 1 }).then(setWorkspaces)
+                if (selectedEntity && entity?.id === selectedEntity.id) closeSidebar()
+                getWorkspaces({ detailed: true, page_size: pageSize, only_active: false, page: workspaces?.page }).then(setWorkspaces)
                 break;
             }
         }

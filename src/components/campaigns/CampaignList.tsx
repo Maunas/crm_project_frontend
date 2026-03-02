@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import { EnabledIcon } from "../common/lists/Badges"
 import { PaginationComponent } from "../common/lists/PaginationComponent"
 import type { Paginable } from "../../types/common"
@@ -16,23 +16,19 @@ export const CampaignList = ({ selectedWorkspaceId, handleSidebar }: CampaignLis
 
     const [campaigns, setCampaigns] = useState<Paginable<CampaignDetailed> | null>(null)
 
-    const { fetchPage, pageSize, pageComponentProps } = useListPagination(campaigns, 12)
+    const { fetchPage, refresh, pageSize, pageComponentProps } = useListPagination(campaigns, 12)
 
     useEffect(() => {
         getCampaigns({
             workspace_id: selectedWorkspaceId, detailed: true, only_active: false,
             page: fetchPage || 1, page_size: pageSize
         }).then(setCampaigns)
-    }, [selectedWorkspaceId, fetchPage, pageSize])
+    }, [selectedWorkspaceId, refresh, fetchPage, pageSize])
 
-    const filteredCampaigns = useMemo(() => campaigns?.items ?
-        campaigns.items.filter(cmp => cmp.workspace_id === selectedWorkspaceId) : []
-        , [campaigns, selectedWorkspaceId])
-
-    if (filteredCampaigns && filteredCampaigns.length > 0) return (
+    if (campaigns?.items && campaigns.items.length > 0) return (
         <>
             <Grid sx={{ marginLeft: 6 }} container>
-                {filteredCampaigns.map((cmp, idx) =>
+                {campaigns.items.map((cmp, idx) =>
                     <Grid key={`cmp-${idx}`} size="grow" minWidth="15rem">
                         <Button key={`cmp-${idx}`} variant="text" component={Link} to={`/campaigns/${cmp.id}`} fullWidth >
                             <Stack spacing={1} direction="row" width="100%">
@@ -50,5 +46,4 @@ export const CampaignList = ({ selectedWorkspaceId, handleSidebar }: CampaignLis
         <Typography variant="h4" color="initial">No se han encontrado campañas para este espacio de trabajo...</Typography>
         <Button onClick={() => handleSidebar("CREATE_CMP", null)} variant="contained">Agregar Campaña</Button>
     </Grid>
-
 }

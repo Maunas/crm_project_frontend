@@ -10,13 +10,12 @@ import { ValidationList } from '../validations/ValidationList';
 
 interface LeadFieldDetailProps {
     leadField: LeadFieldDetailed,
-    updateLeadFields: () => void,
     handleSidebar: (mode: string, entity: LeadFieldDetailed | null) => void,
     updateEntity: (mode: string, entity: CampaignDetailed | LeadFieldDetailed) => void,
     closeSidebar: () => void,
 }
 
-export const LeadFieldDetail = ({ leadField, updateEntity, updateLeadFields, handleSidebar, closeSidebar }: LeadFieldDetailProps) => {
+export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeSidebar }: LeadFieldDetailProps) => {
 
     const handleActive = (field: LeadFieldDetailed) => {
         const updateActive = () => {
@@ -27,7 +26,7 @@ export const LeadFieldDetail = ({ leadField, updateEntity, updateLeadFields, han
                 .then(res => {
                     if (res.action === "disabled") updateActive()
                     else {
-                        updateLeadFields() //Se hace manualmente. Si la página ya era la 1, no actua useEffect.
+                        updateEntity("DELETE_FIELD", leadField)
                         closeSidebar()
                     }
                 })
@@ -54,8 +53,8 @@ export const LeadFieldDetail = ({ leadField, updateEntity, updateLeadFields, han
                 <Grid size="grow" minWidth="10rem">
                     <Typography variant="body1" fontWeight="bold">Modo de Creación:</Typography>
                     <Typography variant="body1" paddingInlineStart={2}>
-                        {leadField.field_template_code && <span style={{ fontWeight: "bold" }}>Plantilla: </span>}
-                        {leadField.field_template_code ? `${leadField.field_template_code}` : "Creación Manual"}
+                        {leadField.field_template_name && <span style={{ fontWeight: "bold" }}>Plantilla: </span>}
+                        {leadField.field_template_name ? `${leadField.field_template_name}` : "Creación Manual"}
                     </Typography>
                 </Grid>
             </Grid>
@@ -68,14 +67,13 @@ export const LeadFieldDetail = ({ leadField, updateEntity, updateLeadFields, han
                     <Chip color='error' label="Oculto" variant="outlined" sx={{ fontWeight: "bold" }} />}
             </Grid>
             <Divider />
-            <Typography variant="h3" fontWeight="bold">Tipo {leadField.field_subtype_code ? `/ Subtipo` : ""} de dato</Typography>
+            <Typography variant="h3" fontWeight="bold">Tipo {leadField.field_subtype?.description ? `/ Subtipo` : ""} de dato</Typography>
             <Grid container gap={2} alignItems="center">
-                <Chip color='primary' label={leadField.field_type_code} variant="outlined" sx={{ fontWeight: "bold" }} />
-                {leadField.field_subtype_code &&
+                <Chip color='primary' label={leadField.field_type.description} variant="outlined" sx={{ fontWeight: "bold" }} />
+                {leadField.field_subtype?.description &&
                     <>
                         <ArrowForwardIcon />
-
-                        <Chip color='info' label={leadField.field_subtype_code} variant="outlined" sx={{ fontWeight: "bold" }} />
+                        <Chip color='info' label={leadField.field_subtype?.description} variant="outlined" sx={{ fontWeight: "bold" }} />
                     </>
                 }
             </Grid>

@@ -8,15 +8,18 @@ export const useListPagination = <T,>(list: Paginable<T> | null, pageSize: numbe
   const [refresh, setRefresh] = useState<number>(0)
 
   const handlePage = useCallback((_: React.ChangeEvent<unknown>, value: number) => {
+    if (fetchPage === value) setRefresh((value) => value + 1)
     setFetchPage(value)
-  }, [])
+  }, [fetchPage, setRefresh])
 
   const goToPageOne = useCallback(() => {
     if (fetchPage !== 1) return setFetchPage(1)
     setRefresh(refresh + 1)
   }, [fetchPage, refresh])
 
-  return { fetchPage, pageSize, refresh, goToPageOne, 
-    pageComponentProps: { totalPages: list?.total_pages ?? 0, page: list?.page ?? 1, handlePage } }
+  return {
+    fetchPage, pageSize, refresh, goToPageOne,
+    pageComponentProps: { totalPages: list?.total_pages ?? 0, page: list?.page ?? 1, handlePage }
+  }
 }
 
