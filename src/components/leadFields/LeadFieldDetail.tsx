@@ -10,13 +10,12 @@ import { ValidationList } from '../validations/ValidationList';
 
 interface LeadFieldDetailProps {
     leadField: LeadFieldDetailed,
-    updateLeadFields: () => void,
     handleSidebar: (mode: string, entity: LeadFieldDetailed | null) => void,
     updateEntity: (mode: string, entity: CampaignDetailed | LeadFieldDetailed) => void,
     closeSidebar: () => void,
 }
 
-export const LeadFieldDetail = ({ leadField, updateEntity, updateLeadFields, handleSidebar, closeSidebar }: LeadFieldDetailProps) => {
+export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeSidebar }: LeadFieldDetailProps) => {
 
     const handleActive = (field: LeadFieldDetailed) => {
         const updateActive = () => {
@@ -27,7 +26,7 @@ export const LeadFieldDetail = ({ leadField, updateEntity, updateLeadFields, han
                 .then(res => {
                     if (res.action === "disabled") updateActive()
                     else {
-                        updateLeadFields() //Se hace manualmente. Si la página ya era la 1, no actua useEffect.
+                        updateEntity("DELETE_FIELD", leadField)
                         closeSidebar()
                     }
                 })

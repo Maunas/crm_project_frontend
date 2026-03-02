@@ -24,16 +24,16 @@ export const OrganizationList = () => {
 
     const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<OrganizationDetailed>()
 
-    const { fetchPage, pageSize, pageComponentProps } = useListPagination(organizations)
+    const { fetchPage, refresh, pageSize, pageComponentProps } = useListPagination(organizations)
 
     useEffect(() => {
         getOrganizations({ detailed: true, page_size: pageSize, page: fetchPage, only_active: false }).then(setOrganizations)
-    }, [fetchPage, pageSize])
+    }, [fetchPage, refresh, pageSize])
 
     const updateEntityOnList = (newOrg: OrganizationDetailed, mode: string) => {
         switch (mode) {
             case "CREATE_ORG":
-                getOrganizations({ detailed: true, only_active: false, page_size: pageSize, page: organizations?.page ?? 1 })
+                getOrganizations({ detailed: true, only_active: false, page_size: pageSize, page: organizations?.page })
                     .then(setOrganizations)
                 break;
             case "UPDATE_ORG": {
@@ -45,11 +45,11 @@ export const OrganizationList = () => {
                 setOrganizations({ ...organizations, items: [...newOrganizationsItems] })
                 break;
             }
-            case "DELETE_ORG": {
-                getOrganizations({ detailed: true, only_active: false, page_size: pageSize, page: 1 })
+             case "DELETE_ORG": {
+                if (selectedEntity && newOrg.id === selectedEntity.id) closeSidebar()
+                getOrganizations({ detailed: true, only_active: false, page_size: pageSize, page: organizations?.page })
                     .then(setOrganizations)
-                break;
-            }
+             }
         }
     }
 

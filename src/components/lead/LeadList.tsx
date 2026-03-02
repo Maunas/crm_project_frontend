@@ -23,12 +23,12 @@ export const LeadList = () => {
     const [campaigns, setCampaigns] = useState<Campaign[] | null>(null)
     const [filters, setFilters] = useState<LeadListParams>({ workspace_id: 1, campaign_id: 1, only_active: true, page_size: 20 })
 
-    const { fetchPage, pageComponentProps } = useListPagination(leads)
+    const { fetchPage, refresh, pageComponentProps } = useListPagination(leads)
 
     useEffect(() => {
         getLeads({ page: fetchPage, ...filters }).then(setLeads)
         /* eslint-disable-next-line react-hooks/exhaustive-deps */
-    }, [fetchPage])
+    }, [fetchPage, refresh])
 
     const { control, handleSubmit } = useForm<LeadListParams>({
         defaultValues: { workspace_id: filters.workspace_id, campaign_id: filters.campaign_id, only_active: filters.only_active, page_size: filters.page_size }
@@ -114,7 +114,7 @@ export const LeadTable = ({ leads, campaignId }: LeadTableProps) => {
 
     useEffect(() => {
         if (!campaignId) return
-        getLeadFields({ detailed: false, campaign_id: campaignId, only_active: true, page_size: NUMBER_OF_FIELDS +1 })
+        getLeadFields({ detailed: false, campaign_id: campaignId, only_active: true, page_size: NUMBER_OF_FIELDS + 1 })
             .then(leadFields => {
                 setLeadColumns(leadFields.items)
             })
