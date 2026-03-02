@@ -100,8 +100,8 @@ export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateE
                                                     <Typography fontWeight="bold">{row.name} </Typography>
                                                 </Stack>
                                             </TableCell>
-                                            <TableCell align="right">{row.field_type_code}</TableCell>
-                                            <TableCell align="right">{row.field_subtype_code ?? "Sin subtipo"}</TableCell>
+                                            <TableCell align="right">{row.field_type.description}</TableCell>
+                                            <TableCell align="right">{row.field_subtype?.description ?? "---"}</TableCell>
 
                                             <TableCell align="right">
                                                 <EnabledIcon active={row.required} trueTooltip='Obligatorio' falseTooltip='Opcional' />

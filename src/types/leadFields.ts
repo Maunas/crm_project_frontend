@@ -45,6 +45,9 @@ export interface LeadField extends LeadFieldPost {
   lead_field_section: LeadFieldSection;
   organization_id: number;
   order: number;
+  field_type: LeadFieldType,
+  field_subtype: LeadFieldType | null,
+  field_template_name: string
 }
 
 export interface LeadFieldDetailed extends LeadField, Metadata {
