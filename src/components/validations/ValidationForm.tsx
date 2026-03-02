@@ -301,11 +301,10 @@ export const ValidationInstance = ({ idx, templates, register, control, setValue
                                         <ControlledAutocomplete control={control} name={`validation_rules.${idx}.template_code`} options={templates}
                                             label="Plantilla" getOptionKey={(op) => op.code} getOptionLabel={(op) => op.name} returnField="code"
                                             required errorMessage={errors?.validation_rules?.[idx]?.template_code?.message}
+                                            helper={selectedTemplate?.description}
                                         />
                                     </Grid>
-
                                 </>
-
                             )}
                         </Grid>
                         {selectedTemplate &&
