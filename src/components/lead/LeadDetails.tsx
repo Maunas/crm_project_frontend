@@ -160,7 +160,7 @@ interface LeadFieldProps {
     value: string,
     type: string,
     template?: string | null,
-    modalProps: {
+    modalProps?: {
         open: string | number | boolean;
         handleOpen: (idModal: string | number) => void;
         handleClose: () => void;
@@ -218,22 +218,22 @@ export const LeadFieldByType = ({ fieldValue, value, type, modalProps, template 
         case "RICH_TEXT":
             if (fieldValue?.field?.field_subtype_code === "HTML") {
                 const purifiedHTML = DOMPurify.sanitize(value)
-                return <GenericModal idModal={idModal} modalProps={modalProps}
+                return <GenericModal idModal={idModal} modalProps={modalProps!}
                     buttonText='Ver HTML' variant="outlined" containerSx={{ minWidth: "80vw" }} >
                     {purifiedHTML
                         ? <div style={{ paddingLeft: ".5rem" }} dangerouslySetInnerHTML={{ __html: purifiedHTML }} />
                         : <Typography variant="body1" color="error">Contenido HTML no seguro, no se puede mostrar.</Typography>}
                     <Grid container justifyContent="end">
-                        <Button variant="outlined" onClick={modalProps.handleClose}>Cerrar Modal</Button>
+                        <Button variant="outlined" onClick={modalProps!.handleClose}>Cerrar Modal</Button>
                     </Grid>
                 </GenericModal>
             } else {
                 return <>
-                    <GenericModal idModal={idModal} modalProps={modalProps}
+                    <GenericModal idModal={idModal} modalProps={modalProps!}
                         buttonText='Ver Markdown' variant="outlined" containerSx={{ minWidth: "80vw" }} >
                         <Markdown >{value as string}</Markdown>
                         <Grid container justifyContent="end">
-                            <Button variant="outlined" onClick={modalProps.handleClose}>Cerrar Modal</Button>
+                            <Button variant="outlined" onClick={modalProps!.handleClose}>Cerrar Modal</Button>
                         </Grid>
                     </GenericModal>
                 </>

@@ -33,6 +33,7 @@ export const getValidationDataByType = (data: FieldValidationListPostInstance, i
         name: data.name,
         error_message: data.error_message,
         field_id: data.field_id,
+        expression: data.expression
     };
     //Si es por template, devuelve el código de template y sus parametros
     if (isTemplate) {
@@ -50,11 +51,9 @@ export const getValidationDataByType = (data: FieldValidationListPostInstance, i
             //Luego vuelve a convertir a objeto con Object.fromEntries
             template_params: Object.fromEntries(filteredParams),
         };
-    } else {
-        //Si es manual, solo devuelve la expresión.
-        return { ...requiredData, expression: data.expression };
-    }
-};
+    };
+    return { ...requiredData, };
+}
 
 export const setValFormErrors = (idx: number, isTemplate: boolean, error: ErrorBody<FieldValidationListPost>, setError: UseFormSetError<FieldValidationListPost>) => {
 

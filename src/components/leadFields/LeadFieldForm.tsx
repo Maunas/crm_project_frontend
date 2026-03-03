@@ -96,9 +96,7 @@ export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFi
       is_primary: existingLF?.is_primary ?? false,
       is_visible: existingLF?.is_visible ?? true,
       field_template_code: existingLF?.field_template_code ?? "FIRST_NAME",
-      creation_method: existingLF
-        ? existingLF?.field_template_code ? "template" : "manual"
-        : "template" //Inicializa en template para creación
+      creation_method: existingLF ? "manual" : "template"
     })
     , [existingLF, campaign])
 
@@ -108,70 +106,6 @@ export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFi
   //Activa cuando cambian el LeadField seleccionado o la campaña.
   useEffect(() => { reset(defaultValues) }, [reset, defaultValues])
 
-
-  /* Validaciones
-  const findValError = (error, val, idx) => {
-    return setFormErrors(error, setError,
-      (error) => {
-        return error.response.data.detail?.map((error) => {
-          if (error.field === "body")
-            return setError(
-              `validation_rules.${idx}.${val.creation_method === "template"
-                ? "template_code"
-                : "expression"
-              }`,
-              { message: error.message },
-            );
-          else if (error.field === "template_params")
-            return setError(
-              error.message.split("'")?.[1]
-                ? `validation_rules.${idx}.template_params.${error.message.split("'")?.[1]}`
-                : `validation_rules.${idx}.template_params`
-              , { message: error.message },
-            );
-          else
-            return setError(`validation_rules.${idx}.${error.field}`, {
-              message: error.message,
-            });
-        });
-      }
-    )
-  };
-  */
-
-
-  /*
-    if (!data?.validation_rules) return newLeadField;
-  
-    const newValidationList = await Promise.all(
-      data?.validation_rules.map((val, idx) =>
-        submitValidation(val, newLeadField?.id)
-          .then((newVal) => {
-            setValue(`validation_rules.${idx}.id`, newVal.id)
-            setValue(`validation_rules.${idx}.name`, newVal.name)
-            setValue(`validation_rules.${idx}.error_message`, newVal.error_message)
-            return newVal
-          })
-          .catch((e) => {
-            findValError(e, val, idx);
-            throw e;
-          }),
-      ),
-    );
-    return { ...newLeadField, validation_rules: newValidationList };
-  };
-  const submitValidation = (val: FieldValidationRuleData, fieldId: number) => {
-    const newVal = getValidationDataByType(
-      { ...val, field_id: fieldId },
-      val.creation_method === "template",
-    );
-    if (val.id) {
-      return updateValidation(newVal, val.id);
-    } else {
-      return createValidation(newVal);
-    }
-  };
-  */
   const creationMethod = useWatch({ name: "creation_method", control });
 
   const onSaveLeadField = async (data: LeadFieldPostCreation, reset: boolean = false) => {
@@ -210,7 +144,7 @@ export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFi
         <LeadFieldFormFields templates={fieldTemplates} sections={fieldSections}
           nomenclators={nomenclators} campaigns={campaigns} types={fieldTypes}
           errors={errors} register={register} control={control}
-          campaignId={campaign.id}
+          campaignId={campaign.id} existingLFId={existingLF?.id}
         />
 
         <ButtonGroup>
@@ -241,10 +175,11 @@ interface LeadFieldFormFieldsProps {
   control: Control<LeadFieldPostCreation>;
   campaignId: number;
   errors: FieldErrors<LeadFieldPostCreation>;
+  existingLFId?: number
 }
 
 const LeadFieldFormFields = ({ templates, sections, types, nomenclators, campaigns,
-  register, control, campaignId, errors }: LeadFieldFormFieldsProps) => {
+  register, control, campaignId, existingLFId, errors }: LeadFieldFormFieldsProps) => {
 
   const creationMethod = useWatch({ name: "creation_method", control });
   const creationMethodRadioOptions = [
@@ -313,12 +248,13 @@ const LeadFieldFormFields = ({ templates, sections, types, nomenclators, campaig
       </Grid>
 
       <Grid size={12} container minWidth="20rem">
-        <Grid size={4} minWidth="20rem" justifyContent="center">
-          <ControlledRadio control={control} name="creation_method" label="Método de Creación" options={creationMethodRadioOptions}
-            getRadioLabel={option => option.label} keyField="value" returnField="value" row />
-        </Grid>
+        {!existingLFId &&
+          <Grid size={4} minWidth="20rem" justifyContent="center">
+            <ControlledRadio control={control} name="creation_method" label="Método de Creación" options={creationMethodRadioOptions}
+              getRadioLabel={option => option.label} keyField="value" returnField="value" row />
+          </Grid>}
 
-        {creationMethod === "template" ? (
+        {creationMethod === "template" && !existingLFId ? (
           <Grid size="grow" minWidth="20rem" justifyContent="center">
             <ControlledAutocomplete
               name="field_template_code"

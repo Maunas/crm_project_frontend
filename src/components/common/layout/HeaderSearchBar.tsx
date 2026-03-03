@@ -1,4 +1,4 @@
-import { Box, Button, IconButton, InputBase } from "@mui/material";
+import { Box, Button, InputBase } from "@mui/material";
 import { alpha, styled } from "@mui/material/styles";
 import SearchIcon from '@mui/icons-material/Search';
 import { useState } from "react";
@@ -66,7 +66,7 @@ export const HeaderSearchBar = () => {
                     onChange={(e) => setQuery(e.target.value)}
                 />
                 {query?.length >= 3 &&
-                    <Button type="button" aria-label="search" color="white" variant="outlined" 
+                    <Button type="button" aria-label="search" color="inherit" variant="outlined" 
                     sx={{ paddingBlock: ".3rem" }} onClick={handleSubmit}>
                         Buscar
                     </Button>}
