@@ -67,7 +67,7 @@ export const ValidationRuleForm = ({ leadField, onSubmit, onSubmitAll, onErrorAl
     const setCreationMethod = (validation_rules: FieldValidationRule[]) => {
         return validation_rules.map(val => ({
             ...val,
-            creation_method: val.template_code ? "template" : "manual",
+            creation_method: "manual",
         }) as FieldValidationListPostInstance
         )
     }
@@ -101,6 +101,7 @@ export const ValidationRuleForm = ({ leadField, onSubmit, onSubmitAll, onErrorAl
                         //Si no elimina, guarda los datos nuevos de los campos creados para habilitar su modificación
                         if (!val.to_delete && "id" in savedVal) {
                             setValue(`validation_rules.${idx}`, { ...val, ...savedVal })
+                            setValue(`validation_rules.${idx}.creation_method`, "manual")
                             newLeadFieldValidationList.push(savedVal)
                         }
                         else idxToDelete.push(idx) //Guarda los indices a eliminar
@@ -140,7 +141,6 @@ export const ValidationRuleForm = ({ leadField, onSubmit, onSubmitAll, onErrorAl
                     append({
                         name: "",
                         error_message: "",
-                        expression: "",
                         creation_method: "template",
                         template_params: {},
                         required_params: [],
@@ -244,7 +244,7 @@ export const ValidationInstance = ({ idx, templates, register, control, setValue
                             errorMessage={errors?.validation_rules?.[idx]?.name?.message}
                         />
                     </Grid>
-                    {!toDelete &&
+                    {!toDelete && !existingValId &&
                         <Grid size="grow" minWidth="15rem" justifyContent="center">
                             <ControlledRadio
                                 control={control}
@@ -295,7 +295,7 @@ export const ValidationInstance = ({ idx, templates, register, control, setValue
                                     />
                                 </Grid>
                             )}
-                            {creationMethod === "template" && (
+                            {creationMethod === "template" && !existingValId &&(
                                 <>
                                     <Grid size="grow" spacing={2} minWidth="15rem">
                                         <ControlledAutocomplete control={control} name={`validation_rules.${idx}.template_code`} options={templates}
@@ -307,7 +307,7 @@ export const ValidationInstance = ({ idx, templates, register, control, setValue
                                 </>
                             )}
                         </Grid>
-                        {selectedTemplate &&
+                        {selectedTemplate && !existingValId &&
                             selectedTemplate.required_params?.length > 0 &&
                             <Grid container spacing={2} size="grow" minWidth="8rem">
                                 {selectedTemplate?.required_params.map((param) => (
