@@ -4,26 +4,16 @@ const theme = createTheme({
   // Paleta de Colores (Tu configuración original)
   palette: {
     primary: {
-      main: '#f64922ff', 
-      light: '#f95b37ff', 
-      dark: '#fe2f00ff',                      
-      contrastText: '#FFFBFC',
+      main: '#5A7ACD', 
     },
     secondary: {
-      main: '#880044', 
-      light: '#e30876ff', 
-      dark: '#5d0330ff',                      
-      contrastText: '#FFFBFC',
+      main: '#FEB05D', 
     },
     contrast: {
-      main: '#000000',
-      light: '#333333',
-      dark: '#000000',
-      contrastText: '#FFFFFF',
-    }
-    ,
+      main: '#2B2A2A',
+    },
     background: {
-      default: '#f8f9fa', 
+      default: '#F5F2F2', 
       paper: '#ffffff', 
     },
   },
@@ -37,8 +27,34 @@ const theme = createTheme({
       'sans-serif',
     ].join(','),
     h1: {
-      fontSize: '2.5rem',
+      fontSize: '2em',
       fontWeight: 700,
+      paddingBlock:'.5em'
+    },
+    h2: {
+      fontSize: '1.7em',
+      fontWeight: 700,
+      paddingBlock:'.5em'
+    },
+    h3: {
+      fontSize: '1.37em',
+      fontWeight: 700,
+      paddingBlock:'.5em'
+    },
+    h4: {
+      fontSize: '1.2em',
+      fontWeight: 700,
+      paddingBlock:'.5em'
+    },
+    h5: {
+      fontSize: '1.03em',
+      fontWeight: 700,
+      paddingBlock:'.5em'
+    },
+    h6: {
+      fontSize: '0.87rem',
+      fontWeight: 700,
+      paddingBlock:'.5em'
     },
     button: {
       textTransform: 'none',
