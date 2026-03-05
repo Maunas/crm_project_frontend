@@ -1,13 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useContext } from 'react'
 import { ContainerWithSidebar } from '../common/layout/GenericContainer'
-import { PaginationComponent } from '../common/lists/PaginationComponent'
 import { EnabledIcon } from '../common/lists/Badges'
 import { OrganizationFormSidebar } from './OrganizationForm'
 import { useSidebar } from '../hooks/useSidebar'
-import { useListPagination } from '../hooks/useListPagination'
-import type { Paginable } from '../../types/common'
 import type { OrganizationDetailed } from '../../types/campaigns'
-import { disableOrganization, enableOrganization, getOrganizations } from '../workspaces/workspaceServices'
+import { disableOrganization, enableOrganization } from '../workspaces/workspaceServices'
 import { Link } from 'react-router-dom'
 import dayjs from 'dayjs'
 import 'dayjs/locale/es'
@@ -17,39 +14,39 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import { CommonButton, DisableButton } from '../common/details/DetailsCommonButton'
+import { UserContext } from '../common/contexts'
+import type { UserContextItems } from '../users/UserProvider'
 dayjs.locale('es')
 
 export const OrganizationList = () => {
-    const [organizations, setOrganizations] = useState<Paginable<OrganizationDetailed> | null>(null)
+
+    const { organizations, selectedOrgId, fetchOrganizations, updateOrganizations } = useContext<UserContextItems>(UserContext)
 
     const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<OrganizationDetailed>()
-
-    const { fetchPage, refresh, pageSize, pageComponentProps } = useListPagination(organizations)
-
-    useEffect(() => {
-        getOrganizations({ detailed: true, page_size: pageSize, page: fetchPage, only_active: false }).then(setOrganizations)
-    }, [fetchPage, refresh, pageSize])
 
     const updateEntityOnList = (newOrg: OrganizationDetailed, mode: string) => {
         switch (mode) {
             case "CREATE_ORG":
-                getOrganizations({ detailed: true, only_active: false, page_size: pageSize, page: organizations?.page })
-                    .then(setOrganizations)
+                fetchOrganizations()
                 break;
             case "UPDATE_ORG": {
                 if (!organizations) break
-                const newOrganizationsItems = [...organizations.items]
+                const newOrganizationsItems = [...organizations]
                 const orgIdx = newOrganizationsItems.findIndex(org => org.id === newOrg.id)
                 if (orgIdx === -1) break
                 newOrganizationsItems[orgIdx] = newOrg
-                setOrganizations({ ...organizations, items: [...newOrganizationsItems] })
+                updateOrganizations(newOrganizationsItems)
                 break;
             }
-             case "DELETE_ORG": {
+            case "DELETE_ORG": {
+                if (selectedOrgId === newOrg.id) break
                 if (selectedEntity && newOrg.id === selectedEntity.id) closeSidebar()
-                getOrganizations({ detailed: true, only_active: false, page_size: pageSize, page: organizations?.page })
-                    .then(setOrganizations)
-             }
+                if (!organizations) break
+                const newOrganizationsItems = [...organizations]
+                const filteredOrganizations = newOrganizationsItems.filter(org => org.id !== newOrg.id)
+                updateOrganizations(filteredOrganizations)
+                break;
+            }
         }
     }
 
@@ -68,8 +65,8 @@ export const OrganizationList = () => {
             }
         }
         if (org.active) {
+            if (selectedOrgId === org.id) return
             disableOrganization(org.id).then((res) => {
-                console.log(res.action)
                 if (res.action === "disabled") updateActive(org)
                 if (res.action === "deleted") deleteOrg(org)
             })
@@ -89,15 +86,15 @@ export const OrganizationList = () => {
                         <Typography variant="h1">Lista de Organizaciones</Typography>
                     </Grid>
                     <Grid size="auto" minWidth="15rem">
-                        {organizations && organizations?.items?.length > 0 &&
+                        {organizations && organizations?.length > 0 &&
                             <CommonButton actionType="CREATE" handleClick={() => handleSidebar("CREATE_ORG", null)}>Crear Organización</CommonButton>
                         }
                     </Grid>
                 </Grid>
                 {
-                    organizations && organizations?.items?.length > 0 ?
+                    organizations && organizations?.length > 0 ?
                         <List>
-                            {organizations.items.map(org =>
+                            {organizations.map(org =>
                                 <ListItem key={org.id} disablePadding secondaryAction={
                                     <Grid container spacing={1} alignItems="center">
                                         <IconButton edge="end" aria-label="details" onClick={() => handleSidebar("DETAILS_ORG", org)}>
@@ -106,13 +103,15 @@ export const OrganizationList = () => {
                                         <IconButton edge="end" aria-label="modify" onClick={() => handleSidebar("UPDATE_ORG", org)}>
                                             <EditIcon />
                                         </IconButton>
-                                        <IconButton edge="end" aria-label={org.active ? "delete" : "restore"}
-                                            onClick={() => handleActive(org)}>
-                                            {org.active ?
-                                                <DeleteIcon color="error" /> :
-                                                <RestoreFromTrashIcon color="success" />
-                                            }
-                                        </IconButton>
+                                        {selectedOrgId !== org.id &&
+                                            <IconButton edge="end" aria-label={org.active ? "delete" : "restore"}
+                                                onClick={() => handleActive(org)}>
+                                                {org.active ?
+                                                    <DeleteIcon color="error" /> :
+                                                    <RestoreFromTrashIcon color="success" />
+                                                }
+                                            </IconButton>
+                                        }
                                     </Grid>
                                 }>
                                     <ListItemButton onClick={() => handleSidebar("DETAILS_ORG", org)}>
@@ -132,7 +131,6 @@ export const OrganizationList = () => {
                             <Button onClick={() => handleSidebar("CREATE_ORG", null)} variant="contained">Crear Organización</Button>
                         </Grid>
                 }
-                <PaginationComponent {...pageComponentProps} />
             </Stack>
         </ContainerWithSidebar >
     )
@@ -183,7 +181,7 @@ const OrganizationDetails = ({ entity, closeSidebar, handleSidebar, handleActive
                 : <Typography variant="body1" fontStyle="italic">No tiene descripción.</Typography>
             }
             <Divider />
-                <CommonButton actionType="DETAILS" component={Link} to={`/campaigns`} >Ver Workspaces</CommonButton>
+            <CommonButton actionType="DETAILS" component={Link} to={`/campaigns`} >Ver Workspaces</CommonButton>
             <Divider />
             <Grid container spacing={2} size="grow" minWidth="50 rem">
                 <Grid size="grow" minWidth="18rem">

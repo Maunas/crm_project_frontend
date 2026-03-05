@@ -69,7 +69,6 @@ export const WorkspaceList = () => {
         }
         if (wsp.active) {
             disableWorkspace(wsp.id).then((res) => {
-                console.log(res.action)
                 if (res.action === "disabled") updateActive(wsp)
                 if (res.action === "deleted") deleteWsp(wsp)
             })

@@ -17,7 +17,8 @@ import { HeaderSearchBar } from './HeaderSearchBar';
 import { drawerWidth } from './Sidebar';
 import { Divider, ListItemIcon, ListItemText } from '@mui/material';
 import { Check } from '@mui/icons-material';
-import { UserContext, type UserContextItems } from '../contexts';
+import { UserContext } from '../contexts';
+import type { UserContextItems } from '../../users/UserProvider';
 
 interface AppBarProps extends MuiAppBarProps {
   open?: boolean;
@@ -53,7 +54,7 @@ interface HeaderProps extends MuiAppBarProps {
 
 export default function Header({ handleDrawerOpen, open }: HeaderProps) {
 
-  const { organizations, selectedOrgId, setSelectedOrgId } = React.useContext<UserContextItems>(UserContext)
+  const { activeOrganizations, selectedOrgId, setSelectedOrgId } = React.useContext<UserContextItems>(UserContext)
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] =
@@ -102,7 +103,7 @@ export default function Header({ handleDrawerOpen, open }: HeaderProps) {
         <Divider />
       </MenuItem>
       {
-        organizations.map(org => {
+        activeOrganizations.map(org => {
           return <MenuItem dense key={org.id} onClick={() => setSelectedOrgId(org.id)}>
             <ListItemText inset={org.id !== selectedOrgId}>
               {org.id === selectedOrgId &&
