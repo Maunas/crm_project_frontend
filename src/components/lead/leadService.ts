@@ -1,42 +1,41 @@
-import axios from "axios";
-import { API_BASE_URL, orderList, setFormErrors } from "../../generalService";
-import type { Lead, LeadDetailed, LeadPostValue } from "../../types/leads";
-import type { DeleteResponse, EnableResponse, ErrorBody, ErrorMessage, LeadListParams, Paginable } from "../../types/common";
 import type { LeadPostForm } from "./LeadForm";
+import type { DeleteResponse, EnableResponse, ErrorBody, ErrorMessage, LeadListParams, Paginable } from "../../types/common";
+import type { Lead, LeadDetailed, LeadPostValue } from "../../types/leads";
 import type { LeadField } from "../../types/leadFields";
+import { API_BASE_URL, axiosCRM, orderList, setFormErrors } from "../../generalService";
 import type { FieldArrayWithId, UseFormSetError } from "react-hook-form";
 
 export const getLeads = async <T extends LeadListParams>(params?: T)
   : Promise<Paginable<T["detailed"] extends true ? LeadDetailed : Lead>> => {
-  const lead = await axios.get(`${API_BASE_URL}/leads`, { params });
+  const lead = await axiosCRM.get(`${API_BASE_URL}/leads`, { params });
   return { ...lead.data, items: orderList(lead.data.items) };
 };
 
 export const getLead = async (id: number): Promise<LeadDetailed> => {
-  const lead = await axios.get(`${API_BASE_URL}/leads/${id}`);
+  const lead = await axiosCRM.get(`${API_BASE_URL}/leads/${id}`);
   return lead.data;
 };
 export const simulateCreateLead = async (body: FormData): Promise<Lead> => {
-  const lead = await axios.post(`${API_BASE_URL}/leads/simulate`, body);
+  const lead = await axiosCRM.post(`${API_BASE_URL}/leads/simulate`, body);
   return lead.data;
 };
 
 export const createLead = async (body: FormData): Promise<LeadDetailed> => {
-  const lead = await axios.post(`${API_BASE_URL}/leads`, body);
+  const lead = await axiosCRM.post(`${API_BASE_URL}/leads`, body);
   return lead.data;
 };
 
 export const updateLead = async (body: FormData, id: number): Promise<Lead> => {
-  const lead = await axios.put(`${API_BASE_URL}/leads/${id}`, body);
+  const lead = await axiosCRM.put(`${API_BASE_URL}/leads/${id}`, body);
   return lead.data;
 };
 
 export const enableLead = async (id: number): Promise<EnableResponse> => {
-  const lead = await axios.put(`${API_BASE_URL}/leads/active/${id}`);
+  const lead = await axiosCRM.put(`${API_BASE_URL}/leads/active/${id}`);
   return lead.data;
 };
 export const disableLead = async (id: number): Promise<DeleteResponse> => {
-  const lead = await axios.delete(`${API_BASE_URL}/leads/${id}`);
+  const lead = await axiosCRM.delete(`${API_BASE_URL}/leads/${id}`);
   return lead.data;
 };
 

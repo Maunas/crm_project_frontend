@@ -15,6 +15,9 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import MoreIcon from '@mui/icons-material/MoreVert';
 import { HeaderSearchBar } from './HeaderSearchBar';
 import { drawerWidth } from './Sidebar';
+import { Divider, ListItemIcon, ListItemText } from '@mui/material';
+import { Check } from '@mui/icons-material';
+import { UserContext, type UserContextItems } from '../contexts';
 
 interface AppBarProps extends MuiAppBarProps {
   open?: boolean;
@@ -49,6 +52,9 @@ interface HeaderProps extends MuiAppBarProps {
 }
 
 export default function Header({ handleDrawerOpen, open }: HeaderProps) {
+
+  const { organizations, selectedOrgId, setSelectedOrgId } = React.useContext<UserContextItems>(UserContext)
+
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] =
     React.useState<null | HTMLElement>(null);
@@ -90,8 +96,26 @@ export default function Header({ handleDrawerOpen, open }: HeaderProps) {
       open={isMenuOpen}
       onClose={handleMenuClose}
     >
-      <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-      <MenuItem onClick={handleMenuClose}>My account</MenuItem>
+
+      <MenuItem>
+        <ListItemText>Tus Organizaciones</ListItemText>
+        <Divider />
+      </MenuItem>
+      {
+        organizations.map(org => {
+          return <MenuItem dense key={org.id} onClick={() => setSelectedOrgId(org.id)}>
+            <ListItemText inset={org.id !== selectedOrgId}>
+              {org.id === selectedOrgId &&
+                <ListItemIcon>
+                  <Check />
+                </ListItemIcon>
+              }
+              {org.name}
+            </ListItemText>
+          </MenuItem>
+        }
+        )
+      }
     </Menu>
   );
 
