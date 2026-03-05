@@ -1,9 +1,8 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo } from "react"
 import { RegisteredTextInput } from "../common/forms/CustomInputs"
-import { ControlledAutocomplete } from "../common/forms/CustomMultipleInputs"
-import type { Organization, Workspace, WorkspaceDetailed, WorkspacePost } from "../../types/campaigns"
+import type { Workspace, WorkspaceDetailed, WorkspacePost } from "../../types/campaigns"
 import { setFormErrors } from "../../generalService"
-import { createWorkspace, getOrganizations, updateWorkspace } from "./workspaceServices"
+import { createWorkspace, updateWorkspace } from "./workspaceServices"
 import { useForm } from "react-hook-form"
 import { Typography, Button, Grid, ButtonGroup } from "@mui/material"
 import { FormErrorMessage } from "../../styles/styledMUIFormComponents"
@@ -48,18 +47,11 @@ export const WorkspaceForm = ({ existingWsp, submit, onCancel }: WorkspaceProps)
     const defaultValues = useMemo(() => ({
         name: existingWsp?.name ?? null,
         description: existingWsp?.description ?? null,
-        organization_id: existingWsp?.organization_id ?? null,
     }), [existingWsp])
 
-    const { register, handleSubmit, reset, control, formState: { errors }, setError } = useForm<WorkspacePost>({ defaultValues })
+    const { register, handleSubmit, reset, formState: { errors }, setError } = useForm<WorkspacePost>({ defaultValues })
 
     useEffect(() => { reset(defaultValues) }, [reset, defaultValues])
-
-    const [organizations, setOrganizations] = useState<Organization[] | []>([])
-
-    useEffect(() => {
-        getOrganizations({ only_active: true, page_size: 0 }).then(res => setOrganizations(res.items))
-    }, [])
 
     const onSubmit = (data: WorkspacePost) => {
         submit(data)
@@ -85,14 +77,6 @@ export const WorkspaceForm = ({ existingWsp, submit, onCancel }: WorkspaceProps)
                     <RegisteredTextInput name="description" register={register} label="Descripción"
                         errorMessage={errors.description?.message} />
                 </Grid>
-
-                {!existingWsp &&
-                    <Grid size="grow" minWidth={"20rem"}>
-                        <ControlledAutocomplete control={control} name="organization_id" label="Organización" options={organizations}
-                            getOptionLabel={option => option.name!} getOptionKey={option => `${option.id}`}
-                            returnField="id" errorMessage={errors.organization_id?.message} required />
-                    </Grid>}
-
             </Grid>
             {errors?.root &&
                 <FormErrorMessage >{errors?.root?.message}</FormErrorMessage>

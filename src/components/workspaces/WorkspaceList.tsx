@@ -1,13 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { ContainerWithSidebar } from '../common/layout/GenericContainer'
 import { EnabledIcon } from '../common/lists/Badges';
 import { PaginationComponent } from '../common/lists/PaginationComponent'
 import { WorkspaceSidebar } from './WorkspaceSidebar'
+import type { Paginable } from '../../types/common'
 import type { CampaignDetailed, WorkspaceDetailed } from '../../types/campaigns'
 import { disableWorkspace, enableWorkspace, getWorkspaces } from './workspaceServices'
 import { useListPagination } from '../hooks/useListPagination'
 import { useSidebar } from '../hooks/useSidebar'
-import type { Paginable } from '../../types/common'
+import { UserContext } from '../common/contexts';
+import type { UserContextItems } from '../users/UserProvider';
 import { Button, ButtonGroup, Grid, IconButton, List, ListItem, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
@@ -23,9 +25,15 @@ export const WorkspaceList = () => {
 
     const { fetchPage, pageSize, refresh, pageComponentProps } = useListPagination(workspaces)
 
+    const {selectedOrgId} = useContext<UserContextItems>(UserContext)
+
     useEffect(() => {
         getWorkspaces({ detailed: true, page_size: pageSize, only_active: false, page: fetchPage }).then(setWorkspaces)
-    }, [fetchPage, refresh, pageSize])
+    }, [fetchPage, refresh, pageSize, selectedOrgId])
+
+    useEffect(() => {
+        closeSidebar()
+    }, [selectedOrgId, closeSidebar])
 
     const updateEntityOnList = (
         entity: WorkspaceDetailed | CampaignDetailed | null,
@@ -69,7 +77,6 @@ export const WorkspaceList = () => {
         }
         if (wsp.active) {
             disableWorkspace(wsp.id).then((res) => {
-                console.log(res.action)
                 if (res.action === "disabled") updateActive(wsp)
                 if (res.action === "deleted") deleteWsp(wsp)
             })

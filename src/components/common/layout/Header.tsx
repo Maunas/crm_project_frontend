@@ -1,4 +1,6 @@
 import * as React from 'react';
+import { UserContext } from '../contexts';
+import type { UserContextItems } from '../../users/UserProvider';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
@@ -7,6 +9,7 @@ import Badge from '@mui/material/Badge';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import MuiAppBar, { type AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
+import { Divider, ListItemIcon, ListItemText } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import MenuIcon from '@mui/icons-material/Menu';
 import AccountCircle from '@mui/icons-material/AccountCircle';
@@ -15,6 +18,7 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import MoreIcon from '@mui/icons-material/MoreVert';
 import { HeaderSearchBar } from './HeaderSearchBar';
 import { drawerWidth } from './Sidebar';
+import { Check } from '@mui/icons-material';
 
 interface AppBarProps extends MuiAppBarProps {
   open?: boolean;
@@ -49,6 +53,9 @@ interface HeaderProps extends MuiAppBarProps {
 }
 
 export default function Header({ handleDrawerOpen, open }: HeaderProps) {
+
+  const { activeOrganizations, selectedOrgId, setSelectedOrgId } = React.useContext<UserContextItems>(UserContext)
+
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] =
     React.useState<null | HTMLElement>(null);
@@ -90,8 +97,26 @@ export default function Header({ handleDrawerOpen, open }: HeaderProps) {
       open={isMenuOpen}
       onClose={handleMenuClose}
     >
-      <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-      <MenuItem onClick={handleMenuClose}>My account</MenuItem>
+
+      <MenuItem>
+        <ListItemText>Tus Organizaciones</ListItemText>
+        <Divider />
+      </MenuItem>
+      {
+        activeOrganizations.map(org => {
+          return <MenuItem dense key={org.id} onClick={() => setSelectedOrgId(org.id)}>
+            <ListItemText inset={org.id !== selectedOrgId}>
+              {org.id === selectedOrgId &&
+                <ListItemIcon>
+                  <Check />
+                </ListItemIcon>
+              }
+              {org.name}
+            </ListItemText>
+          </MenuItem>
+        }
+        )
+      }
     </Menu>
   );
 
