@@ -5,6 +5,8 @@ import { OrganizationFormSidebar } from './OrganizationForm'
 import { useSidebar } from '../hooks/useSidebar'
 import type { OrganizationDetailed } from '../../types/campaigns'
 import { disableOrganization, enableOrganization } from '../workspaces/workspaceServices'
+import { UserContext } from '../common/contexts'
+import type { UserContextItems } from '../users/UserProvider'
 import { Link } from 'react-router-dom'
 import dayjs from 'dayjs'
 import 'dayjs/locale/es'
@@ -14,8 +16,6 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import { CommonButton, DisableButton } from '../common/details/DetailsCommonButton'
-import { UserContext } from '../common/contexts'
-import type { UserContextItems } from '../users/UserProvider'
 dayjs.locale('es')
 
 export const OrganizationList = () => {
@@ -167,6 +167,8 @@ interface DetailsProps {
     handleActive: (org: OrganizationDetailed) => void
 }
 const OrganizationDetails = ({ entity, closeSidebar, handleSidebar, handleActive }: DetailsProps) => {
+    const {  selectedOrgId  } = useContext<UserContextItems>(UserContext)
+
     if (!entity) return
 
     return (
@@ -200,7 +202,9 @@ const OrganizationDetails = ({ entity, closeSidebar, handleSidebar, handleActive
             <Divider />
             <ButtonGroup>
                 <CommonButton handleClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
-                <DisableButton active={entity.active} handleActive={() => handleActive(entity)} />
+                {selectedOrgId !== entity.id &&
+                    <DisableButton active={entity.active} handleActive={() => handleActive(entity)} />
+                }
                 <CommonButton handleClick={() => handleSidebar("UPDATE_ORG", entity)} actionType="MODIFY" >Modificar</CommonButton>
             </ButtonGroup>
         </Stack>

@@ -1,4 +1,6 @@
 import * as React from 'react';
+import { UserContext } from '../contexts';
+import type { UserContextItems } from '../../users/UserProvider';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
@@ -7,6 +9,7 @@ import Badge from '@mui/material/Badge';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import MuiAppBar, { type AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
+import { Divider, ListItemIcon, ListItemText } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import MenuIcon from '@mui/icons-material/Menu';
 import AccountCircle from '@mui/icons-material/AccountCircle';
@@ -15,10 +18,7 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import MoreIcon from '@mui/icons-material/MoreVert';
 import { HeaderSearchBar } from './HeaderSearchBar';
 import { drawerWidth } from './Sidebar';
-import { Divider, ListItemIcon, ListItemText } from '@mui/material';
 import { Check } from '@mui/icons-material';
-import { UserContext } from '../contexts';
-import type { UserContextItems } from '../../users/UserProvider';
 
 interface AppBarProps extends MuiAppBarProps {
   open?: boolean;
