@@ -1,19 +1,11 @@
 import type {
-    LeadField, LeadFieldDetailed, LeadFieldPost, LeadFieldType, LeadFieldTypeDetailed, LeadFieldTemplate, Nomenclator, LeadFieldSection, LeadFieldSectionDetailed, NomenclatorDetailed, NomenclatorItem, NomenclatorItemDetailed,
+    LeadField, LeadFieldDetailed, LeadFieldPost, LeadFieldType, LeadFieldTypeDetailed, LeadFieldTemplate, LeadFieldSection, LeadFieldSectionDetailed
 } from "../../types/leadFields";
 import type { DeleteResponse, EnableResponse, ListParams, Paginable } from "../../types/common";
 import { API_BASE_URL, axiosCRM, orderList } from "../../generalService";
 
 interface LeadFieldParams extends ListParams {
     campaign_id?: number;
-}
-interface NomenclatorParams extends ListParams {
-    campaign_id?: number;
-    global_nomenclator?: boolean;
-}
-interface NomenclatorItemParams extends ListParams {
-    nomenclator_id?: number;
-    parent_item_id?: number;
 }
 
 export const getLeadFields = async <T extends LeadFieldParams>(
@@ -58,20 +50,6 @@ export const getFieldTypes = async <T extends ListParams>(params?: T): Promise<P
 >> => {
     const tmp = await axiosCRM.get(`${API_BASE_URL}/lead_field_types`, { params });
     return { ...tmp.data, items: orderList(tmp.data.items, "id") };
-};
-
-export const getNomenclators = async <T extends NomenclatorParams>(params?: T): Promise<Paginable<
-    T["detailed"] extends true ? NomenclatorDetailed : Nomenclator
->> => {
-    const noms = await axiosCRM.get(`${API_BASE_URL}/nomenclators`, { params });
-    return { ...noms.data, items: orderList(noms.data.items) };
-};
-
-export const getNomenclatorItems = async <T extends NomenclatorItemParams>(params?: T): Promise<Paginable<
-    T["detailed"] extends true ? NomenclatorItemDetailed : NomenclatorItem
->> => {
-    const leadField = await axiosCRM.get(`${API_BASE_URL}/nomenclator_items`, { params });
-    return { ...leadField.data, items: orderList(leadField.data.items, "id") };
 };
 
 export const getFieldSections = async <T extends ListParams>(params?: T): Promise<Paginable<

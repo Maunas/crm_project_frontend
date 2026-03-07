@@ -8,6 +8,8 @@ import { GenericContainer } from "./components/common/layout/GenericContainer";
 import { CreateLeadFormPage, UpdateLeadFormPage } from "./components/lead/LeadFormWraper";
 import { LeadList } from "./components/lead/LeadList";
 import { OrganizationList } from "./components/organizations/OrganizationList";
+import { NomenclatorList } from "./components/nomenclators/NomenclatorList";
+import { NomenclatorItemList } from "./components/nomenclators/NomenclatorItemList";
 
 export const router = createBrowserRouter([
     {
@@ -51,6 +53,14 @@ export const router = createBrowserRouter([
             {
                 path: "/campaigns/",
                 Component: WorkspaceList
+            },
+            {
+                path: "/nomenclators/",
+                Component: NomenclatorList
+            },
+            {
+                path: "/nomenclators/:nomenclatorId",
+                Component: NomenclatorItemList
             },
             {
                 path: "/organizations/",

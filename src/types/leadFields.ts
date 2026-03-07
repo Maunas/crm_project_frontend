@@ -1,6 +1,7 @@
 import type { Campaign } from "./campaigns";
 import type { Metadata } from "./common";
 import type { Lead } from "./leads";
+import type { Nomenclator, NomenclatorItem } from "./nomenclators";
 
 export interface LeadFieldValue {
   id: number;
@@ -101,31 +102,6 @@ export interface FieldValidationRuleTemplate {
   error_message: string;
   description?: string;
   required_params: string[];
-}
-
-export interface Nomenclator {
-  id: number;
-  name: string;
-  campaign_id?: number | null;
-  parent_nomenclator_id?: number | null;
-  organization_id?: number | null;
-}
-
-export interface NomenclatorDetailed extends Nomenclator, Metadata {
-  sub_nomenclators?: Nomenclator[];
-  items?: NomenclatorItem[];
-}
-
-export interface NomenclatorItem {
-  id: number;
-  code: string;
-  value: string;
-  nomenclator_id: number;
-  parent_item_id?: number;
-  organization_id?: number | null;
-}
-export interface NomenclatorItemDetailed extends NomenclatorItem, Metadata {
-  parent_item?: NomenclatorItem;
 }
 
 export interface LeadFieldSectionPost {

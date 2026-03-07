@@ -4,9 +4,10 @@ import { LeadFormAddress, LeadFormBool, LeadFormCheckbox, LeadFormFile, LeadForm
 import type { Lead, LeadPost, LeadPostValue } from "../../types/leads"
 import type { LeadField, LeadFieldValue, NomenclatorItem } from "../../types/leadFields"
 import { createFormDataFromLead, getLeads, getSelectorField, setLeadFormErrors, updateSelectorOptions } from "./leadService"
-import { getLeadFields, getNomenclatorItems } from "../leadFields/leadFieldServices"
+import { getLeadFields } from "../leadFields/leadFieldServices"
 import { useFieldArray, useForm, type Control, type Path, type UseFormRegister } from "react-hook-form"
 import { Button, Grid, ButtonGroup, Stack } from "@mui/material"
+import { getNomenclatorItems } from "../nomenclators/nomenclatorService"
 
 //Para permitir mantener los datos de cada campo
 export interface LeadPostFormValues extends LeadPostValue {
