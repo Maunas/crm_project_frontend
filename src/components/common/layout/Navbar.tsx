@@ -1,8 +1,9 @@
+import { Link } from 'react-router-dom';
 import { List, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material'
 import PersonIcon from '@mui/icons-material/Person';
 import WorkIcon from '@mui/icons-material/Work';
 import StoreIcon from '@mui/icons-material/Store';
-import { Link } from 'react-router-dom';
+import LabelIcon from '@mui/icons-material/Label';
 
 interface NavbarProps {
   open: boolean
@@ -10,9 +11,10 @@ interface NavbarProps {
 
 export const Navbar = ({ open }: NavbarProps) => {
   const options = [
-    { name: "Leads", icon: <PersonIcon />, link:"/leads" },
-    { name: "Campañas", icon: <WorkIcon />, link:"/campaigns" },
-    { name: "Reportes", icon: <StoreIcon />, link:"/organizations" },
+    { name: "Leads", icon: <PersonIcon />, link: "/leads" },
+    { name: "Campañas", icon: <WorkIcon />, link: "/campaigns" },
+    { name: "Reportes", icon: <StoreIcon />, link: "/organizations" },
+    { name: "Nomencladores", icon: <LabelIcon />, link: "/nomenclators" },
   ]
 
   return (
@@ -20,7 +22,7 @@ export const Navbar = ({ open }: NavbarProps) => {
       {options?.map((item) => (
         <ListItem key={item.name} disablePadding sx={{ display: 'block' }}>
           <ListItemButton
-          component={Link} to={item.link}
+            component={Link} to={item.link}
             sx={[
               { minHeight: 48, px: 2.5, },
               open ? { justifyContent: 'initial', } : { justifyContent: 'center', },
@@ -36,7 +38,7 @@ export const Navbar = ({ open }: NavbarProps) => {
             </ListItemIcon>
             <ListItemText
               primary={item.name}
-              sx={[ open ? { opacity: 1, } : { opacity: 0, },
+              sx={[open ? { opacity: 1, } : { opacity: 0, },
               ]}
             />
           </ListItemButton>
