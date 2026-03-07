@@ -1,7 +1,7 @@
 import { Autocomplete, Checkbox, CircularProgress, FormControl, FormControlLabel, FormGroup, FormHelperText, FormLabel, Radio, RadioGroup, TextField } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { Controller, type Control, type ControllerRenderProps, type FieldValues, type Path } from 'react-hook-form'
-import { FormErrorMessage } from '../../../styles/styledMUIFormComponents'
+import { FormErrorMessage } from '../../../styledComponents/styledMUIFormComponents'
 
 interface BasicMultileInputProps<Option> {
     label?: string,

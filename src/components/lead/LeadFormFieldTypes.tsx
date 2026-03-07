@@ -5,7 +5,7 @@ import type { NomenclatorItem } from "../../types/leadFields";
 import { type Control, type FieldValues, type Path, type UseFormRegister } from "react-hook-form";
 import dayjs from "dayjs";
 import { FormControl, InputAdornment, InputLabel, OutlinedInput, TextField } from "@mui/material"
-import { FormErrorMessage } from "../../styles/styledMUIFormComponents";
+import { FormErrorMessage } from "../../styledComponents/styledMUIFormComponents";
 import type { LeadPostFormValues } from "./LeadForm";
 
 interface BasicFormInput<T extends FieldValues> {

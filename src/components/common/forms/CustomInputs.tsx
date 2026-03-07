@@ -3,7 +3,7 @@ import NumberField, { NumberSpinner } from "./NumberField";
 import { Controller, type Control, type FieldValues, type Path, type UseFormRegister, } from "react-hook-form";
 import { Box, Checkbox, FormControl, FormControlLabel, FormLabel, Grid, IconButton, InputAdornment, InputLabel, OutlinedInput, Rating, Slider, TextField, Typography, } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { FormErrorMessage } from "../../../styles/styledMUIFormComponents";
+import { FormErrorMessage } from "../../../styledComponents/styledMUIFormComponents";
 
 interface BasicFormInput<T extends FieldValues> {
   label?: string;
