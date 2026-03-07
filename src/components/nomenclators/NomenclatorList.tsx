@@ -2,7 +2,6 @@ import { useContext, useEffect, useState } from 'react'
 import type { UserContextItems } from '../users/UserProvider'
 import { UserContext } from '../common/contexts'
 import { useSidebar } from '../hooks/useSidebar'
-import type { NomenclatorDetailed } from '../../types/leadFields'
 import { useListPagination } from '../hooks/useListPagination'
 import type { Paginable } from '../../types/common'
 import { ContainerWithSidebar } from '../common/layout/GenericContainer'
@@ -16,6 +15,8 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import { Link as RouterLink } from 'react-router-dom'
+import { NomenclatorFormSidebar } from './NomenclatorForm'
+import type { NomenclatorDetailed } from '../../types/nomenclators'
 
 export const NomenclatorList = () => {
 
@@ -96,7 +97,7 @@ export const NomenclatorList = () => {
                     </Grid>
                     <Grid size="auto" minWidth="15rem">
                         {nomenclators && nomenclators.items?.length > 0 &&
-                            <CommonButton actionType="CREATE" handleClick={() => { }}>Crear Nomenclador</CommonButton>
+                            <CommonButton actionType="CREATE" handleClick={() => {handleSidebar("CREATE_NOM", null)}}>Crear Nomenclador</CommonButton>
                         }
                     </Grid>
                 </Grid>
@@ -137,7 +138,7 @@ export const NomenclatorList = () => {
                         </List>
                         : <Grid container spacing={2} justifyContent="center" alignItems="center" direction="column">
                             <Typography variant="h4" color="initial">No se han encontrado nomencladores...</Typography>
-                            <Button onClick={() => { }} variant="contained">Crear Nomenclador</Button>
+                            <Button onClick={() => {handleSidebar("CREATE_NOM", null)}} variant="contained">Crear Nomenclador</Button>
                         </Grid>
                 }
             </Stack>
@@ -160,16 +161,14 @@ interface SidebarProps {
 export const NomenclatorSidebar = ({ mode, entity, closeSidebar, updateEntityOnList, handleSidebar, handleActive }: SidebarProps) => {
 
     switch (mode) {
-        /*
         case "CREATE_NOM":
             return <NomenclatorFormSidebar closeSidebar={closeSidebar}
                 updateEntityOnList={entity => updateEntityOnList(entity, mode)}
                 handleSidebar={handleSidebar} />
-                case "UPDATE_NOM":
-                    return <NomenclatorFormSidebar existingWsp={entity as WorkspaceDetailed} closeSidebar={closeSidebar}
-                    updateEntityOnList={entity => updateEntityOnList(entity, mode)}
-                    handleSidebar={handleSidebar} />
-                    */
+        case "UPDATE_NOM":
+            return <NomenclatorFormSidebar existingNom={entity as NomenclatorDetailed} closeSidebar={closeSidebar}
+                updateEntityOnList={entity => updateEntityOnList(entity, mode)}
+                handleSidebar={handleSidebar} />
         case "DETAILS_NOM":
             return <NomenclatorDetails entity={entity as NomenclatorDetailed} closeSidebar={closeSidebar}
                 handleSidebar={handleSidebar} handleActive={handleActive} />

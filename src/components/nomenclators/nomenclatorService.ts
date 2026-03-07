@@ -4,7 +4,7 @@ import type { DeleteResponse, EnableResponse, ListParams, Paginable } from "../.
 import type { Nomenclator, NomenclatorDetailed, NomenclatorItem, NomenclatorItemDetailed, NomenclatorItemPost, NomenclatorPost } from "../../types/nomenclators";
 
 interface NomenclatorParams extends ListParams {
-    campaign_id?: number;
+    campaign_id?: number | null;
     global_nomenclator?: boolean;
 }
 interface NomenclatorItemParams extends ListParams {
@@ -28,7 +28,7 @@ export const createNomenclator = async (body: NomenclatorPost): Promise<Nomencla
     return nom.data
 }
 export const updateNomenclator = async (body: NomenclatorPost, id: number): Promise<NomenclatorDetailed> => {
-    const nom = await axiosCRM.put(`${API_BASE_URL}/nomenclators/${id}`, body)
+    const nom = await axios.put(`${API_BASE_URL}/nomenclators/${id}`, body)
     return nom.data
 }
 export const disableNomenclator = async (id: number): Promise<DeleteResponse> => {
@@ -56,7 +56,7 @@ export const createNomenclatorItem = async (body: NomenclatorItemPost): Promise<
     return nom.data
 }
 export const updateNomenclatorItem = async (body: NomenclatorItemPost, id: number): Promise<NomenclatorItemDetailed> => {
-    const nom = await axiosCRM.put(`${API_BASE_URL}/nomenclator_items/${id}`, body)
+    const nom = await axios.put(`${API_BASE_URL}/nomenclator_items/${id}`, body)
     return nom.data
 }
 export const disableNomenclatorItem = async (id: number): Promise<DeleteResponse> => {

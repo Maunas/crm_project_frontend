@@ -1,8 +1,8 @@
 import { Button, ButtonGroup, Chip, Divider, Grid, Link, Stack, Typography } from "@mui/material"
-import type { NomenclatorDetailed } from "../../types/leadFields"
 import { Link as RouterLink } from "react-router-dom"
 import dayjs from "dayjs"
 import { CommonButton, DisableButton } from "../common/details/DetailsCommonButton"
+import type { NomenclatorDetailed } from "../../types/nomenclators"
 
 interface NomenclatorDetailsProps {
     entity: NomenclatorDetailed | null,
@@ -20,9 +20,12 @@ export const NomenclatorDetails = ({ entity, closeSidebar, handleSidebar, handle
                 {entity.active ? <Chip color='success' label="Habilitado" /> :
                     <Chip color='error' label="Deshabilitado" />}
             </Grid>
-            {entity.campaign_id 
-            ? <Link component={RouterLink} to={`/campaigns/${entity.campaign_id}`}>Perteneciente a la Campaña {entity.campaign_id}</Link>
+            {entity.campaign_id
+                ? <Link component={RouterLink} to={`/campaigns/${entity.campaign_id}`}>Perteneciente a la Campaña {entity.campaign_id}</Link>
                 : <Typography variant="body1" >Nomenclador Global.</Typography>
+            }
+            {entity.parent_nomenclator_id &&
+                <Link component={RouterLink} to={`/nomenclators/${entity.parent_nomenclator_id}`}>Depende del nomenclador {entity.parent_nomenclator_id}</Link>
             }
             <Divider />
             <Button variant="contained" component={RouterLink} to={`/nomenclators/${entity.id}`} >Ver Items de Nomenclador</Button>

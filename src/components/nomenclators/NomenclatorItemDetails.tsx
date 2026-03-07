@@ -1,8 +1,8 @@
 import { ButtonGroup, Chip, Divider, Grid, Link, Stack, Typography } from "@mui/material"
-import type { NomenclatorItemDetailed } from "../../types/leadFields"
 import { Link as RouterLink } from "react-router-dom"
 import dayjs from "dayjs"
 import { CommonButton, DisableButton } from "../common/details/DetailsCommonButton"
+import type { NomenclatorItemDetailed } from "../../types/nomenclators"
 
 interface NomenclatorDetailsProps {
     entity: NomenclatorItemDetailed | null,
