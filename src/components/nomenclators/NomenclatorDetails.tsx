@@ -20,9 +20,10 @@ export const NomenclatorDetails = ({ entity, closeSidebar, handleSidebar, handle
                 {entity.active ? <Chip color='success' label="Habilitado" /> :
                     <Chip color='error' label="Deshabilitado" />}
             </Grid>
+            {!entity.organization_id && <Typography variant="body1" fontStyle="italic" >(Nomenclador del Sistema)</Typography>}
             {entity.campaign_id
                 ? <Link component={RouterLink} to={`/campaigns/${entity.campaign_id}`}>Perteneciente a la Campaña {entity.campaign_id}</Link>
-                : <Typography variant="body1" >Nomenclador Global.</Typography>
+                : <Typography variant="body1" >Nomenclador Global</Typography>
             }
             {entity.parent_nomenclator_id &&
                 <Link component={RouterLink} to={`/nomenclators/${entity.parent_nomenclator_id}`}>Depende del nomenclador {entity.parent_nomenclator_id}</Link>
@@ -49,8 +50,10 @@ export const NomenclatorDetails = ({ entity, closeSidebar, handleSidebar, handle
 
             <ButtonGroup fullWidth>
                 <CommonButton handleClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
-                <DisableButton active={entity.active} handleActive={() => handleActive(entity)} />
-                <CommonButton handleClick={() => handleSidebar("UPDATE_NOM", entity)} actionType="MODIFY" >Modificar</CommonButton>
+                {entity.organization_id && <>
+                    <DisableButton active={entity.active} handleActive={() => handleActive(entity)} />
+                    <CommonButton handleClick={() => handleSidebar("UPDATE_NOM", entity)} actionType="MODIFY" >Modificar</CommonButton>
+                </>}
             </ButtonGroup>
         </Stack>
     )

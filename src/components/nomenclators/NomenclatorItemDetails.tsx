@@ -21,15 +21,16 @@ export const NomenclatorItemDetails = ({ entity, parentEntity, closeSidebar, han
                 {entity.active ? <Chip color='success' label="Habilitado" /> :
                     <Chip color='error' label="Deshabilitado" />}
             </Grid>
+            {!entity.organization_id && <Typography variant="body1" fontStyle="italic" >(Nomenclador del Sistema)</Typography>}
             <Divider />
             {parentEntity &&
-            <>
-                <Stack direction="row" spacing={1}>
-                <Typography variant="body1" color="initial">Depende del Item de Nomenclador</Typography>
-                <Link component={RouterLink} to={`/nomenclators/${parentEntity?.nomenclator_id}`}>{parentEntity?.code} - {parentEntity?.value}</Link>
-            </Stack>
-            <Divider />
-            </>}
+                <>
+                    <Stack direction="row" spacing={1}>
+                        <Typography variant="body1" color="initial">Depende del Item de Nomenclador</Typography>
+                        <Link component={RouterLink} to={`/nomenclators/${parentEntity?.nomenclator_id}`}>{parentEntity?.code} - {parentEntity?.value}</Link>
+                    </Stack>
+                    <Divider />
+                </>}
             <Grid container spacing={2} >
                 <Grid size="grow" minWidth="18rem">
                     <Typography variant="body1" fontWeight="bold">Fecha de creación:</Typography>
@@ -49,8 +50,10 @@ export const NomenclatorItemDetails = ({ entity, parentEntity, closeSidebar, han
 
             <ButtonGroup fullWidth>
                 <CommonButton handleClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
-                <DisableButton active={entity.active} handleActive={() => handleActive(entity)} />
-                <CommonButton handleClick={() => handleSidebar("UPDATE_NOM", entity)} actionType="MODIFY" >Modificar</CommonButton>
+                {entity.organization_id && <>
+                    <DisableButton active={entity.active} handleActive={() => handleActive(entity)} />
+                    <CommonButton handleClick={() => handleSidebar("UPDATE_NOM", entity)} actionType="MODIFY" >Modificar</CommonButton>
+                </>}
             </ButtonGroup>
         </Stack>
     )

@@ -97,7 +97,7 @@ export const NomenclatorList = () => {
                     </Grid>
                     <Grid size="auto" minWidth="15rem">
                         {nomenclators && nomenclators.items?.length > 0 &&
-                            <CommonButton actionType="CREATE" handleClick={() => {handleSidebar("CREATE_NOM", null)}}>Crear Nomenclador</CommonButton>
+                            <CommonButton actionType="CREATE" handleClick={() => { handleSidebar("CREATE_NOM", null) }}>Crear Nomenclador</CommonButton>
                         }
                     </Grid>
                 </Grid>
@@ -110,27 +110,31 @@ export const NomenclatorList = () => {
                                         <IconButton edge="end" aria-label="details" onClick={() => handleSidebar("DETAILS_NOM", nom)}>
                                             <SearchIcon />
                                         </IconButton>
-                                        <IconButton edge="end" aria-label="modify" onClick={() => handleSidebar("UPDATE_NOM", nom)}>
-                                            <EditIcon />
-                                        </IconButton>
-                                        <IconButton edge="end" aria-label={nom.active ? "delete" : "restore"}
-                                            onClick={() => handleActive(nom)}>
-                                            {nom.active ?
-                                                <DeleteIcon color="error" /> :
-                                                <RestoreFromTrashIcon color="success" />
-                                            }
-                                        </IconButton>
+                                        {nom.organization_id &&
+                                            <>
+                                                <IconButton edge="end" aria-label="modify" onClick={() => handleSidebar("UPDATE_NOM", nom)}>
+                                                    <EditIcon />
+                                                </IconButton>
+                                                <IconButton edge="end" aria-label={nom.active ? "delete" : "restore"}
+                                                    onClick={() => handleActive(nom)}>
+                                                    {nom.active ?
+                                                        <DeleteIcon color="error" /> :
+                                                        <RestoreFromTrashIcon color="success" />
+                                                    }
+                                                </IconButton>
+                                            </>}
                                     </Grid>
                                 }>
                                     <ListItemButton onClick={() => handleSidebar("DETAILS_NOM", nom)} >
                                         <ListItemText primary={<>
                                             <Stack spacing={1} direction="row">
-                                                <Typography fontWeight="bold">{nom.name} </Typography>
+                                                <Typography fontWeight="bold">{nom.name}</Typography>
+                                            {!nom.organization_id && <Typography variant="body1" fontStyle="italic" >(Nomenclador del Sistema)</Typography> }
                                             </Stack>
-                                            {nom.campaign_id
-                                                ? <Link component={RouterLink} to={`/campaigns/${nom.campaign_id}`}>Perteneciente a la Campaña {nom.campaign_id}</Link>
-                                                : <Typography variant="body1" >Nomenclador Global.</Typography>
-                                            }
+                                                {nom.campaign_id
+                                                    ? <Link component={RouterLink} to={`/campaigns/${nom.campaign_id}`}>Perteneciente a la Campaña {nom.campaign_id}</Link>
+                                                    : <Typography variant="body1" >Nomenclador Global.</Typography>
+                                                }
                                         </>} />
                                     </ListItemButton>
                                 </ListItem>
@@ -138,7 +142,7 @@ export const NomenclatorList = () => {
                         </List>
                         : <Grid container spacing={2} justifyContent="center" alignItems="center" direction="column">
                             <Typography variant="h4" color="initial">No se han encontrado nomencladores...</Typography>
-                            <Button onClick={() => {handleSidebar("CREATE_NOM", null)}} variant="contained">Crear Nomenclador</Button>
+                            <Button onClick={() => { handleSidebar("CREATE_NOM", null) }} variant="contained">Crear Nomenclador</Button>
                         </Grid>
                 }
             </Stack>

@@ -122,24 +122,27 @@ export const NomenclatorItemList = () => {
                                         <IconButton edge="end" aria-label="details" onClick={() => handleSidebar("DETAILS_NOM", nom)}>
                                             <SearchIcon />
                                         </IconButton>
-                                        <IconButton edge="end" aria-label="modify" onClick={() => handleSidebar("UPDATE_NOM", nom)}>
-                                            <EditIcon />
-                                        </IconButton>
-                                        <IconButton edge="end" aria-label={nom.active ? "delete" : "restore"}
-                                            onClick={() => handleActive(nom)}>
-                                            {nom.active ?
-                                                <DeleteIcon color="error" /> :
-                                                <RestoreFromTrashIcon color="success" />
-                                            }
-                                        </IconButton>
+                                        {nom.organization_id && <>
+                                            <IconButton edge="end" aria-label="modify" onClick={() => handleSidebar("UPDATE_NOM", nom)}>
+                                                <EditIcon />
+                                            </IconButton>
+                                            <IconButton edge="end" aria-label={nom.active ? "delete" : "restore"}
+                                                onClick={() => handleActive(nom)}>
+                                                {nom.active ?
+                                                    <DeleteIcon color="error" /> :
+                                                    <RestoreFromTrashIcon color="success" />
+                                                }
+                                            </IconButton>
+                                        </>}
                                     </Grid>
                                 }>
                                     <ListItemButton onClick={() => handleSidebar("DETAILS_NOM", nom)} >
                                         <ListItemText primary={<>
                                             <Stack spacing={1} direction="row">
-                                                <Typography fontWeight="bold">{nom.code} </Typography>
+                                                <Typography fontWeight="bold">{nom.code} -</Typography>
+                                                <Typography >{nom.value} </Typography>
                                             </Stack>
-                                            <Typography >{nom.value} </Typography>
+                                            {!nom.organization_id && <Typography variant="body1" fontStyle="italic" >(Opción del Sistema)</Typography>}
 
                                         </>} />
                                     </ListItemButton>

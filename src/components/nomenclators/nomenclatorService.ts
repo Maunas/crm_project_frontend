@@ -1,4 +1,3 @@
-import axios from "axios";
 import { API_BASE_URL, axiosCRM, orderList } from "../../generalService";
 import type { DeleteResponse, EnableResponse, ListParams, Paginable } from "../../types/common";
 import type { Nomenclator, NomenclatorDetailed, NomenclatorItem, NomenclatorItemDetailed, NomenclatorItemPost, NomenclatorPost } from "../../types/nomenclators";
@@ -28,16 +27,16 @@ export const createNomenclator = async (body: NomenclatorPost): Promise<Nomencla
     return nom.data
 }
 export const updateNomenclator = async (body: NomenclatorPost, id: number): Promise<NomenclatorDetailed> => {
-    const nom = await axios.put(`${API_BASE_URL}/nomenclators/${id}`, body)
+    const nom = await axiosCRM.put(`${API_BASE_URL}/nomenclators/${id}`, body)
     return nom.data
 }
 export const disableNomenclator = async (id: number): Promise<DeleteResponse> => {
-    const nom = await axios.delete(`${API_BASE_URL}/nomenclators/${id}`);
+    const nom = await axiosCRM.delete(`${API_BASE_URL}/nomenclators/${id}`);
     return nom.data;
 };
 
 export const enableNomenclator = async (id: number): Promise<EnableResponse> => {
-    const nom = await axios.put(`${API_BASE_URL}/nomenclators/active/${id}`);
+    const nom = await axiosCRM.put(`${API_BASE_URL}/nomenclators/active/${id}`);
     return nom.data;
 };
 
@@ -56,15 +55,15 @@ export const createNomenclatorItem = async (body: NomenclatorItemPost): Promise<
     return nom.data
 }
 export const updateNomenclatorItem = async (body: NomenclatorItemPost, id: number): Promise<NomenclatorItemDetailed> => {
-    const nom = await axios.put(`${API_BASE_URL}/nomenclator_items/${id}`, body)
+    const nom = await axiosCRM.put(`${API_BASE_URL}/nomenclator_items/${id}`, body)
     return nom.data
 }
 export const disableNomenclatorItem = async (id: number): Promise<DeleteResponse> => {
-    const nom = await axios.delete(`${API_BASE_URL}/nomenclator_items/${id}`);
+    const nom = await axiosCRM.delete(`${API_BASE_URL}/nomenclator_items/${id}`);
     return nom.data;
 };
 
 export const enableNomenclatorItem = async (id: number): Promise<EnableResponse> => {
-    const nom = await axios.put(`${API_BASE_URL}/nomenclator_items/active/${id}`);
+    const nom = await axiosCRM.put(`${API_BASE_URL}/nomenclator_items/active/${id}`);
     return nom.data;
 };
