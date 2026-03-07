@@ -76,12 +76,12 @@ export const WorkspaceList = () => {
             }
         }
         if (wsp.active) {
-            disableWorkspace(wsp.id).then((res) => {
+            disableWorkspace(wsp.id!).then((res) => {
                 if (res.action === "disabled") updateActive(wsp)
                 if (res.action === "deleted") deleteWsp(wsp)
             })
         } else {
-            enableWorkspace(wsp.id).then(() => updateActive(wsp))
+            enableWorkspace(wsp.id!).then(() => updateActive(wsp))
         }
     }
 

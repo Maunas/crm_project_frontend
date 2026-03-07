@@ -1,67 +1,86 @@
-import { useEffect, useMemo } from "react"
-import { RegisteredTextInput } from "../common/forms/CustomInputs"
+import { useEffect, useMemo, useState } from "react"
+import { ControlledTextInput } from "../common/forms/CustomInputs"
 import { setFormErrors } from "../../generalService"
 import { useForm } from "react-hook-form"
 import { Typography, Button, Grid, ButtonGroup } from "@mui/material"
 import { FormErrorMessage } from "../../styles/styledMUIFormComponents"
-import type { NomenclatorDetailed, NomenclatorPost } from "../../types/nomenclators"
+import { createNomenclatorItem, getNomenclatorItems, updateNomenclatorItem } from "./nomenclatorService"
+import type { NomenclatorDetailed, NomenclatorItem, NomenclatorItemDetailed, NomenclatorItemPost } from "../../types/nomenclators"
+import { ControlledAutocomplete } from "../common/forms/CustomMultipleInputs"
 
-interface WorkspaceSidebarProps {
-    existingWsp?: NomenclatorDetailed,
+interface NomenclatorSidebarProps {
+    existingNom?: NomenclatorItemDetailed,
+    nomenclator: NomenclatorDetailed | null,
     closeSidebar: () => void,
-    updateEntityOnList: (entity: NomenclatorDetailed) => void,
-    handleSidebar: (mode: string, entity: NomenclatorDetailed | null) => void
+    updateEntityOnList: (entity: NomenclatorItemDetailed) => void,
+    handleSidebar: (mode: string, entity: NomenclatorItemDetailed | null) => void
 }
 
-//Wrapper de WorkspaceForm para funcionar en un Sidebar
-export const WorkspaceFormSidebar = ({ existingWsp, closeSidebar, handleSidebar, updateEntityOnList }: WorkspaceSidebarProps) => {
+//Wrapper de NomenclatorItemForm para funcionar en un Sidebar
+export const NomenclatorItemFormSidebar = ({ existingNom, nomenclator, closeSidebar, handleSidebar, updateEntityOnList }: NomenclatorSidebarProps) => {
 
-    const submit = (data: NomenclatorPost) => {
-        const updateList = (res: NomenclatorDetailed) => {
+    const submit = (data: NomenclatorItemPost, reset = false) => {
+        const updateList = (res: NomenclatorItemDetailed) => {
             updateEntityOnList(res)
-            handleSidebar("DETAILS_WSP", res)
+            handleSidebar("DETAILS_NOM", res)
         }
-        if (!existingWsp) {
-            return createWorkspace(data)
-                .then(updateList)
+        if (!existingNom) {
+            return createNomenclatorItem(data)
+                .then(res => reset ? updateEntityOnList(res) : updateList(res))
         } else {
-            return updateWorkspace(data, existingWsp.id)
+            return updateNomenclatorItem(data, existingNom.id)
                 .then(updateList)
         }
     }
 
     return (
-        <WorkspaceForm existingWsp={existingWsp} submit={submit} onCancel={closeSidebar} />
+        <NomenclatorItemForm existingNom={existingNom} nomenclator={nomenclator} submit={submit} onCancel={closeSidebar} />
     )
 }
 
-interface WorkspaceProps {
-    existingWsp?: Workspace | NomenclatorDetailed,
-    submit: (data: WorkspacePost) => Promise<void>,
+interface NomenclatorProps {
+    existingNom?: NomenclatorItemDetailed,
+    nomenclator: NomenclatorDetailed | null,
+    submit: (data: NomenclatorItemPost, reset?: boolean) => Promise<void>,
     onCancel: () => void
 }
 
-export const WorkspaceForm = ({ existingWsp, submit, onCancel }: WorkspaceProps) => {
+export const NomenclatorItemForm = ({ existingNom, nomenclator, submit, onCancel }: NomenclatorProps) => {
 
     const defaultValues = useMemo(() => ({
-        name: existingWsp?.name ?? null,
-        description: existingWsp?.description ?? null,
-    }), [existingWsp])
+        code: existingNom?.code ?? null,
+        value: existingNom?.value ?? null,
+        nomenclator_id: existingNom?.nomenclator_id ?? nomenclator?.id ?? null,
+        parent_item_id: existingNom?.parent_item_id ?? null,
+    }), [existingNom, nomenclator])
 
-    const { register, handleSubmit, reset, formState: { errors }, setError } = useForm<WorkspacePost>({ defaultValues })
+    const { control, handleSubmit, reset, formState: { errors }, setError } = useForm<NomenclatorItemPost>({ defaultValues })
+
+    const [nomenclatorItems, setNomenclatorItems] = useState<NomenclatorItem[]>([])
+
+    useEffect(() => {
+        if (!nomenclator?.parent_nomenclator_id) return
+        getNomenclatorItems({ detailed: false, only_active: true, page_size: 0, nomenclator_id: nomenclator?.parent_nomenclator_id }).then(res => setNomenclatorItems(res.items))
+    }, [existingNom, nomenclator])
 
     useEffect(() => { reset(defaultValues) }, [reset, defaultValues])
 
-    const onSubmit = (data: WorkspacePost) => {
+    const onSubmit = (data: NomenclatorItemPost) => {
         submit(data)
+            .catch(e => setFormErrors(e, setError))
+    }
+
+    const onSubmitReset = (data: NomenclatorItemPost) => {
+        submit(data, true)
+        .then(()=>reset(defaultValues))
             .catch(e => setFormErrors(e, setError))
     }
 
     return (
         <form>
             <Typography variant="h1" color="initial">
-                {!existingWsp ? "Crear Espacio de Trabajo"
-                    : `Modificar Espacio de Trabajo: ${existingWsp.name}`}
+                {!existingNom ? "Crear Elemento de Nomenclador"
+                    : `Modificar Elemento: ${existingNom.code} - ${existingNom.value}`}
             </Typography>
             <Grid container spacing={2} sx={{
                 justifyContent: "center",
@@ -69,13 +88,19 @@ export const WorkspaceForm = ({ existingWsp, submit, onCancel }: WorkspaceProps)
                 margin: "1rem"
             }}>
                 <Grid size="grow" minWidth={"20rem"}>
-                    <RegisteredTextInput name="name" register={register} label="Nombre"
-                        required errorMessage={errors.name?.message} />
+                    <ControlledTextInput name="code" control={control} label="Código"
+                        required errorMessage={errors.code?.message} />
                 </Grid>
                 <Grid size="grow" minWidth={"20rem"}>
-                    <RegisteredTextInput name="description" register={register} label="Descripción"
-                        errorMessage={errors.description?.message} />
+                    <ControlledTextInput name="value" control={control} label="Valor"
+                        required errorMessage={errors.value?.message} />
                 </Grid>
+                {nomenclator?.parent_nomenclator_id &&
+                    <Grid size="grow" minWidth={"20rem"}>
+                    <ControlledAutocomplete control={control} label="Item del que depende" name="parent_item_id" options={nomenclatorItems}
+                        getOptionLabel={option => `${option.code!} - ${option.value!}`} getOptionKey={option => `${option.id}`} returnField="id"
+                        errorMessage={errors?.parent_item_id?.message} />
+                </Grid>}
             </Grid>
             {errors?.root &&
                 <FormErrorMessage >{errors?.root?.message}</FormErrorMessage>
@@ -85,8 +110,12 @@ export const WorkspaceForm = ({ existingWsp, submit, onCancel }: WorkspaceProps)
                     Cancelar
                 </Button>
                 <Button variant="contained" onClick={handleSubmit(onSubmit)} fullWidth>
-                    Guardar Espacio de Trabajo
+                    Guardar Nomenclador
                 </Button>
+                {!existingNom &&
+                    <Button variant="contained" onClick={handleSubmit(onSubmitReset)} fullWidth>
+                    Guardar y crear otro
+                </Button>}
             </ButtonGroup>
         </form>
     )

@@ -8,7 +8,7 @@ interface NomenclatorParams extends ListParams {
     global_nomenclator?: boolean;
 }
 interface NomenclatorItemParams extends ListParams {
-    nomenclator_id?: number;
+    nomenclator_id?: number | null;
     parent_item_id?: number;
 }
 export const getNomenclators = async <T extends NomenclatorParams>(params?: T): Promise<Paginable<

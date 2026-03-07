@@ -2,31 +2,39 @@ import { useContext, useEffect, useState } from 'react'
 import type { UserContextItems } from '../users/UserProvider'
 import { UserContext } from '../common/contexts'
 import { useSidebar } from '../hooks/useSidebar'
-import type { NomenclatorItemDetailed } from '../../types/leadFields'
 import { useListPagination } from '../hooks/useListPagination'
 import type { Paginable } from '../../types/common'
 import { ContainerWithSidebar } from '../common/layout/GenericContainer'
-import { Button, Grid, IconButton, List, ListItem, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
+import { Button, ButtonGroup, Grid, IconButton, List, ListItem, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
 import { CommonButton } from '../common/details/DetailsCommonButton'
 import { PaginationComponent } from '../common/lists/PaginationComponent'
-import { disableNomenclatorItem, enableNomenclatorItem, getNomenclatorItem, getNomenclatorItems } from './nomenclatorService'
+import { disableNomenclatorItem, enableNomenclatorItem, getNomenclator, getNomenclatorItem, getNomenclatorItems } from './nomenclatorService'
 import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
-import { useParams } from 'react-router-dom'
+import { Link as RouterLink, useParams } from 'react-router-dom'
 import { NomenclatorItemDetails } from './NomenclatorItemDetails'
+import type { NomenclatorDetailed, NomenclatorItemDetailed } from '../../types/nomenclators'
+import { NomenclatorItemFormSidebar } from './NomenclatorItemForm'
 
 export const NomenclatorItemList = () => {
 
     const { nomenclatorId } = useParams()
     const { selectedOrgId } = useContext<UserContextItems>(UserContext)
 
+    const [nomenclator, setNomenclator] = useState<NomenclatorDetailed | null>(null)
+
     const [nomenclatorItems, setNomenclatorItems] = useState<Paginable<NomenclatorItemDetailed> | null>(null)
 
     const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<NomenclatorItemDetailed>()
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(nomenclatorItems)
+
+    useEffect(() => {
+        getNomenclator(Number(nomenclatorId))
+            .then(setNomenclator)
+    }, [nomenclatorId])
 
     useEffect(() => {
         getNomenclatorItems({ only_active: false, detailed: true, page: fetchPage, page_size: pageSize, nomenclator_id: Number(nomenclatorId) })
@@ -39,7 +47,7 @@ export const NomenclatorItemList = () => {
         mode: string) => {
         switch (mode) {
             case "CREATE_NOM": {
-                getNomenclatorItems({ detailed: true, page_size: pageSize, only_active: false, page: nomenclatorItems?.page }).then(setNomenclatorItems)
+                getNomenclatorItems({ detailed: true, page_size: pageSize, only_active: false, page: nomenclatorItems?.page, nomenclator_id: Number(nomenclatorId) }).then(setNomenclatorItems)
                 break;
             }
             case "UPDATE_NOM": {
@@ -54,7 +62,7 @@ export const NomenclatorItemList = () => {
             }
             case "DELETE_NOM": {
                 if (selectedEntity && entity?.id === selectedEntity.id) closeSidebar()
-                getNomenclatorItems({ detailed: true, page_size: pageSize, only_active: false, page: nomenclatorItems?.page }).then(setNomenclatorItems)
+                getNomenclatorItems({ detailed: true, page_size: pageSize, only_active: false, page: nomenclatorItems?.page, nomenclator_id: Number(nomenclatorId) }).then(setNomenclatorItems)
                 break;
             }
         }
@@ -87,18 +95,22 @@ export const NomenclatorItemList = () => {
     return (
         <ContainerWithSidebar isSidebarOpen={!!sidebarMode} sidebarComponent={
             <NomenclatorItemSidebar mode={sidebarMode} entity={selectedEntity} handleSidebar={handleSidebar}
-                closeSidebar={closeSidebar} updateEntityOnList={updateEntityOnList}
+                closeSidebar={closeSidebar} updateEntityOnList={updateEntityOnList} nomenclator={nomenclator}
                 handleActive={handleActive} />
         }>
             <Stack spacing={2}>
                 <Grid container spacing={2} justifyContent="space-between" alignItems="center">
                     <Grid size="grow" minWidth="15rem">
-                        <Typography variant="h1">Lista de Nomencladores</Typography>
+                        <Typography variant="h1">Opciones de {nomenclator?.name}</Typography>
                     </Grid>
-                    <Grid size="auto" minWidth="15rem">
-                        {nomenclatorItems && nomenclatorItems.items?.length > 0 &&
-                            <CommonButton actionType="CREATE" handleClick={() => { }}>Crear Nomenclador</CommonButton>
-                        }
+
+                    <Grid size="grow" maxWidth="25rem">
+                        <ButtonGroup variant="outlined" fullWidth >
+                            <Button component={RouterLink} to="/nomenclators" fullWidth>Volver</Button>
+                            {nomenclatorItems && nomenclatorItems.items?.length > 0 &&
+                                <CommonButton actionType="CREATE" handleClick={() => { handleSidebar("CREATE_NOM", null) }}>Crear Opciones</CommonButton>
+                            }
+                        </ButtonGroup>
                     </Grid>
                 </Grid>
                 {
@@ -135,8 +147,8 @@ export const NomenclatorItemList = () => {
                             )}
                         </List>
                         : <Grid container spacing={2} justifyContent="center" alignItems="center" direction="column">
-                            <Typography variant="h4" color="initial">No se han encontrado nomencladores...</Typography>
-                            <Button onClick={() => { }} variant="contained">Crear Nomenclador</Button>
+                            <Typography variant="h4" color="initial">No se han encontrado opciones en este nomenclador...</Typography>
+                            <Button onClick={() => { handleSidebar("CREATE_NOM", null) }} variant="contained">Crear Opción</Button>
                         </Grid>
                 }
             </Stack>
@@ -148,6 +160,7 @@ export const NomenclatorItemList = () => {
 interface SidebarProps {
     mode: string | null,
     entity: NomenclatorItemDetailed | null,
+    nomenclator: NomenclatorDetailed | null,
     closeSidebar: () => void,
     updateEntityOnList: (
         entity: NomenclatorItemDetailed | null,
@@ -156,7 +169,7 @@ interface SidebarProps {
     handleSidebar: (mode: string, entity: NomenclatorItemDetailed | null) => void,
     handleActive: (entity: NomenclatorItemDetailed) => void
 }
-export const NomenclatorItemSidebar = ({ mode, entity, closeSidebar, updateEntityOnList, handleSidebar, handleActive }: SidebarProps) => {
+export const NomenclatorItemSidebar = ({ mode, entity, nomenclator, closeSidebar, updateEntityOnList, handleSidebar, handleActive }: SidebarProps) => {
 
     const [parentItem, setParentItem] = useState<NomenclatorItemDetailed | null>(null)
 
@@ -167,16 +180,16 @@ export const NomenclatorItemSidebar = ({ mode, entity, closeSidebar, updateEntit
     }, [entity])
 
     switch (mode) {
-        /*
+
         case "CREATE_NOM":
-            return <NomenclatorFormSidebar closeSidebar={closeSidebar}
+            return <NomenclatorItemFormSidebar closeSidebar={closeSidebar} nomenclator={nomenclator}
                 updateEntityOnList={entity => updateEntityOnList(entity, mode)}
                 handleSidebar={handleSidebar} />
-                case "UPDATE_NOM":
-                    return <NomenclatorFormSidebar existingWsp={entity as WorkspaceDetailed} closeSidebar={closeSidebar}
-                    updateEntityOnList={entity => updateEntityOnList(entity, mode)}
-                    handleSidebar={handleSidebar} />
-                    */
+        case "UPDATE_NOM":
+            return <NomenclatorItemFormSidebar existingNom={entity as NomenclatorItemDetailed} nomenclator={nomenclator}
+                closeSidebar={closeSidebar} updateEntityOnList={entity => updateEntityOnList(entity, mode)}
+                handleSidebar={handleSidebar} />
+
         case "DETAILS_NOM":
             return <NomenclatorItemDetails entity={entity as NomenclatorItemDetailed} parentEntity={parentItem} closeSidebar={closeSidebar}
                 handleSidebar={handleSidebar} handleActive={handleActive} />

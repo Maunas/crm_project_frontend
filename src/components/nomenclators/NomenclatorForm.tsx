@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
-import { ControlledTextInput, RegisteredTextInput } from "../common/forms/CustomInputs"
+import { ControlledTextInput } from "../common/forms/CustomInputs"
 import { setFormErrors } from "../../generalService"
 import { useForm, useWatch } from "react-hook-form"
 import { Typography, Button, Grid, ButtonGroup } from "@mui/material"
@@ -62,7 +62,7 @@ export const NomenclatorForm = ({ existingNom, submit, onCancel }: NomenclatorPr
 
     useEffect(() => {
         getWorkspaces({ detailed: false, only_active: true, page_size: 0 }).then(res => setWorkspaces(res.items))
-        getNomenclators({ detailed: false, only_active: true, page_size: 0, global_nomenclator: true }).then(res => setNomenclators(res.items))
+        getNomenclators({ detailed: false, only_active: true, page_size: 0 }).then(res => setNomenclators(res.items))
     }, [])
 
     const selectedWorkspace = useWatch({ name: "workspace_id", control })
@@ -72,11 +72,6 @@ export const NomenclatorForm = ({ existingNom, submit, onCancel }: NomenclatorPr
         getCampaigns({ detailed: false, only_active: true, page_size: 0, workspace_id: selectedWorkspace }).then(res => setCampaigns(res.items))
     }, [selectedWorkspace])
 
-    const selectedCampaign = useWatch({ name: "campaign_id", control })
-
-    useEffect(() => {
-        getNomenclators({ detailed: false, only_active: true, page_size: 0, global_nomenclator: true, campaign_id: selectedCampaign }).then(res => setNomenclators(res.items))
-    }, [selectedCampaign])
 
     useEffect(() => { reset(defaultValues) }, [reset, defaultValues])
 
@@ -108,12 +103,12 @@ export const NomenclatorForm = ({ existingNom, submit, onCancel }: NomenclatorPr
                 <Grid size="grow" minWidth={"20rem"}>
                     <ControlledAutocomplete control={control} label="Campaña" name="campaign_id" options={campaigns}
                         getOptionLabel={option => option.name!} getOptionKey={option => `${option.id}`} returnField="id"
-                        errorMessage={errors?.workspace_id?.message} disabled={!selectedWorkspace} placeholder="Global" />
+                        errorMessage={errors?.campaign_id?.message} disabled={!selectedWorkspace} placeholder="Global" />
                 </Grid>
                 <Grid size="grow" minWidth={"20rem"}>
-                    <ControlledAutocomplete control={control} label="Nomenclador Padre" name="parent_nomenclator_id" options={nomenclators}
+                    <ControlledAutocomplete control={control} label="Nomenclador Padre" name="parent_nomenclator_id" options={nomenclators.filter(nom=> nom.id !== existingNom?.id)}
                         getOptionLabel={option => option.name!} getOptionKey={option => `${option.id}`} returnField="id"
-                        errorMessage={errors?.workspace_id?.message} />
+                        errorMessage={errors?.parent_nomenclator_id?.message} />
                 </Grid>
             </Grid>
             {errors?.root &&
