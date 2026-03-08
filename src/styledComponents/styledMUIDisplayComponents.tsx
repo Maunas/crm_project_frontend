@@ -1,8 +1,26 @@
-import { FormHelperText, type AppBarProps } from "@mui/material";
-import { styled } from "@mui/material/styles";
+import { Chip } from "@mui/material";
+import { alpha, darken, styled } from "@mui/material/styles";
 
-export const CustomChip = styled(FormHelperText)<AppBarProps>
-    (({ theme }) => ({
-        marginBlock: 1,
-        color: theme.palette.error.main
-    }))
+export const CustomChip = styled(Chip)(({ theme, color = "primary", ...props }) => {
+    const TRANSPARENCY = 0.15
+
+    const paletteColor = theme.palette[color] ?? theme.palette.primary
+    let sizeObject
+    switch(props.size){
+        case "sm": sizeObject = {padding:"0px", gap:"0px", fontSize: ".8rem"}; break
+        case "lg": sizeObject = {padding:"6px", gap:"4px", fontSize: "1rem"}; break
+        case "xl": sizeObject = {padding:"10px 8px", gap:"6px", fontSize:"1rem"}; break
+        default: sizeObject = {padding:"4px", gap:"2px", fontSize:".8rem"}
+    }
+
+    return {
+        fontWeight: 600,
+        height:"auto",
+        border: "1px solid",
+        borderRadius: "12px",
+        backgroundColor: alpha(paletteColor.light, TRANSPARENCY),
+        borderColor: paletteColor.main,
+        color: darken(paletteColor.dark, .3),
+        ...sizeObject
+    }
+})
