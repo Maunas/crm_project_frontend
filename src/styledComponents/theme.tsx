@@ -1,4 +1,7 @@
-import { createTheme } from '@mui/material/styles';
+import { createTheme, darken, lighten } from '@mui/material/styles';
+
+const lightValue = .4
+const darkValue = .4
 
 const theme = createTheme({
   // Paleta de Colores (Tu configuración original)
@@ -10,11 +13,13 @@ const theme = createTheme({
       main: '#EB9C47', 
     },
     contrast: {
+      light: lighten('#2B2A2A',lightValue),
       main: '#2B2A2A',
+      dark: darken('#2B2A2A', darkValue),
     },
     background: {
-      default: '#F3F5F7', 
-      paper: '#fdfdfd', 
+      default: '#F3F3F3', 
+      paper: '#FBFBFB', 
     },
   },
 

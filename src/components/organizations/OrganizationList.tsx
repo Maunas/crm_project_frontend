@@ -10,12 +10,13 @@ import type { UserContextItems } from '../users/UserProvider'
 import { Link } from 'react-router-dom'
 import dayjs from 'dayjs'
 import 'dayjs/locale/es'
-import { Button, ButtonGroup, Chip, Divider, Grid, IconButton, List, ListItem, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
+import { Button, ButtonGroup, Divider, Grid, IconButton, List, ListItem, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import { CommonButton, DisableButton } from '../common/details/DetailsCommonButton'
+import { CustomChip } from '../../styledComponents/styledMUIDisplayComponents'
 dayjs.locale('es')
 
 export const OrganizationList = () => {
@@ -175,8 +176,8 @@ const OrganizationDetails = ({ entity, closeSidebar, handleSidebar, handleActive
         <Stack spacing={2} >
             <Grid container spacing={2} justifyContent="space-between" alignItems="center">
                 <Typography variant="h2" color="initial">{entity.name}</Typography>
-                {entity.active ? <Chip color='success' label="Habilitado" /> :
-                    <Chip color='error' label="Deshabilitado" />}
+                {entity.active ? <CustomChip color='success' label="Habilitado" /> :
+                    <CustomChip color='error' label="Deshabilitado" />}
             </Grid>
             {entity.description
                 ? <Typography variant="body1" color="initial">{entity.description}</Typography>

@@ -139,7 +139,7 @@ export default function Header({ handleDrawerOpen, open }: HeaderProps) {
       open={isMobileMenuOpen}
       onClose={handleMobileMenuClose}
     >
-      <MenuItem>
+      <MenuItem >
         <IconButton size="large" aria-label="show 4 new mails" color="inherit">
           <Badge badgeContent={4} color="error">
             <MailIcon />
@@ -175,12 +175,11 @@ export default function Header({ handleDrawerOpen, open }: HeaderProps) {
   );
 
   return (
-    <HeaderBar position="fixed" open={open}>
+    <HeaderBar position="fixed" open={open} >
       <Toolbar>
         <IconButton
           size="large"
           edge="start"
-          color="inherit"
           aria-label="open drawer"
           sx={[
             {
@@ -202,10 +201,10 @@ export default function Header({ handleDrawerOpen, open }: HeaderProps) {
           MUI
         </Typography>
         <HeaderSearchBar />
-        <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
+        <Box sx={{ display: { xs: 'none', md: 'flex', color:"text.secondary" } }}>
           <IconButton size="large" aria-label="show 4 new mails" color="inherit">
             <Badge badgeContent={4} color="error">
-              <MailIcon />
+              <MailIcon sx={{color:'text.secondary'}} />
             </Badge>
           </IconButton>
           <IconButton
@@ -214,7 +213,7 @@ export default function Header({ handleDrawerOpen, open }: HeaderProps) {
             color="inherit"
           >
             <Badge badgeContent={17} color="error">
-              <NotificationsIcon />
+              <NotificationsIcon  sx={{color:'text.secondary'}} />
             </Badge>
           </IconButton>
           <IconButton
@@ -226,7 +225,7 @@ export default function Header({ handleDrawerOpen, open }: HeaderProps) {
             onClick={handleProfileMenuOpen}
             color="inherit"
           >
-            <AccountCircle />
+            <AccountCircle  sx={{color:'text.secondary'}} />
           </IconButton>
         </Box>
         <Box sx={{ display: { xs: 'flex', md: 'none' } }}>

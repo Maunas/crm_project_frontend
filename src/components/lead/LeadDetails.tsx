@@ -7,13 +7,14 @@ import { disableLead, enableLead, getLead } from "./leadService.ts"
 import DOMPurify from 'dompurify';
 import Markdown from 'react-markdown'
 import { Link as RouterLink, useNavigate, useParams } from "react-router-dom"
-import { Accordion, AccordionDetails, AccordionSummary, Box, Chip, Container, Divider, Grid, Paper, Typography, Button, Link, Rating, Slider, ButtonGroup } from "@mui/material"
+import { Accordion, AccordionDetails, AccordionSummary, Box, Container, Divider, Grid, Paper, Typography, Button, Link, Rating, Slider, ButtonGroup } from "@mui/material"
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { useModal } from "../hooks/useModal.tsx"
+import { CustomChip } from "../../styledComponents/styledMUIDisplayComponents.tsx"
 
 export const LeadDetails = () => {
 
@@ -50,7 +51,7 @@ export const LeadDetails = () => {
                             <Paper sx={{ p: 2, borderRadius: "1em", marginBottom: "1rem" }}>
                                 <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>
                                     <Typography variant="h1">{fieldValues[0]?.value ?? "Lead no encontrado"} {fieldValues[1]?.value ?? ""}</Typography>
-                                    <Chip label={lead?.active ? "Habilitado" : "Deshabilitado"} color={lead?.active ? "success" : "error"} />
+                                    <CustomChip label={lead?.active ? "Habilitado" : "Deshabilitado"} color={lead?.active ? "success" : "error"} />
                                 </Box>
                                 <ButtonGroup fullWidth>
                                     <Button variant="outlined" color={lead.active ? "error" : "success"} onClick={() => handleActive(lead)}
@@ -259,10 +260,10 @@ export const LeadFieldByType = ({ fieldValue, value, type, modalProps, template 
                     )}
             </ul>
         case "TAGS":
-            return <Chip color="primary"
+            return <CustomChip color="primary"
                 label={value} sx={{ ml: ".5rem", marginBottom: ".5rem", fontWeight: "bold" }} />
         case "BOOL":
-            return <Chip color={getFieldType("BOOL", value) ? "success" : "error"}
+            return <CustomChip color={getFieldType("BOOL", value) ? "success" : "error"}
                 label={<Grid alignItems="center" container justifyContent="space-between">
                     {getFieldType("BOOL", value) ? <><CheckIcon /> Si</>
                         : <><CloseIcon /> No</>}
@@ -331,7 +332,7 @@ const RatingField = ({ value, subtype }: { value: string, subtype: string }) => 
                     />
                 </Grid>
             }
-            <Chip color="secondary" label={value} />
+            <CustomChip color="secondary" label={value} />
         </Grid>
     )
 }

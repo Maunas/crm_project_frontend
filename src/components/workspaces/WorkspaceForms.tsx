@@ -26,7 +26,7 @@ export const WorkspaceFormSidebar = ({ existingWsp, closeSidebar, handleSidebar,
             return createWorkspace(data)
                 .then(updateList)
         } else {
-            return updateWorkspace(data, existingWsp.id)
+            return updateWorkspace(data, existingWsp.id!)
                 .then(updateList)
         }
     }

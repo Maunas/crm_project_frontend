@@ -1,20 +1,23 @@
 import { Link } from 'react-router-dom';
-import { List, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material'
-import PersonIcon from '@mui/icons-material/Person';
-import WorkIcon from '@mui/icons-material/Work';
-import StoreIcon from '@mui/icons-material/Store';
-import LabelIcon from '@mui/icons-material/Label';
+import { List, ListItem, ListItemButton, ListItemIcon, ListItemText, useTheme } from '@mui/material'
+import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
+import WorkOutlineOutlinedIcon from '@mui/icons-material/WorkOutlineOutlined';
+import StoreOutlinedIcon from '@mui/icons-material/StoreOutlined';
+import LabelOutlinedIcon from '@mui/icons-material/LabelOutlined';
 
 interface NavbarProps {
   open: boolean
 }
 
 export const Navbar = ({ open }: NavbarProps) => {
+
+  const theme = useTheme()
+
   const options = [
-    { name: "Leads", icon: <PersonIcon />, link: "/leads" },
-    { name: "Campañas", icon: <WorkIcon />, link: "/campaigns" },
-    { name: "Reportes", icon: <StoreIcon />, link: "/organizations" },
-    { name: "Nomencladores", icon: <LabelIcon />, link: "/nomenclators" },
+    { name: "Leads", icon: <PersonOutlinedIcon />, link: "/leads" },
+    { name: "Campañas", icon: <WorkOutlineOutlinedIcon />, link: "/campaigns" },
+    { name: "Reportes", icon: <StoreOutlinedIcon />, link: "/organizations" },
+    { name: "Nomencladores", icon: <LabelOutlinedIcon />, link: "/nomenclators" },
   ]
 
   return (
@@ -28,15 +31,15 @@ export const Navbar = ({ open }: NavbarProps) => {
               open ? { justifyContent: 'initial', } : { justifyContent: 'center', },
             ]}
           >
-            <ListItemIcon
+            <ListItemIcon 
               sx={[
-                { minWidth: 0, justifyContent: 'center', },
+                { color: theme.palette.primary.contrastText, minWidth: 0, justifyContent: 'center', },
                 open ? { mr: 3, } : { mr: 'auto', },
               ]}
             >
               {item.icon}
             </ListItemIcon>
-            <ListItemText
+            <ListItemText 
               primary={item.name}
               sx={[open ? { opacity: 1, } : { opacity: 0, },
               ]}

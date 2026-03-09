@@ -32,11 +32,12 @@ const closedMixin = (theme: Theme): CSSObject => ({
 });
 
 const DrawerHeader = styled('div')(({ theme }) => ({
-    backgroundColor: theme.palette.primary.main,
+    backgroundColor: theme.palette.primary.light,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'flex-end',
     padding: theme.spacing(0, 1),
+    color: theme.palette.primary.contrastText,
     // necessary for content to be below app bar
     ...theme.mixins.toolbar,
 }));
@@ -47,9 +48,10 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
         flexShrink: 0,
         whiteSpace: 'nowrap',
         boxSizing: 'border-box',
-        '& .MuiDrawer-paper': { 
+        '& .MuiDrawer-paper': {
             backgroundColor: theme.palette.primary.main,
-         },
+            color: theme.palette.primary.contrastText
+        },
         variants: [
             {
                 props: ({ open }) => open,
@@ -92,14 +94,14 @@ export default function LayoutSidebar({ children }: SidebarProps) {
             <Header handleDrawerOpen={handleDrawerOpen} open={open} />
             <Drawer variant="permanent" open={open}>
                 <DrawerHeader>
-                    <IconButton onClick={handleDrawerClose}>
+                    <IconButton onClick={handleDrawerClose} color="inherit">
                         {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
                     </IconButton>
                 </DrawerHeader>
                 <Divider />
                 <Navbar open={open} />
             </Drawer>
-            <Box component="main" sx={{ flexGrow: 1 , overflowX: "auto", p: 3 }}>
+            <Box component="main" sx={{ flexGrow: 1, overflowX: "auto", p: 3 }}>
                 <DrawerHeader sx={{ backgroundColor: theme.palette.background.default }} />
                 {children}
             </Box>
