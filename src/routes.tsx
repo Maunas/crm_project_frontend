@@ -10,6 +10,7 @@ import { LeadList } from "./components/lead/LeadList";
 import { OrganizationList } from "./components/organizations/OrganizationList";
 import { NomenclatorList } from "./components/nomenclators/NomenclatorList";
 import { NomenclatorItemList } from "./components/nomenclators/NomenclatorItemList";
+import { SearchResultsList } from "./components/common/SearchResults";
 
 export const router = createBrowserRouter([
     {
@@ -69,6 +70,10 @@ export const router = createBrowserRouter([
             {
                 path: "/campaigns/:id",
                 Component: CampaignDetails
+            },
+            {
+                path: "/search",
+                Component: SearchResultsList,
             },
             {
                 path: "*", //Si no coincide con nada más.

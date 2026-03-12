@@ -2,7 +2,7 @@ import { Box, Button, InputBase } from "@mui/material";
 import { alpha, styled } from "@mui/material/styles";
 import SearchIcon from '@mui/icons-material/Search';
 import { useState } from "react";
-import { generalSearch } from "../../../generalService";
+import { useNavigate } from "react-router-dom";
 
 const Search = styled('div')(({ theme }) => ({
     position: 'relative',
@@ -47,10 +47,10 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 
 export const HeaderSearchBar = () => {
     const [query, setQuery] = useState("");
+    const nav = useNavigate()
 
     const handleSubmit = () => {
-        generalSearch(query)
-        .then(r=>console.log(r))
+        nav(`/search?query=${query}`)
     }
 
     return (
@@ -61,7 +61,7 @@ export const HeaderSearchBar = () => {
                     <SearchIcon />
                 </SearchIconWrapper>
                 <StyledInputBase
-                    placeholder="Search…"
+                    placeholder="Buscar en la página"
                     inputProps={{ 'aria-label': 'search' }}
                     onChange={(e) => setQuery(e.target.value)}
                 />

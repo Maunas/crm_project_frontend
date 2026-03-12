@@ -27,18 +27,7 @@ export const CampaignList = ({ selectedWorkspaceId, handleSidebar }: CampaignLis
 
     if (campaigns?.items && campaigns.items.length > 0) return (
         <>
-            <Grid sx={{ marginLeft: 6 }} container>
-                {campaigns.items.map((cmp, idx) =>
-                    <Grid key={`cmp-${idx}`} size="grow" minWidth="15rem">
-                        <Button key={`cmp-${idx}`} variant="text" component={Link} to={`/campaigns/${cmp.id}`} fullWidth >
-                            <Stack spacing={1} direction="row" width="100%">
-                                <EnabledIcon active={cmp.active} />
-                                <Typography fontWeight="bold">{cmp.name}</Typography>
-                            </Stack>
-                        </Button>
-                    </Grid>
-                )}
-            </Grid>
+            <CampaignListData campaigns={campaigns.items} />
             <PaginationComponent {...pageComponentProps} />
         </>
     )
@@ -46,4 +35,22 @@ export const CampaignList = ({ selectedWorkspaceId, handleSidebar }: CampaignLis
         <Typography variant="h4" color="initial">No se han encontrado campañas para este espacio de trabajo...</Typography>
         <Button onClick={() => handleSidebar("CREATE_CMP", null)} variant="contained">Agregar Campaña</Button>
     </Grid>
+}
+
+export const CampaignListData = ({ campaigns }: { campaigns: CampaignDetailed[] }) => {
+    console.log("component", campaigns[0].id)
+    return (
+        <Grid sx={{ marginLeft: 6 }} container>
+            {campaigns.map((cmp, idx) =>
+                <Grid key={`cmp-${idx}`} size="grow" minWidth="15rem">
+                    <Button key={`cmp-${idx}`} variant="text" component={Link} to={`/campaigns/${cmp.id}`} fullWidth >
+                        <Stack spacing={1} direction="row" width="100%">
+                            <EnabledIcon active={cmp.active} />
+                            <Typography fontWeight="bold">{cmp.name}</Typography>
+                        </Stack>
+                    </Button>
+                </Grid>
+            )}
+        </Grid>
+    )
 }

@@ -41,7 +41,7 @@ export const LeadList = () => {
     useEffect(() => {
         getWorkspaces({ only_active: true, page_size: 0 }).then(res => {
             setWorkspaces(res.items)
-            setValue("workspace_id", res.items[0].id)
+            setValue("workspace_id", res.items[0].id!)
         })
     }, [selectedOrgId, setValue])
 
@@ -51,7 +51,7 @@ export const LeadList = () => {
         if (!selectedWorkspace) return
         getCampaigns({ only_active: true, workspace_id: selectedWorkspace as number, page_size: 0 }).then(res => {
             setCampaigns(res.items)
-            setValue("campaign_id", res.items[0].id)
+            setValue("campaign_id", res.items[0].id!)
         })
     }, [selectedWorkspace, setValue])
 
@@ -118,7 +118,7 @@ interface LeadTableProps {
     campaignId: number
 }
 export const LeadTable = ({ leads, campaignId }: LeadTableProps) => {
-    const NUMBER_OF_FIELDS = 50
+    const NUMBER_OF_FIELDS = 8
 
     const [leadColumns, setLeadColumns] = useState<LeadField[]>([])
 
