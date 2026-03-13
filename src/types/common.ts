@@ -1,4 +1,7 @@
 import type { Path } from "react-hook-form";
+import type { Lead } from "./leads";
+import type { Campaign, Workspace } from "./campaigns";
+import type { Nomenclator, NomenclatorItem } from "./nomenclators";
 
 /**
  * Define la estructura de una lista con paginación. Se llama como: Paginable<Lead>.
@@ -65,4 +68,13 @@ export interface DeleteResponse {
 
 export interface EnableResponse {
   actived: boolean
+}
+
+
+export interface SearchResults {
+    leads: Lead[],
+    campaigns: Campaign[],
+    workspaces: Workspace[],
+    nomenclators: Nomenclator[],
+    nomenclator_items: NomenclatorItem[],
 }

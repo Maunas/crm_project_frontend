@@ -7,6 +7,7 @@ import type { Lead } from '../../types/leads';
 import type { Campaign, Workspace } from '../../types/campaigns';
 import type { Nomenclator, NomenclatorItem } from '../../types/nomenclators';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import type { SearchResults } from '../../types/common';
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -30,14 +31,6 @@ function CustomTabPanel(props: TabPanelProps) {
     );
 }
 
-interface SearchResults {
-    leads: Lead[],
-    campaigns: Campaign[],
-    workspaces: Workspace[],
-    nomenclators: Nomenclator[],
-    nomenclator_items: NomenclatorItem[],
-}
-
 interface SearchResultsTabs<Item> {
     label: string,
     id: string,
@@ -52,7 +45,7 @@ interface SearchResultsTabs<Item> {
 export const SearchResultsList = () => {
 
     const [results, setResults] = useState<SearchResults | null>(null)
-    const [searchParams] = useSearchParams()
+    const [searchParams, setSearchParams] = useSearchParams()
 
     const query = useMemo(() => {
         const queryParam = searchParams.get("query")
@@ -60,7 +53,6 @@ export const SearchResultsList = () => {
     }, [searchParams])
 
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         if (!query) return setResults(null)
         generalSearch(query).then(setResults)
     }, [query])
@@ -72,8 +64,21 @@ export const SearchResultsList = () => {
 
     const [openTab, setOpenTab] = useState<number>(0)
 
+    const resultTab = useMemo(() => {
+        const queryParam = searchParams.get("tab")
+        return queryParam ? Number(queryParam) : 0
+    }, [searchParams])
+
+    useEffect(() => {
+        setOpenTab(resultTab)
+    }, [resultTab])
+
     const handleChange = (_: React.SyntheticEvent, idx: number) => {
-        setOpenTab(idx);
+        setSearchParams(prev => {
+            const next = new URLSearchParams(prev)
+            next.set("tab", String(idx))
+            return next
+        }, { replace: true })
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -100,19 +105,27 @@ export const SearchResultsList = () => {
         },
     ]
 
+    const getLengthText = (length: number) => {
+        if (length === 0) return "Sin resultados"
+        if (length === 1) return "1 resultado"
+        return `${length} resultados`
+    }
+
     return (
         <GenericContainer maxWidth="xl">
             <Typography variant="h1" color="initial">Resultado de la Búsqueda: "{query}"</Typography>
             {totalResults > 0 ?
                 <Box sx={{ width: '100%' }}>
                     <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                        <Tabs value={openTab} onChange={handleChange} aria-label="basic tabs example">
+                        <Tabs value={openTab} onChange={handleChange} aria-label="basic tabs example"
+                            variant="scrollable" scrollButtons="auto">
                             {tabs.map(tab => {
                                 return (<Tab id={tab.id} aria-controls={tab["aria-controls"]} key={`tab-${tab.id}`}
+                                    disabled={tab.length === 0}
                                     label={
                                         <>
                                             <Typography variant="body1" fontWeight={600}>{tab.label}</Typography>
-                                            <Typography variant="body2" fontStyle="italic">{tab.length} Resultados</Typography>
+                                            <Typography variant="body2" fontStyle="italic">{getLengthText(tab.length)}</Typography>
                                         </>
                                     }
                                 />)
@@ -146,6 +159,7 @@ const SearchList = <Item,>({ list, listId, getPrimaryText, getSecondaryText, get
     if (list.length === 0) return (
         <Typography variant="h3" color="initial" textAlign="center">No se han encontrado resultados para la búsqueda.</Typography>
     )
+
     return (
         <List>
             {list.map((item, idx) =>

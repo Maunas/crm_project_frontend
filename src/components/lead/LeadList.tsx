@@ -41,7 +41,7 @@ export const LeadList = () => {
     useEffect(() => {
         getWorkspaces({ only_active: true, page_size: 0 }).then(res => {
             setWorkspaces(res.items)
-            setValue("workspace_id", res.items[0].id!)
+            setValue("workspace_id", res.items?.at(-1)?.id ?? undefined)
         })
     }, [selectedOrgId, setValue])
 
@@ -51,7 +51,8 @@ export const LeadList = () => {
         if (!selectedWorkspace) return
         getCampaigns({ only_active: true, workspace_id: selectedWorkspace as number, page_size: 0 }).then(res => {
             setCampaigns(res.items)
-            setValue("campaign_id", res.items[0].id!)
+            console.log(res)
+            setValue("campaign_id", res.items?.at(-1)?.id ?? undefined)
         })
     }, [selectedWorkspace, setValue])
 
