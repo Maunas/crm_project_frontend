@@ -88,7 +88,7 @@ export const SearchResultsList = () => {
         },
         {
             label: "Espacios de Trabajo", id: "search-workspaces", "aria-controls": "search-tab-workspaces", length: results?.workspaces?.length ?? 0, list: results?.workspaces ?? [],
-            getPrimaryText: (item: Workspace) => item.name!, getSecondaryText: (item: Workspace) => item.description ?? "", getDetailsLink: (item: Workspace) => `/workspaces?selected=${item.id}`
+            getPrimaryText: (item: Workspace) => item.name!, getSecondaryText: (item: Workspace) => item.description ?? "", getDetailsLink: (item: Workspace) => `/campaigns?selected=${item.id}`
         },
         {
             label: "Nomencladores", id: "search-nomenclators", "aria-controls": "search-tab-nomenclators", length: results?.nomenclators?.length ?? 0, list: results?.nomenclators ?? [],

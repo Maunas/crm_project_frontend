@@ -13,7 +13,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
-import { Link as RouterLink, useParams } from 'react-router-dom'
+import { Link as RouterLink, useParams, useSearchParams } from 'react-router-dom'
 import { NomenclatorItemDetails } from './NomenclatorItemDetails'
 import type { NomenclatorDetailed, NomenclatorItemDetailed } from '../../types/nomenclators'
 import { NomenclatorItemFormSidebar } from './NomenclatorItemForm'
@@ -27,7 +27,9 @@ export const NomenclatorItemList = () => {
 
     const [nomenclatorItems, setNomenclatorItems] = useState<Paginable<NomenclatorItemDetailed> | null>(null)
 
-    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<NomenclatorItemDetailed>()
+    const [params, setParams] = useSearchParams()
+
+    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<NomenclatorItemDetailed>(params, setParams, getNomenclatorItem, "DETAILS_NOM", 'id')
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(nomenclatorItems)
 

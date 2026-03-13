@@ -4,10 +4,10 @@ import { EnabledIcon } from '../common/lists/Badges'
 import { OrganizationFormSidebar } from './OrganizationForm'
 import { useSidebar } from '../hooks/useSidebar'
 import type { OrganizationDetailed } from '../../types/campaigns'
-import { disableOrganization, enableOrganization } from '../workspaces/workspaceServices'
+import { disableOrganization, enableOrganization, getOrganization } from '../workspaces/workspaceServices'
 import { UserContext } from '../common/contexts'
 import type { UserContextItems } from '../users/UserProvider'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import dayjs from 'dayjs'
 import 'dayjs/locale/es'
 import { Button, ButtonGroup, Chip, Divider, Grid, IconButton, List, ListItem, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
@@ -20,9 +20,12 @@ dayjs.locale('es')
 
 export const OrganizationList = () => {
 
+    const [params, setParams] = useSearchParams()
+
+
     const { organizations, selectedOrgId, fetchOrganizations, updateOrganizations } = useContext<UserContextItems>(UserContext)
 
-    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<OrganizationDetailed>()
+    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<OrganizationDetailed>(params, setParams, getOrganization, "DETAILS_ORG", 'id')
 
     const updateEntityOnList = (newOrg: OrganizationDetailed, mode: string) => {
         switch (mode) {
