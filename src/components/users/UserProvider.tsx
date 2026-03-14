@@ -1,7 +1,10 @@
-import React, { useMemo, type ReactNode } from 'react'
+import React, { useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { OrganizationDetailed } from '../../types/campaigns';
 import { getOrganizations } from '../workspaces/workspaceServices';
 import { UserContext } from '../common/contexts';
+import type { UserData, UserLogin } from '../../types/users';
+import { useNavigate } from 'react-router-dom';
+import { loginUser } from './userServices';
 
 export interface UserContextItems {
     organizations: OrganizationDetailed[],
@@ -9,10 +12,32 @@ export interface UserContextItems {
     selectedOrgId: number | null,
     setSelectedOrgId: React.Dispatch<React.SetStateAction<number | null>>,
     updateOrganizations: (newOrganizationList: OrganizationDetailed[]) => void,
-    fetchOrganizations: () => void
+    fetchOrganizations: () => void,
+    user: UserData | null,
+    login: (data: UserLogin) => void,
+    logout: () => void
 }
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
+
+    const [user, setUser] = useState<UserData | null>(JSON.parse(window.localStorage.getItem("user") ?? "{}"))
+    const nav = useNavigate()
+
+    useEffect(()=>{
+        if (user) window.localStorage.setItem("user", JSON.stringify(user))
+        else window.localStorage.removeItem("user")
+    },[user])
+
+    const login = (data: UserLogin) => {
+        alert("Login")
+        loginUser(data).then(setUser)
+    }
+
+    const logout = () => {
+        alert("Logout")
+        setUser(null)
+        nav("/login")
+    }
 
     const getSelectedId = () => {
         const id = window.localStorage.getItem("organization_id")
@@ -47,6 +72,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
     return (
         <UserContext.Provider value={{
+            user, login, logout,
             organizations, activeOrganizations, selectedOrgId, setSelectedOrgId, updateOrganizations, fetchOrganizations
         }} >
             {children}

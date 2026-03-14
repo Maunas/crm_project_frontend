@@ -38,7 +38,6 @@ export const CampaignList = ({ selectedWorkspaceId, handleSidebar }: CampaignLis
 }
 
 export const CampaignListData = ({ campaigns }: { campaigns: CampaignDetailed[] }) => {
-    console.log("component", campaigns[0].id)
     return (
         <Grid sx={{ marginLeft: 6 }} container>
             {campaigns.map((cmp, idx) =>

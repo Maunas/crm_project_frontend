@@ -11,19 +11,24 @@ import { OrganizationList } from "./components/organizations/OrganizationList";
 import { NomenclatorList } from "./components/nomenclators/NomenclatorList";
 import { NomenclatorItemList } from "./components/nomenclators/NomenclatorItemList";
 import { SearchResultsList } from "./components/common/SearchResults";
+import { LoginForm } from "./components/users/LoginForm";
+import { SignupForm } from "./components/users/SignupForm";
+import { UserProvider } from "./components/users/UserProvider";
 
 export const router = createBrowserRouter([
     {
         path: "/login",
-        element: <div className="">Login</div>,
+        element: <UserProvider>
+            <LoginForm />
+        </UserProvider>
+        ,
     },
     {
         path: "/signup",
-        element: <div className="">Signup</div>,
-    },
-    {
-        path: "/signup",
-        element: <div className="">Signup</div>,
+        element: <UserProvider>
+            <SignupForm />
+        </UserProvider>
+        ,
     },
     {
         //Layout principal

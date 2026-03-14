@@ -51,7 +51,6 @@ export const LeadList = () => {
         if (!selectedWorkspace) return
         getCampaigns({ only_active: true, workspace_id: selectedWorkspace as number, page_size: 0 }).then(res => {
             setCampaigns(res.items)
-            console.log(res)
             setValue("campaign_id", res.items?.at(-1)?.id ?? undefined)
         })
     }, [selectedWorkspace, setValue])

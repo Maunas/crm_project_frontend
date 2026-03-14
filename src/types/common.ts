@@ -22,6 +22,7 @@ export interface Metadata {
   updated_at: string;
   active: boolean;
   created_by: number;
+  updated_by: number;
 }
 
 /**
