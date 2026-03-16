@@ -1,9 +1,10 @@
-import { Box, Divider, IconButton, ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/material'
+import { Box, Button, Divider, IconButton, ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/material'
 import MoreIcon from '@mui/icons-material/More';
 import React from 'react'
 import { AccountCircle, Check } from '@mui/icons-material';
 import type { UserContextItems } from '../../users/UserProvider';
 import { UserContext } from '../contexts';
+import { Link } from 'react-router-dom';
 
 export const UserInfo = () => {
 
@@ -107,8 +108,7 @@ export const UserInfo = () => {
         </Menu>
     );
 
-
-    return (
+    if (user) return (
         <>
             <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
                 <IconButton
@@ -139,4 +139,22 @@ export const UserInfo = () => {
             {renderProfileMenu}
         </>
     )
+    return (<>
+        <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
+            < Button color='white' variant='outlined' size='large' component={Link} to="/login" startIcon={<AccountCircle />}> Iniciar Sesión</Button >
+        </Box>
+        <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
+            <IconButton
+                size="large"
+                aria-label="login"
+                onClick={handleMobileMenuOpen}
+                color="inherit"
+                component={Link} to="/login"
+            >
+                <AccountCircle />
+            </IconButton>
+        </Box>
+    </>)
+
+
 }

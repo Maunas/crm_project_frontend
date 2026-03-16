@@ -20,7 +20,7 @@ export interface UserContextItems {
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
 
-    const [user, setUser] = useState<UserData | null>(JSON.parse(window.localStorage.getItem("user") ?? "{}"))
+    const [user, setUser] = useState<UserData | null>(JSON.parse(window.localStorage.getItem("user") ?? "null"))
     const nav = useNavigate()
 
     useEffect(()=>{
