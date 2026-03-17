@@ -2,9 +2,9 @@ import React, { useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { OrganizationDetailed } from '../../types/campaigns';
 import { getOrganizations } from '../workspaces/workspaceServices';
 import { UserContext } from '../common/contexts';
-import type { UserData, UserLogin } from '../../types/users';
+import type { UserData, UserLogin, UserSignup } from '../../types/users';
 import { useNavigate } from 'react-router-dom';
-import { loginUser } from './userServices';
+import { loginUser, signupUser } from './userServices';
 
 export interface UserContextItems {
     userOrganizations: OrganizationDetailed[],
@@ -15,6 +15,7 @@ export interface UserContextItems {
     fetchOrganizations: () => void,
     user: UserData | null,
     login: (data: UserLogin) => Promise<void>,
+    signup: (data: UserLogin) => Promise<void>,
     logout: () => void
 }
 
@@ -53,6 +54,12 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         })
     }
     
+    const signup = (data: UserSignup) => {
+        return signupUser(data).then(user => {
+            setUser(user)
+        })
+    }
+
     const logout = () => {
         alert("Logout")
         setUser(null)
@@ -80,7 +87,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
     return (
         <UserContext.Provider value={{
-            user, login, logout,
+            user, login, logout, signup,
             //To Do: Cuando se realice la seguridad en backend, quitar organizations.
             userOrganizations: organizations, activeOrganizations: organizations, selectedOrg, setSelectedOrg, updateOrganizations, fetchOrganizations
         }} >

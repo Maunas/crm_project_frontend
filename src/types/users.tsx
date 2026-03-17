@@ -4,7 +4,9 @@ export interface UserLogin {
     email: string,
     password: string
 }
-
+export interface UserSignup extends UserLogin {
+    repeat_password: string
+}
 export interface UserData extends Metadata {
     id: number,
     email: string,

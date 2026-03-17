@@ -1,11 +1,11 @@
-import { Button, ButtonGroup, Grid, Paper, Typography } from "@mui/material"
+import { Button, ButtonGroup, Grid, Paper, Stack, Typography } from "@mui/material"
 import { useContext } from "react"
 import { UserContext } from "../common/contexts"
-import { useNavigate } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import type { UserLogin } from "../../types/users"
 import { useForm } from "react-hook-form"
 import { setFormErrors } from "../../generalService"
-import { RegisteredTextInput } from "../common/forms/CustomInputs"
+import { PasswordField, RegisteredTextInput } from "../common/forms/CustomInputs"
 import { FormErrorMessage } from "../../styles/styledMUIFormComponents"
 
 
@@ -33,7 +33,7 @@ interface LoginFormProps {
   onCancel: () => void
 }
 
-export const LoginForm = ({ submit, onCancel }: LoginFormProps) => {
+const LoginForm = ({ submit, onCancel }: LoginFormProps) => {
 
   const { register, handleSubmit, formState: { errors }, setError } = useForm<UserLogin>()
 
@@ -60,8 +60,7 @@ export const LoginForm = ({ submit, onCancel }: LoginFormProps) => {
             required errorMessage={errors.email?.message} />
         </Grid>
         <Grid size="grow" minWidth={"20rem"}>
-          <RegisteredTextInput name="password" register={register} label="Descripción"
-            errorMessage={errors.password?.message} />
+          <PasswordField name="password" register={register} label="Contraseña" errorMessage={errors.password?.message} required />
         </Grid>
       </Grid>
       {errors?.root &&
@@ -75,6 +74,9 @@ export const LoginForm = ({ submit, onCancel }: LoginFormProps) => {
           Iniciar Sesión
         </Button>
       </ButtonGroup>
+      <Stack justifyContent="center" alignItems="center">
+        <Button variant="text" component={Link} to="/signup">Crear Cuenta</Button>
+      </Stack>
     </form>
   )
 }

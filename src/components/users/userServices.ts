@@ -1,6 +1,6 @@
 import type { Paginable } from "../../types/common"
 import { API_BASE_URL, axiosCRM } from "../../generalService"
-import type { UserData, UserLogin } from "../../types/users"
+import type { UserData, UserLogin, UserSignup } from "../../types/users"
 
 export const getUsers = async ():
     Promise<Paginable<UserData>> => {
@@ -13,4 +13,9 @@ export const loginUser = async (data: UserLogin): Promise<UserData> => {
     const foundUser = users.items.find(user => user.email === data.email)
     if (foundUser) return foundUser
     throw new Error("Usuario o contraseña incorrecta.")
+}
+export const signupUser = async (data: UserSignup): Promise<UserData> => {
+    if (data.password !== data.repeat_password) throw new Error("Las contraseñas no coinciden.")
+    const users = await getUsers()
+    return users.items[0]
 }

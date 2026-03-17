@@ -12,8 +12,8 @@ import { NomenclatorList } from "./components/nomenclators/NomenclatorList";
 import { NomenclatorItemList } from "./components/nomenclators/NomenclatorItemList";
 import { SearchResultsList } from "./components/common/SearchResults";
 import { LoginFormPage } from "./components/users/LoginForm";
-import { SignupForm } from "./components/users/SignupForm";
 import { UserProvider } from "./components/users/UserProvider";
+import { SignupFormPage } from "./components/users/SignupForm";
 
 export const router = createBrowserRouter([
     {
@@ -26,7 +26,7 @@ export const router = createBrowserRouter([
     {
         path: "/signup",
         element: <UserProvider>
-            <SignupForm />
+            <SignupFormPage />
         </UserProvider>
         ,
     },
