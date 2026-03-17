@@ -25,7 +25,7 @@ export const LeadList = () => {
     const [campaigns, setCampaigns] = useState<Campaign[] | null>(null)
     const [filters, setFilters] = useState<LeadListParams>({ workspace_id: 1, campaign_id: 1, only_active: true, page_size: 20 })
 
-    const {selectedOrgId} = useContext<UserContextItems>(UserContext)
+    const {selectedOrg} = useContext<UserContextItems>(UserContext)
 
     const { fetchPage, refresh, pageComponentProps } = useListPagination(leads)
 
@@ -43,7 +43,7 @@ export const LeadList = () => {
             setWorkspaces(res.items)
             setValue("workspace_id", res.items?.at(-1)?.id ?? undefined)
         })
-    }, [selectedOrgId, setValue])
+    }, [selectedOrg, setValue])
 
     const selectedWorkspace = useWatch<LeadListParams>({ name: "workspace_id", control })
 

@@ -20,7 +20,7 @@ import type { NomenclatorDetailed } from '../../types/nomenclators'
 
 export const NomenclatorList = () => {
 
-    const { selectedOrgId } = useContext<UserContextItems>(UserContext)
+    const { selectedOrg } = useContext<UserContextItems>(UserContext)
 
     const [nomenclators, setNomenclators] = useState<Paginable<NomenclatorDetailed> | null>(null)
 
@@ -33,7 +33,7 @@ export const NomenclatorList = () => {
     useEffect(() => {
         getNomenclators({ only_active: false, detailed: true, page: fetchPage, page_size: pageSize })
             .then(setNomenclators)
-    }, [fetchPage, pageSize, selectedOrgId])
+    }, [fetchPage, pageSize, selectedOrg])
 
 
     const updateEntityOnList = (

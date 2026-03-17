@@ -1,4 +1,4 @@
-import { Box, Button, Divider, IconButton, ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/material'
+import { Box, Button, Divider, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Stack, Typography } from '@mui/material'
 import MoreIcon from '@mui/icons-material/More';
 import React from 'react'
 import { AccountCircle, Check } from '@mui/icons-material';
@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 
 export const UserInfo = () => {
 
-    const { user, logout, activeOrganizations, selectedOrgId, setSelectedOrgId } = React.useContext<UserContextItems>(UserContext)
+    const { user, logout, activeOrganizations, selectedOrg, setSelectedOrg } = React.useContext<UserContextItems>(UserContext)
 
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -54,13 +54,13 @@ export const UserInfo = () => {
             </MenuItem>
             {
                 activeOrganizations.map(org => {
-                    return <MenuItem dense key={org.id} onClick={() => setSelectedOrgId(org.id)}>
-                        {org.id === selectedOrgId &&
+                    return <MenuItem dense key={org.id} onClick={() => setSelectedOrg(org)}>
+                        {org.id === selectedOrg?.id &&
                             <ListItemIcon>
                                 <Check />
                             </ListItemIcon>
                         }
-                        <ListItemText inset={org.id !== selectedOrgId} primary={org.name}>
+                        <ListItemText inset={org.id !== selectedOrg?.id} primary={org.name}>
                         </ListItemText>
                     </MenuItem>
                 })
@@ -95,7 +95,6 @@ export const UserInfo = () => {
 
             <MenuItem onClick={handleProfileMenuOpen}>
                 <IconButton
-                    size="large"
                     aria-label="account of current user"
                     aria-controls="primary-search-account-menu"
                     aria-haspopup="true"
@@ -103,14 +102,21 @@ export const UserInfo = () => {
                 >
                     <AccountCircle />
                 </IconButton>
-                <p>Profile</p>
+                <Stack>
+                    <Typography variant="body1" color="initial">{user?.email}</Typography>
+                    <Typography variant="body2" color="initial">{selectedOrg?.name}</Typography>
+                </Stack>
             </MenuItem>
         </Menu>
     );
 
     if (user) return (
         <>
-            <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
+            <Box sx={{ display: { xs: 'none', md: 'flex' } }} alignItems="center">
+                <Stack>
+                    <Typography variant="body1" textAlign="end" fontWeight={600} fontSize=".9rem" sx={{ color: "white" }} color="initial">{user.email}</Typography>
+                    <Typography variant="body2" textAlign="end" fontSize=".8rem" sx={{ color: "white" }} color="initial">{selectedOrg?.name}</Typography>
+                </Stack>
                 <IconButton
                     size="large"
                     edge="end"
@@ -141,7 +147,7 @@ export const UserInfo = () => {
     )
     return (<>
         <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-            < Button color='white' variant='outlined' size='large' component={Link} to="/login" startIcon={<AccountCircle />}> Iniciar Sesión</Button >
+            < Button sx={{ color: 'white', borderColor: "white" }} variant='outlined' size='large' component={Link} to="/login" startIcon={<AccountCircle />}> Iniciar Sesión</Button >
         </Box>
         <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
             <IconButton

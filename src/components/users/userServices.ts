@@ -10,7 +10,7 @@ export const getUsers = async ():
 export const loginUser = async (data: UserLogin): Promise<UserData> => {
     const users = await getUsers()
     if (data.password !== "PASSWORD") throw new Error("Contraseña incorrecta.")
-    const foundUser = users.items.find(user => user.email === data.email )
+    const foundUser = users.items.find(user => user.email === data.email)
     if (foundUser) return foundUser
     throw new Error("Usuario o contraseña incorrecta.")
 }

@@ -23,7 +23,7 @@ export const OrganizationList = () => {
     const [params, setParams] = useSearchParams()
 
 
-    const { organizations, selectedOrgId, fetchOrganizations, updateOrganizations } = useContext<UserContextItems>(UserContext)
+    const { userOrganizations, selectedOrg, fetchOrganizations, updateOrganizations } = useContext<UserContextItems>(UserContext)
 
     const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<OrganizationDetailed>(params, setParams, getOrganization, "DETAILS_ORG", 'id')
 
@@ -33,8 +33,8 @@ export const OrganizationList = () => {
                 fetchOrganizations()
                 break;
             case "UPDATE_ORG": {
-                if (!organizations) break
-                const newOrganizationsItems = [...organizations]
+                if (!userOrganizations) break
+                const newOrganizationsItems = [...userOrganizations]
                 const orgIdx = newOrganizationsItems.findIndex(org => org.id === newOrg.id)
                 if (orgIdx === -1) break
                 newOrganizationsItems[orgIdx] = newOrg
@@ -42,10 +42,10 @@ export const OrganizationList = () => {
                 break;
             }
             case "DELETE_ORG": {
-                if (selectedOrgId === newOrg.id) break
+                if (selectedOrg?.id === newOrg.id) break
                 if (selectedEntity && newOrg.id === selectedEntity.id) closeSidebar()
-                if (!organizations) break
-                const newOrganizationsItems = [...organizations]
+                if (!userOrganizations) break
+                const newOrganizationsItems = [...userOrganizations]
                 const filteredOrganizations = newOrganizationsItems.filter(org => org.id !== newOrg.id)
                 updateOrganizations(filteredOrganizations)
                 break;
@@ -68,7 +68,7 @@ export const OrganizationList = () => {
             }
         }
         if (org.active) {
-            if (selectedOrgId === org.id) return
+            if (selectedOrg?.id === org.id) return
             disableOrganization(org.id).then((res) => {
                 if (res.action === "disabled") updateActive(org)
                 if (res.action === "deleted") deleteOrg(org)
@@ -89,15 +89,15 @@ export const OrganizationList = () => {
                         <Typography variant="h1">Lista de Organizaciones</Typography>
                     </Grid>
                     <Grid size="auto" minWidth="15rem">
-                        {organizations && organizations?.length > 0 &&
+                        {userOrganizations && userOrganizations?.length > 0 &&
                             <CommonButton actionType="CREATE" handleClick={() => handleSidebar("CREATE_ORG", null)}>Crear Organización</CommonButton>
                         }
                     </Grid>
                 </Grid>
                 {
-                    organizations && organizations?.length > 0 ?
+                    userOrganizations && userOrganizations?.length > 0 ?
                         <List>
-                            {organizations.map(org =>
+                            {userOrganizations.map(org =>
                                 <ListItem key={org.id} disablePadding secondaryAction={
                                     <Grid container spacing={1} alignItems="center">
                                         <IconButton edge="end" aria-label="details" onClick={() => handleSidebar("DETAILS_ORG", org)}>
@@ -106,7 +106,7 @@ export const OrganizationList = () => {
                                         <IconButton edge="end" aria-label="modify" onClick={() => handleSidebar("UPDATE_ORG", org)}>
                                             <EditIcon />
                                         </IconButton>
-                                        {selectedOrgId !== org.id &&
+                                        {selectedOrg?.id !== org.id &&
                                             <IconButton edge="end" aria-label={org.active ? "delete" : "restore"}
                                                 onClick={() => handleActive(org)}>
                                                 {org.active ?
@@ -170,7 +170,7 @@ interface DetailsProps {
     handleActive: (org: OrganizationDetailed) => void
 }
 const OrganizationDetails = ({ entity, closeSidebar, handleSidebar, handleActive }: DetailsProps) => {
-    const {  selectedOrgId  } = useContext<UserContextItems>(UserContext)
+    const { selectedOrg } = useContext<UserContextItems>(UserContext)
 
     if (!entity) return
 
@@ -205,7 +205,7 @@ const OrganizationDetails = ({ entity, closeSidebar, handleSidebar, handleActive
             <Divider />
             <ButtonGroup>
                 <CommonButton handleClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
-                {selectedOrgId !== entity.id &&
+                {selectedOrg?.id !== entity.id &&
                     <DisableButton active={entity.active} handleActive={() => handleActive(entity)} />
                 }
                 <CommonButton handleClick={() => handleSidebar("UPDATE_ORG", entity)} actionType="MODIFY" >Modificar</CommonButton>

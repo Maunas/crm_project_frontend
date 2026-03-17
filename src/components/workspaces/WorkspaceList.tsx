@@ -28,15 +28,15 @@ export const WorkspaceList = () => {
 
     const { fetchPage, pageSize, refresh, pageComponentProps } = useListPagination(workspaces)
 
-    const { selectedOrgId } = useContext<UserContextItems>(UserContext)
+    const { selectedOrg } = useContext<UserContextItems>(UserContext)
 
     useEffect(() => {
         getWorkspaces({ detailed: true, page_size: pageSize, only_active: false, page: fetchPage }).then(setWorkspaces)
-    }, [fetchPage, refresh, pageSize, selectedOrgId])
+    }, [fetchPage, refresh, pageSize, selectedOrg])
 
     useEffect(() => {
         closeSidebar()
-    }, [selectedOrgId, closeSidebar])
+    }, [selectedOrg, closeSidebar])
 
     const updateEntityOnList = (
         entity: WorkspaceDetailed | CampaignDetailed | null,
