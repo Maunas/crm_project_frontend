@@ -91,7 +91,7 @@ export const LeadDetails = () => {
                 <Grid size="grow" minWidth="20rem">
                     <Paper sx={{ minHeight: "100%", p: 2, borderRadius: "1em" }}>
                         <Typography variant="h2">Actividades</Typography>
-                        <LeadActivities/>
+                        <LeadActivities leadId={Number(id)}/>
                     </Paper>
                 </Grid>
             </Grid >

@@ -20,3 +20,8 @@ export interface LeadDetailed extends Lead, Metadata {
   field_values: LeadFieldValueDetailed[];
 
 }
+
+export interface LeadCommentPost {
+  lead_id: number,
+  content: string
+}

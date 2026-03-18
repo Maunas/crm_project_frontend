@@ -202,16 +202,17 @@ export const SingleFileField = <T extends FieldValues>
 interface RegisteredTextProps<T extends FieldValues> extends RegisterFormInput<T> {
   id?: string | null;
   type?: HTMLInputTypeAttribute;
-  onChange?: () => void
+  onChange?: () => void,
+  multiline?: boolean
 }
 
 export const RegisteredTextInput = <T extends FieldValues>
-  ({ register, name, label, required = false, errorMessage, autoComplete = "one-time-code",
+  ({ register, name, label, required = false, errorMessage, autoComplete = "one-time-code", multiline=false,
     id = null, type = "text", onChange = () => { } }: RegisteredTextProps<T>) => {
   return (
     <>
       <TextField {...register(name)} label={label ?? name} id={id ?? name} type={type} onChange={onChange}
-        required={required} error={!!errorMessage} autoComplete={autoComplete} fullWidth
+        required={required} error={!!errorMessage} autoComplete={autoComplete} multiline={multiline} fullWidth
       />
       {errorMessage && typeof errorMessage === "string" && (
         <FormErrorMessage>{errorMessage}</FormErrorMessage>

@@ -25,7 +25,7 @@ function CustomTabPanel(props: TabPanelProps) {
   );
 }
 
-export const LeadActivities = () => {
+export const LeadActivities = ({leadId}: {leadId: number}) => {
 
   const [openTab, setOpenTab] = useState<number>(0)
 
@@ -36,7 +36,7 @@ export const LeadActivities = () => {
         <Tab label="Auditoría" id="tab-audit" />
       </Tabs>
       <CustomTabPanel value={openTab} index={0}>
-        <LeadComments />
+        <LeadComments leadId={leadId} />
       </CustomTabPanel>
       <CustomTabPanel value={openTab} index={1}>
         <LeadAudit />
