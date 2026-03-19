@@ -25,3 +25,7 @@ export interface LeadCommentPost {
   lead_id: number,
   content: string
 }
+
+export interface LeadComment extends LeadCommentPost, Metadata {
+  id: number
+}
