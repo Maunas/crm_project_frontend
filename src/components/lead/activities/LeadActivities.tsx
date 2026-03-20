@@ -32,7 +32,7 @@ export const LeadActivities = ({leadId}: {leadId: number}) => {
   return (
     <>
       <Tabs value={openTab} onChange={(_,val) => { setOpenTab(val) }} aria-label="activities tabs">
-        <Tab label="Notas" id="tab-comments" />
+        <Tab label="Comentarios" id="tab-comments" />
         <Tab label="Auditoría" id="tab-audit" />
       </Tabs>
       <CustomTabPanel value={openTab} index={0}>
