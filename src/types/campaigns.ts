@@ -7,8 +7,8 @@ export interface CampaignPost {
   workspace_id: number | null;
 }
 export interface Campaign extends CampaignPost {
-  id: number;
-  organization_id: number;
+  id: number | null;
+  organization_id: number | null;
 }
 export interface CampaignDetailed extends Campaign, Metadata {}
 
@@ -19,7 +19,7 @@ export interface WorkspacePost {
   organization_id: number | null;
 }
 export interface Workspace extends WorkspacePost {
-  id: number;
+  id: number | null;
 }
 export interface WorkspaceDetailed extends Workspace, Metadata {
   campaigns: CampaignDetailed[];

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 import { ControlledCheckbox, ControlledNumber } from '../common/forms/CustomInputs'
 import { ControlledAutocomplete } from '../common/forms/CustomMultipleInputs'
 import { PaginationComponent } from '../common/lists/PaginationComponent'
@@ -15,6 +15,8 @@ import { useForm, useWatch } from 'react-hook-form'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { Accordion, AccordionDetails, AccordionSummary, Button, Typography, Grid, TableContainer, Paper, Table, TableRow, TableCell, TableBody, TableHead, Stack } from '@mui/material'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import { type UserContextItems } from '../users/UserProvider'
+import { UserContext } from '../common/contexts'
 
 export const LeadList = () => {
 
@@ -23,6 +25,8 @@ export const LeadList = () => {
     const [campaigns, setCampaigns] = useState<Campaign[] | null>(null)
     const [filters, setFilters] = useState<LeadListParams>({ workspace_id: 1, campaign_id: 1, only_active: true, page_size: 20 })
 
+    const {selectedOrg} = useContext<UserContextItems>(UserContext)
+
     const { fetchPage, refresh, pageComponentProps } = useListPagination(leads)
 
     useEffect(() => {
@@ -30,20 +34,26 @@ export const LeadList = () => {
         /* eslint-disable-next-line react-hooks/exhaustive-deps */
     }, [fetchPage, refresh])
 
-    const { control, handleSubmit } = useForm<LeadListParams>({
+    const { control, setValue, handleSubmit } = useForm<LeadListParams>({
         defaultValues: { workspace_id: filters.workspace_id, campaign_id: filters.campaign_id, only_active: filters.only_active, page_size: filters.page_size }
     })
 
     useEffect(() => {
-        getWorkspaces({ only_active: true, page_size: 0 }).then(res => setWorkspaces(res.items))
-    }, [])
+        getWorkspaces({ only_active: true, page_size: 0 }).then(res => {
+            setWorkspaces(res.items)
+            setValue("workspace_id", res.items?.at(-1)?.id ?? undefined)
+        })
+    }, [selectedOrg, setValue])
 
     const selectedWorkspace = useWatch<LeadListParams>({ name: "workspace_id", control })
 
     useEffect(() => {
         if (!selectedWorkspace) return
-        getCampaigns({ only_active: true, workspace_id: selectedWorkspace as number, page_size: 0 }).then(res => setCampaigns(res.items))
-    }, [selectedWorkspace])
+        getCampaigns({ only_active: true, workspace_id: selectedWorkspace as number, page_size: 0 }).then(res => {
+            setCampaigns(res.items)
+            setValue("campaign_id", res.items?.at(-1)?.id ?? undefined)
+        })
+    }, [selectedWorkspace, setValue])
 
     const applyFilters = (data: LeadListParams) => {
         const newFilters = { ...filters, ...data }
@@ -108,7 +118,7 @@ interface LeadTableProps {
     campaignId: number
 }
 export const LeadTable = ({ leads, campaignId }: LeadTableProps) => {
-    const NUMBER_OF_FIELDS = 50
+    const NUMBER_OF_FIELDS = 8
 
     const [leadColumns, setLeadColumns] = useState<LeadField[]>([])
 

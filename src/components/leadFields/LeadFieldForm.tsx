@@ -6,11 +6,12 @@ import type {
 } from "../../types/leadFields";
 import type { Campaign, CampaignDetailed } from "../../types/campaigns";
 import { setFormErrors } from "../../generalService";
-import { createLeadField, getFieldDataByType, getFieldSections, getFieldTemplates, getFieldTypes, getNomenclators, updateLeadField } from "./leadFieldServices";
+import { createLeadField, getFieldDataByType, getFieldSections, getFieldTemplates, getFieldTypes, updateLeadField } from "./leadFieldServices";
 import { getCampaigns } from "../campaigns/campaignServices";
 import { useForm, useWatch, type Control, type FieldErrors, type UseFormRegister } from "react-hook-form";
 import { Button, Grid, FormGroup, Typography, ButtonGroup, Stack } from "@mui/material";
 import { FormErrorMessage } from "../../styles/styledMUIFormComponents";
+import { getNomenclators } from "../nomenclators/nomenclatorService";
 
 
 interface LeadFieldSidebarProps {

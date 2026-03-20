@@ -5,22 +5,25 @@ import { UpdateCampaignFormSidebar } from './CampaignForms'
 import { LeadFieldTable } from '../leadFields/LeadFieldTable'
 import { LeadFieldDetail } from '../leadFields/LeadFieldDetail'
 import { LeadFieldFormSidebar } from '../leadFields/LeadFieldForm'
+import { ValidationFormSidebar } from '../validations/ValidationForm'
 import type { Paginable } from '../../types/common'
 import type { CampaignDetailed } from '../../types/campaigns'
 import type { LeadFieldDetailed } from '../../types/leadFields'
 import { disableCampaign, enableCampaign, getCampaign } from './campaignServices'
-import { getLeadFields } from '../leadFields/leadFieldServices'
+import { getLeadField, getLeadFields } from '../leadFields/leadFieldServices'
 import { useSidebar } from '../hooks/useSidebar'
-import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom'
+import { Link as RouterLink, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import dayjs from 'dayjs'
 import { Chip, Typography, ButtonGroup, Link, Breadcrumbs, Stack, Grid, Divider } from '@mui/material'
-import { ValidationFormSidebar } from '../validations/ValidationForm'
 
 export const CampaignDetails = () => {
     const { id } = useParams()
     const [campaign, setCampaign] = useState<CampaignDetailed | null>(null)
 
-    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<LeadFieldDetailed>()
+    const [params, setParams] = useSearchParams()
+
+    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<LeadFieldDetailed>(params, setParams, getLeadField, "DETAILS_FIELD", 'id')
+
     const nav = useNavigate()
 
     useEffect(() => {
@@ -38,7 +41,7 @@ export const CampaignDetails = () => {
     const updateLeadFields = useCallback((page: number, pageSize: number) => {
         if (!campaign) return
         getLeadFields({
-            detailed: true, campaign_id: campaign.id, only_active: false, page: page, page_size: pageSize
+            detailed: true, campaign_id: campaign.id!, only_active: false, page: page, page_size: pageSize
         }).then(setLeadFields)
     }, [campaign, setLeadFields])
 
@@ -74,7 +77,7 @@ export const CampaignDetails = () => {
             updateEntity("UPDATE_CMP", { ...campaign, active: !campaign.active })
         }
         if (campaign.active) {
-            disableCampaign(campaign.id)
+            disableCampaign(campaign.id!)
                 .then(res => {
                     if (res.action === "disabled") updateActive()
                     else {
@@ -83,7 +86,7 @@ export const CampaignDetails = () => {
                     }
                 })
         } else {
-            enableCampaign(campaign.id)
+            enableCampaign(campaign.id!)
                 .then(updateActive)
         }
     }

@@ -1,31 +1,42 @@
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { ContainerWithSidebar } from '../common/layout/GenericContainer'
 import { EnabledIcon } from '../common/lists/Badges';
 import { PaginationComponent } from '../common/lists/PaginationComponent'
 import { WorkspaceSidebar } from './WorkspaceSidebar'
+import type { Paginable } from '../../types/common'
 import type { CampaignDetailed, WorkspaceDetailed } from '../../types/campaigns'
-import { disableWorkspace, enableWorkspace, getWorkspaces } from './workspaceServices'
+import { disableWorkspace, enableWorkspace, getWorkspace, getWorkspaces } from './workspaceServices'
 import { useListPagination } from '../hooks/useListPagination'
 import { useSidebar } from '../hooks/useSidebar'
-import type { Paginable } from '../../types/common'
+import { UserContext } from '../common/contexts';
+import type { UserContextItems } from '../users/UserProvider';
 import { Button, ButtonGroup, Grid, IconButton, List, ListItem, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import { CommonButton } from '../common/details/DetailsCommonButton';
+import { useSearchParams } from 'react-router-dom';
 
 export const WorkspaceList = () => {
 
+    const [params, setParams] = useSearchParams()
+
     const [workspaces, setWorkspaces] = useState<Paginable<WorkspaceDetailed> | null>(null)
 
-    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<WorkspaceDetailed | CampaignDetailed>()
+    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<WorkspaceDetailed | CampaignDetailed>(params, setParams, getWorkspace, "DETAILS_WSP", "id")
 
     const { fetchPage, pageSize, refresh, pageComponentProps } = useListPagination(workspaces)
 
+    const { selectedOrg } = useContext<UserContextItems>(UserContext)
+
     useEffect(() => {
         getWorkspaces({ detailed: true, page_size: pageSize, only_active: false, page: fetchPage }).then(setWorkspaces)
-    }, [fetchPage, refresh, pageSize])
+    }, [fetchPage, refresh, pageSize, selectedOrg])
+
+    useEffect(() => {
+        closeSidebar()
+    }, [selectedOrg, closeSidebar])
 
     const updateEntityOnList = (
         entity: WorkspaceDetailed | CampaignDetailed | null,
@@ -68,13 +79,12 @@ export const WorkspaceList = () => {
             }
         }
         if (wsp.active) {
-            disableWorkspace(wsp.id).then((res) => {
-                console.log(res.action)
+            disableWorkspace(wsp.id!).then((res) => {
                 if (res.action === "disabled") updateActive(wsp)
                 if (res.action === "deleted") deleteWsp(wsp)
             })
         } else {
-            enableWorkspace(wsp.id).then(() => updateActive(wsp))
+            enableWorkspace(wsp.id!).then(() => updateActive(wsp))
         }
     }
 
@@ -106,7 +116,7 @@ export const WorkspaceList = () => {
                         {workspaces?.items.map(wsp =>
                             <ListItem key={`wsp-${wsp.id}`} disablePadding secondaryAction={
                                 <Grid container spacing={1} alignItems="center">
-                                    <IconButton edge="end" aria-label="details" onClick={() => handleSidebar("DETAILS_WSP", wsp)}>
+                                    <IconButton edge="end" aria-label="details" onClick={() => { handleSidebar("DETAILS_WSP", wsp) }}>
                                         <SearchIcon />
                                     </IconButton>
                                     <IconButton edge="end" aria-label="modify" onClick={() => handleSidebar("UPDATE_WSP", wsp)}>
@@ -121,7 +131,7 @@ export const WorkspaceList = () => {
                                     </IconButton>
                                 </Grid>
                             }>
-                                <ListItemButton onClick={() => handleSidebar("DETAILS_WSP", wsp)} >
+                                <ListItemButton onClick={() => { handleSidebar("DETAILS_WSP", wsp) }} >
                                     <ListItemText primary={<>
                                         <Stack spacing={1} direction="row">
                                             <EnabledIcon active={wsp.active} />

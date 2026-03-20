@@ -1,0 +1,166 @@
+import { Box, Button, Divider, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Stack, Typography } from '@mui/material'
+import MoreIcon from '@mui/icons-material/More';
+import React from 'react'
+import { AccountCircle, Check } from '@mui/icons-material';
+import type { UserContextItems } from '../../users/UserProvider';
+import { UserContext } from '../contexts';
+import { Link } from 'react-router-dom';
+
+export const UserInfo = () => {
+
+    const { user, logout, activeOrganizations, selectedOrg, setSelectedOrg } = React.useContext<UserContextItems>(UserContext)
+
+    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+    const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState<null | HTMLElement>(null);
+
+    const isMenuOpen = Boolean(anchorEl);
+    const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
+
+    const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleMobileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+        setMobileMoreAnchorEl(event.currentTarget);
+    };
+
+    const handleMenuClose = () => {
+        setAnchorEl(null);
+        handleMobileMenuClose();
+    };
+
+    const handleMobileMenuClose = () => {
+        setMobileMoreAnchorEl(null);
+    };
+
+    const menuId = 'primary-search-account-menu';
+    const renderProfileMenu = (
+        <Menu anchorEl={anchorEl}
+            anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'right',
+            }}
+            id={menuId} keepMounted
+            transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+            }}
+            open={isMenuOpen}
+            onClose={handleMenuClose}
+        >
+            <MenuItem >
+                <ListItemText>Tus Organizaciones</ListItemText>
+                <Divider />
+            </MenuItem>
+            {
+                activeOrganizations.map(org => {
+                    return <MenuItem dense key={org.id} onClick={() => setSelectedOrg(org)}>
+                        {org.id === selectedOrg?.id &&
+                            <ListItemIcon>
+                                <Check />
+                            </ListItemIcon>
+                        }
+                        <ListItemText inset={org.id !== selectedOrg?.id} primary={org.name}>
+                        </ListItemText>
+                    </MenuItem>
+                })
+            }
+            <Divider />
+
+            <MenuItem dense onClick={() => logout()}>
+                <ListItemText>
+                    Cerrar Sesión
+                </ListItemText>
+            </MenuItem>
+        </Menu>
+    );
+
+    const mobileMenuId = 'primary-search-account-menu-mobile';
+    const renderMobileMenu = (
+        <Menu
+            anchorEl={mobileMoreAnchorEl}
+            anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+            }}
+            id={mobileMenuId}
+            keepMounted
+            transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+            }}
+            open={isMobileMenuOpen}
+            onClose={handleMobileMenuClose}
+        >
+
+            <MenuItem onClick={handleProfileMenuOpen}>
+                <IconButton
+                    aria-label="account of current user"
+                    aria-controls="primary-search-account-menu"
+                    aria-haspopup="true"
+                    color="inherit"
+                >
+                    <AccountCircle />
+                </IconButton>
+                <Stack>
+                    <Typography variant="body1" color="initial">{user?.email}</Typography>
+                    <Typography variant="body2" color="initial">{selectedOrg?.name}</Typography>
+                </Stack>
+            </MenuItem>
+        </Menu>
+    );
+
+    if (user) return (
+        <>
+            <Box sx={{ display: { xs: 'none', md: 'flex' } }} alignItems="center">
+                <Stack>
+                    <Typography variant="body1" textAlign="end" fontWeight={600} fontSize=".9rem" sx={{ color: "white" }} color="initial">{user.email}</Typography>
+                    <Typography variant="body2" textAlign="end" fontSize=".8rem" sx={{ color: "white" }} color="initial">{selectedOrg?.name}</Typography>
+                </Stack>
+                <IconButton
+                    size="large"
+                    edge="end"
+                    aria-label="account of current user"
+                    aria-controls={menuId}
+                    aria-haspopup="true"
+                    onClick={handleProfileMenuOpen}
+                    color="inherit"
+                >
+                    <AccountCircle />
+                </IconButton>
+            </Box>
+            <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
+                <IconButton
+                    size="large"
+                    aria-label="show more"
+                    aria-controls={mobileMenuId}
+                    aria-haspopup="true"
+                    onClick={handleMobileMenuOpen}
+                    color="inherit"
+                >
+                    <MoreIcon />
+                </IconButton>
+            </Box>
+            {renderMobileMenu}
+            {renderProfileMenu}
+        </>
+    )
+    return (<>
+        <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
+            < Button sx={{ color: 'white', borderColor: "white" }} variant='outlined' size='large' component={Link} to="/login" startIcon={<AccountCircle />}> Iniciar Sesión</Button >
+        </Box>
+        <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
+            <IconButton
+                size="large"
+                aria-label="login"
+                onClick={handleMobileMenuOpen}
+                color="inherit"
+                component={Link} to="/login"
+            >
+                <AccountCircle />
+            </IconButton>
+        </Box>
+    </>)
+
+
+}

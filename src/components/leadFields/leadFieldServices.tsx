@@ -1,84 +1,61 @@
-import axios from "axios";
 import type {
-    LeadField, LeadFieldDetailed, LeadFieldPost, LeadFieldType, LeadFieldTypeDetailed, LeadFieldTemplate, Nomenclator, LeadFieldSection, LeadFieldSectionDetailed, NomenclatorDetailed, NomenclatorItem, NomenclatorItemDetailed,
+    LeadField, LeadFieldDetailed, LeadFieldPost, LeadFieldType, LeadFieldTypeDetailed, LeadFieldTemplate, LeadFieldSection, LeadFieldSectionDetailed
 } from "../../types/leadFields";
 import type { DeleteResponse, EnableResponse, ListParams, Paginable } from "../../types/common";
-import { API_BASE_URL, orderList } from "../../generalService";
+import { API_BASE_URL, axiosCRM, orderList } from "../../generalService";
 
 interface LeadFieldParams extends ListParams {
     campaign_id?: number;
-}
-interface NomenclatorParams extends ListParams {
-    campaign_id?: number;
-    global_nomenclator?: boolean;
-}
-interface NomenclatorItemParams extends ListParams {
-    nomenclator_id?: number;
-    parent_item_id?: number;
 }
 
 export const getLeadFields = async <T extends LeadFieldParams>(
     params?: T,
 ): Promise<Paginable<T["detailed"] extends true ? LeadFieldDetailed : LeadField>> => {
-    const leadField = await axios.get(`${API_BASE_URL}/lead_fields`, { params });
+    const leadField = await axiosCRM.get(`${API_BASE_URL}/lead_fields`, { params });
     return { ...leadField.data, items: orderList(leadField.data.items, "order") };
 };
 
 export const getLeadField = async (id: number): Promise<LeadFieldDetailed> => {
-    const leadField = await axios.get(`${API_BASE_URL}/lead_fields/${id}`);
+    const leadField = await axiosCRM.get(`${API_BASE_URL}/lead_fields/${id}`);
     return leadField.data;
 };
 
 export const createLeadField = async (body: LeadFieldPost): Promise<LeadFieldDetailed> => {
-    const leadField = await axios.post(`${API_BASE_URL}/lead_fields`, body);
+    const leadField = await axiosCRM.post(`${API_BASE_URL}/lead_fields`, body);
     return leadField.data;
 };
 
 export const updateLeadField = async (body: LeadFieldPost, id: number): Promise<LeadFieldDetailed> => {
-    const leadField = await axios.put(`${API_BASE_URL}/lead_fields/${id}`, body);
+    const leadField = await axiosCRM.put(`${API_BASE_URL}/lead_fields/${id}`, body);
     return leadField.data;
 };
 
 export const disableLeadField = async (id: number): Promise<DeleteResponse> => {
-    const leadField = await axios.delete(`${API_BASE_URL}/lead_fields/${id}`);
+    const leadField = await axiosCRM.delete(`${API_BASE_URL}/lead_fields/${id}`);
     return leadField.data;
 };
 
 export const enableLeadField = async (id: number): Promise<EnableResponse> => {
-    const leadField = await axios.put(`${API_BASE_URL}/lead_fields/active/${id}`);
+    const leadField = await axiosCRM.put(`${API_BASE_URL}/lead_fields/active/${id}`);
     return leadField.data;
 };
 
 export const getFieldTemplates = async (): Promise<LeadFieldTemplate[]> => {
-    const tmp = await axios.get(`${API_BASE_URL}/templates/lead_fields`);
+    const tmp = await axiosCRM.get(`${API_BASE_URL}/templates/lead_fields`);
     return tmp.data;
 };
 
 export const getFieldTypes = async <T extends ListParams>(params?: T): Promise<Paginable<
     T["detailed"] extends true ? LeadFieldTypeDetailed : LeadFieldType
 >> => {
-    const tmp = await axios.get(`${API_BASE_URL}/lead_field_types`, { params });
+    const tmp = await axiosCRM.get(`${API_BASE_URL}/lead_field_types`, { params });
     return { ...tmp.data, items: orderList(tmp.data.items, "id") };
-};
-
-export const getNomenclators = async <T extends NomenclatorParams>(params?: T): Promise<Paginable<
-    T["detailed"] extends true ? NomenclatorDetailed : Nomenclator
->> => {
-    const noms = await axios.get(`${API_BASE_URL}/nomenclators`, { params });
-    return { ...noms.data, items: orderList(noms.data.items) };
-};
-
-export const getNomenclatorItems = async <T extends NomenclatorItemParams>(params?: T): Promise<Paginable<
-    T["detailed"] extends true ? NomenclatorItemDetailed : NomenclatorItem
->> => {
-    const leadField = await axios.get(`${API_BASE_URL}/nomenclator_items`, { params });
-    return { ...leadField.data, items: orderList(leadField.data.items, "id") };
 };
 
 export const getFieldSections = async <T extends ListParams>(params?: T): Promise<Paginable<
     T["detailed"] extends true ? LeadFieldSectionDetailed : LeadFieldSection
 >> => {
-    const sections = await axios.get(`${API_BASE_URL}/lead_field_sections`, { params });
+    const sections = await axiosCRM.get(`${API_BASE_URL}/lead_field_sections`, { params });
     return { ...sections.data, items: orderList(sections.data.items, "id") };
 };
 

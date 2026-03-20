@@ -1,10 +1,25 @@
-import type { FieldValues, UseFormSetError } from "react-hook-form";
-import axios from "axios"
 import type { ErrorBody, ErrorMessage } from "./types/common";
+import axios from "axios"
+import type { FieldValues, UseFormSetError } from "react-hook-form";
 export const API_BASE_URL = "http://localhost:8000";
 
+export const axiosCRM = axios.create({
+  baseURL: 'http://localhost:8000/',
+})
+
+axiosCRM.interceptors.request.use(config => {
+  // Haz algo antes que la petición se ha enviada+
+  const org = window.localStorage.getItem("selected_org")
+  if (org) config.headers["X-Organization-Id"] = JSON.parse(org).id
+  return config;
+}, function (error) {
+  // Haz algo con el error de la petición
+  alert("Error de conexión.")
+  return Promise.reject(error);
+});
+
 export const generalSearch = async (query: string) => {
-  const res = await axios.get(`${API_BASE_URL}/search`, { params: { query } })
+  const res = await axiosCRM.get(`${API_BASE_URL}/search`, { params: { query } })
   return res.data
 }
 

@@ -24,13 +24,14 @@ interface ControlledACProps<T extends FieldValues, Option> extends BasicControlF
     multiple?: boolean,
     disableClearable?: boolean,
     autocomplete?: string,
-    helper?: string
+    helper?: string,
+    placeholder?:string
 }
 
 export const ControlledAutocomplete = <T extends FieldValues, Option>
     ({ control, name, label, options, getOptionLabel, getOptionKey, returnField = null,
         required = false, multiple = false, disabled = false, hidden = false, disableClearable = false,
-        errorMessage = null, autocomplete = "one-time-code", helper, ...props }: ControlledACProps<T, Option>) => {
+        errorMessage = null, autocomplete = "one-time-code", helper, placeholder, ...props }: ControlledACProps<T, Option>) => {
 
     const handleChange = (field: ControllerRenderProps<T, Path<T>>, values: Option | Option[] | null) => {
         //Por defecto, si no hay valores devuelve null o []
@@ -81,6 +82,7 @@ export const ControlledAutocomplete = <T extends FieldValues, Option>
                         <>
                             <TextField {...params} label={label} required={required}
                                 error={!!errorMessage} autoComplete={autocomplete}
+                                placeholder={placeholder}
                                 slotProps={{
                                     input: {
                                         ...params.InputProps,

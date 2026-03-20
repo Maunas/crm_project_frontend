@@ -14,6 +14,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { useModal } from "../hooks/useModal.tsx"
+import { LeadActivities } from "./activities/LeadActivities.tsx"
 
 export const LeadDetails = () => {
 
@@ -90,6 +91,7 @@ export const LeadDetails = () => {
                 <Grid size="grow" minWidth="20rem">
                     <Paper sx={{ minHeight: "100%", p: 2, borderRadius: "1em" }}>
                         <Typography variant="h2">Actividades</Typography>
+                        <LeadActivities leadId={Number(id)}/>
                     </Paper>
                 </Grid>
             </Grid >

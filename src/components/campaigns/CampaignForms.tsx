@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from "react"
 import { RegisteredTextInput } from "../common/forms/CustomInputs"
 import { ControlledAutocomplete } from "../common/forms/CustomMultipleInputs"
-import type { Campaign, CampaignDetailed, CampaignPost, Organization, Workspace, WorkspaceDetailed } from "../../types/campaigns"
+import type { Campaign, CampaignDetailed, CampaignPost, Workspace, WorkspaceDetailed } from "../../types/campaigns"
 import type { LeadFieldPost } from "../../types/leadFields"
 import { setFormErrors } from "../../generalService"
-import { getOrganizations, getWorkspace, getWorkspaces } from "../workspaces/workspaceServices"
+import { getWorkspace, getWorkspaces } from "../workspaces/workspaceServices"
 import { createCampaign, updateCampaign } from "./campaignServices"
 import { createLeadField } from "../leadFields/leadFieldServices"
-import { useForm, useWatch } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { Button, ButtonGroup, Grid, Typography } from "@mui/material"
 import { FormErrorMessage } from "../../styles/styledMUIFormComponents"
 
@@ -84,13 +84,10 @@ interface CampaignProps {
 export const CampaignForm = ({ existingCmp, submit, onCancel }: CampaignProps) => {
 
     const [workspaces, setWorkspaces] = useState<Workspace[] | []>([])
-    const [organizations, setOrganizations] = useState<Organization[] | []>([])
 
     useEffect(() => {
         getWorkspaces({ only_active: true, page_size: 0 })
             .then(res => setWorkspaces(res.items))
-        getOrganizations({ only_active: true, page_size: 0 })
-            .then(res => setOrganizations(res.items))
     }, [])
 
     const defaultValues = useMemo(() => ({
@@ -105,18 +102,7 @@ export const CampaignForm = ({ existingCmp, submit, onCancel }: CampaignProps) =
 
     useEffect(() => { reset(defaultValues) }, [reset, defaultValues])
 
-    const selectedOrg = useWatch({
-        control,
-        name: "organization_id",
-    });
-
-    const filteredWorkspaces = useMemo(() => {
-        if (!selectedOrg) return []
-        return workspaces.filter(workspace => workspace.organization_id === selectedOrg)
-    }, [selectedOrg, workspaces])
-
     const onSubmit = (data: CampaignPost & { organization_id?: number }) => {
-        delete data.organization_id
         submit(data)
             .catch(e => setFormErrors(e, setError))
     }
@@ -141,16 +127,9 @@ export const CampaignForm = ({ existingCmp, submit, onCancel }: CampaignProps) =
                 </Grid>
                 {!existingCmp &&
                     <Grid size="grow" minWidth={"20rem"}>
-                        <ControlledAutocomplete control={control} label="Organización" name="organization_id" options={organizations}
+                        <ControlledAutocomplete control={control} label="Espacio de Trabajo" name="workspace_id" options={workspaces}
                             getOptionLabel={option => option.name!} getOptionKey={option => `${option.id}`} returnField="id"
-                            errorMessage={errors.organization_id?.message} required />
-                    </Grid>
-                }
-                {!existingCmp &&
-                    <Grid size="grow" minWidth={"20rem"}>
-                        <ControlledAutocomplete control={control} label="Espacio de Trabajo" name="workspace_id" options={filteredWorkspaces}
-                            getOptionLabel={option => option.name!} getOptionKey={option => `${option.id}`} returnField="id"
-                            errorMessage={errors?.workspace_id?.message} disabled={!selectedOrg} required />
+                            errorMessage={errors?.workspace_id?.message} required />
                     </Grid>
                 }
             </Grid>
