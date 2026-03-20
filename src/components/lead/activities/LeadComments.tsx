@@ -1,19 +1,16 @@
-import { useForm } from "react-hook-form"
-import { RegisteredTextInput } from "../../common/forms/CustomInputs"
-import type { LeadComment, LeadCommentPost } from "../../../types/leads"
-import { Box, Button, Grid, IconButton, Paper, Typography } from "@mui/material"
-import { createComment, deleteComment, getComments, updateComment } from "./leadActivitiesService"
-import { useEffect, useMemo, useState, type ReactNode } from "react"
-import { setFormErrors } from "../../../generalService"
-import type { Paginable } from "../../../types/common"
-import { useListPagination } from "../../hooks/useListPagination"
+import { useEffect, useState, type ReactNode } from "react"
 import { PaginationComponent } from "../../common/lists/PaginationComponent"
-import { alpha, styled, useTheme } from "@mui/material/styles"
+import { CommentFromNote } from "./LeadCommentForm"
+import type { Paginable } from "../../../types/common"
+import type { LeadComment } from "../../../types/leads"
+import { useListPagination } from "../../hooks/useListPagination"
+import { deleteComment, getComments } from "./leadActivitiesService"
+import dayjs from "dayjs"
+import { Box, Divider, Grid, IconButton, Paper, Stack, Typography } from "@mui/material"
+import { alpha, styled } from "@mui/material/styles"
 import EditIcon from '@mui/icons-material/Edit';
 import CloseIcon from '@mui/icons-material/Close';
 import WatchLaterIcon from '@mui/icons-material/WatchLater';
-import dayjs from "dayjs"
-import { Stack } from "@mui/system"
 
 export const LeadComments = ({ leadId }: { leadId: number }) => {
 
@@ -32,7 +29,10 @@ export const LeadComments = ({ leadId }: { leadId: number }) => {
                 .then(setComments)
         })
     }
-    
+    const onCreateComment = () => {
+        getComments({ detailed: true, leadId, page: fetchPage, page_size: pageSize })
+            .then(setComments)
+    }
     const onUpdateComment = (newCom: LeadComment) => {
         const newComments = [...(comments?.items ?? [])]
         const commentListIdx = newComments.findIndex(listCom => listCom.id === newCom.id)
@@ -44,19 +44,19 @@ export const LeadComments = ({ leadId }: { leadId: number }) => {
 
     return (
         <Stack spacing="1rem">
+            <CommentFromNote leadId={leadId} onCreate={onCreateComment} />
+            <Divider />
             <Grid container spacing={4}>
                 {comments?.items.map(com =>
                     <Grid key={com.id} size="grow" minWidth="20rem">
                         {com.id !== selectedCommentId ? (
                             <CommentInstance comment={com} onEdit={() => setSelectedCommentId(com.id)}
-                                onDelete={() => onDeleteComment(com.id)}>
+                                onDelete={() => onDeleteComment(com.id)} footerContent={<Metadata comment={com} />} >
                                 {com.content}
                             </CommentInstance>
                         )
                             : (
-                                <CommentInstance comment={com} key={com.id} onDelete={() => setSelectedCommentId(null)}>
-                                    <CommentForm leadId={leadId} existingComment={com} updateList={onUpdateComment} />
-                                </CommentInstance>
+                                <CommentFromNote leadId={leadId} existingComment={com} onUpdate={onUpdateComment} onClose={() => setSelectedCommentId(null)} />
                             )
                         }
                     </Grid>
@@ -68,15 +68,16 @@ export const LeadComments = ({ leadId }: { leadId: number }) => {
 }
 
 const CommentNote = styled(Paper)(({ theme, ...props }) => ({
-    borderRadius: "1.5rem 1.5rem 1.5rem 0",
+    borderRadius: "1rem 1rem 1rem 0",
     border: `1px solid ${theme.palette[`${props.color}`].main}`,
     overflow: "hidden",
     "& .comment-footer, .comment-header": {
         display: "flex",
+        alignItems:"center",
+        justifyContent:"space-between",
         flexWrap: "wrap",
     },
     "& .comment-header": {
-        justifyContent: "end",
         paddingInline: "1rem",
         backgroundColor: alpha(theme.palette[`${props.color}`].light, .5),
         borderBottom: `1px solid ${theme.palette[`${props.color}`].main}`,
@@ -95,80 +96,58 @@ const CommentNote = styled(Paper)(({ theme, ...props }) => ({
 
 interface CommentInstanceProps {
     comment?: LeadComment,
+    color?: string,
     isCreating?: boolean,
     onEdit?: () => void,
     onDelete?: () => void,
+    footerContent?: ReactNode,
+    title?: string,
     children: ReactNode
 }
 
-const CommentInstance = ({ comment, isCreating = false, onEdit, onDelete, children }: CommentInstanceProps) => {
+export const CommentInstance = ({ comment, title, color, footerContent, onEdit, onDelete, children }: CommentInstanceProps) => {
 
-    const theme = useTheme()
-
-    return <CommentNote color={comment?.color ?? "secondary"}>
+    return <CommentNote color={comment?.color ?? color ?? "secondary"}>
         <Box className="comment-header">
-            {onEdit && <IconButton aria-label="edit" size="small" onClick={() => onEdit()}>
-                <EditIcon sx={{ color: "black" }} />
-            </IconButton>}
-            {onDelete && <IconButton aria-label="delete" size="small" onClick={() => onDelete()}>
-                <CloseIcon sx={{ color: "black" }} />
-            </IconButton>}
+            <Typography variant="body1" fontWeight={600} >{title}</Typography>
+            <Stack direction="row">
+                {onEdit && <IconButton aria-label="edit" size="small" onClick={() => onEdit()}>
+                    <EditIcon fontSize="small" sx={{ color: "black" }} />
+                </IconButton>}
+                {onDelete && <IconButton aria-label="delete" size="small" onClick={() => onDelete()}>
+                    <CloseIcon fontSize="small" sx={{ color: "black" }} />
+                </IconButton>}
+            </Stack>
         </Box>
         <Box className="comment-main">
             {children}
         </Box>
-        <Box className="comment-footer" width="100%">
+        {footerContent &&
+            <Box className="comment-footer" width="100%">
+                {footerContent}
+            </Box>
+        }
+    </CommentNote>
+}
+
+
+
+const Metadata = ({ comment }: { comment: LeadComment }) => {
+    return (
+        <>
             <Grid container spacing=".5rem" minWidth="15rem" size="grow" alignItems="center">
-                <IconButton aria-label="edit" size="small" sx={{ bgcolor: theme.palette.contrast.light ?? "darkgray", color: theme.palette.contrast.dark ?? "#000", opacity: .8 }}>
-                    <WatchLaterIcon />
-                </IconButton>
+                <WatchLaterIcon />
                 <Stack justifyContent="center">
                     <Typography variant="body2"><span style={{ fontWeight: "bold" }}>Creado:</span> {dayjs(comment?.created_at).format("DD/MM/YYYY")}</Typography>
                     <Typography variant="body2"><span style={{ fontWeight: "bold" }}>Por:</span> {comment?.created_by}</Typography>
                 </Stack>
             </Grid>
             <Grid container spacing=".5rem" minWidth="15rem" size="grow" alignItems="center">
-                <IconButton aria-label="delete" size="small" sx={{ bgcolor: theme.palette.contrast.light ?? "darkgray", color: theme.palette.contrast.dark ?? "#000", opacity: .8 }}>
-                    <WatchLaterIcon />
-                </IconButton>
+                <WatchLaterIcon />
                 <Stack justifyContent="center">
                     <Typography variant="body2"><span style={{ fontWeight: "bold" }}>Modificado:</span> {dayjs(comment?.created_at).format("DD/MM/YYYY")}</Typography>
                     {comment?.updated_by && <Typography variant="body2"><span style={{ fontWeight: "bold" }}>Por:</span> {comment?.updated_by}</Typography>}
                 </Stack>
             </Grid>
-        </Box>
-    </CommentNote>
-}
-
-const CommentForm = ({ existingComment, leadId, updateList }: { existingComment?: LeadComment, leadId: number, updateList: (com: LeadComment) => void }) => {
-
-    const defaultValues = useMemo(() => ({
-        lead_id: leadId,
-        content: existingComment?.content,
-    }), [existingComment, leadId])
-
-    const { register, handleSubmit, reset, setError, formState: { errors } } = useForm<LeadCommentPost>({ defaultValues })
-
-    const postComment = handleSubmit(data => {
-        if (existingComment) {
-            return updateComment(data, existingComment.id).then((res) => {
-                updateList(res)
-            }).catch(e => setFormErrors(e, setError))
-        }
-        createComment(data).then((res) => {
-            console.log(res)
-        }).catch(e => setFormErrors(e, setError))
-        reset(defaultValues)
-    })
-
-    return < form onSubmit={postComment} >
-        <Grid container spacing={2} alignItems="center" padding=".5rem 1rem">
-            <Grid size="grow" minWidth="15rem">
-                <RegisteredTextInput register={register} name={"content"} label="Comentario" errorMessage={errors.content?.message} multiline />
-            </Grid>
-            <Grid size="auto">
-                <Button variant="contained" color="primary" type="submit">Guardar Comentario</Button>
-            </Grid>
-        </Grid>
-    </form >
+        </>)
 }
