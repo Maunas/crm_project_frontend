@@ -23,10 +23,10 @@ export const CommentFromNote = ({ existingComment, leadId, onUpdate, onCreate, o
     const [openForm, setOpenForm] = useState<boolean>(false)
 
     const postComment = ((data: LeadCommentPost) => {
-        if (existingComment) return updateComment(data, existingComment.id).then((res) => {
+        if (existingComment) return updateComment({ ...data, color: commentColor }, existingComment.id).then((res) => {
             onUpdate!({ ...res, color: commentColor })
         })
-        else return createComment(data).then(() => {
+        else return createComment({ ...data, color: commentColor }).then(() => {
             onCreate!()
         })
     })
