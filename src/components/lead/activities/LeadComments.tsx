@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form"
 import { RegisteredTextInput } from "../../common/forms/CustomInputs"
 import type { LeadComment, LeadCommentPost } from "../../../types/leads"
 import { Box, Button, Grid, IconButton, Paper, Typography } from "@mui/material"
-import { createComment, deleteComment, getComments } from "./leadActivitiesService"
+import { createComment, deleteComment, getComments, updateComment } from "./leadActivitiesService"
 import { useEffect, useMemo, useState, type ReactNode } from "react"
 import { setFormErrors } from "../../../generalService"
 import type { Paginable } from "../../../types/common"
@@ -32,6 +32,15 @@ export const LeadComments = ({ leadId }: { leadId: number }) => {
                 .then(setComments)
         })
     }
+    
+    const onUpdateComment = (newCom: LeadComment) => {
+        const newComments = [...(comments?.items ?? [])]
+        const commentListIdx = newComments.findIndex(listCom => listCom.id === newCom.id)
+        if (commentListIdx === -1) return
+        newComments[commentListIdx] = newCom
+        setComments({ ...comments, items: newComments } as Paginable<LeadComment> | null)
+        setSelectedCommentId(null)
+    }
 
     return (
         <Stack spacing="1rem">
@@ -45,8 +54,8 @@ export const LeadComments = ({ leadId }: { leadId: number }) => {
                             </CommentInstance>
                         )
                             : (
-                                <CommentInstance comment={com} key={com.id}>
-                                    <CommentForm leadId={leadId} existingComment={com} />
+                                <CommentInstance comment={com} key={com.id} onDelete={() => setSelectedCommentId(null)}>
+                                    <CommentForm leadId={leadId} existingComment={com} updateList={onUpdateComment} />
                                 </CommentInstance>
                             )
                         }
@@ -98,12 +107,12 @@ const CommentInstance = ({ comment, isCreating = false, onEdit, onDelete, childr
 
     return <CommentNote color={comment?.color ?? "secondary"}>
         <Box className="comment-header">
-            <IconButton aria-label="edit" size="small" onClick={() => onEdit()}>
+            {onEdit && <IconButton aria-label="edit" size="small" onClick={() => onEdit()}>
                 <EditIcon sx={{ color: "black" }} />
-            </IconButton>
-            <IconButton aria-label="delete" size="small" onClick={() => onDelete()}>
+            </IconButton>}
+            {onDelete && <IconButton aria-label="delete" size="small" onClick={() => onDelete()}>
                 <CloseIcon sx={{ color: "black" }} />
-            </IconButton>
+            </IconButton>}
         </Box>
         <Box className="comment-main">
             {children}
@@ -131,18 +140,24 @@ const CommentInstance = ({ comment, isCreating = false, onEdit, onDelete, childr
     </CommentNote>
 }
 
-const CommentForm = ({ existingComment, leadId }: { existingComment?: LeadComment, leadId: number }) => {
+const CommentForm = ({ existingComment, leadId, updateList }: { existingComment?: LeadComment, leadId: number, updateList: (com: LeadComment) => void }) => {
 
     const defaultValues = useMemo(() => ({
         lead_id: leadId,
         content: existingComment?.content,
-        id: existingComment?.id
     }), [existingComment, leadId])
 
     const { register, handleSubmit, reset, setError, formState: { errors } } = useForm<LeadCommentPost>({ defaultValues })
 
     const postComment = handleSubmit(data => {
-        createComment(data).then((res) => console.log(res)).catch(e => setFormErrors(e, setError))
+        if (existingComment) {
+            return updateComment(data, existingComment.id).then((res) => {
+                updateList(res)
+            }).catch(e => setFormErrors(e, setError))
+        }
+        createComment(data).then((res) => {
+            console.log(res)
+        }).catch(e => setFormErrors(e, setError))
         reset(defaultValues)
     })
 
@@ -154,7 +169,6 @@ const CommentForm = ({ existingComment, leadId }: { existingComment?: LeadCommen
             <Grid size="auto">
                 <Button variant="contained" color="primary" type="submit">Guardar Comentario</Button>
             </Grid>
-            <Box className="comment-footer">a</Box>
         </Grid>
     </form >
 }
