@@ -26,17 +26,24 @@ export const LeadListTable = ({ leads, campaignId }: LeadListTableProps) => {
             })
     }, [campaignId])
 
-    const [selectedIds, setSelectedIds] = useState<number[] | null>()
+    const [selectedIds, setSelectedIds] = useState<number[] | null>(null)
 
     useEffect(() => {
         if (!leadFields || leadFields.length === 0) return
-        setSelectedIds(leadFields.slice(0, DEFAULT_N_OF_FIELDS).map(fields => fields.id))
+        const totalSelectedFields = window.localStorage.getItem("sel_lead_fields")
+        const localSelectedFields = (JSON.parse(totalSelectedFields ?? "{}"))?.[campaignId]
+        if (!totalSelectedFields || !localSelectedFields) {
+            setSelectedIds(leadFields.slice(0, DEFAULT_N_OF_FIELDS).map(fields => fields.id))
+            return
+        }
+        setSelectedIds(localSelectedFields)
     }, [campaignId, leadFields])
 
     const leadColumns = useMemo(() => {
         if (!leadFields || leadFields.length === 0) return null
         if (!selectedIds || selectedIds.length === 0) return null
         return leadFields.filter(leadField => selectedIds.includes(leadField.id))
+            .sort((a, b) => selectedIds.indexOf(a.id) - selectedIds.indexOf(b.id))
     }, [leadFields, selectedIds])
 
 
@@ -62,7 +69,7 @@ export const LeadListTable = ({ leads, campaignId }: LeadListTableProps) => {
                 <TableHead>
                     <TableRow>
                         {leadColumns.map((column, idx) =>
-                            <TableCell sx={{fontWeight: 600}} align={idx > 1 ? "right" : "left"} key={column.id}>{column.name}</TableCell>
+                            <TableCell sx={{ fontWeight: 600 }} align={idx > 1 ? "right" : "left"} key={column.id}>{column.name}</TableCell>
                         )
                         }
                     </TableRow>
