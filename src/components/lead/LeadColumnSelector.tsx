@@ -28,7 +28,7 @@ interface LeadColumnSelectorProps {
 
 export default function LeadColumnSelector({ leadFields, selectedIds, handleSelectedIds, handleClose }: LeadColumnSelectorProps) {
   const [checked, setChecked] = React.useState<readonly number[]>([]);
-  const [left, setLeft] = React.useState<readonly number[]>(not(leadFields.map(f => f.id), selectedIds) ?? []);
+  const [left, setLeft] = React.useState<number[]>(not(leadFields.map(f => f.id), selectedIds) ?? []);
   const [right, setRight] = React.useState<number[]>(selectedIds ?? []);
 
   const leftChecked = intersection(checked, left);
@@ -70,36 +70,76 @@ export default function LeadColumnSelector({ leadFields, selectedIds, handleSele
 
   const theme = useTheme()
 
-  const customList = (items: readonly number[], title?: string) => (
-    <Paper>
-      {title &&
-        <Box p=".5rem" sx={{ backgroundColor: alpha(theme.palette.secondary.light, .8) }}>
-          <Typography variant="body2" fontWeight={600}>{title}</Typography>
-        </Box>}
-      <List dense component="div" role="list" sx={{ height: "15rem", overflow: 'auto' }}>
-        {items.map((value: number) => {
-          const labelId = `transfer-list-item-${value}-label`;
-          const fieldData = leadFields.find(field => field.id === value)
-          return (
-            <ListItemButton
-              key={value}
-              role="listitem"
-              onClick={handleToggle(value)}
-            >
-              <ListItemIcon>
-                <Checkbox
-                  checked={checked.includes(value)}
-                  tabIndex={-1}
-                  disableRipple
-                />
-              </ListItemIcon>
-              <ListItemText id={labelId} primary={fieldData?.name} />
-            </ListItemButton>
-          );
-        })}
-      </List>
-    </Paper>
-  );
+  interface props {
+    items: readonly number[], setter: React.Dispatch<React.SetStateAction<number[]>>, title?: string
+  }
+
+  const CustomList = ({ items, setter, title }: props) => {
+    const [dragIndex, setDragIndex] = React.useState<number | null>(null)
+    const [dragOver, setDragOver] = React.useState<number | null>(null)
+
+    const handleDragStart = (index: number) => {
+      setDragIndex(index)
+    }
+    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault()
+    }
+    const handleDrop = (index: number) => {
+      if (dragIndex === null) return
+      const newItems = [...items]
+      const draggedItem = newItems[dragIndex]
+      newItems.splice(dragIndex, 1)
+      newItems.splice(index, 0, draggedItem)
+      setter(newItems)
+      setDragIndex(null)
+      setDragOver(null)
+    }
+
+    const handleDragEnter = (index:number) => {
+      setDragOver(index)
+    }
+
+    return (
+      <Paper>
+        {title &&
+          <Box p=".5rem" sx={{ backgroundColor: alpha(theme.palette.secondary.light, .8) }}>
+            <Typography variant="body2" fontWeight={600}>{title}</Typography>
+          </Box>}
+        <List dense component="div" role="list" sx={{ height: "15rem", overflow: 'auto' }}>
+          {items.map((value: number, idx) => {
+            const labelId = `transfer-list-item-${value}-label`;
+            const fieldData = leadFields.find(field => field.id === value)
+            return (
+              <ListItemButton
+                draggable
+                onDragStart={() => handleDragStart(idx)}
+                onDragOver={handleDragOver}
+                onDragEnter={() => handleDragEnter(idx)}
+                onDrop={() => handleDrop(idx)}
+                key={value}
+                role="listitem"
+                onClick={handleToggle(value)}
+                sx={{
+                  outline: dragIndex === idx ? `2px solid ${alpha(theme.palette.contrast.light, .5)}` : "",
+                  borderTop: (dragOver === idx && dragIndex !== null && dragOver < dragIndex) ? `4px solid ${alpha(theme.palette.primary.main, .6)}` : "",
+                  borderBottom: (dragOver === idx && dragIndex !== null && dragOver > dragIndex) ? `4px solid ${alpha(theme.palette.primary.main, .6)}` : "",
+                }}
+              >
+                <ListItemIcon>
+                  <Checkbox
+                    checked={checked.includes(value)}
+                    tabIndex={-1}
+                    disableRipple
+                  />
+                </ListItemIcon>
+                <ListItemText id={labelId} primary={fieldData?.name} />
+              </ListItemButton>
+            );
+          })}
+        </List>
+      </Paper>
+    )
+  };
 
   return (
     <Stack alignItems="start" spacing="1rem">
@@ -110,7 +150,9 @@ export default function LeadColumnSelector({ leadFields, selectedIds, handleSele
         spacing={2}
         sx={{ justifyContent: 'center', alignItems: 'center' }}
       >
-        <Grid size="grow" minWidth="13rem">{customList(left,"Columnas Disponibles")}</Grid>
+        <Grid size="grow" minWidth="13rem">
+          <CustomList items={left} setter={setLeft} title={"Columnas Disponibles"} />
+        </Grid>
         <Grid>
           <Grid container direction="column" sx={{ alignItems: 'center' }}>
             <Button
@@ -155,7 +197,9 @@ export default function LeadColumnSelector({ leadFields, selectedIds, handleSele
             </Button>
           </Grid>
         </Grid>
-        <Grid size="grow" minWidth="13rem">{customList(right, "Columnas a Mostrar")}</Grid>
+        <Grid size="grow" minWidth="13rem">
+          <CustomList items={right} setter={setRight} title={"Columnas a Mostrar"} />
+        </Grid>
       </Grid>
       <Stack width="100%" alignItems="end">
         <ButtonGroup >
