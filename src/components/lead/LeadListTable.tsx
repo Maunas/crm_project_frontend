@@ -5,6 +5,9 @@ import type { Lead } from "../../types/leads"
 import { getLeadFields } from "../leadFields/leadFieldServices"
 import { useNavigate } from "react-router-dom"
 import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material"
+import LeadColumnSelector from "./LeadColumnSelector"
+import { useModal } from "../hooks/useModal"
+import { GenericModal } from "../common/layout/GenericContainer"
 
 interface LeadListTableProps {
     leads: Lead[],
@@ -63,36 +66,47 @@ export const LeadListTable = ({ leads, campaignId }: LeadListTableProps) => {
 
     const nav = useNavigate()
 
+    const { modalProps } = useModal()
+    const handleSelectedIds = (ids: number[]) => {
+        setSelectedIds(ids)
+        modalProps.handleClose()
+    }
+
     if (leads.length > 0 && leadColumns && leadColumns.length > 0) return (
-        <TableContainer component={Paper}>
-            <Table sx={{ minWidth: 650 }} aria-label="simple table">
-                <TableHead>
-                    <TableRow>
-                        {leadColumns.map((column, idx) =>
-                            <TableCell sx={{ fontWeight: 600 }} align={idx > 1 ? "right" : "left"} key={column.id}>{column.name}</TableCell>
-                        )
-                        }
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {leads.map(lead => (
-                        <TableRow onClick={() => nav(`/leads/${lead.id}`)} className='selectable'
-                            key={lead.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                        >
-                            {leadColumns.map((column, idx) => {
-                                const leadValue = lead.field_values.find(lv => lv.field_id === column.id)
-                                //Si no se encuentra, no hay valor
-                                if (!leadValue) return <TableCell component="td" scope="row" align={idx === 0 ? "left" : "right"} key={`${lead.id}-${column.id}`}>---</TableCell>
-                                //Si es el primer elemento, nombre completo
-                                else return (
-                                    <TableCell component="td" scope="row" align={idx > 1 ? "right" : "left"} key={`${lead.id}-${column.id}`}>{getValue(leadValue)}</TableCell>
-                                )
-                            })
+        <>
+            <GenericModal idModal="columns_selector" modalProps={modalProps} buttonText="Modificar Columnas" >
+                <LeadColumnSelector leadFields={leadFields} selectedIds={selectedIds!} handleSelectedIds={handleSelectedIds} handleClose={modalProps.handleClose} />
+            </GenericModal>
+            <TableContainer component={Paper}>
+                <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                    <TableHead>
+                        <TableRow>
+                            {leadColumns.map((column, idx) =>
+                                <TableCell sx={{ fontWeight: 600 }} align={idx > 1 ? "right" : "left"} key={column.id}>{column.name}</TableCell>
+                            )
                             }
                         </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-        </TableContainer>
+                    </TableHead>
+                    <TableBody>
+                        {leads.map(lead => (
+                            <TableRow onClick={() => nav(`/leads/${lead.id}`)} className='selectable'
+                                key={lead.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                            >
+                                {leadColumns.map((column, idx) => {
+                                    const leadValue = lead.field_values.find(lv => lv.field_id === column.id)
+                                    //Si no se encuentra, no hay valor
+                                    if (!leadValue) return <TableCell component="td" scope="row" align={idx === 0 ? "left" : "right"} key={`${lead.id}-${column.id}`}>---</TableCell>
+                                    //Si es el primer elemento, nombre completo
+                                    else return (
+                                        <TableCell component="td" scope="row" align={idx > 1 ? "right" : "left"} key={`${lead.id}-${column.id}`}>{getValue(leadValue)}</TableCell>
+                                    )
+                                })
+                                }
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </TableContainer>
+        </>
     )
 }
