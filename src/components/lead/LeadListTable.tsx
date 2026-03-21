@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useMemo, useState } from "react"
 import type { LeadField, LeadFieldValue } from "../../types/leadFields"
 import type { Lead } from "../../types/leads"
@@ -16,7 +16,7 @@ interface LeadListTableProps {
 
 export const LeadListTable = ({ leads, campaignId }: LeadListTableProps) => {
 
-    const DEFAULT_N_OF_FIELDS = 8
+    const DEFAULT_N_OF_FIELDS = 6
 
     const [leadFields, setLeadFields] = useState<LeadField[]>([])
 
@@ -29,7 +29,7 @@ export const LeadListTable = ({ leads, campaignId }: LeadListTableProps) => {
             })
     }, [campaignId])
 
-    const [selectedIds, setSelectedIds] = useState<number[] | null>(null)
+    const [selectedIds, setSelectedIds] = useState<number[]>([])
 
     useEffect(() => {
         if (!leadFields || leadFields.length === 0) return
@@ -40,7 +40,7 @@ export const LeadListTable = ({ leads, campaignId }: LeadListTableProps) => {
             return
         }
         setSelectedIds(localSelectedFields)
-    }, [campaignId, leadFields])
+    }, [leadFields])
 
     const leadColumns = useMemo(() => {
         if (!leadFields || leadFields.length === 0) return null
@@ -72,9 +72,20 @@ export const LeadListTable = ({ leads, campaignId }: LeadListTableProps) => {
         modalProps.handleClose()
     }
 
+    useEffect(() => {
+        if (selectedIds.length === 0) return
+        const totalSelectedFields = window.localStorage.getItem("sel_lead_fields")
+        let newTotalSelectedFields: Record<number, number[]> = {}
+        if (totalSelectedFields) {
+            newTotalSelectedFields = {...JSON.parse(totalSelectedFields)}
+        }
+        newTotalSelectedFields[campaignId] = selectedIds
+        window.localStorage.setItem("sel_lead_fields", JSON.stringify(newTotalSelectedFields))
+    }, [selectedIds])
+
     if (leads.length > 0 && leadColumns && leadColumns.length > 0) return (
         <>
-            <GenericModal idModal="columns_selector" modalProps={modalProps} buttonText="Modificar Columnas" >
+            <GenericModal idModal="columns_selector" modalProps={modalProps} buttonText="Modificar Columnas" maxWidth="md" >
                 <LeadColumnSelector leadFields={leadFields} selectedIds={selectedIds!} handleSelectedIds={handleSelectedIds} handleClose={modalProps.handleClose} />
             </GenericModal>
             <TableContainer component={Paper}>

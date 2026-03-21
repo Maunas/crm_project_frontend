@@ -8,7 +8,8 @@ import Checkbox from '@mui/material/Checkbox';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import type { LeadField } from '../../types/leadFields';
-import { Stack, ButtonGroup } from '@mui/material';
+import { Stack, ButtonGroup, Typography, Box } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
 
 function not(a: readonly number[], b: readonly number[]) {
   return a.filter((value) => !b.includes(value));
@@ -67,9 +68,15 @@ export default function LeadColumnSelector({ leadFields, selectedIds, handleSele
     setChecked(not(checked, rightChecked));
   };
 
-  const customList = (items: readonly number[]) => (
-    <Paper sx={{ width: 200, height: 230, overflow: 'auto' }}>
-      <List dense component="div" role="list">
+  const theme = useTheme()
+
+  const customList = (items: readonly number[], title?: string) => (
+    <Paper>
+      {title &&
+        <Box p=".5rem" sx={{ backgroundColor: alpha(theme.palette.secondary.light, .8) }}>
+          <Typography variant="body2" fontWeight={600}>{title}</Typography>
+        </Box>}
+      <List dense component="div" role="list" sx={{ height: "15rem", overflow: 'auto' }}>
         {items.map((value: number) => {
           const labelId = `transfer-list-item-${value}-label`;
           const fieldData = leadFields.find(field => field.id === value)
@@ -95,14 +102,15 @@ export default function LeadColumnSelector({ leadFields, selectedIds, handleSele
   );
 
   return (
-    <Stack alignItems="end">
+    <Stack alignItems="start" spacing="1rem">
+      <Typography variant="h2" >Seleccionar Columnas</Typography>
       <Grid
         width="100%"
         container
         spacing={2}
         sx={{ justifyContent: 'center', alignItems: 'center' }}
       >
-        <Grid>{customList(left)}</Grid>
+        <Grid size="grow" minWidth="13rem">{customList(left,"Columnas Disponibles")}</Grid>
         <Grid>
           <Grid container direction="column" sx={{ alignItems: 'center' }}>
             <Button
@@ -147,16 +155,18 @@ export default function LeadColumnSelector({ leadFields, selectedIds, handleSele
             </Button>
           </Grid>
         </Grid>
-        <Grid>{customList(right)}</Grid>
+        <Grid size="grow" minWidth="13rem">{customList(right, "Columnas a Mostrar")}</Grid>
       </Grid>
-      <ButtonGroup >
-        <Button variant="outlined" onClick={() => handleClose()}>
-          Cancelar
-        </Button>
-        <Button variant="contained" onClick={() => handleSelectedIds(right)}>
-          Guardar Columnas
-        </Button>
-      </ButtonGroup>
+      <Stack width="100%" alignItems="end">
+        <ButtonGroup >
+          <Button variant="outlined" onClick={() => handleClose()}>
+            Cancelar
+          </Button>
+          <Button variant="contained" onClick={() => handleSelectedIds(right)} disabled={right.length === 0}>
+            Guardar Cambios
+          </Button>
+        </ButtonGroup>
+      </Stack>
     </Stack>
   );
 }
