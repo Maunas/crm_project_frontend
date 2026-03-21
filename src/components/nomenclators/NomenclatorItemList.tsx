@@ -13,7 +13,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
-import { Link as RouterLink, useParams } from 'react-router-dom'
+import { Link as RouterLink, useParams, useSearchParams } from 'react-router-dom'
 import { NomenclatorItemDetails } from './NomenclatorItemDetails'
 import type { NomenclatorDetailed, NomenclatorItemDetailed } from '../../types/nomenclators'
 import { NomenclatorItemFormSidebar } from './NomenclatorItemForm'
@@ -21,13 +21,15 @@ import { NomenclatorItemFormSidebar } from './NomenclatorItemForm'
 export const NomenclatorItemList = () => {
 
     const { nomenclatorId } = useParams()
-    const { selectedOrgId } = useContext<UserContextItems>(UserContext)
+    const { selectedOrg } = useContext<UserContextItems>(UserContext)
 
     const [nomenclator, setNomenclator] = useState<NomenclatorDetailed | null>(null)
 
     const [nomenclatorItems, setNomenclatorItems] = useState<Paginable<NomenclatorItemDetailed> | null>(null)
 
-    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<NomenclatorItemDetailed>()
+    const [params, setParams] = useSearchParams()
+
+    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<NomenclatorItemDetailed>(params, setParams, getNomenclatorItem, "DETAILS_NOM", 'id')
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(nomenclatorItems)
 
@@ -39,7 +41,7 @@ export const NomenclatorItemList = () => {
     useEffect(() => {
         getNomenclatorItems({ only_active: false, detailed: true, page: fetchPage, page_size: pageSize, nomenclator_id: Number(nomenclatorId) })
             .then(setNomenclatorItems)
-    }, [fetchPage, pageSize, selectedOrgId, nomenclatorId])
+    }, [fetchPage, pageSize, selectedOrg, nomenclatorId])
 
 
     const updateEntityOnList = (

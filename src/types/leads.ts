@@ -3,7 +3,7 @@ import type { LeadFieldValue, LeadFieldValueDetailed } from "./leadFields";
 
 export interface LeadPostValue {
   field_id: number;
-  value: string | object[] | FileList ;
+  value: string | object[] | FileList;
 }
 export interface LeadPost {
   campaign_id: number;
@@ -19,4 +19,14 @@ export interface Lead {
 export interface LeadDetailed extends Lead, Metadata {
   field_values: LeadFieldValueDetailed[];
 
+}
+
+export interface LeadCommentPost {
+  lead_id: number,
+  content: string
+  color?: string
+}
+
+export interface LeadComment extends LeadCommentPost, Metadata {
+  id: number,
 }

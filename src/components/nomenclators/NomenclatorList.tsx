@@ -8,30 +8,32 @@ import { ContainerWithSidebar } from '../common/layout/GenericContainer'
 import { Button, Grid, IconButton, Link, List, ListItem, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
 import { CommonButton } from '../common/details/DetailsCommonButton'
 import { PaginationComponent } from '../common/lists/PaginationComponent'
-import { disableNomenclator, enableNomenclator, getNomenclators } from './nomenclatorService'
+import { disableNomenclator, enableNomenclator, getNomenclator, getNomenclators } from './nomenclatorService'
 import { NomenclatorDetails } from './NomenclatorDetails'
 import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
-import { Link as RouterLink } from 'react-router-dom'
+import { Link as RouterLink, useSearchParams } from 'react-router-dom'
 import { NomenclatorFormSidebar } from './NomenclatorForm'
 import type { NomenclatorDetailed } from '../../types/nomenclators'
 
 export const NomenclatorList = () => {
 
-    const { selectedOrgId } = useContext<UserContextItems>(UserContext)
+    const { selectedOrg } = useContext<UserContextItems>(UserContext)
 
     const [nomenclators, setNomenclators] = useState<Paginable<NomenclatorDetailed> | null>(null)
 
-    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<NomenclatorDetailed>()
+    const [params, setParams] = useSearchParams()
+
+    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<NomenclatorDetailed>(params, setParams, getNomenclator, "DETAILS_NOM", "id")
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(nomenclators)
 
     useEffect(() => {
         getNomenclators({ only_active: false, detailed: true, page: fetchPage, page_size: pageSize })
             .then(setNomenclators)
-    }, [fetchPage, pageSize, selectedOrgId])
+    }, [fetchPage, pageSize, selectedOrg])
 
 
     const updateEntityOnList = (

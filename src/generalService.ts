@@ -9,8 +9,8 @@ export const axiosCRM = axios.create({
 
 axiosCRM.interceptors.request.use(config => {
   // Haz algo antes que la petición se ha enviada+
-  const orgId = window.localStorage.getItem("organization_id")
-  if (orgId) config.headers["X-Organization-Id"] = orgId
+  const org = window.localStorage.getItem("selected_org")
+  if (org) config.headers["X-Organization-Id"] = JSON.parse(org).id
   return config;
 }, function (error) {
   // Haz algo con el error de la petición
