@@ -24,9 +24,9 @@ export interface LeadDetailed extends Lead, Metadata {
 export interface LeadCommentPost {
   lead_id: number,
   content: string
+  color?: string
 }
 
 export interface LeadComment extends LeadCommentPost, Metadata {
   id: number,
-  color?: string
 }

@@ -19,18 +19,18 @@ export const LeadComments = ({ leadId }: { leadId: number }) => {
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(comments)
 
     useEffect(() => {
-        getComments({ detailed: true, leadId, page: fetchPage, page_size: pageSize })
+        getComments({ detailed: true, lead_id: leadId, page: fetchPage, page_size: pageSize })
             .then(setComments)
     }, [fetchPage, pageSize, leadId])
 
     const onDeleteComment = (comId: number) => {
         deleteComment(comId).then(() => {
-            getComments({ detailed: true, leadId, page: fetchPage, page_size: pageSize })
+            getComments({ detailed: true, lead_id: leadId, page: fetchPage, page_size: pageSize })
                 .then(setComments)
         })
     }
     const onCreateComment = () => {
-        getComments({ detailed: true, leadId, page: fetchPage, page_size: pageSize })
+        getComments({ detailed: true, lead_id: leadId, page: fetchPage, page_size: pageSize })
             .then(setComments)
     }
     const onUpdateComment = (newCom: LeadComment) => {
