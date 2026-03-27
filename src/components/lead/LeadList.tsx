@@ -25,7 +25,7 @@ export const LeadList = () => {
     const [campaigns, setCampaigns] = useState<Campaign[] | null>(null)
     const [filters, setFilters] = useState<LeadListParams>({ workspace_id: 1, campaign_id: 1, only_active: true, page_size: 20 })
 
-    const {selectedOrgId} = useContext<UserContextItems>(UserContext)
+    const {selectedOrg} = useContext<UserContextItems>(UserContext)
 
     const { fetchPage, refresh, pageComponentProps } = useListPagination(leads)
 
@@ -41,9 +41,9 @@ export const LeadList = () => {
     useEffect(() => {
         getWorkspaces({ only_active: true, page_size: 0 }).then(res => {
             setWorkspaces(res.items)
-            setValue("workspace_id", res.items[0].id)
+            setValue("workspace_id", res.items?.at(-1)?.id ?? undefined)
         })
-    }, [selectedOrgId, setValue])
+    }, [selectedOrg, setValue])
 
     const selectedWorkspace = useWatch<LeadListParams>({ name: "workspace_id", control })
 
@@ -51,7 +51,7 @@ export const LeadList = () => {
         if (!selectedWorkspace) return
         getCampaigns({ only_active: true, workspace_id: selectedWorkspace as number, page_size: 0 }).then(res => {
             setCampaigns(res.items)
-            setValue("campaign_id", res.items[0].id)
+            setValue("campaign_id", res.items?.at(-1)?.id ?? undefined)
         })
     }, [selectedWorkspace, setValue])
 
@@ -118,7 +118,7 @@ interface LeadTableProps {
     campaignId: number
 }
 export const LeadTable = ({ leads, campaignId }: LeadTableProps) => {
-    const NUMBER_OF_FIELDS = 50
+    const NUMBER_OF_FIELDS = 8
 
     const [leadColumns, setLeadColumns] = useState<LeadField[]>([])
 

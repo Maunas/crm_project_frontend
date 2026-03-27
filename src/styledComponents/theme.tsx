@@ -15,7 +15,8 @@ const theme = createTheme({
     contrast: {
       light: lighten('#2B2A2A',lightValue),
       main: '#2B2A2A',
-      dark: darken('#2B2A2A', darkValue),
+      dark: '#4e4e4e',
+      light: '#111111',
     },
     background: {
       default: '#F3F3F3', 

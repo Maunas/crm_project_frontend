@@ -11,6 +11,10 @@ export const getOrganizations = async<T extends ListParams>(params?: T):
     const org = await axios.get(`${API_BASE_URL}/organizations`, { params })
     return org.data
 }
+export const getOrganization = async (id: number): Promise<OrganizationDetailed> => {
+    const org = await axios.get(`${API_BASE_URL}/organizations/${id}`)
+    return org.data
+}
 export const createOrganization = async (body: OrganizationPost): Promise<OrganizationDetailed> => {
     const org = await axios.post(`${API_BASE_URL}/organizations`, body)
     return org.data

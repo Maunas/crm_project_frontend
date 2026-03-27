@@ -9,9 +9,9 @@ import type { Paginable } from '../../types/common'
 import type { CampaignDetailed } from '../../types/campaigns'
 import type { LeadFieldDetailed } from '../../types/leadFields'
 import { disableCampaign, enableCampaign, getCampaign } from './campaignServices'
-import { getLeadFields } from '../leadFields/leadFieldServices'
+import { getLeadField, getLeadFields } from '../leadFields/leadFieldServices'
 import { useSidebar } from '../hooks/useSidebar'
-import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom'
+import { Link as RouterLink, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import dayjs from 'dayjs'
 import { Typography, ButtonGroup, Link, Breadcrumbs, Stack, Grid, Divider } from '@mui/material'
 import { ValidationFormSidebar } from '../validations/ValidationForm'
@@ -21,7 +21,10 @@ export const CampaignDetails = () => {
     const { id } = useParams()
     const [campaign, setCampaign] = useState<CampaignDetailed | null>(null)
 
-    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<LeadFieldDetailed>()
+    const [params, setParams] = useSearchParams()
+
+    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<LeadFieldDetailed>(params, setParams, getLeadField, "DETAILS_FIELD", 'id')
+
     const nav = useNavigate()
 
     useEffect(() => {
