@@ -59,7 +59,7 @@ export default function Header({ handleDrawerOpen, open }: HeaderProps) {
         >
           <MenuIcon />
         </IconButton>
-        <Typography variant="h3" noWrap component="div"
+        <Typography variant="h3" noWrap component="div" color='primary'
           sx={{ display: { xs: 'none', sm: 'block' } }} >MUI</Typography>
         <Box sx={{ flexGrow: 1 }} />
         <HeaderSearchBar />

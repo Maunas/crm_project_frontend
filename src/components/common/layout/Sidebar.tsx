@@ -32,12 +32,12 @@ const closedMixin = (theme: Theme): CSSObject => ({
 });
 
 const DrawerHeader = styled('div')(({ theme }) => ({
-    backgroundColor: theme.palette.primary.light,
+    backgroundColor: theme.palette.contrast.dark,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'flex-end',
     padding: theme.spacing(0, 1),
-    color: theme.palette.primary.contrastText,
+    color: theme.palette.contrast.contrastText,
     // necessary for content to be below app bar
     ...theme.mixins.toolbar,
 }));
@@ -49,8 +49,8 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
         whiteSpace: 'nowrap',
         boxSizing: 'border-box',
         '& .MuiDrawer-paper': {
-            backgroundColor: theme.palette.primary.main,
-            color: theme.palette.primary.contrastText
+            backgroundColor: theme.palette.contrast.main,
+            color: theme.palette.contrast.contrastText
         },
         variants: [
             {

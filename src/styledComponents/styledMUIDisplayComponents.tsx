@@ -1,5 +1,5 @@
 import { Chip } from "@mui/material";
-import { alpha, darken, styled } from "@mui/material/styles";
+import { alpha, styled } from "@mui/material/styles";
 
 export const CustomChip = styled(Chip)(({ theme, color = "primary", ...props }) => {
     const TRANSPARENCY = 0.15
@@ -20,7 +20,7 @@ export const CustomChip = styled(Chip)(({ theme, color = "primary", ...props }) 
         borderRadius: "12px",
         backgroundColor: alpha(paletteColor.light, TRANSPARENCY),
         borderColor: paletteColor.main,
-        color: darken(paletteColor.dark, .3),
+        color: paletteColor.dark,
         ...sizeObject
     }
 })
