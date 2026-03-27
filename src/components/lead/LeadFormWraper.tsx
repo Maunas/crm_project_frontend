@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { FormErrorMessage } from "../../styles/styledMUIFormComponents"
+import { FormErrorMessage } from "../../styledComponents/styledMUIFormComponents"
 import { LeadForm } from "./LeadForm"
 import type { LeadField, LeadFieldDetailed, LeadFieldValue } from "../../types/leadFields"
 import type { LeadDetailed } from "../../types/leads"

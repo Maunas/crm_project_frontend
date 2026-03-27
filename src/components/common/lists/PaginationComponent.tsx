@@ -11,7 +11,7 @@ export const PaginationComponent = ({ totalPages, page, handlePage }: Pagination
       count={totalPages}
       page={page}
       shape="rounded"
-      color="secondary"
+      color="primary"
       onChange={handlePage}
     />
   )

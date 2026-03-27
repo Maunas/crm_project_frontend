@@ -4,9 +4,10 @@ import type { CampaignDetailed } from '../../types/campaigns';
 import { disableLeadField, enableLeadField } from './leadFieldServices';
 import { Link as RouterLink } from 'react-router-dom'
 import dayjs from 'dayjs'
-import { Chip, Grid, Stack, Typography, Divider, Link, ButtonGroup } from '@mui/material'
+import { Grid, Stack, Typography, Divider, Link, ButtonGroup } from '@mui/material'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { ValidationList } from '../validations/ValidationList';
+import { CustomChip } from '../../styledComponents/styledMUIDisplayComponents';
 
 interface LeadFieldDetailProps {
     leadField: LeadFieldDetailed,
@@ -20,6 +21,7 @@ export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeS
     const handleActive = (field: LeadFieldDetailed) => {
         const updateActive = () => {
             updateEntity("UPDATE_FIELD", { ...field, active: !field.active })
+            handleSidebar("KEEP", { ...field, active: !field.active })
         }
         if (field.active) {
             disableLeadField(field.id)
@@ -40,8 +42,8 @@ export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeS
                 <Typography variant="h2" color="initial">
                     {leadField.order} - {leadField.name}
                 </Typography>
-                {leadField.active ? <Chip color='success' label="Habilitado" /> :
-                    <Chip color='error' label="Deshabilitado" />}
+                {leadField.active ? <CustomChip color='success' label="Habilitado" size="md" /> :
+                    <CustomChip color='error' label="Deshabilitado" size="md" />}
             </Grid>
             <Grid container spacing={2} size="grow" minWidth="20rem">
                 <Grid size="grow" minWidth="10rem">
@@ -59,21 +61,21 @@ export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeS
                 </Grid>
             </Grid>
             <Grid container spacing={1} size="grow" justifyContent="center">
-                {leadField.required ? <Chip color='success' label="Obligatorio" variant="outlined" sx={{ fontWeight: "bold" }} /> :
-                    <Chip color='error' label="Opcional" variant="outlined" sx={{ fontWeight: "bold" }} />}
-                {leadField.is_primary ? <Chip color='success' label="Único" variant="outlined" sx={{ fontWeight: "bold" }} /> :
-                    <Chip color='error' label="Repetible" variant="outlined" sx={{ fontWeight: "bold" }} />}
-                {leadField.is_visible ? <Chip color='success' label="Visible" variant="outlined" sx={{ fontWeight: "bold" }} /> :
-                    <Chip color='error' label="Oculto" variant="outlined" sx={{ fontWeight: "bold" }} />}
+                {leadField.required ? <CustomChip color='success' label="Obligatorio" size="sm" sx={{ fontWeight: "bold" }} /> :
+                    <CustomChip color='error' label="Opcional" size="sm" sx={{ fontWeight: "bold" }} />}
+                {leadField.is_primary ? <CustomChip color='success' label="Único" size="sm" sx={{ fontWeight: "bold" }} /> :
+                    <CustomChip color='error' label="Repetible" size="sm" sx={{ fontWeight: "bold" }} />}
+                {leadField.is_visible ? <CustomChip color='success' label="Visible" size="sm" sx={{ fontWeight: "bold" }} /> :
+                    <CustomChip color='error' label="Oculto" size="sm" sx={{ fontWeight: "bold" }} />}
             </Grid>
             <Divider />
             <Typography variant="h3" fontWeight="bold">Tipo {leadField.field_subtype?.description ? `/ Subtipo` : ""} de dato</Typography>
-            <Grid container gap={2} alignItems="center">
-                <Chip color='primary' label={leadField.field_type.description} variant="outlined" sx={{ fontWeight: "bold" }} />
+            <Grid container gap={2} alignItems="center" justifyContent="center">
+                <CustomChip color='primary' label={leadField.field_type.description} size="xl" sx={{ fontWeight: "bold" }} />
                 {leadField.field_subtype?.description &&
                     <>
                         <ArrowForwardIcon />
-                        <Chip color='info' label={leadField.field_subtype?.description} variant="outlined" sx={{ fontWeight: "bold" }} />
+                        <CustomChip color='info' label={leadField.field_subtype?.description} size="lg" sx={{ fontWeight: "bold" }} />
                     </>
                 }
             </Grid>

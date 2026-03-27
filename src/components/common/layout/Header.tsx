@@ -16,6 +16,8 @@ interface AppBarProps extends MuiAppBarProps {
 const HeaderBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== 'open',
 })<AppBarProps>(({ theme }) => ({
+  backgroundColor: theme.palette.background.paper,
+  color: theme.palette.text.primary,
   zIndex: theme.zIndex.drawer + 1,
   transition: theme.transitions.create(['width', 'margin'], {
     easing: theme.transitions.easing.sharp,
@@ -43,11 +45,10 @@ interface HeaderProps extends MuiAppBarProps {
 
 export default function Header({ handleDrawerOpen, open }: HeaderProps) {
 
-
   return (
-    <HeaderBar position="fixed" open={open}>
+    <HeaderBar position="fixed" open={open} >
       <Toolbar>
-        <IconButton size="large" edge="start" color="inherit" aria-label="open drawer"
+        <IconButton size="large" edge="start" aria-label="open drawer"
           sx={[
             {
               marginRight: 5,
@@ -58,7 +59,7 @@ export default function Header({ handleDrawerOpen, open }: HeaderProps) {
         >
           <MenuIcon />
         </IconButton>
-        <Typography variant="h3" noWrap component="div"
+        <Typography variant="h3" noWrap component="div" color='primary'
           sx={{ display: { xs: 'none', sm: 'block' } }} >MUI</Typography>
         <Box sx={{ flexGrow: 1 }} />
         <HeaderSearchBar />

@@ -10,7 +10,7 @@ import { createLeadField, getFieldDataByType, getFieldSections, getFieldTemplate
 import { getCampaigns } from "../campaigns/campaignServices";
 import { useForm, useWatch, type Control, type FieldErrors, type UseFormRegister } from "react-hook-form";
 import { Button, Grid, FormGroup, Typography, ButtonGroup, Stack } from "@mui/material";
-import { FormErrorMessage } from "../../styles/styledMUIFormComponents";
+import { FormErrorMessage } from "../../styledComponents/styledMUIFormComponents";
 import { getNomenclators } from "../nomenclators/nomenclatorService";
 
 

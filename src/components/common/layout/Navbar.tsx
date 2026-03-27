@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { List, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material'
+import { List, ListItem, ListItemButton, ListItemIcon, ListItemText, useTheme } from '@mui/material'
 import PersonIcon from '@mui/icons-material/Person';
 import WorkIcon from '@mui/icons-material/Work';
 import StoreIcon from '@mui/icons-material/Store';
@@ -10,6 +10,9 @@ interface NavbarProps {
 }
 
 export const Navbar = ({ open }: NavbarProps) => {
+
+  const theme = useTheme()
+
   const options = [
     { name: "Leads", icon: <PersonIcon />, link: "/leads" },
     { name: "Campañas", icon: <WorkIcon />, link: "/campaigns" },
@@ -20,7 +23,9 @@ export const Navbar = ({ open }: NavbarProps) => {
   return (
     <List>
       {options?.map((item) => (
-        <ListItem key={item.name} disablePadding sx={{ display: 'block' }}>
+        <ListItem key={item.name} disablePadding sx={{ display: 'block',
+          "&:hover": {backgroundColor: theme.palette.contrast.light}         
+          }}>
           <ListItemButton
             component={Link} to={item.link}
             sx={[
@@ -30,7 +35,7 @@ export const Navbar = ({ open }: NavbarProps) => {
           >
             <ListItemIcon
               sx={[
-                { minWidth: 0, justifyContent: 'center', },
+                { color: theme.palette.contrast.contrastText, minWidth: 0, justifyContent: 'center', },
                 open ? { mr: 3, } : { mr: 'auto', },
               ]}
             >
@@ -38,8 +43,10 @@ export const Navbar = ({ open }: NavbarProps) => {
             </ListItemIcon>
             <ListItemText
               primary={item.name}
-              sx={[open ? { opacity: 1, } : { opacity: 0, },
-              ]}
+              sx={{
+                opacity: open ? 1 : 0,
+              }
+              }
             />
           </ListItemButton>
         </ListItem>
