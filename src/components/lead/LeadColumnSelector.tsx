@@ -84,7 +84,8 @@ export default function LeadColumnSelector({ leadFields, selectedIds, handleSele
     const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
       e.preventDefault()
     }
-    const handleDrop = (index: number) => {
+    const handleDrop = (e, index: number) => {
+      e.stopPropagation()
       if (dragIndex === null) return
       const newItems = [...items]
       const draggedItem = newItems[dragIndex]
@@ -95,48 +96,68 @@ export default function LeadColumnSelector({ leadFields, selectedIds, handleSele
       setDragOver(null)
     }
 
-    const handleDragEnter = (index:number) => {
+    const handleDropLast = () => {
+      if (dragIndex === null) return
+      const newItems = [...items]
+      const draggedItem = newItems[dragIndex]
+      newItems.splice(dragIndex, 1)
+      newItems.push(draggedItem)
+      setter(newItems)
+      setDragIndex(null)
+      setDragOver(null)
+    }
+
+    const handleDragEnter = (index: number) => {
       setDragOver(index)
     }
 
     return (
-      <Paper>
+      <Paper >
         {title &&
           <Box p=".5rem" sx={{ backgroundColor: alpha(theme.palette.secondary.light, .8) }}>
             <Typography variant="body2" fontWeight={600}>{title}</Typography>
           </Box>}
-        <List dense component="div" role="list" sx={{ height: "15rem", overflow: 'auto' }}>
-          {items.map((value: number, idx) => {
-            const labelId = `transfer-list-item-${value}-label`;
-            const fieldData = leadFields.find(field => field.id === value)
-            return (
-              <ListItemButton
-                draggable
-                onDragStart={() => handleDragStart(idx)}
-                onDragOver={handleDragOver}
-                onDragEnter={() => handleDragEnter(idx)}
-                onDrop={() => handleDrop(idx)}
-                key={value}
-                role="listitem"
-                onClick={handleToggle(value)}
-                sx={{
-                  outline: dragIndex === idx ? `2px solid ${alpha(theme.palette.contrast.light, .5)}` : "",
-                  borderTop: (dragOver === idx && dragIndex !== null && dragOver < dragIndex) ? `4px solid ${alpha(theme.palette.primary.main, .6)}` : "",
-                  borderBottom: (dragOver === idx && dragIndex !== null && dragOver > dragIndex) ? `4px solid ${alpha(theme.palette.primary.main, .6)}` : "",
-                }}
-              >
-                <ListItemIcon>
-                  <Checkbox
-                    checked={checked.includes(value)}
-                    tabIndex={-1}
-                    disableRipple
-                  />
-                </ListItemIcon>
-                <ListItemText id={labelId} primary={fieldData?.name} />
-              </ListItemButton>
-            );
-          })}
-        </List>
+        <Stack height="25rem">
+          <List dense component="div" role="list"
+            sx={{ overflow: 'auto', padding: 0, marginTop: ".5rem", }}
+          >
+            {items.map((value: number, idx) => {
+              const labelId = `transfer-list-item-${value}-label`;
+              const fieldData = leadFields.find(field => field.id === value)
+              return (
+                <ListItemButton
+                  draggable
+                  onDragStart={() => handleDragStart(idx)}
+                  onDragOver={handleDragOver}
+                  onDragEnter={() => handleDragEnter(idx)}
+                  onDrop={(e) => handleDrop(e, idx)}
+                  key={value}
+                  role="listitem"
+                  onClick={handleToggle(value)}
+                  className='column-list-item'
+                  sx={{
+                    outline: dragIndex === idx ? `2px solid ${alpha(theme.palette.contrast.light, .5)}` : "",
+                    borderTop: (dragOver === idx && dragIndex !== null && dragOver < dragIndex) ? `4px solid ${alpha(theme.palette.primary.main, .6)}` : "",
+                    borderBottom: (dragOver === idx && dragIndex !== null && dragOver > dragIndex) ? `4px solid ${alpha(theme.palette.primary.main, .6)}` : "",
+                  }}
+                >
+                  <ListItemIcon sx={{ pointerEvents: "none" }}>
+                    <Checkbox
+                      checked={checked.includes(value)}
+                      tabIndex={-1}
+                      disableRipple
+                    />
+                  </ListItemIcon>
+                  <ListItemText id={labelId} primary={fieldData?.name} sx={{ pointerEvents: "none" }} />
+                </ListItemButton>
+              );
+            })}
+          </List>
+          <Box flexGrow={1}
+            onDragOver={handleDragOver}
+            onDrop={() => handleDropLast()}
+          />
+        </Stack>
       </Paper>
     )
   };
