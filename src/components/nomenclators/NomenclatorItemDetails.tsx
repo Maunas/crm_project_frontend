@@ -1,8 +1,9 @@
-import { ButtonGroup, Chip, Divider, Grid, Link, Stack, Typography } from "@mui/material"
+import { ButtonGroup, Divider, Grid, Link, Stack, Typography } from "@mui/material"
 import { Link as RouterLink } from "react-router-dom"
 import dayjs from "dayjs"
 import { CommonButton, DisableButton } from "../common/details/DetailsCommonButton"
 import type { NomenclatorItemDetailed } from "../../types/nomenclators"
+import { CustomChip } from "../../styledComponents/styledMUIDisplayComponents"
 
 interface NomenclatorDetailsProps {
     entity: NomenclatorItemDetailed | null,
@@ -18,8 +19,8 @@ export const NomenclatorItemDetails = ({ entity, parentEntity, closeSidebar, han
         <Stack spacing={2} >
             <Grid container spacing={2} justifyContent="space-between" alignItems="center">
                 <Typography variant="h2" color="initial">{entity.code} - {entity.value}</Typography>
-                {entity.active ? <Chip color='success' label="Habilitado" /> :
-                    <Chip color='error' label="Deshabilitado" />}
+                {entity.active ? <CustomChip color='success' label="Habilitado" /> :
+                    <CustomChip color='error' label="Deshabilitado" />}
             </Grid>
             {!entity.organization_id && <Typography variant="body1" fontStyle="italic" >(Nomenclador del Sistema)</Typography>}
             <Divider />

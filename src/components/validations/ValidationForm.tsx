@@ -6,7 +6,7 @@ import type { FieldValidationRule, FieldValidationRulePost, FieldValidationRuleT
 import { createValidation, deleteValidation, getValidationDataByType, getValidationTemplates, setValFormErrors, updateValidation } from "./validationService";
 import { useFieldArray, useForm, useWatch, type Control, type FieldErrors, type UseFieldArrayRemove, type UseFormClearErrors, type UseFormGetValues, type UseFormRegister, type UseFormSetValue } from "react-hook-form";
 import { Button, Divider, Grid, Stack, Typography, ButtonGroup } from "@mui/material";
-import { FormErrorMessage } from "../../styles/styledMUIFormComponents";
+import { FormErrorMessage } from "../../styledComponents/styledMUIFormComponents";
 
 export interface FieldValidationListPostInstance extends FieldValidationRulePost {
     required_params: string[];

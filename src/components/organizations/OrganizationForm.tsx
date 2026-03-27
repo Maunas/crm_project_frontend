@@ -5,7 +5,7 @@ import { setFormErrors } from '../../generalService'
 import { createOrganization, updateOrganization } from '../workspaces/workspaceServices'
 import { Button, Grid, Typography, ButtonGroup } from '@mui/material'
 import { useEffect, useMemo } from 'react'
-import { FormErrorMessage } from '../../styles/styledMUIFormComponents'
+import { FormErrorMessage } from '../../styledComponents/styledMUIFormComponents'
 
 interface OrganizationSidebarProps {
     existingOrg?: Organization,

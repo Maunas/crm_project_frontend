@@ -5,7 +5,6 @@ import { UpdateCampaignFormSidebar } from './CampaignForms'
 import { LeadFieldTable } from '../leadFields/LeadFieldTable'
 import { LeadFieldDetail } from '../leadFields/LeadFieldDetail'
 import { LeadFieldFormSidebar } from '../leadFields/LeadFieldForm'
-import { ValidationFormSidebar } from '../validations/ValidationForm'
 import type { Paginable } from '../../types/common'
 import type { CampaignDetailed } from '../../types/campaigns'
 import type { LeadFieldDetailed } from '../../types/leadFields'
@@ -14,7 +13,9 @@ import { getLeadField, getLeadFields } from '../leadFields/leadFieldServices'
 import { useSidebar } from '../hooks/useSidebar'
 import { Link as RouterLink, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import dayjs from 'dayjs'
-import { Chip, Typography, ButtonGroup, Link, Breadcrumbs, Stack, Grid, Divider } from '@mui/material'
+import { Typography, ButtonGroup, Link, Breadcrumbs, Stack, Grid, Divider } from '@mui/material'
+import { ValidationFormSidebar } from '../validations/ValidationForm'
+import { CustomChip } from '../../styledComponents/styledMUIDisplayComponents'
 
 export const CampaignDetails = () => {
     const { id } = useParams()
@@ -39,11 +40,10 @@ export const CampaignDetails = () => {
     const [leadFields, setLeadFields] = useState<Paginable<LeadFieldDetailed> | null>(null)
 
     const updateLeadFields = useCallback((page: number, pageSize: number) => {
-        if (!campaign) return
         getLeadFields({
-            detailed: true, campaign_id: campaign.id!, only_active: false, page: page, page_size: pageSize
+            detailed: true, campaign_id: Number(id), only_active: false, page: page, page_size: pageSize
         }).then(setLeadFields)
-    }, [campaign, setLeadFields])
+    }, [setLeadFields, id])
 
     const updateEntity = (mode: string, entity: CampaignDetailed | LeadFieldDetailed) => {
         switch (mode) {
@@ -108,8 +108,8 @@ export const CampaignDetails = () => {
                 <Stack spacing={2} >
                     <Grid size={12} container spacing={2} justifyContent="space-between" alignItems="center">
                         <Typography variant="h1" color="initial">{campaign.name}</Typography>
-                        {campaign.active ? <Chip color='success' label="Habilitado" /> :
-                            <Chip color='error' label="Deshabilitado" />}
+                        {campaign.active ? <CustomChip color='success' label="Habilitado" /> :
+                            <CustomChip color='error' label="Deshabilitado" />}
                     </Grid>
                     <Grid container spacing={2}>
                         <Grid size="grow" minWidth="30rem">

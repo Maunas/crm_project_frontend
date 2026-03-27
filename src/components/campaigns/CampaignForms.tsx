@@ -9,7 +9,7 @@ import { createCampaign, updateCampaign } from "./campaignServices"
 import { createLeadField } from "../leadFields/leadFieldServices"
 import { useForm } from "react-hook-form"
 import { Button, ButtonGroup, Grid, Typography } from "@mui/material"
-import { FormErrorMessage } from "../../styles/styledMUIFormComponents"
+import { FormErrorMessage } from "../../styledComponents/styledMUIFormComponents"
 
 
 interface UpdateCampaignSidebarProps {

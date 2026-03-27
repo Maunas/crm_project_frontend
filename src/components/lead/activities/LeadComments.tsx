@@ -69,7 +69,7 @@ export const LeadComments = ({ leadId }: { leadId: number }) => {
 
 const CommentNote = styled(Paper)(({ theme, ...props }) => ({
     borderRadius: "1rem 1rem 1rem 0",
-    border: `1px solid ${theme.palette[`${props.color}`].main}`,
+    border: `1px solid ${theme.palette[`${props.color}`]["100"]}`,
     overflow: "hidden",
     "& .comment-footer, .comment-header": {
         display: "flex",

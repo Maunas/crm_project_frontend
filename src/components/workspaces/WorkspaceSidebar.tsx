@@ -1,10 +1,11 @@
 import type { CampaignDetailed, WorkspaceDetailed } from "../../types/campaigns"
 import { WorkspaceFormSidebar } from "./WorkspaceForms"
 import dayjs from "dayjs"
-import { Stack, Typography, ButtonGroup, Divider, Grid, Chip } from "@mui/material"
+import { Stack, Typography, ButtonGroup, Divider, Grid } from "@mui/material"
 import { CampaignList } from "../campaigns/CampaignList"
 import { CommonButton, DisableButton } from "../common/details/DetailsCommonButton"
 import { CreateCampaignFormSidebar } from "../campaigns/CampaignForms"
+import { CustomChip } from "../../styledComponents/styledMUIDisplayComponents"
 
 interface SidebarProps {
     mode: string | null,
@@ -50,8 +51,8 @@ const WorkspaceDetails = ({ entity, closeSidebar, handleSidebar, handleActive }:
         <Stack spacing={2} >
             <Grid container spacing={2} justifyContent="space-between" alignItems="center">
                 <Typography variant="h2" color="initial">{entity.name}</Typography>
-                {entity.active ? <Chip color='success' label="Habilitado" /> :
-                    <Chip color='error' label="Deshabilitado" />}
+                {entity.active ? <CustomChip color='success' label="Habilitado" /> :
+                    <CustomChip color='error' label="Deshabilitado" />}
             </Grid>
             {entity.description ? <Typography variant="body1" color="initial">{entity.description}</Typography>
                 : <Typography variant="body1" fontStyle="italic">No tiene descripción.</Typography>
