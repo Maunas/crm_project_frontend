@@ -9,7 +9,6 @@ import LeadColumnSelector from "./LeadColumnSelector"
 import { useModal } from "../hooks/useModal"
 import { GenericModal } from "../common/layout/GenericContainer"
 import { useDragAndDrop } from "../hooks/useDragAndDrop"
-import { alpha, useTheme } from "@mui/material/styles"
 
 interface LeadListTableProps {
     leads: Lead[],
@@ -85,7 +84,7 @@ export const LeadListTable = ({ leads, campaignId }: LeadListTableProps) => {
         window.localStorage.setItem("sel_lead_fields", JSON.stringify(newTotalSelectedFields))
     }, [selectedIds])
 
-    const { dragStyles, handleDragEnter, handleDragOver, handleDragStart, handleDrop } = useDragAndDrop(selectedIds, setSelectedIds)
+    const { dragStyles, dragEvents } = useDragAndDrop(selectedIds, (items) => setSelectedIds(items))
 
     if (leads.length > 0 && leadColumns && leadColumns.length > 0) return (
         <>
@@ -98,11 +97,7 @@ export const LeadListTable = ({ leads, campaignId }: LeadListTableProps) => {
                         <TableRow>
                             {leadColumns.map((column, idx) =>
                                 <TableCell align={idx > 1 ? "right" : "left"} key={column.id}
-                                    draggable
-                                    onDragEnter={() => handleDragEnter(idx)}
-                                    onDragOver={handleDragOver}
-                                    onDragStart={() => handleDragStart(idx)}
-                                    onDrop={() => handleDrop(idx)}
+                                    {...dragEvents(idx, false)}
                                     sx={{
                                         fontWeight: 600,
                                         ...dragStyles(idx, "row")

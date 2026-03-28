@@ -1,7 +1,9 @@
 import { alpha, useTheme } from "@mui/material/styles"
 import React from "react"
 
-export const useDragAndDrop = <T,>(itemsList: T[], setter: React.Dispatch<React.SetStateAction<T[]>>) => {
+export const useDragAndDrop = <T,>(itemsList: T[], setter: (items: T[]) => void,
+    customDragStart?: () => void, customDragOver?: () => void, customDrop?: () => void, customDragEnter?: () => void
+) => {
 
     const [dragIndex, setDragIndex] = React.useState<number | null>(null)
     const [dragOver, setDragOver] = React.useState<number | null>(null)
@@ -9,12 +11,24 @@ export const useDragAndDrop = <T,>(itemsList: T[], setter: React.Dispatch<React.
     const theme = useTheme()
 
     const handleDragStart = (index: number) => {
+        if (customDragStart) {
+            customDragStart()
+            return
+        }
         setDragIndex(index)
     }
     const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+        if (customDragOver) {
+            customDragOver()
+            return
+        }
         e.preventDefault()
     }
     const handleDrop = (index: number, last: boolean = false) => {
+        if (customDrop) {
+            customDrop()
+            return
+        }
         if (dragIndex == null) return
         const items = [...itemsList]
         const draggedItem = items[dragIndex]
@@ -30,6 +44,10 @@ export const useDragAndDrop = <T,>(itemsList: T[], setter: React.Dispatch<React.
     }
 
     const handleDragEnter = (index: number) => {
+        if (customDragEnter) {
+            customDragEnter()
+            return
+        }
         setDragOver(index)
     }
 
@@ -56,7 +74,16 @@ export const useDragAndDrop = <T,>(itemsList: T[], setter: React.Dispatch<React.
         return styles
     }
 
+    const dragEvents = (idx: number, dropLast: boolean = false) => ({
+        draggable: true,
+        onDragEnter: () => handleDragEnter(idx),
+        onDragOver: (e: React.DragEvent<HTMLDivElement>) => handleDragOver(e),
+        onDragStart: () => handleDragStart(idx),
+        onDrop: () => handleDrop(idx, dropLast)
+    })
+
     return ({
+        dragEvents,
         dragStyles, handleDragStart, handleDragOver, handleDrop, handleDragEnter
     })
 }
