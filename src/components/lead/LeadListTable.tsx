@@ -8,6 +8,8 @@ import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow
 import LeadColumnSelector from "./LeadColumnSelector"
 import { useModal } from "../hooks/useModal"
 import { GenericModal } from "../common/layout/GenericContainer"
+import { useDragAndDrop } from "../hooks/useDragAndDrop"
+import { alpha, useTheme } from "@mui/material/styles"
 
 interface LeadListTableProps {
     leads: Lead[],
@@ -77,23 +79,37 @@ export const LeadListTable = ({ leads, campaignId }: LeadListTableProps) => {
         const totalSelectedFields = window.localStorage.getItem("sel_lead_fields")
         let newTotalSelectedFields: Record<number, number[]> = {}
         if (totalSelectedFields) {
-            newTotalSelectedFields = {...JSON.parse(totalSelectedFields)}
+            newTotalSelectedFields = { ...JSON.parse(totalSelectedFields) }
         }
         newTotalSelectedFields[campaignId] = selectedIds
         window.localStorage.setItem("sel_lead_fields", JSON.stringify(newTotalSelectedFields))
     }, [selectedIds])
 
+    const { dragStyles, handleDragEnter, handleDragOver, handleDragStart, handleDrop } = useDragAndDrop(selectedIds, setSelectedIds)
+
     if (leads.length > 0 && leadColumns && leadColumns.length > 0) return (
         <>
             <GenericModal idModal="columns_selector" modalProps={modalProps} buttonText="Modificar Columnas" maxWidth="md" >
-                <LeadColumnSelector leadFields={leadFields} selectedIds={selectedIds!} handleSelectedIds={handleSelectedIds} handleClose={modalProps.handleClose} />
+                <LeadColumnSelector itemsList={leadFields} selectedIds={selectedIds!} handleSelectedIds={handleSelectedIds} handleClose={modalProps.handleClose} showField="name" />
             </GenericModal>
             <TableContainer component={Paper}>
                 <Table sx={{ minWidth: 650 }} aria-label="simple table">
                     <TableHead>
                         <TableRow>
                             {leadColumns.map((column, idx) =>
-                                <TableCell sx={{ fontWeight: 600 }} align={idx > 1 ? "right" : "left"} key={column.id}>{column.name}</TableCell>
+                                <TableCell align={idx > 1 ? "right" : "left"} key={column.id}
+                                    draggable
+                                    onDragEnter={() => handleDragEnter(idx)}
+                                    onDragOver={handleDragOver}
+                                    onDragStart={() => handleDragStart(idx)}
+                                    onDrop={() => handleDrop(idx)}
+                                    sx={{
+                                        fontWeight: 600,
+                                        ...dragStyles(idx, "row")
+                                    }}
+                                >
+                                    {column.name}
+                                </TableCell>
                             )
                             }
                         </TableRow>
