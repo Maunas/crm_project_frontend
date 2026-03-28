@@ -11,6 +11,7 @@ interface BasicFormInput<T extends FieldValues> {
   required?: boolean;
   errorMessage?: string;
   autoComplete?: string;
+  size?: "small" | "medium"
 }
 interface RegisterFormInput<T extends FieldValues> extends BasicFormInput<T> {
   register: UseFormRegister<T>;
@@ -24,11 +25,11 @@ interface ControlledTextProps<T extends FieldValues> extends ControlFormInput<T>
   type?: string;
 }
 export const ControlledTextInput = <T extends FieldValues>
-  ({ control, label, name, required = false, errorMessage, autoComplete = "one-time-code", id, type = "text" }: ControlledTextProps<T>) => {
+  ({ control, label, name, required = false, errorMessage, autoComplete = "one-time-code", id, type = "text", size = "medium" }: ControlledTextProps<T>) => {
   return (
     <Controller control={control} name={name} render={({ field }) => (
       <>
-        <TextField {...field}
+        <TextField {...field} size={size}
           value={field.value ?? ""}
           label={label} id={id ?? name} type={type}
           required={required} error={!!errorMessage} autoComplete={autoComplete} fullWidth
@@ -207,7 +208,7 @@ interface RegisteredTextProps<T extends FieldValues> extends RegisterFormInput<T
 }
 
 export const RegisteredTextInput = <T extends FieldValues>
-  ({ register, name, label, required = false, errorMessage, autoComplete = "one-time-code", multiline=false,
+  ({ register, name, label, required = false, errorMessage, autoComplete = "one-time-code", multiline = false,
     id = null, type = "text", onChange = () => { } }: RegisteredTextProps<T>) => {
   return (
     <>

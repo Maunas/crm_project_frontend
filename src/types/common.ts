@@ -40,10 +40,9 @@ export interface WorkspaceParams extends ListParams {
 export interface CampaignParams extends ListParams {
   workspace_id?: number
 }
-export interface LeadListParams extends CampaignParams {
+export interface LeadListParams extends ListParams {
   campaign_id?: number
 }
-
 
 /**
  * Contiene los formatos de mensaje de error.
@@ -73,9 +72,28 @@ export interface EnableResponse {
 
 
 export interface SearchResults {
-    leads: Lead[],
-    campaigns: Campaign[],
-    workspaces: Workspace[],
-    nomenclators: Nomenclator[],
-    nomenclator_items: NomenclatorItem[],
+  leads: Lead[],
+  campaigns: Campaign[],
+  workspaces: Workspace[],
+  nomenclators: Nomenclator[],
+  nomenclator_items: NomenclatorItem[],
+}
+
+
+export interface LeadFilter {
+  "field_id"?: number,
+  "operator"?: string,
+  "value"?: string | number | boolean
+}
+
+export interface Dictionary {
+  "lead_search_operators"?: DictionaryItem[]
+  "routing_condition_types"?: DictionaryItem[]
+  "team_roles"?: DictionaryItem[]
+  "lead_states_categories"?: DictionaryItem[]
+}
+
+export interface DictionaryItem {
+  "code": string,
+  "label": string,
 }
