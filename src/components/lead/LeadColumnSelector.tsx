@@ -7,7 +7,6 @@ import ListItemText from '@mui/material/ListItemText';
 import Checkbox from '@mui/material/Checkbox';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
-import type { LeadField } from '../../types/leadFields';
 import { Stack, ButtonGroup, Typography, Box } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 
@@ -19,16 +18,18 @@ function intersection(a: readonly number[], b: readonly number[]) {
   return a.filter((value) => b.includes(value));
 }
 
-interface LeadColumnSelectorProps {
-  leadFields: LeadField[],
+interface LeadColumnSelectorProps<T> {
+  itemsList: T[],
   selectedIds: number[],
   handleSelectedIds: (ids: number[]) => void,
-  handleClose: () => void
+  handleClose: () => void,
+  showField: keyof T
 }
 
-export default function LeadColumnSelector({ leadFields, selectedIds, handleSelectedIds, handleClose }: LeadColumnSelectorProps) {
+export default function LeadColumnSelector<T extends { id: number }>
+  ({ itemsList, selectedIds, handleSelectedIds, handleClose, showField }: LeadColumnSelectorProps<T>) {
   const [checked, setChecked] = React.useState<readonly number[]>([]);
-  const [left, setLeft] = React.useState<number[]>(not(leadFields.map(f => f.id), selectedIds) ?? []);
+  const [left, setLeft] = React.useState<number[]>(not(itemsList.map(f => f.id), selectedIds) ?? []);
   const [right, setRight] = React.useState<number[]>(selectedIds ?? []);
 
   const leftChecked = intersection(checked, left);
@@ -70,41 +71,52 @@ export default function LeadColumnSelector({ leadFields, selectedIds, handleSele
 
   const theme = useTheme()
 
+  //Permite identificar el objeto cuando paso de una lista a otra
+  const globalDraggedIndex = React.useRef<number | null>(null)
+
   interface props {
-    items: readonly number[], setter: React.Dispatch<React.SetStateAction<number[]>>, title?: string
+    isLeftList: boolean, title?: string
   }
 
-  const CustomList = ({ items, setter, title }: props) => {
+  const CustomList = ({ isLeftList = true, title }: props) => {
     const [dragIndex, setDragIndex] = React.useState<number | null>(null)
     const [dragOver, setDragOver] = React.useState<number | null>(null)
 
+    const items = isLeftList ? [...left] : [...right]
+    const setter = isLeftList ? setLeft : setRight
+
+    const contraryItems = isLeftList ? [...right] : [...left]
+    const contrarySetter = isLeftList ? setRight : setLeft
+
     const handleDragStart = (index: number) => {
       setDragIndex(index)
+      globalDraggedIndex.current = index
     }
     const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
       e.preventDefault()
     }
-    const handleDrop = (e, index: number) => {
-      e.stopPropagation()
-      if (dragIndex === null) return
-      const newItems = [...items]
-      const draggedItem = newItems[dragIndex]
-      newItems.splice(dragIndex, 1)
-      newItems.splice(index, 0, draggedItem)
-      setter(newItems)
-      setDragIndex(null)
-      setDragOver(null)
-    }
 
-    const handleDropLast = () => {
-      if (dragIndex === null) return
-      const newItems = [...items]
-      const draggedItem = newItems[dragIndex]
-      newItems.splice(dragIndex, 1)
-      newItems.push(draggedItem)
-      setter(newItems)
+    const handleDrop = (index: number, last: boolean = false) => {
+      if (globalDraggedIndex.current == null) return
+      let draggedItem
+      //Si dragIndex es nulo, es transferencia entre listas
+      if (dragIndex != null) {
+        draggedItem = items[globalDraggedIndex.current]
+        items.splice(dragIndex, 1)
+      } else {
+        draggedItem = contraryItems[globalDraggedIndex.current]
+        contraryItems.splice(globalDraggedIndex.current, 1)
+        contrarySetter(contraryItems)
+      }
+      if (last) {
+        items.push(draggedItem)
+      } else {
+        items.splice(index, 0, draggedItem)
+      }
+      setter(items)
       setDragIndex(null)
       setDragOver(null)
+      globalDraggedIndex.current = null
     }
 
     const handleDragEnter = (index: number) => {
@@ -123,22 +135,25 @@ export default function LeadColumnSelector({ leadFields, selectedIds, handleSele
           >
             {items.map((value: number, idx) => {
               const labelId = `transfer-list-item-${value}-label`;
-              const fieldData = leadFields.find(field => field.id === value)
+              const fieldData = itemsList.find(field => field.id === value)
+              if (!fieldData) return
               return (
                 <ListItemButton
                   draggable
                   onDragStart={() => handleDragStart(idx)}
                   onDragOver={handleDragOver}
                   onDragEnter={() => handleDragEnter(idx)}
-                  onDrop={(e) => handleDrop(e, idx)}
+                  onDrop={() => handleDrop(idx)}
                   key={value}
                   role="listitem"
                   onClick={handleToggle(value)}
                   className='column-list-item'
                   sx={{
-                    outline: dragIndex === idx ? `2px solid ${alpha(theme.palette.contrast.light, .5)}` : "",
-                    borderTop: (dragOver === idx && dragIndex !== null && dragOver < dragIndex) ? `4px solid ${alpha(theme.palette.primary.main, .6)}` : "",
-                    borderBottom: (dragOver === idx && dragIndex !== null && dragOver > dragIndex) ? `4px solid ${alpha(theme.palette.primary.main, .6)}` : "",
+                    cursor: dragIndex !== null ? "grabbing" : "grab",
+                    backgroundColor: dragIndex === idx ? `${alpha(theme.palette.background.default, .5)}` : "",
+                    border: dragIndex === idx ? `2px solid ${alpha(theme.palette.contrast.light, .5)}` : "",
+                    borderTop: (dragOver === idx && dragIndex !== null && dragOver < dragIndex) ? `4px solid ${alpha(theme.palette.secondary.main, .6)}` : "",
+                    borderBottom: (dragOver === idx && dragIndex !== null && dragOver > dragIndex) ? `4px solid ${alpha(theme.palette.secondary.main, .6)}` : "",
                   }}
                 >
                   <ListItemIcon sx={{ pointerEvents: "none" }}>
@@ -148,14 +163,14 @@ export default function LeadColumnSelector({ leadFields, selectedIds, handleSele
                       disableRipple
                     />
                   </ListItemIcon>
-                  <ListItemText id={labelId} primary={fieldData?.name} sx={{ pointerEvents: "none" }} />
+                  <ListItemText id={labelId} primary={`${fieldData?.[showField]}`} sx={{ pointerEvents: "none" }} />
                 </ListItemButton>
               );
             })}
           </List>
           <Box flexGrow={1}
             onDragOver={handleDragOver}
-            onDrop={() => handleDropLast()}
+            onDrop={() => handleDrop(0, true)}
           />
         </Stack>
       </Paper>
@@ -172,7 +187,7 @@ export default function LeadColumnSelector({ leadFields, selectedIds, handleSele
         sx={{ justifyContent: 'center', alignItems: 'center' }}
       >
         <Grid size="grow" minWidth="13rem">
-          <CustomList items={left} setter={setLeft} title={"Columnas Disponibles"} />
+          <CustomList isLeftList={true} title={"Columnas Disponibles"} />
         </Grid>
         <Grid>
           <Grid container direction="column" sx={{ alignItems: 'center' }}>
@@ -219,7 +234,7 @@ export default function LeadColumnSelector({ leadFields, selectedIds, handleSele
           </Grid>
         </Grid>
         <Grid size="grow" minWidth="13rem">
-          <CustomList items={right} setter={setRight} title={"Columnas a Mostrar"} />
+          <CustomList isLeftList={false} title={"Columnas a Mostrar"} />
         </Grid>
       </Grid>
       <Stack width="100%" alignItems="end">
