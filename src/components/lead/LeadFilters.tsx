@@ -1,6 +1,6 @@
 import { alpha, Button, Divider, Grid, Typography, IconButton, Stack, ButtonGroup } from '@mui/material'
 import { ControlledCheckbox, ControlledNumber, ControlledTextInput } from '../common/forms/CustomInputs'
-import { useFieldArray, useForm, type Control, type FieldErrors, type UseFieldArrayRemove } from 'react-hook-form'
+import { useFieldArray, useForm, useWatch, type Control, type FieldErrors, type UseFieldArrayRemove } from 'react-hook-form'
 import type { DictionaryItem, LeadFilter, LeadListParams } from '../../types/common'
 import { useEffect, useMemo, useState } from 'react'
 import { getLeadFields } from '../leadFields/leadFieldServices'
@@ -104,7 +104,14 @@ interface LeadFiltersItemProps {
     remove: UseFieldArrayRemove
 }
 
+
 export const LeadFiltersItem = ({ idx, leadFields, operators, control, errors, remove }: LeadFiltersItemProps) => {
+
+    const selLeadFieldId = useWatch({ control, name: `filters.${idx}.field_id` })
+
+    const selLeadField = useMemo(() => leadFields.find(i => i.id === selLeadFieldId)
+        , [selLeadFieldId, leadFields])
+
     return (
         <Grid container direction="row" spacing="1rem" overflow="hidden"
             border={`1px solid ${alpha(theme.palette.contrast.light, .5)}`} borderRadius=".5rem">
@@ -130,16 +137,15 @@ export const LeadFiltersItem = ({ idx, leadFields, operators, control, errors, r
                     </Grid>
                 </Grid>
             </Grid>
-            <Grid container alignItems="center" sx={{
+            <Grid component={Button} container alignItems="center" onClick={() => remove(idx)} sx={{
                 backgroundColor: alpha(theme.palette.error.light, .5),
+                borderRadius:"0",
                 color: theme.palette.error.dark,
                 "&:hover": {
                     backgroundColor: alpha(theme.palette.error.light, .7)
                 }
             }}>
-                <IconButton aria-label="deleteFilter" size='large' color='inherit' onClick={() => remove(idx)}>
-                    <CloseIcon />
-                </IconButton>
+                <CloseIcon />
             </Grid>
         </Grid>
     )
