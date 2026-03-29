@@ -1,67 +1,71 @@
-import { alpha, createTheme, lighten } from '@mui/material/styles';
+import { alpha, createTheme } from '@mui/material/styles';
 import { globalPalette } from './palette';
 
-const theme = createTheme({
-  // Paleta de Colores (Tu configuración original)
+const darkTheme = createTheme({
   palette: {
+    mode: "dark",
     primary: {
-      light: globalPalette.primary[400],
-      main: globalPalette.primary[500],
-      dark: globalPalette.primary[600],
-      contrastText: globalPalette.primary[50],
+      light: globalPalette.primary[500],
+      main: globalPalette.primary[400],
+      dark: globalPalette.primary[300],
+      contrastText: globalPalette.primary[900],
       ...globalPalette.primary
     },
     secondary: {
-      light: globalPalette.secondary[400],
-      main: globalPalette.secondary[500],
-      dark: globalPalette.secondary[600],
+      light: globalPalette.secondary[500],
+      main: globalPalette.secondary[400],
+      dark: globalPalette.secondary[300],
       contrastText: globalPalette.secondary[50],
       ...globalPalette.secondary
     },
     info: {
-      light: globalPalette.info[400],
-      main: globalPalette.info[500],
-      dark: globalPalette.info[600],
+      light: globalPalette.info[500],
+      main: globalPalette.info[400],
+      dark: globalPalette.info[300],
       contrastText: globalPalette.info[50],
       ...globalPalette.info
     },
     success: {
-      light: globalPalette.success[400],
-      main: globalPalette.success[500],
-      dark: globalPalette.success[600],
+      light: globalPalette.success[500],
+      main: globalPalette.success[400],
+      dark: globalPalette.success[300],
       contrastText: globalPalette.success[50],
       ...globalPalette.success
     },
     warning: {
-      light: globalPalette.warning[400],
-      main: globalPalette.warning[500],
-      dark: globalPalette.warning[600],
+      light: globalPalette.warning[500],
+      main: globalPalette.warning[400],
+      dark: globalPalette.warning[300],
       contrastText: globalPalette.warning[50],
       ...globalPalette.warning
     },
     error: {
-      light: globalPalette.error[400],
-      main: globalPalette.error[500],
-      dark: globalPalette.error[600],
+      light: globalPalette.error[500],
+      main: globalPalette.error[400],
+      dark: globalPalette.error[300],
       contrastText: globalPalette.error[50],
       ...globalPalette.error
     },
 
     contrast: {
-      light: globalPalette.contrast[600],
-      main: globalPalette.contrast[700],
-      dark: globalPalette.contrast[800],
+      light: globalPalette.contrast[500],
+      main: globalPalette.contrast[600],
+      dark: globalPalette.contrast[700],
       contrastText: globalPalette.contrast[50],
       ...globalPalette.contrast
     },
     background: {
-      default: lighten(globalPalette.contrast[100],.5),
-      paper: lighten(globalPalette.contrast[50],.8),
+      default: globalPalette.contrast[900],
+      paper: globalPalette.contrast[800],
     },
     text: {
-      primary: globalPalette.contrast[900],
-      secondary: alpha(globalPalette.contrast[900], .7),
-      disabled: alpha(globalPalette.contrast[900], .5)
+      primary: globalPalette.contrast[50],
+      secondary: alpha(globalPalette.contrast[50], .8),
+      disabled: alpha(globalPalette.contrast[50], .5)
+    },
+    divider: globalPalette.contrast[600],
+    grey: {
+      ...globalPalette.contrast
     }
   },
 
@@ -132,6 +136,7 @@ const theme = createTheme({
         },
       },
     },
+    // 2. Tus overrides de botones
     MuiButton: {
       styleOverrides: {
         root: {
@@ -146,7 +151,8 @@ const theme = createTheme({
         }
       },
     },
+
   },
 });
 
-export default theme;
+export default darkTheme;
