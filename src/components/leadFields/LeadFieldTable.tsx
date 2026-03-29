@@ -2,12 +2,9 @@ import { useEffect } from "react"
 import { GenericModal } from "../common/layout/GenericContainer"
 import { EnabledIcon } from "../common/lists/Badges"
 import { CommonButton } from "../common/details/DetailsCommonButton"
-import { PaginationComponent } from "../common/lists/PaginationComponent"
-import type { Paginable } from "../../types/common"
 import type { LeadFieldDetailed } from "../../types/leadFields"
 import type { CampaignDetailed } from "../../types/campaigns"
 import { disableLeadField, enableLeadField } from "./leadFieldServices"
-import { useListPagination } from "../hooks/useListPagination"
 import { ButtonGroup, Grid, IconButton, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material"
 import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
@@ -18,19 +15,17 @@ import { useModal } from "../hooks/useModal"
 
 interface LeadFieldTableProps {
     campaign: CampaignDetailed,
-    leadFields: Paginable<LeadFieldDetailed> | null,
-    updateLeadFields: (page: number, pageSize: number) => void,
+    leadFields: LeadFieldDetailed[] | null,
+    updateLeadFields: () => void,
     updateEntity: (mode: string, entity: CampaignDetailed | LeadFieldDetailed) => void,
     handleSidebar: (mode: string, entity: LeadFieldDetailed | null) => void,
 }
 
 export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateEntity, handleSidebar }: LeadFieldTableProps) => {
 
-    const { fetchPage, pageSize, refresh, pageComponentProps } = useListPagination(leadFields, 10)
-
     useEffect(() => {
-        updateLeadFields(fetchPage, pageSize)
-    }, [fetchPage, pageSize, refresh, updateLeadFields])
+        updateLeadFields()
+    }, [campaign, updateLeadFields])
 
     const handleActive = (field: LeadFieldDetailed) => {
         const updateActive = () => {
@@ -55,7 +50,7 @@ export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateE
                 <Grid size="grow" minWidth="16rem" >
                     <Typography variant="h2">Lista de Campos de Lead</Typography>
                 </Grid >
-                {leadFields && leadFields.items.length > 0 &&
+                {leadFields && leadFields.length > 0 &&
                     <Grid size="grow" minWidth="22rem" >
                         <ButtonGroup fullWidth>
                             <CommonButton onClick={() => handleSidebar("CREATE_FIELD", null)} actionType="CREATE">Agregar Campo</CommonButton>
@@ -70,7 +65,7 @@ export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateE
             </Grid>
 
 
-            {leadFields && leadFields.items.length > 0 ?
+            {leadFields && leadFields.length > 0 ?
                 <>
                     <TableContainer component={Paper} >
                         <Table aria-label="simple table" size='small'>
@@ -87,7 +82,7 @@ export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateE
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {leadFields?.items?.sort((a, b) => a.order - b.order)
+                                {leadFields?.sort((a, b) => a.order - b.order)
                                     .map((row) => (
                                         <TableRow
                                             key={row.id}
@@ -136,7 +131,6 @@ export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateE
                             </TableBody>
                         </Table>
                     </TableContainer>
-                    <PaginationComponent {...pageComponentProps} />
                 </>
                 :
                 <Grid container spacing={2} justifyContent="center" alignItems="center" direction="column">

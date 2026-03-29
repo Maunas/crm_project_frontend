@@ -5,7 +5,6 @@ import { UpdateCampaignFormSidebar } from './CampaignForms'
 import { LeadFieldTable } from '../leadFields/LeadFieldTable'
 import { LeadFieldDetail } from '../leadFields/LeadFieldDetail'
 import { LeadFieldFormSidebar } from '../leadFields/LeadFieldForm'
-import type { Paginable } from '../../types/common'
 import type { CampaignDetailed } from '../../types/campaigns'
 import type { LeadFieldDetailed } from '../../types/leadFields'
 import { disableCampaign, enableCampaign, getCampaign } from './campaignServices'
@@ -35,14 +34,14 @@ export const CampaignDetails = () => {
         })
     }, [id, closeSidebar])
 
-    //Necesaria la lista e n este componente, en lugar de LeadFieldTable,
+    //Necesaria la lista en este componente, en lugar de LeadFieldTable,
     // para facilitar la modificación de la lista desde el sidebar.
-    const [leadFields, setLeadFields] = useState<Paginable<LeadFieldDetailed> | null>(null)
+    const [leadFields, setLeadFields] = useState<LeadFieldDetailed[] | null>(null)
 
-    const updateLeadFields = useCallback((page: number, pageSize: number) => {
+    const updateLeadFields = useCallback(() => {
         getLeadFields({
-            detailed: true, campaign_id: Number(id), only_active: false, page: page, page_size: pageSize
-        }).then(setLeadFields)
+            detailed: true, campaign_id: Number(id), only_active: false, page_size: 0
+        }).then(res => setLeadFields(res.items))
     }, [setLeadFields, id])
 
     const updateEntity = (mode: string, entity: CampaignDetailed | LeadFieldDetailed) => {
@@ -53,21 +52,23 @@ export const CampaignDetails = () => {
             }
             case "UPDATE_FIELD": {
                 const newLeadField = entity as LeadFieldDetailed
-                if (!leadFields?.items || !(leadFields?.items?.length > 0)) return
-                const newLeadFields = [...leadFields.items]
-                const fieldIdx = leadFields.items.findIndex(field => field.id === entity.id)
+                if (!leadFields || !(leadFields?.length > 0)) return
+                const newLeadFields = [...leadFields]
+                const fieldIdx = leadFields.findIndex(field => field.id === newLeadField.id)
                 if (fieldIdx === -1) return
                 newLeadFields[fieldIdx] = newLeadField
-                return setLeadFields({ ...leadFields, items: newLeadFields })
+                return setLeadFields(newLeadFields)
             }
             case "CREATE_FIELD": {
                 if (!leadFields) break
-                return updateLeadFields(leadFields.page, leadFields.page_size)
+                return updateLeadFields()
             }
             case "DELETE_FIELD": {
-                if (!leadFields) break
-                if (selectedEntity && entity.id === selectedEntity.id) closeSidebar()
-                return updateLeadFields(leadFields.page, leadFields.page_size)
+                if (!leadFields || !(leadFields?.length > 0)) return
+                const newLeadFields = [...leadFields]
+                const fieldIdx = leadFields.findIndex(field => field.id === entity.id)
+                newLeadFields.splice(fieldIdx, 1)
+                return setLeadFields(newLeadFields)
             }
         }
     }
