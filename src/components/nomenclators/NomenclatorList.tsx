@@ -143,7 +143,7 @@ export const NomenclatorList = () => {
                             )}
                         </List>
                         : <Grid container spacing={2} justifyContent="center" alignItems="center" direction="column">
-                            <Typography variant="h4" color="initial">No se han encontrado nomencladores...</Typography>
+                            <Typography variant="h4">No se han encontrado nomencladores...</Typography>
                             <Button onClick={() => { handleSidebar("CREATE_NOM", null) }} variant="contained">Crear Nomenclador</Button>
                         </Grid>
                 }

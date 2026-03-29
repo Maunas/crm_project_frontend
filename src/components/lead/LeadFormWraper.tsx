@@ -37,7 +37,7 @@ export const CreateLeadFormPage = () => {
     return (
         <form autoComplete="off">
             <Stack spacing={2}>
-                <Typography variant="h1" color="initial">Nuevo Lead</Typography>
+                <Typography variant="h1">Nuevo Lead</Typography>
                 <Grid container spacing={2}>
                     <Grid size="grow" minWidth="20rem">
                         <Autocomplete options={workspaces} loading={workspaces.length === 0} disabled={workspaces.length === 0}
@@ -78,7 +78,7 @@ export const SimulateLeadFormModal = ({ campaignId, onCancel }: SimulateProps) =
     return (
         <form autoComplete="off">
             <Stack spacing={2}>
-                <Typography variant="h1" color="initial">Simulación de Nuevo Lead: Campaña {campaignId}</Typography>
+                <Typography variant="h1">Simulación de Nuevo Lead: Campaña {campaignId}</Typography>
                 <LeadForm campaignId={campaignId} onSubmit={onSubmit} onCancel={onCancel} submitBtnLabel="Validar Datos" />
             </Stack>
         </form>

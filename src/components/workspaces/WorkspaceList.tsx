@@ -145,7 +145,7 @@ export const WorkspaceList = () => {
                         )}
                     </List>
                     : <Grid container spacing={2} justifyContent="center" alignItems="center" direction="column">
-                        <Typography variant="h4" color="initial">No se han encontrado espacios de trabajo...</Typography>
+                        <Typography variant="h4">No se han encontrado espacios de trabajo...</Typography>
                         <Button onClick={() => handleSidebar("CREATE_WSP", null)} variant="contained">Crear Espacio</Button>
                     </Grid>
                 }

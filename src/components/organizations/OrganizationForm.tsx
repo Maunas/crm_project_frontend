@@ -60,7 +60,7 @@ const OrganizationForm = ({ existingOrg, submit, onCancel }: OrganizationProps) 
 
     return (
         <form>
-            <Typography variant="h1" color="initial">
+            <Typography variant="h1">
                 {!existingOrg ? "Crear Organización" : `Modificar Organización: ${existingOrg.name}`}
             </Typography>
             <Grid container spacing={2} sx={{

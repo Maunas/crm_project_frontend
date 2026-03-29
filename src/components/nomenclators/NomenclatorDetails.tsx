@@ -17,7 +17,7 @@ export const NomenclatorDetails = ({ entity, closeSidebar, handleSidebar, handle
     if (entity) return (
         <Stack spacing={2} >
             <Grid container spacing={2} justifyContent="space-between" alignItems="center">
-                <Typography variant="h2" color="initial">{entity.name}</Typography>
+                <Typography variant="h2">{entity.name}</Typography>
                 {entity.active ? <CustomChip color='success' label="Habilitado" /> :
                     <CustomChip color='error' label="Deshabilitado" />}
             </Grid>

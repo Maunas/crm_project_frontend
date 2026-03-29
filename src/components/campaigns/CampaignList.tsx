@@ -32,7 +32,7 @@ export const CampaignList = ({ selectedWorkspaceId, handleSidebar }: CampaignLis
         </>
     )
     return <Grid container spacing={2} justifyContent="center" alignItems="center" direction="column">
-        <Typography variant="h4" color="initial">No se han encontrado campañas para este espacio de trabajo...</Typography>
+        <Typography variant="h4">No se han encontrado campañas para este espacio de trabajo...</Typography>
         <Button onClick={() => handleSidebar("CREATE_CMP", null)} variant="contained">Agregar Campaña</Button>
     </Grid>
 }

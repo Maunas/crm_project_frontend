@@ -78,7 +78,7 @@ export const NomenclatorItemForm = ({ existingNom, nomenclator, submit, onCancel
 
     return (
         <form>
-            <Typography variant="h1" color="initial">
+            <Typography variant="h1">
                 {!existingNom ? "Crear Elemento de Nomenclador"
                     : `Modificar Elemento: ${existingNom.code} - ${existingNom.value}`}
             </Typography>
