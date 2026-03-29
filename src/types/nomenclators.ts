@@ -16,7 +16,6 @@ export interface NomenclatorDetailed extends Nomenclator, Metadata {
   items?: NomenclatorItem[];
 }
 export interface NomenclatorItemPost {
-  code: string | null;
   value: string | null;
   nomenclator_id: number | null;
   parent_item_id?: number | null;

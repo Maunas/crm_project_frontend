@@ -48,7 +48,6 @@ interface NomenclatorProps {
 export const NomenclatorItemForm = ({ existingNom, nomenclator, submit, onCancel }: NomenclatorProps) => {
 
     const defaultValues = useMemo(() => ({
-        code: existingNom?.code ?? null,
         value: existingNom?.value ?? null,
         nomenclator_id: existingNom?.nomenclator_id ?? nomenclator?.id ?? null,
         parent_item_id: existingNom?.parent_item_id ?? null,
@@ -80,7 +79,7 @@ export const NomenclatorItemForm = ({ existingNom, nomenclator, submit, onCancel
         <form>
             <Typography variant="h1">
                 {!existingNom ? "Crear Elemento de Nomenclador"
-                    : `Modificar Elemento: ${existingNom.code} - ${existingNom.value}`}
+                    : `Modificar Elemento: ${existingNom.value}`}
             </Typography>
             <Grid container spacing={2} sx={{
                 justifyContent: "center",
@@ -88,17 +87,13 @@ export const NomenclatorItemForm = ({ existingNom, nomenclator, submit, onCancel
                 margin: "1rem"
             }}>
                 <Grid size="grow" minWidth={"20rem"}>
-                    <ControlledTextInput name="code" control={control} label="Código"
-                        required errorMessage={errors.code?.message} />
-                </Grid>
-                <Grid size="grow" minWidth={"20rem"}>
                     <ControlledTextInput name="value" control={control} label="Valor"
                         required errorMessage={errors.value?.message} />
                 </Grid>
                 {nomenclator?.parent_nomenclator_id &&
                     <Grid size="grow" minWidth={"20rem"}>
                     <ControlledAutocomplete control={control} label="Item del que depende" name="parent_item_id" options={nomenclatorItems}
-                        getOptionLabel={option => `${option.code!} - ${option.value!}`} getOptionKey={option => `${option.id}`} returnField="id"
+                        getOptionLabel={option => `${option.value!}`} getOptionKey={option => `${option.id}`} returnField="id"
                         errorMessage={errors?.parent_item_id?.message} />
                 </Grid>}
             </Grid>

@@ -141,7 +141,6 @@ export const NomenclatorItemList = () => {
                                     <ListItemButton onClick={() => handleSidebar("DETAILS_NOM", nom)} >
                                         <ListItemText primary={<>
                                             <Stack spacing={1} direction="row">
-                                                <Typography fontWeight="bold">{nom.code} -</Typography>
                                                 <Typography >{nom.value} </Typography>
                                             </Stack>
                                             {!nom.organization_id && <Typography variant="body1" fontStyle="italic" >(Opción del Sistema)</Typography>}
