@@ -2,7 +2,6 @@ import { alpha, createTheme, lighten } from '@mui/material/styles';
 import { globalPalette } from './palette';
 
 const theme = createTheme({
-  // Paleta de Colores (Tu configuración original)
   palette: {
     primary: {
       light: globalPalette.primary[400],
