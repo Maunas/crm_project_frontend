@@ -5,44 +5,44 @@ const darkTheme = createTheme({
   palette: {
     mode: "dark",
     primary: {
-      light: globalPalette.primary[500],
-      main: globalPalette.primary[400],
-      dark: globalPalette.primary[300],
+      light: globalPalette.primary[200],
+      main: globalPalette.primary[300],
+      dark: globalPalette.primary[400],
       contrastText: globalPalette.primary[900],
       ...globalPalette.primary
     },
     secondary: {
-      light: globalPalette.secondary[500],
-      main: globalPalette.secondary[400],
-      dark: globalPalette.secondary[300],
+      light: globalPalette.secondary[200],
+      main: globalPalette.secondary[300],
+      dark: globalPalette.secondary[400],
       contrastText: globalPalette.secondary[50],
       ...globalPalette.secondary
     },
     info: {
-      light: globalPalette.info[500],
-      main: globalPalette.info[400],
-      dark: globalPalette.info[300],
+      light: globalPalette.info[200],
+      main: globalPalette.info[300],
+      dark: globalPalette.info[400],
       contrastText: globalPalette.info[50],
       ...globalPalette.info
     },
     success: {
-      light: globalPalette.success[500],
-      main: globalPalette.success[400],
-      dark: globalPalette.success[300],
+      light: globalPalette.success[200],
+      main: globalPalette.success[300],
+      dark: globalPalette.success[400],
       contrastText: globalPalette.success[50],
       ...globalPalette.success
     },
     warning: {
-      light: globalPalette.warning[500],
-      main: globalPalette.warning[400],
-      dark: globalPalette.warning[300],
+      light: globalPalette.warning[200],
+      main: globalPalette.warning[300],
+      dark: globalPalette.warning[400],
       contrastText: globalPalette.warning[50],
       ...globalPalette.warning
     },
     error: {
-      light: globalPalette.error[500],
-      main: globalPalette.error[400],
-      dark: globalPalette.error[300],
+      light: globalPalette.error[200],
+      main: globalPalette.error[300],
+      dark: globalPalette.error[400],
       contrastText: globalPalette.error[50],
       ...globalPalette.error
     },
