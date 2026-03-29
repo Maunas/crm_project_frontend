@@ -132,12 +132,12 @@ export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFi
       <Stack spacing={2}>
         {!existingLF ? (
           <>
-            <Typography variant="h1" color="initial">
+            <Typography variant="h1">
               Crear Campo para: "{campaign?.name}"
             </Typography>
           </>
         ) : (
-          <Typography variant="h1" color="initial">
+          <Typography variant="h1">
             Modificar el Campo {existingLF?.name} para: {campaign?.name}
           </Typography>
         )}

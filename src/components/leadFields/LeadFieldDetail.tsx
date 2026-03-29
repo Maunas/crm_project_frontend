@@ -39,7 +39,7 @@ export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeS
     return (
         <Stack spacing={2} >
             <Grid container spacing={2} justifyContent="space-between" alignItems="center">
-                <Typography variant="h2" color="initial">
+                <Typography variant="h2">
                     {leadField.order} - {leadField.name}
                 </Typography>
                 {leadField.active ? <CustomChip color='success' label="Habilitado" size="md" /> :

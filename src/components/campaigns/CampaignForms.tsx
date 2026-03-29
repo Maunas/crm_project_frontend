@@ -109,7 +109,7 @@ export const CampaignForm = ({ existingCmp, submit, onCancel }: CampaignProps) =
 
     return (
         <form>
-            <Typography variant="h1" color="initial">
+            <Typography variant="h1">
                 {!existingCmp ? "Crear Campaña" : `Modificar Campaña ${existingCmp.name}`}
             </Typography>
             <Grid container spacing={2} sx={{

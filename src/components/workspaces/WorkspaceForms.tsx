@@ -60,7 +60,7 @@ export const WorkspaceForm = ({ existingWsp, submit, onCancel }: WorkspaceProps)
 
     return (
         <form>
-            <Typography variant="h1" color="initial">
+            <Typography variant="h1">
                 {!existingWsp ? "Crear Espacio de Trabajo"
                     : `Modificar Espacio de Trabajo: ${existingWsp.name}`}
             </Typography>

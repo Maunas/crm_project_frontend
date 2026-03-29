@@ -113,7 +113,7 @@ export const SearchResultsList = () => {
 
     return (
         <GenericContainer maxWidth="xl">
-            <Typography variant="h1" color="initial">Resultado de la Búsqueda: "{query}"</Typography>
+            <Typography variant="h1">Resultado de la Búsqueda: "{query}"</Typography>
             {totalResults > 0 ?
                 <Box sx={{ width: '100%' }}>
                     <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
@@ -141,7 +141,7 @@ export const SearchResultsList = () => {
                     }
                 </Box>
                 :
-                <Typography variant="h3" color="initial" textAlign="center">No se han encontrado resultados para la búsqueda.</Typography>
+                <Typography variant="h3" textAlign="center">No se han encontrado resultados para la búsqueda.</Typography>
             }
         </GenericContainer>
     )
@@ -157,7 +157,7 @@ interface SearchListProps<Item> {
 
 const SearchList = <Item,>({ list, listId, getPrimaryText, getSecondaryText, getDetailsLink }: SearchListProps<Item>) => {
     if (list.length === 0) return (
-        <Typography variant="h3" color="initial" textAlign="center">No se han encontrado resultados para la búsqueda.</Typography>
+        <Typography variant="h3" textAlign="center">No se han encontrado resultados para la búsqueda.</Typography>
     )
 
     return (

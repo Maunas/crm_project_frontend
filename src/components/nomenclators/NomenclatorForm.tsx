@@ -82,7 +82,7 @@ export const NomenclatorForm = ({ existingNom, submit, onCancel }: NomenclatorPr
 
     return (
         <form>
-            <Typography variant="h1" color="initial">
+            <Typography variant="h1">
                 {!existingNom ? "Crear Nomenclador"
                     : `Modificar Nomenclador: ${existingNom.name}`}
             </Typography>

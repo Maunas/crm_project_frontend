@@ -140,7 +140,7 @@ export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateE
                 </>
                 :
                 <Grid container spacing={2} justifyContent="center" alignItems="center" direction="column">
-                    <Typography variant="h4" color="initial">No se han encontrado campos para esta campaña...</Typography>
+                    <Typography variant="h4">No se han encontrado campos para esta campaña...</Typography>
                     <CommonButton onClick={() => handleSidebar("CREATE_FIELD", null)} actionType="CREATE">Agregar Campo</CommonButton>
                 </Grid>
             }

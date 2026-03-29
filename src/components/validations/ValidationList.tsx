@@ -11,7 +11,7 @@ export const ValidationList = ({ leadField, handleSidebar }: ValidationListProps
     if (leadField.validation_rules.length === 0) {
         return (
             <Stack spacing={2} justifyContent="center">
-                <Typography variant="h4" color="initial" textAlign="center">No hay validaciones cargadas.</Typography>
+                <Typography variant="h4" textAlign="center">No hay validaciones cargadas.</Typography>
                 <Button variant='contained' onClick={() => handleSidebar("UPDATE_VAL", leadField)}>Modificar Lista</Button>
             </Stack>
         )
@@ -19,7 +19,7 @@ export const ValidationList = ({ leadField, handleSidebar }: ValidationListProps
     return (
         <>
             <Grid container spacing={2} justifyContent="space-between">
-                <Typography variant="h3" color="initial">Lista de Validaciones</Typography>
+                <Typography variant="h3">Lista de Validaciones</Typography>
                 <Button variant='contained' onClick={() => handleSidebar("UPDATE_VAL", leadField)}>Modificar Lista</Button>
             </Grid>
             <List>

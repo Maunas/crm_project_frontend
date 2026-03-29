@@ -131,7 +131,7 @@ export const OrganizationList = () => {
                             )}
                         </List>
                         : <Grid container spacing={2} justifyContent="center" alignItems="center" direction="column">
-                            <Typography variant="h4" color="initial">No se han encontrado organizaciones...</Typography>
+                            <Typography variant="h4">No se han encontrado organizaciones...</Typography>
                             <Button onClick={() => handleSidebar("CREATE_ORG", null)} variant="contained">Crear Organización</Button>
                         </Grid>
                 }
@@ -178,12 +178,12 @@ const OrganizationDetails = ({ entity, closeSidebar, handleSidebar, handleActive
     return (
         <Stack spacing={2} >
             <Grid container spacing={2} justifyContent="space-between" alignItems="center">
-                <Typography variant="h2" color="initial">{entity.name}</Typography>
+                <Typography variant="h2">{entity.name}</Typography>
                 {entity.active ? <CustomChip color='success' label="Habilitado" /> :
                     <CustomChip color='error' label="Deshabilitado" />}
             </Grid>
             {entity.description
-                ? <Typography variant="body1" color="initial">{entity.description}</Typography>
+                ? <Typography variant="body1">{entity.description}</Typography>
                 : <Typography variant="body1" fontStyle="italic">No tiene descripción.</Typography>
             }
             <Divider />

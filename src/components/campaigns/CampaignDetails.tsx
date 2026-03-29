@@ -107,7 +107,7 @@ export const CampaignDetails = () => {
             {campaign &&
                 <Stack spacing={2} >
                     <Grid size={12} container spacing={2} justifyContent="space-between" alignItems="center">
-                        <Typography variant="h1" color="initial">{campaign.name}</Typography>
+                        <Typography variant="h1">{campaign.name}</Typography>
                         {campaign.active ? <CustomChip color='success' label="Habilitado" /> :
                             <CustomChip color='error' label="Deshabilitado" />}
                     </Grid>
@@ -115,7 +115,7 @@ export const CampaignDetails = () => {
                         <Grid size="grow" minWidth="30rem">
 
                             {campaign.description
-                                ? <Typography variant="body1" color="initial">{campaign.description}</Typography>
+                                ? <Typography variant="body1">{campaign.description}</Typography>
                                 : <Typography variant="body1" fontStyle="italic">No tiene descripción.</Typography>
                             }
                         </Grid>
@@ -137,7 +137,7 @@ export const CampaignDetails = () => {
                     <Divider />
                     <Grid size="grow" container justifyContent="center" alignItems="center" gap={2}>
                         <Grid size="grow" minWidth="16rem" >
-                            <Typography variant="h2" color="initial">Acciones</Typography>
+                            <Typography variant="h2">Acciones</Typography>
                         </Grid >
                         <Grid size="grow" minWidth="20rem" >
                             <ButtonGroup fullWidth>

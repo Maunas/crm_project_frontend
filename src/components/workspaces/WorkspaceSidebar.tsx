@@ -50,17 +50,17 @@ const WorkspaceDetails = ({ entity, closeSidebar, handleSidebar, handleActive }:
     if (entity) return (
         <Stack spacing={2} >
             <Grid container spacing={2} justifyContent="space-between" alignItems="center">
-                <Typography variant="h2" color="initial">{entity.name}</Typography>
+                <Typography variant="h2">{entity.name}</Typography>
                 {entity.active ? <CustomChip color='success' label="Habilitado" /> :
                     <CustomChip color='error' label="Deshabilitado" />}
             </Grid>
-            {entity.description ? <Typography variant="body1" color="initial">{entity.description}</Typography>
+            {entity.description ? <Typography variant="body1">{entity.description}</Typography>
                 : <Typography variant="body1" fontStyle="italic">No tiene descripción.</Typography>
             }
             <Divider />
             {entity.campaigns &&
                 <>
-                    <Typography variant="h3" color="initial">Lista de Campañas</Typography>
+                    <Typography variant="h3">Lista de Campañas</Typography>
                     <CampaignList selectedWorkspaceId={entity.id} handleSidebar={handleSidebar} />
                 </>
             }

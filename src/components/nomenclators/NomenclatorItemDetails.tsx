@@ -18,7 +18,7 @@ export const NomenclatorItemDetails = ({ entity, parentEntity, closeSidebar, han
     if (entity) return (
         <Stack spacing={2} >
             <Grid container spacing={2} justifyContent="space-between" alignItems="center">
-                <Typography variant="h2" color="initial">{entity.code} - {entity.value}</Typography>
+                <Typography variant="h2">{entity.code} - {entity.value}</Typography>
                 {entity.active ? <CustomChip color='success' label="Habilitado" /> :
                     <CustomChip color='error' label="Deshabilitado" />}
             </Grid>
@@ -27,7 +27,7 @@ export const NomenclatorItemDetails = ({ entity, parentEntity, closeSidebar, han
             {parentEntity &&
                 <>
                     <Stack direction="row" spacing={1}>
-                        <Typography variant="body1" color="initial">Depende del Item de Nomenclador</Typography>
+                        <Typography variant="body1">Depende del Item de Nomenclador</Typography>
                         <Link component={RouterLink} to={`/nomenclators/${parentEntity?.nomenclator_id}`}>{parentEntity?.code} - {parentEntity?.value}</Link>
                     </Stack>
                     <Divider />

@@ -43,10 +43,10 @@ const SignupForm = ({ submit, onCancel }: SignupFormProps) => {
 
   return (
     <form>
-      <Typography variant="h1" color="initial" textAlign="center">
+      <Typography variant="h1" textAlign="center">
         CRM
       </Typography>
-      <Typography variant="h2" color="initial" textAlign="center">
+      <Typography variant="h2" textAlign="center">
         Crear cuenta
       </Typography>
       <Grid container spacing={2} sx={{
