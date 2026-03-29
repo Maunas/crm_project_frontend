@@ -1,10 +1,9 @@
-import { alpha, Button, Divider, Grid, Typography, IconButton, Stack, ButtonGroup } from '@mui/material'
+import { alpha, Button, Divider, Grid, Typography, Stack, ButtonGroup } from '@mui/material'
 import { ControlledCheckbox, ControlledNumber, ControlledTextInput } from '../common/forms/CustomInputs'
 import { useFieldArray, useForm, useWatch, type Control, type FieldErrors, type UseFieldArrayRemove } from 'react-hook-form'
-import type { DictionaryItem, LeadFilter, LeadListParams } from '../../types/common'
+import type { LeadFilter, LeadListParams } from '../../types/common'
 import { useEffect, useMemo, useState } from 'react'
 import { getLeadFields } from '../leadFields/leadFieldServices'
-import { getDictionaries } from '../../generalService'
 import { ControlledAutocomplete } from '../common/forms/CustomMultipleInputs'
 import { FormErrorMessage } from '../../styledComponents/styledMUIFormComponents'
 import type { LeadField } from '../../types/leadFields'
@@ -25,12 +24,6 @@ interface LeadFiltersProps {
 export const LeadFilters = ({ campaignId, filters, applyFilters }: LeadFiltersProps) => {
 
     const [leadFields, setLeadFields] = useState<LeadField[]>([])
-    const [operators, setOperators] = useState<DictionaryItem[]>([])
-
-    useEffect(() => {
-        getDictionaries("lead_search_operators")
-            .then(res => setOperators(res.lead_search_operators ?? []))
-    }, [])
 
     useEffect(() => {
         getLeadFields({ campaign_id: campaignId, only_active: true, page_size: 0 })
@@ -70,7 +63,7 @@ export const LeadFilters = ({ campaignId, filters, applyFilters }: LeadFiltersPr
                         <Stack spacing=".5rem" direction="column">
                             {fields.map((filter, idx) => (
                                 <LeadFiltersItem key={filter.id} idx={idx} control={control} leadFields={leadFields}
-                                    operators={operators} errors={errors} remove={remove} />
+                                    errors={errors} remove={remove} />
                             ))}
                         </Stack>
                     </>
@@ -98,19 +91,82 @@ export const LeadFilters = ({ campaignId, filters, applyFilters }: LeadFiltersPr
 interface LeadFiltersItemProps {
     idx: number,
     leadFields: LeadField[],
-    operators: DictionaryItem[],
     control: Control<LeadListParams & LeadListFilters, unknown, LeadListParams & LeadListFilters>,
     errors: FieldErrors<LeadListParams & LeadListFilters>,
     remove: UseFieldArrayRemove
 }
 
+const operators = [
+    {
+        "code": "eq",
+        "label": "Igual (=)",
+        "type": ["number", "bool"]
+    },
+    {
+        "code": "neq",
+        "label": "No igual (!=)",
+        "type": ["number"]
+    },
+    {
+        "code": "gt",
+        "label": "Mayor que (>)",
+        "type": ["number", "date"]
+    },
+    {
+        "code": "lt",
+        "label": "Menor que (<)",
+        "type": ["number", "date"]
+    },
+    {
+        "code": "gte",
+        "label": "Mayor o igual (>=)",
+        "type": ["number", "date"]
+    },
+    {
+        "code": "lte",
+        "label": "Menor o igual (<=)",
+        "type": ["number", "date"]
+    },
+    {
+        "code": "like",
+        "label": "Contiene (texto)",
+        "type": ["text"]
+    },
+    {
+        "code": "ilike",
+        "label": "Contiene (texto, ignora mayusculas)",
+        "type": ["text"]
+    },
+    {
+        "code": "in",
+        "label": "Lista de opciones",
+        "type": ["text"]
+    },
+    {
+        "code": "between",
+        "label": "Entres dos valores (rangos)",
+        "type": ["number"]
+    }
+]
 
-export const LeadFiltersItem = ({ idx, leadFields, operators, control, errors, remove }: LeadFiltersItemProps) => {
+
+export const LeadFiltersItem = ({ idx, leadFields, control, errors, remove }: LeadFiltersItemProps) => {
 
     const selLeadFieldId = useWatch({ control, name: `filters.${idx}.field_id` })
 
     const selLeadField = useMemo(() => leadFields.find(i => i.id === selLeadFieldId)
         , [selLeadFieldId, leadFields])
+
+    const possibleOperators = useMemo(() => operators.filter(i => {
+        switch (selLeadField?.field_type_code) {
+            case "CALCULATED": return true
+            case "BOOL": return i.type.includes("bool")
+            case "NUMBER": case "INT": case "RATING": case "MONEY": return i.type.includes("number")
+            case "DATE": case "DATE_TIME": return i.type.includes("date")
+            default: return i.type.includes("text")
+        }
+    })
+        , [selLeadField?.field_type_code])
 
     return (
         <Grid container direction="row" spacing="1rem" overflow="hidden"
@@ -126,7 +182,7 @@ export const LeadFiltersItem = ({ idx, leadFields, operators, control, errors, r
                     </Grid>
                     <Grid spacing=".5rem" size={3}>
 
-                        <ControlledAutocomplete control={control} name={`filters.${idx}.operator`} options={operators}
+                        <ControlledAutocomplete control={control} name={`filters.${idx}.operator`} options={possibleOperators}
                             getOptionKey={option => option.code} getOptionLabel={option => option.label} returnField="code"
                             label="Operación" size="small"
                             errorMessage={errors.filters?.[idx]?.operator?.message} />
@@ -139,7 +195,7 @@ export const LeadFiltersItem = ({ idx, leadFields, operators, control, errors, r
             </Grid>
             <Grid component={Button} container alignItems="center" onClick={() => remove(idx)} sx={{
                 backgroundColor: alpha(theme.palette.error.light, .5),
-                borderRadius:"0",
+                borderRadius: "0",
                 color: theme.palette.error.dark,
                 "&:hover": {
                     backgroundColor: alpha(theme.palette.error.light, .7)
