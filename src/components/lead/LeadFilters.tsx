@@ -143,17 +143,17 @@ export const LeadFiltersItem = ({ idx, leadFields, operators, control, errors, r
                     </Grid>
                 </Grid>
             </Grid>
-            <Grid container alignItems="center" onClick={() => remove(idx)} sx={{
-                cursor: "pointer",
-                paddingInline: "1rem",
+            <Button onClick={() => remove(idx)} sx={{
                 backgroundColor: mode === "light" ? alpha(theme.palette.error.light, .5) : alpha(theme.palette.error.dark, .5),
                 color: mode === "light" ? theme.palette.error.dark : theme.palette.error.light,
+                borderTopLeftRadius: 0,
+                borderBottomLeftRadius: 0,
                 "&:hover": {
                     backgroundColor: mode === "light" ? alpha(theme.palette.error.light, .7) : alpha(theme.palette.error.dark, .7)
                 }
             }}>
                 <CloseIcon />
-            </Grid>
+            </Button>
         </Grid>
     )
 }
