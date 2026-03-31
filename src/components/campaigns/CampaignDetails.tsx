@@ -110,8 +110,8 @@ export const CampaignDetails = () => {
                 <Stack spacing={2} >
                     <Grid size={12} container spacing={2} justifyContent="space-between" alignItems="center">
                         <Typography variant="h1">{campaign.name}</Typography>
-                        {campaign.active ? <CustomChip customColor='success' label="Habilitado" /> :
-                            <CustomChip customColor='error' label="Deshabilitado" />}
+                        {campaign.active ? <CustomChip color='success' label="Habilitado" /> :
+                            <CustomChip color='error' label="Deshabilitado" />}
                     </Grid>
                     <Grid container spacing={2}>
                         <Grid size="grow" minWidth="30rem">

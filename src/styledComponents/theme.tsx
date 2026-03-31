@@ -1,51 +1,14 @@
 import { createTheme } from '@mui/material/styles';
-import { globalPalette } from './palette';
+import { darkTheme, lightTheme } from './themePalette';
 
 const theme = createTheme({
-  palette: {
-    primary: {
-      light: globalPalette.primary[400],
-      main: globalPalette.primary[500],
-      dark: globalPalette.primary[600],
-      ...globalPalette.primary
+  colorSchemes: {
+    light: {
+      palette: lightTheme.palette
     },
-    secondary: {
-      light: globalPalette.secondary[400],
-      main: globalPalette.secondary[500],
-      dark: globalPalette.secondary[600],
-      ...globalPalette.secondary
-    },
-    info: {
-      light: globalPalette.info[400],
-      main: globalPalette.info[500],
-      dark: globalPalette.info[600],
-      ...globalPalette.info
-    },
-    success: {
-      light: globalPalette.success[400],
-      main: globalPalette.success[500],
-      dark: globalPalette.success[600],
-      ...globalPalette.success
-    },
-    warning: {
-      light: globalPalette.warning[400],
-      main: globalPalette.warning[500],
-      dark: globalPalette.warning[600],
-      ...globalPalette.warning
-    },
-    error: {
-      light: globalPalette.error[400],
-      main: globalPalette.error[500],
-      dark: globalPalette.error[600],
-      ...globalPalette.error
-    },
-
-    contrast: {
-      light: globalPalette.contrast[600],
-      main: globalPalette.contrast[700],
-      dark: globalPalette.contrast[800],
-      ...globalPalette.contrast
-    },
+    dark: {
+      palette: darkTheme.palette
+    }
   },
 
   // Tipografía
