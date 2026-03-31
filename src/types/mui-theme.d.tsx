@@ -7,6 +7,15 @@ declare module '@mui/material/styles' {
   interface PaletteOptions {
     contrast?: PaletteOptions['primary'];
   }
+    interface PaletteColor {
+    lighter: string;    
+    darker: string;
+  }
+
+  interface SimplePaletteColorOptions {
+    lighter: string;    
+    darker: string;
+  }
 }
 
 declare module '@mui/material/Chip' {

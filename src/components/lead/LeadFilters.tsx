@@ -1,4 +1,4 @@
-import { alpha, Button, Divider, Grid, Typography, Stack, ButtonGroup, useColorScheme } from '@mui/material'
+import { alpha, Button, Divider, Grid, Typography, Stack, ButtonGroup, useColorScheme, useTheme } from '@mui/material'
 import { ControlledCheckbox, ControlledNumber, ControlledTextInput } from '../common/forms/CustomInputs'
 import { useFieldArray, useForm, type Control, type FieldErrors, type UseFieldArrayRemove } from 'react-hook-form'
 import type { DictionaryItem, LeadFilter, LeadListParams } from '../../types/common'
@@ -8,7 +8,6 @@ import { getDictionaries, setFormErrors } from '../../generalService'
 import { ControlledAutocomplete } from '../common/forms/CustomMultipleInputs'
 import { FormErrorMessage } from '../../styledComponents/styledMUIFormComponents'
 import type { LeadField } from '../../types/leadFields'
-import theme from '../../styledComponents/theme'
 import CloseIcon from '@mui/icons-material/Close';
 
 interface LeadListFilters {
@@ -115,10 +114,10 @@ interface LeadFiltersItemProps {
 
 export const LeadFiltersItem = ({ idx, leadFields, operators, control, errors, remove }: LeadFiltersItemProps) => {
 
-    const { mode } = useColorScheme()
+    const { systemMode } = useColorScheme()
+    const theme = useTheme()
 
     return (
-
         <Grid container direction="row" spacing="1rem" overflow="hidden"
             border={`1px solid ${alpha(theme.palette.contrast.light, .5)}`} borderRadius=".5rem">
             <Grid container size="grow" spacing=".5rem" direction="column" padding="0 1rem .5rem 1rem">
@@ -144,15 +143,15 @@ export const LeadFiltersItem = ({ idx, leadFields, operators, control, errors, r
                 </Grid>
             </Grid>
             <Button onClick={() => remove(idx)} sx={{
-                backgroundColor: mode === "light" ? alpha(theme.palette.error.light, .5) : alpha(theme.palette.error.dark, .5),
-                color: mode === "light" ? theme.palette.error.dark : theme.palette.error.light,
+                backgroundColor: systemMode === "light" ? alpha(theme.palette.error.light, .3) : alpha(theme.palette.error.darker, .2),
+                color: systemMode === "light" ? theme.palette.error.darker : theme.palette.error.light,
                 borderTopLeftRadius: 0,
                 borderBottomLeftRadius: 0,
                 "&:hover": {
-                    backgroundColor: mode === "light" ? alpha(theme.palette.error.light, .7) : alpha(theme.palette.error.dark, .7)
+                    backgroundColor: systemMode === "light" ? alpha(theme.palette.error.light, .4) : alpha(theme.palette.error.darker, .3)
                 }
             }}>
-                <CloseIcon />
+                <CloseIcon/>
             </Button>
         </Grid>
     )
