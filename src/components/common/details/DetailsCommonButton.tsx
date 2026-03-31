@@ -8,7 +8,8 @@ import SearchIcon from '@mui/icons-material/Search';
 import type { ComponentProps, ReactNode } from 'react';
 import type { LinkProps } from 'react-router-dom';
 import Button from '@mui/material/Button';
-
+import FilterListIcon from '@mui/icons-material/FilterList';
+import SettingsIcon from '@mui/icons-material/Settings';
 interface DisableBtnProps {
     active: boolean,
     handleActive: () => void,
@@ -39,7 +40,7 @@ export const DisableButton = ({ active, handleActive,
 type MuiButtonProps = ComponentProps<typeof Button>;
 
 interface CommonBtnProps extends MuiButtonProps {
-    actionType?: "MODIFY" | "CLOSE" | "CREATE" | "DISABLE" | "ENABLE" | "DETAILS" | "NONE",
+    actionType?: "MODIFY" | "CLOSE" | "CREATE" | "DISABLE" | "ENABLE" | "DETAILS" | "FILTER" | "OPTIONS" | "NONE",
     handleClick?: () => void,
     component?: React.ForwardRefExoticComponent<LinkProps & React.RefAttributes<HTMLAnchorElement>>,
     to?: string,
@@ -55,6 +56,8 @@ export const CommonButton = ({ actionType= "NONE", handleClick, children, ...btn
                 {actionType === "DISABLE" && <DeleteIcon />}
                 {actionType === "ENABLE" && <RestoreFromTrashIcon />}
                 {actionType === "DETAILS" && <SearchIcon />}
+                {actionType === "FILTER" && <FilterListIcon />}
+                {actionType === "OPTIONS" && <SettingsIcon />}
                 {children}
             </Stack>
         </Button>

@@ -37,15 +37,20 @@ interface GenericModalProps extends GenericContainerProps, ComponentProps<typeof
         handleOpen: (idModal: string | number) => void,
         handleClose: () => void
     },
-    idModal: string | number
+    idModal: string | number,
+    showButton?: boolean,
 }
 
-export const GenericModal = ({ idModal, modalProps: { open, handleOpen, handleClose },
-    buttonText, maxWidth = "lg", containerSx = {}, paperSx = {}, children, ...btnProps
+export const GenericModal = ({ idModal, modalProps: { open, handleOpen, handleClose }, showButton = true,
+    buttonText, maxWidth = "lg", containerSx = {}, paperSx = {}, children, actionType, ...btnProps
 }: GenericModalProps) => {
     return (
         <>
-            <CommonButton handleClick={() => handleOpen(idModal)} {...btnProps}>{buttonText}</CommonButton>
+            {showButton &&
+                <CommonButton handleClick={() => handleOpen(idModal)} actionType={actionType} {...btnProps}>
+                    {buttonText}
+                </CommonButton>
+            }
             <Modal
                 open={open === idModal}
                 onClose={handleClose}

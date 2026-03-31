@@ -1,78 +1,59 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useMemo, useState } from "react"
+import { GenericModal } from "../common/layout/GenericContainer"
+import LeadColumnSelector from "./LeadColumnSelector"
 import type { LeadField, LeadFieldValue } from "../../types/leadFields"
 import type { Lead } from "../../types/leads"
+import { useDragAndDrop } from "../hooks/useDragAndDrop"
 import { getLeadFields } from "../leadFields/leadFieldServices"
 import { useNavigate } from "react-router-dom"
 import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material"
-import LeadColumnSelector from "./LeadColumnSelector"
-import { useModal } from "../hooks/useModal"
-import { GenericModal } from "../common/layout/GenericContainer"
-import { useDragAndDrop } from "../hooks/useDragAndDrop"
 
 interface LeadListTableProps {
     leads: Lead[],
-    campaignId: number
+    campaignId: number,
+    modalProps: {
+        open: string | number | boolean;
+        handleOpen: (idModal: string | number) => void;
+        handleClose: () => void;
+    }
 }
 
-export const LeadListTable = ({ leads, campaignId }: LeadListTableProps) => {
+export const LeadListTable = ({ leads, campaignId, modalProps }: LeadListTableProps) => {
 
     const DEFAULT_N_OF_FIELDS = 6
+    const nav = useNavigate()
 
     const [leadFields, setLeadFields] = useState<LeadField[]>([])
 
     useEffect(() => {
         if (!campaignId) return
         getLeadFields({ detailed: false, campaign_id: campaignId, only_active: true, page_size: 0 })
-            .then(leadFields => {
-                console.log(leadFields)
-                setLeadFields(leadFields.items)
-            })
+            .then(leadFields => setLeadFields(leadFields.items))
     }, [campaignId])
 
     const [selectedIds, setSelectedIds] = useState<number[]>([])
 
+    //Trae el arreglo de ids, con el orden definido de leads en localStorage. Si no, trae los primeros N elementos
     useEffect(() => {
         if (!leadFields || leadFields.length === 0) return
-        const totalSelectedFields = window.localStorage.getItem("sel_lead_fields")
-        const localSelectedFields = (JSON.parse(totalSelectedFields ?? "{}"))?.[campaignId]
-        if (!totalSelectedFields || !localSelectedFields) {
+        const localSelectedFields = JSON.parse(window.localStorage.getItem("sel_lead_fields") ?? "{}")?.[campaignId]
+        if (localSelectedFields) {
+            setSelectedIds(localSelectedFields)
+        } else {
             setSelectedIds(leadFields.slice(0, DEFAULT_N_OF_FIELDS).map(fields => fields.id))
-            return
         }
-        setSelectedIds(localSelectedFields)
     }, [leadFields])
 
-    const leadColumns = useMemo(() => {
+    //Filtra los objetos LeadField para seguir el orden del arreglo de ids.
+    const selectedColumns = useMemo(() => {
         if (!leadFields || leadFields.length === 0) return null
         if (!selectedIds || selectedIds.length === 0) return null
         return leadFields.filter(leadField => selectedIds.includes(leadField.id))
             .sort((a, b) => selectedIds.indexOf(a.id) - selectedIds.indexOf(b.id))
     }, [leadFields, selectedIds])
 
-
-    const getValue = (field_value: LeadFieldValue) => {
-        if (field_value.value && field_value.value !== "") return `${field_value.value}`
-        else if (field_value?.nomenclator_items?.length > 0) {
-            return field_value.nomenclator_items?.reduce((acc, item) => `${acc}${acc.length > 0 ? " | " : ""}${item.value}`, "")
-        }
-        else if (field_value?.related_leads?.length > 0) {
-            return field_value.related_leads?.reduce((acc, item) => {
-                const relatedLeadName = item?.field_values?.[0]?.value + " " + item?.field_values?.[1]?.value
-                return `${acc}${acc.length > 0 ? " | " : ""}${relatedLeadName}`
-            }, "")
-        }
-        else return "---"
-    }
-
-    const nav = useNavigate()
-
-    const { modalProps } = useModal()
-    const handleSelectedIds = (ids: number[]) => {
-        setSelectedIds(ids)
-        modalProps.handleClose()
-    }
-
+    //Ante cambios a selectedIds los actualiza en localStorage
     useEffect(() => {
         if (selectedIds.length === 0) return
         const totalSelectedFields = window.localStorage.getItem("sel_lead_fields")
@@ -84,18 +65,38 @@ export const LeadListTable = ({ leads, campaignId }: LeadListTableProps) => {
         window.localStorage.setItem("sel_lead_fields", JSON.stringify(newTotalSelectedFields))
     }, [selectedIds])
 
+    const getValue = (field_value: LeadFieldValue) => {
+        if (field_value.value && field_value.value !== "") return `${field_value.value}`
+        else if (field_value?.nomenclator_items?.length > 0) {
+            return field_value.nomenclator_items?.reduce((acc, item) =>
+                `${acc}${acc.length > 0 ? " | " : ""}${item.value}`
+                , "")
+        }
+        else if (field_value?.related_leads?.length > 0) {
+            return field_value.related_leads?.reduce((acc, item) =>
+                `${acc}${acc.length > 0 ? " | " : ""}${item?.field_values?.[0]?.value}`
+                , "")
+        }
+        else return "---"
+    }
+
+    const handleSelectedIds = (ids: number[]) => {
+        setSelectedIds(ids)
+        modalProps.handleClose()
+    }
+
     const { dragStyles, dragEvents } = useDragAndDrop(selectedIds, (items) => setSelectedIds(items))
 
-    if (leads.length > 0 && leadColumns && leadColumns.length > 0) return (
+    if (leads.length > 0 && selectedColumns && selectedColumns.length > 0) return (
         <>
-            <GenericModal idModal="columns_selector" modalProps={modalProps} buttonText="Modificar Columnas" maxWidth="md" >
+            <GenericModal idModal="columns_selector" modalProps={modalProps} buttonText="Modificar Columnas" maxWidth="md" showButton={false}>
                 <LeadColumnSelector itemsList={leadFields} selectedIds={selectedIds!} handleSelectedIds={handleSelectedIds} handleClose={modalProps.handleClose} showField="name" />
             </GenericModal>
             <TableContainer component={Paper}>
                 <Table sx={{ minWidth: 650 }} aria-label="simple table">
                     <TableHead>
                         <TableRow>
-                            {leadColumns.map((column, idx) =>
+                            {selectedColumns.map((column, idx) =>
                                 <TableCell align={idx > 1 ? "right" : "left"} key={column.id}
                                     {...dragEvents(idx, false)}
                                     sx={{
@@ -114,7 +115,7 @@ export const LeadListTable = ({ leads, campaignId }: LeadListTableProps) => {
                             <TableRow onClick={() => nav(`/leads/${lead.id}`)} className='selectable'
                                 key={lead.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                             >
-                                {leadColumns.map((column, idx) => {
+                                {selectedColumns.map((column, idx) => {
                                     const leadValue = lead.field_values.find(lv => lv.field_id === column.id)
                                     //Si no se encuentra, no hay valor
                                     if (!leadValue) return <TableCell component="td" scope="row" align={idx === 0 ? "left" : "right"} key={`${lead.id}-${column.id}`}>---</TableCell>

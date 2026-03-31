@@ -1,10 +1,10 @@
-import { alpha, Button, Divider, Grid, Typography, IconButton, Stack, ButtonGroup } from '@mui/material'
+import { alpha, Button, Divider, Grid, Typography, Stack, ButtonGroup, useColorScheme } from '@mui/material'
 import { ControlledCheckbox, ControlledNumber, ControlledTextInput } from '../common/forms/CustomInputs'
 import { useFieldArray, useForm, type Control, type FieldErrors, type UseFieldArrayRemove } from 'react-hook-form'
 import type { DictionaryItem, LeadFilter, LeadListParams } from '../../types/common'
 import { useEffect, useMemo, useState } from 'react'
 import { getLeadFields } from '../leadFields/leadFieldServices'
-import { getDictionaries } from '../../generalService'
+import { getDictionaries, setFormErrors } from '../../generalService'
 import { ControlledAutocomplete } from '../common/forms/CustomMultipleInputs'
 import { FormErrorMessage } from '../../styledComponents/styledMUIFormComponents'
 import type { LeadField } from '../../types/leadFields'
@@ -19,7 +19,7 @@ interface LeadListFilters {
 interface LeadFiltersProps {
     campaignId: number,
     filters: LeadListParams & LeadListFilters,
-    applyFilters: (data: LeadListParams & LeadListFilters) => void
+    applyFilters: (data: LeadListParams & LeadListFilters) => Promise<void>
 }
 
 export const LeadFilters = ({ campaignId, filters, applyFilters }: LeadFiltersProps) => {
@@ -45,53 +45,62 @@ export const LeadFilters = ({ campaignId, filters, applyFilters }: LeadFiltersPr
         leadFilters: filters?.filters
     }), [filters])
 
-    const { control, handleSubmit, formState: { errors } } = useForm<LeadListFilters>({ defaultValues })
+    const { control, handleSubmit, formState: { errors }, setError } = useForm<LeadListFilters>({ defaultValues })
 
     const { append, remove, fields } = useFieldArray({ control, name: "filters" })
 
-    return (
-        <form onSubmit={handleSubmit(applyFilters)} >
-            <Grid container direction="column" spacing="1rem">
-                <Grid container size="grow" spacing={2}>
-                    <Grid size="grow" minWidth="20rem">
-                        <ControlledCheckbox control={control} name="headers.only_active" label="Mostrar sólo Leads habilitados"
-                            errorMessage={errors.headers?.only_active?.message} />
-                    </Grid>
-                    <Grid size="grow" minWidth="20rem">
-                        <ControlledNumber control={control} name="headers.page_size" label="Items por página" min={5} step={5}
-                            errorMessage={errors.headers?.page_size?.message} />
-                    </Grid>
-                </Grid>
-                <Divider />
-                {!!campaignId &&
-                    <>
-                        <Typography variant="h4">Filtros por Campo</Typography>
+    const onSubmit = (data: LeadListFilters) => {
+        applyFilters(data).catch(e => setFormErrors(e, setError,
+            (e) => e.map(error => setError(`root`, { message: error.message }))
+        ))
+    }
 
-                        <Stack spacing=".5rem" direction="column">
-                            {fields.map((filter, idx) => (
-                                <LeadFiltersItem key={filter.id} idx={idx} control={control} leadFields={leadFields}
-                                    operators={operators} errors={errors} remove={remove} />
-                            ))}
-                        </Stack>
-                    </>
-                }
-                {errors.root && (
-                    <FormErrorMessage>{errors.root.message}</FormErrorMessage>
-                )}
-                <Grid alignSelf="end">
-                    <ButtonGroup >
-                        {!!campaignId &&
-                            <Button variant="outlined" color="secondary" onClick={() => append({})}>
-                                Agregar Filtro
+    return (
+        <Stack spacing="1.5rem">
+            <Typography variant="h2">Filtros de Búsqueda</Typography>
+            <form onSubmit={handleSubmit(onSubmit)} >
+                <Grid container direction="column" spacing="1rem">
+                    <Grid container size="grow" spacing=".5rem">
+                        <Grid size="grow" minWidth="20rem">
+                            <ControlledCheckbox control={control} name="headers.only_active" label="Mostrar sólo Leads habilitados"
+                                errorMessage={errors.headers?.only_active?.message} />
+                        </Grid>
+                        <Grid size="grow" minWidth="20rem">
+                            <ControlledNumber control={control} name="headers.page_size" label="Items por página" min={5} step={5}
+                                errorMessage={errors.headers?.page_size?.message} />
+                        </Grid>
+                    </Grid>
+                    <Divider />
+                    {!!campaignId &&
+                        <>
+                            <Typography variant="h4">Filtros por Campo</Typography>
+
+                            <Stack spacing=".5rem" direction="column">
+                                {fields.map((filter, idx) => (
+                                    <LeadFiltersItem key={filter.id} idx={idx} control={control} leadFields={leadFields}
+                                        operators={operators} errors={errors} remove={remove} />
+                                ))}
+                            </Stack>
+                        </>
+                    }
+                    {errors.root && (
+                        <FormErrorMessage>{errors.root.message}</FormErrorMessage>
+                    )}
+                    <Grid alignSelf="end">
+                        <ButtonGroup >
+                            {!!campaignId &&
+                                <Button variant="outlined" color="secondary" onClick={() => append({})}>
+                                    Agregar Filtro
+                                </Button>
+                            }
+                            <Button variant="contained" color="secondary" type='submit'>
+                                Aplicar Filtros
                             </Button>
-                        }
-                        <Button variant="contained" color="secondary" type='submit'>
-                            Aplicar Filtros
-                        </Button>
-                    </ButtonGroup>
+                        </ButtonGroup>
+                    </Grid>
                 </Grid>
-            </Grid>
-        </form >
+            </form >
+        </Stack>
     )
 }
 
@@ -105,7 +114,11 @@ interface LeadFiltersItemProps {
 }
 
 export const LeadFiltersItem = ({ idx, leadFields, operators, control, errors, remove }: LeadFiltersItemProps) => {
+
+    const { mode } = useColorScheme()
+
     return (
+
         <Grid container direction="row" spacing="1rem" overflow="hidden"
             border={`1px solid ${alpha(theme.palette.contrast.light, .5)}`} borderRadius=".5rem">
             <Grid container size="grow" spacing=".5rem" direction="column" padding="0 1rem .5rem 1rem">
@@ -130,16 +143,16 @@ export const LeadFiltersItem = ({ idx, leadFields, operators, control, errors, r
                     </Grid>
                 </Grid>
             </Grid>
-            <Grid container alignItems="center" sx={{
-                backgroundColor: alpha(theme.palette.error.light, .5),
-                color: theme.palette.error.dark,
+            <Grid container alignItems="center" onClick={() => remove(idx)} sx={{
+                cursor: "pointer",
+                paddingInline: "1rem",
+                backgroundColor: mode === "light" ? alpha(theme.palette.error.light, .5) : alpha(theme.palette.error.dark, .5),
+                color: mode === "light" ? theme.palette.error.dark : theme.palette.error.light,
                 "&:hover": {
-                    backgroundColor: alpha(theme.palette.error.light, .7)
+                    backgroundColor: mode === "light" ? alpha(theme.palette.error.light, .7) : alpha(theme.palette.error.dark, .7)
                 }
             }}>
-                <IconButton aria-label="deleteFilter" size='large' color='inherit' onClick={() => remove(idx)}>
-                    <CloseIcon />
-                </IconButton>
+                <CloseIcon />
             </Grid>
         </Grid>
     )

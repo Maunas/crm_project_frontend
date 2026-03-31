@@ -44,6 +44,8 @@ export const CampaignDetails = () => {
         }).then(res => setLeadFields(res.items))
     }, [setLeadFields, id])
 
+    //Define como actualizar la lista dependiendo de la acción realizada. 
+    // Para CREATE se vuelve a hacer fetch de la página para no arruinar la paginación
     const updateEntity = (mode: string, entity: CampaignDetailed | LeadFieldDetailed) => {
         switch (mode) {
             case "UPDATE_CMP": {
