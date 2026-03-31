@@ -1,21 +1,21 @@
 import { Chip } from "@mui/material";
 import { alpha, styled } from "@mui/material/styles";
 
-export const CustomChip = styled(Chip)(({ theme, color = "primary", ...props }) => {
+export const CustomChip = styled(Chip) (({ theme, color = "primary", ...props }) => {
     const TRANSPARENCY = 0.15
-
-    const paletteColor = theme.palette[color] ?? theme.palette.primary
+    const chipColor = color === "default" ? "contrast" : color //Soluciona una incompatibilidad con el valor "default"
+    const paletteColor = theme.palette[chipColor] ?? theme.palette.primary
     let sizeObject
-    switch(props.size){
-        case "sm": sizeObject = {padding:"0px", gap:"0px", fontSize: ".8rem"}; break
-        case "lg": sizeObject = {padding:"6px", gap:"4px", fontSize: "1rem"}; break
-        case "xl": sizeObject = {padding:"10px 8px", gap:"6px", fontSize:"1rem"}; break
-        default: sizeObject = {padding:"4px", gap:"2px", fontSize:".8rem"}
+    switch (props.size) {
+        case "sm": sizeObject = { padding: "0px", gap: "0px", fontSize: ".8rem" }; break
+        case "lg": sizeObject = { padding: "6px", gap: "4px", fontSize: "1rem" }; break
+        case "xl": sizeObject = { padding: "10px 8px", gap: "6px", fontSize: "1rem" }; break
+        default: sizeObject = { padding: "4px", gap: "2px", fontSize: ".8rem" }
     }
 
     return {
         fontWeight: 600,
-        height:"auto",
+        height: "auto",
         border: "1px solid",
         borderRadius: "12px",
         backgroundColor: alpha(paletteColor.light, TRANSPARENCY),

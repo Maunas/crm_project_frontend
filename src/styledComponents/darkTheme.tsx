@@ -1,4 +1,4 @@
-import { alpha, createTheme } from '@mui/material/styles';
+import { createTheme } from '@mui/material/styles';
 import { globalPalette } from './palette';
 
 const darkTheme = createTheme({
@@ -8,42 +8,36 @@ const darkTheme = createTheme({
       light: globalPalette.primary[200],
       main: globalPalette.primary[300],
       dark: globalPalette.primary[400],
-      contrastText: globalPalette.primary[900],
       ...globalPalette.primary
     },
     secondary: {
       light: globalPalette.secondary[200],
       main: globalPalette.secondary[300],
       dark: globalPalette.secondary[400],
-      contrastText: globalPalette.secondary[50],
       ...globalPalette.secondary
     },
     info: {
       light: globalPalette.info[200],
       main: globalPalette.info[300],
       dark: globalPalette.info[400],
-      contrastText: globalPalette.info[50],
       ...globalPalette.info
     },
     success: {
       light: globalPalette.success[200],
       main: globalPalette.success[300],
       dark: globalPalette.success[400],
-      contrastText: globalPalette.success[50],
       ...globalPalette.success
     },
     warning: {
       light: globalPalette.warning[200],
       main: globalPalette.warning[300],
       dark: globalPalette.warning[400],
-      contrastText: globalPalette.warning[50],
       ...globalPalette.warning
     },
     error: {
       light: globalPalette.error[200],
       main: globalPalette.error[300],
       dark: globalPalette.error[400],
-      contrastText: globalPalette.error[50],
       ...globalPalette.error
     },
 
@@ -51,22 +45,8 @@ const darkTheme = createTheme({
       light: globalPalette.contrast[500],
       main: globalPalette.contrast[600],
       dark: globalPalette.contrast[700],
-      contrastText: globalPalette.contrast[50],
       ...globalPalette.contrast
     },
-    background: {
-      default: globalPalette.contrast[900],
-      paper: globalPalette.contrast[800],
-    },
-    text: {
-      primary: globalPalette.contrast[50],
-      secondary: alpha(globalPalette.contrast[50], .8),
-      disabled: alpha(globalPalette.contrast[50], .5)
-    },
-    divider: globalPalette.contrast[600],
-    grey: {
-      ...globalPalette.contrast
-    }
   },
 
   // Tipografía

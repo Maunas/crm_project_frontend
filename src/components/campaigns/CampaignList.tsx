@@ -6,7 +6,7 @@ import type { CampaignDetailed, WorkspaceDetailed } from "../../types/campaigns"
 import { getCampaigns } from "./campaignServices"
 import { useListPagination } from "../hooks/useListPagination"
 import { Link } from "react-router-dom"
-import { Button, Grid, Stack, Typography } from "@mui/material"
+import { Button, Grid, Stack, Typography, useTheme } from "@mui/material"
 
 interface CampaignListProps {
     selectedWorkspaceId: number,
@@ -31,21 +31,27 @@ export const CampaignList = ({ selectedWorkspaceId, handleSidebar }: CampaignLis
             <PaginationComponent {...pageComponentProps} />
         </>
     )
-    return <Grid container spacing={2} justifyContent="center" alignItems="center" direction="column">
-        <Typography variant="h4">No se han encontrado campañas para este espacio de trabajo...</Typography>
-        <Button onClick={() => handleSidebar("CREATE_CMP", null)} variant="contained">Agregar Campaña</Button>
-    </Grid>
+    else return (
+        <Grid container spacing={2} justifyContent="center" alignItems="center" direction="column">
+            <Typography variant="h4">No se han encontrado campañas para este espacio de trabajo...</Typography>
+            <Button onClick={() => handleSidebar("CREATE_CMP", null)} variant="contained">Agregar Campaña</Button>
+        </Grid>
+    )
 }
 
 export const CampaignListData = ({ campaigns }: { campaigns: CampaignDetailed[] }) => {
+
+    const theme = useTheme()
+
     return (
         <Grid sx={{ marginLeft: 6 }} container>
             {campaigns.map((cmp, idx) =>
                 <Grid key={`cmp-${idx}`} size="grow" minWidth="15rem">
-                    <Button key={`cmp-${idx}`} variant="text" component={Link} to={`/campaigns/${cmp.id}`} fullWidth >
-                        <Stack spacing={1} direction="row" width="100%">
+                    <Button key={`cmp-${idx}`} variant="text" sx={{ color: theme.palette.text.primary }}
+                        component={Link} to={`/campaigns/${cmp.id}`} fullWidth >
+                        <Stack spacing={1} direction="row" width="100%" color="inherit">
                             <EnabledIcon active={cmp.active} />
-                            <Typography fontWeight="bold">{cmp.name}</Typography>
+                            <Typography fontWeight="bold" color="inherit">{cmp.name}</Typography>
                         </Stack>
                     </Button>
                 </Grid>

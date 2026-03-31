@@ -209,11 +209,11 @@ interface RegisteredTextProps<T extends FieldValues> extends RegisterFormInput<T
 
 export const RegisteredTextInput = <T extends FieldValues>
   ({ register, name, label, required = false, errorMessage, autoComplete = "one-time-code", multiline = false,
-    id = null, type = "text", onChange = () => { } }: RegisteredTextProps<T>) => {
+    id = null, type = "text", size = "medium" , onChange = () => { } }: RegisteredTextProps<T>) => {
   return (
     <>
       <TextField {...register(name)} label={label ?? name} id={id ?? name} type={type} onChange={onChange}
-        required={required} error={!!errorMessage} autoComplete={autoComplete} multiline={multiline} fullWidth
+        required={required} error={!!errorMessage} autoComplete={autoComplete} multiline={multiline} fullWidth size={size}
       />
       {errorMessage && typeof errorMessage === "string" && (
         <FormErrorMessage>{errorMessage}</FormErrorMessage>

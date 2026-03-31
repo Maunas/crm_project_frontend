@@ -5,6 +5,7 @@ import { UpdateCampaignFormSidebar } from './CampaignForms'
 import { LeadFieldTable } from '../leadFields/LeadFieldTable'
 import { LeadFieldDetail } from '../leadFields/LeadFieldDetail'
 import { LeadFieldFormSidebar } from '../leadFields/LeadFieldForm'
+import { CustomChip } from '../../styledComponents/styledMUIDisplayComponents'
 import type { CampaignDetailed } from '../../types/campaigns'
 import type { LeadFieldDetailed } from '../../types/leadFields'
 import { disableCampaign, enableCampaign, getCampaign } from './campaignServices'
@@ -14,7 +15,6 @@ import { Link as RouterLink, useNavigate, useParams, useSearchParams } from 'rea
 import dayjs from 'dayjs'
 import { Typography, ButtonGroup, Link, Breadcrumbs, Stack, Grid, Divider } from '@mui/material'
 import { ValidationFormSidebar } from '../validations/ValidationForm'
-import { CustomChip } from '../../styledComponents/styledMUIDisplayComponents'
 
 export const CampaignDetails = () => {
     const { id } = useParams()
@@ -110,8 +110,8 @@ export const CampaignDetails = () => {
                 <Stack spacing={2} >
                     <Grid size={12} container spacing={2} justifyContent="space-between" alignItems="center">
                         <Typography variant="h1">{campaign.name}</Typography>
-                        {campaign.active ? <CustomChip color='success' label="Habilitado" /> :
-                            <CustomChip color='error' label="Deshabilitado" />}
+                        {campaign.active ? <CustomChip customColor='success' label="Habilitado" /> :
+                            <CustomChip customColor='error' label="Deshabilitado" />}
                     </Grid>
                     <Grid container spacing={2}>
                         <Grid size="grow" minWidth="30rem">
