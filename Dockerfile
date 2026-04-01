@@ -1,28 +1,30 @@
 #https://docs.docker.com/guides/reactjs/containerize/
 
 ARG NODE_VERSION=24.11.1
-ARG NGINX=alpine3.23
 
-FROM node:${NODE_VERSION}-alpine AS builder
+FROM node:${NODE_VERSION}-slim AS builder
+
+RUN corepack enable
 
 WORKDIR /app
 
-COPY package*.json* .
+COPY package.json pnpm-lock.yaml ./
 
-# Install project dependencies using npm ci (ensures a clean, reproducible install)
-RUN --mount=type=cache,target=/root/.npm npm ci
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile
 
 COPY . .
 
-RUN npm run build
+RUN pnpm build
 
-FROM node:${NODE_VERSION}-alpine AS runner
 
-WORKDIR /app
-# Copy the static build output from the build stage to Nginx's default HTML serving directory
-COPY --from=builder /app/dist /app/dist
+FROM node:${NODE_VERSION}-slim AS runner
 
 RUN npm i -g serve
+
+WORKDIR /app
+
+COPY --from=builder /app/dist /app/dist
 
 EXPOSE 5173
 
