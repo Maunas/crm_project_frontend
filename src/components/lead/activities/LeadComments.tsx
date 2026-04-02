@@ -11,6 +11,7 @@ import { alpha, styled } from "@mui/material/styles"
 import EditIcon from '@mui/icons-material/Edit';
 import CloseIcon from '@mui/icons-material/Close';
 import WatchLaterIcon from '@mui/icons-material/WatchLater';
+import type { ColorTypes } from "../../../types/mui-theme.d"
 
 export const LeadComments = ({ leadId }: { leadId: number }) => {
 
@@ -51,7 +52,7 @@ export const LeadComments = ({ leadId }: { leadId: number }) => {
                     <Grid key={com.id} size="grow" minWidth="20rem">
                         {com.id !== selectedCommentId ? (
                             <CommentInstance comment={com} onEdit={() => setSelectedCommentId(com.id)}
-                                onDelete={() => onDeleteComment(com.id)} footerContent={<Metadata comment={com} />} >
+                                onDelete={() => onDeleteComment(com.id)} title={<MetadataShort comment={com} />} >
                                 {com.content}
                             </CommentInstance>
                         )
@@ -67,32 +68,47 @@ export const LeadComments = ({ leadId }: { leadId: number }) => {
     )
 }
 
-const CommentNote = styled(Paper)(({ theme, ...props }) => ({
-    borderRadius: "1rem 1rem 1rem 0",
-    border: `1px solid ${theme.palette[`${props.color}`]["100"]}`,
-    overflow: "hidden",
-    "& .comment-footer, .comment-header": {
-        display: "flex",
-        alignItems:"center",
-        justifyContent:"space-between",
-        flexWrap: "wrap",
+const CommentNote = styled(Paper)(({ theme, ...props }) => {
+    const paletteColor = props.color as ColorTypes
+    return ([{
+        borderRadius: "1rem 1rem 0 1rem",
+        border: `1px solid ${theme.palette[paletteColor].main}`,
+        overflow: "hidden",
+        color: theme.palette.text.primary,
+        "& .comment-footer, .comment-header": {
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+        },
+        "& .comment-header": {
+            paddingInline: "1rem",
+            backgroundColor: alpha(theme.palette[paletteColor].light, .5),
+            borderBottom: `1px solid ${theme.palette[paletteColor].main}`,
+        },
+        "& .comment-footer": {
+            gap: ".5rem",
+            padding: ".25rem 1rem",
+            backgroundColor: alpha(theme.palette[paletteColor].light, .5),
+            borderTop: `1px solid ${theme.palette[paletteColor].main}`,
+        },
+        "& .comment-main": {
+            padding: "1rem",
+            minHeight: "4rem",
+        },
     },
-    "& .comment-header": {
-        paddingInline: "1rem",
-        backgroundColor: alpha(theme.palette[`${props.color}`].light, .5),
-        borderBottom: `1px solid ${theme.palette[`${props.color}`].main}`,
-    },
-    "& .comment-footer": {
-        gap: ".5rem",
-        padding: ".25rem 1rem",
-        backgroundColor: alpha(theme.palette[`${props.color}`].light, .5),
-        borderTop: `1px solid ${theme.palette[`${props.color}`].main}`,
-    },
-    "& .comment-main": {
-        padding: "1rem",
-        minHeight: "4rem",
-    },
-}))
+    theme.applyStyles('dark', {
+        "& .comment-header": {
+            backgroundColor: alpha(theme.palette[paletteColor].dark, .2),
+            borderBottom: `1px solid ${theme.palette[paletteColor].main}`,
+        },
+        "& .comment-footer": {
+            backgroundColor: alpha(theme.palette[paletteColor].dark, .2),
+            borderTop: `1px solid ${theme.palette[paletteColor].main}`,
+        },
+    })
+    ])
+})
 
 interface CommentInstanceProps {
     comment?: LeadComment,
@@ -101,7 +117,7 @@ interface CommentInstanceProps {
     onEdit?: () => void,
     onDelete?: () => void,
     footerContent?: ReactNode,
-    title?: string,
+    title?: ReactNode,
     children: ReactNode
 }
 
@@ -111,11 +127,11 @@ export const CommentInstance = ({ comment, title, color, footerContent, onEdit, 
         <Box className="comment-header">
             <Typography variant="body1" fontWeight={600} >{title}</Typography>
             <Stack direction="row">
-                {onEdit && <IconButton aria-label="edit" size="small" onClick={() => onEdit()}>
-                    <EditIcon fontSize="small" sx={{ color: "black" }} />
+                {onEdit && <IconButton aria-label="edit" size="small" onClick={() => onEdit()} color="inherit">
+                    <EditIcon fontSize="small" />
                 </IconButton>}
-                {onDelete && <IconButton aria-label="delete" size="small" onClick={() => onDelete()}>
-                    <CloseIcon fontSize="small" sx={{ color: "black" }} />
+                {onDelete && <IconButton aria-label="delete" size="small" onClick={() => onDelete()} color="inherit">
+                    <CloseIcon fontSize="small" />
                 </IconButton>}
             </Stack>
         </Box>
@@ -132,7 +148,7 @@ export const CommentInstance = ({ comment, title, color, footerContent, onEdit, 
 
 
 
-const Metadata = ({ comment }: { comment: LeadComment }) => {
+export const Metadata = ({ comment }: { comment: LeadComment }) => {
     return (
         <>
             <Grid container spacing=".5rem" minWidth="15rem" size="grow" alignItems="center">
@@ -150,4 +166,13 @@ const Metadata = ({ comment }: { comment: LeadComment }) => {
                 </Stack>
             </Grid>
         </>)
+}
+
+const MetadataShort = ({ comment }: { comment: LeadComment }) => {
+    return (
+        <Stack justifyContent="center" direction="row" spacing=".5rem">
+            <Typography variant="body2"><span style={{ fontWeight: "bold" }}>Por</span> {comment?.created_by ?? comment?.updated_by} - </Typography>
+            <Typography variant="body2" textTransform="capitalize"> {dayjs(comment?.updated_at ?? comment?.created_at).format("dddd DD/MM/YYYY HH:mm")}</Typography>
+        </Stack>
+    )
 }

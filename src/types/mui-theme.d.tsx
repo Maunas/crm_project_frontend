@@ -1,5 +1,8 @@
 import '@mui/material/styles';
 
+export type ColorTypes = "primary" | "secondary" | "contrast" | "info" | "success" | "warning" | "error"
+
+
 declare module '@mui/material/styles' {
   interface Palette {
     contrast: Palette['primary'];
@@ -7,13 +10,13 @@ declare module '@mui/material/styles' {
   interface PaletteOptions {
     contrast?: PaletteOptions['primary'];
   }
-    interface PaletteColor {
-    lighter: string;    
+  interface PaletteColor {
+    lighter: string;
     darker: string;
   }
 
   interface SimplePaletteColorOptions {
-    lighter: string;    
+    lighter: string;
     darker: string;
   }
 }

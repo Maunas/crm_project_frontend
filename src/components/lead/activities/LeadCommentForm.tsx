@@ -8,6 +8,8 @@ import { useForm } from "react-hook-form"
 import { Button, Grid, IconButton, Stack } from "@mui/material"
 import CircleIcon from '@mui/icons-material/Circle';
 import { useTheme } from "@mui/material/styles"
+import type { PaletteColor } from "@mui/material/styles"
+import type { ColorTypes } from "../../../types/mui-theme.d"
 
 interface CommentFromNoteProps {
     leadId: number,
@@ -92,12 +94,12 @@ const CommentForm = ({ existingComment, leadId, onClose, submit }: CommentFormPr
 
 const CommentColorSelector = ({ commentColor, setCommentColor }: { commentColor: string, setCommentColor: React.Dispatch<React.SetStateAction<string>> }) => {
 
-    const COLORS = ["primary", "secondary", "contrast", "info", "success", "warning", "error"]
-    const theme = useTheme()
+    const COLORS: ColorTypes[] = ["primary", "secondary", "contrast", "info", "success", "warning", "error"]
+    const { palette } = useTheme()
     return (
         <Stack direction="row" justifyContent="end" width="100%">
             {COLORS.map(color => {
-                const paletteColor = theme.palette[color]
+                const paletteColor: PaletteColor = palette[color]
                 return <IconButton size="small" key={color} onClick={() => setCommentColor(color)}>
                     <CircleIcon sx={{
                         color: commentColor === color ? paletteColor.main : paletteColor.light,
