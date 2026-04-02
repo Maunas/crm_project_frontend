@@ -149,6 +149,10 @@ export const lightTheme = createTheme({
           globalPalette.contrast[50] : globalPalette.contrast[900],
       ...globalPalette.contrast
     },
+    background: {
+      default: globalPalette.contrast[100],
+      paper: globalPalette.contrast[50]
+    }
   },
 });
 
@@ -215,6 +219,10 @@ export const darkTheme = createTheme({
           globalPalette.contrast[50] : globalPalette.contrast[900],
       ...globalPalette.contrast
     },
+    background: {
+      default: globalPalette.contrast[900],
+      paper: globalPalette.contrast[800]
+    }
   },
 });
 

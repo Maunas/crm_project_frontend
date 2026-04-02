@@ -16,7 +16,7 @@ import { getFilteredLeads, getLeads } from './leadService'
 import { getWorkspaces } from '../workspaces/workspaceServices'
 import { getCampaigns } from '../campaigns/campaignServices'
 import { Link as RouterLink, useSearchParams } from 'react-router-dom'
-import { Typography, Grid, Stack, Autocomplete, TextField, type AutocompleteRenderInputParams } from '@mui/material'
+import { Typography, Grid, Stack, Autocomplete, TextField, type AutocompleteRenderInputParams, Badge } from '@mui/material'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 
 export const LeadList = () => {
@@ -136,10 +136,12 @@ export const LeadList = () => {
                         }
                     </Grid>
                     <Grid sx={{ marginLeft: 'auto' }}>
-                        <GenericModal idModal="lead_filters" modalProps={modalProps} buttonText="Aplicar Filtros" maxWidth="md"
-                            actionType='FILTER' color='secondary'>
-                            <LeadFilters applyFilters={applyFilters} filters={{ filters, headers }} campaignId={Number(campaignId)} />
-                        </GenericModal>
+                        <Badge badgeContent={filters.length} color="success">
+                            <GenericModal idModal="lead_filters" modalProps={modalProps} buttonText="Aplicar Filtros" maxWidth="lg"
+                                actionType='FILTER' color='secondary'>
+                                <LeadFilters applyFilters={applyFilters} filters={{ filters, headers }} campaignId={Number(campaignId)} />
+                            </GenericModal>
+                        </Badge>
                     </Grid>
                 </Grid>
             </Grid>

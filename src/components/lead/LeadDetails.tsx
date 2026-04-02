@@ -29,7 +29,7 @@ export const LeadDetails = () => {
 
     const fieldValues = useMemo(() => {
         if (!lead?.field_values) return []
-        return lead.field_values.filter(i => (i.field.is_visible &&
+        return lead.field_values.filter(i => (i.field.is_visible && i.field.active && i.active &&
             (i.value || i.nomenclator_items?.length > 0 || i.related_leads?.length > 0)))
             .sort((a, b) => a.field.order - b.field.order)
     }
@@ -92,7 +92,7 @@ export const LeadDetails = () => {
                 <Grid size="grow" minWidth="20rem">
                     <Paper sx={{ minHeight: "100%", p: 2, borderRadius: "1em" }}>
                         <Typography variant="h2">Actividades</Typography>
-                        <LeadActivities leadId={Number(id)}/>
+                        <LeadActivities leadId={Number(id)} />
                     </Paper>
                 </Grid>
             </Grid >
@@ -174,20 +174,20 @@ export const LeadFieldByType = ({ fieldValue, value, type, modalProps, template 
 
     const idModal = useId()
 
-    if (template) {
-        switch (template) {
-            case "INSTAGRAM_USER":
-                return <Link sx={{ paddingLeft: ".5rem" }} href={`https://instagram.com/${value?.substring(1)}`} target="_blank" rel="noopener">
-                    {value}
-                </Link>
-            case "POSTAL_CODE":
-                return <Link sx={{ paddingLeft: ".5rem" }} href={`https://www.google.com/maps/search/${value.replaceAll(" ", "+")}`} target="_blank" rel="noopener">
-                    {value}
-                </Link>
-            case "CREDIT_CARD_SIMPLE":
-                return <CardField value={value} />
+        if (template) {
+            switch (template) {
+                case "INSTAGRAM_USER":
+                    return <Link sx={{ paddingLeft: ".5rem" }} href={`https://instagram.com/${value?.substring(1)}`} target="_blank" rel="noopener">
+                        {value}
+                    </Link>
+                case "POSTAL_CODE":
+                    return <Link sx={{ paddingLeft: ".5rem" }} href={`https://www.google.com/maps/search/${value.replaceAll(" ", "+")}`} target="_blank" rel="noopener">
+                        {value}
+                    </Link>
+                case "CREDIT_CARD_SIMPLE":
+                    return <CardField value={value} />
+            }
         }
-    }
     switch (type) {
         case "FILE":
             return <Link sx={{ paddingLeft: ".5rem" }} href={`${value}`} target="_blank" rel="noopener">
@@ -256,7 +256,7 @@ export const LeadFieldByType = ({ fieldValue, value, type, modalProps, template 
             return <ul style={{ margin: 0 }}>
                 {fieldValue?.nomenclator_items && fieldValue.nomenclator_items?.length > 0 &&
                     fieldValue.nomenclator_items.map(i =>
-                        <Typography sx={{ paddingLeft: ".5rem" }} key={i.code}>
+                        <Typography sx={{ paddingLeft: ".5rem" }} key={i.id}>
                             <li> {i.value}</li>
                         </Typography>
                     )}

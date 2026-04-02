@@ -57,7 +57,7 @@ export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateE
                             <GenericModal modalProps={modalProps} idModal="simulateLead" buttonText='Vista previa de formulario'
                                 actionType="DETAILS" variant="outlined" containerSx={{ minWidth: "80vw" }} >
                                 {campaign &&
-                                    <SimulateLeadFormModal campaignId={campaign.id!} onCancel={modalProps.handleClose} />
+                                    <SimulateLeadFormModal campaign={campaign} leadFields={leadFields} onCancel={modalProps.handleClose} />
                                 }
                             </GenericModal>
                         </ButtonGroup>

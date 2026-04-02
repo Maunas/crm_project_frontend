@@ -7,7 +7,8 @@ import type { Lead } from "../../types/leads"
 import { useDragAndDrop } from "../hooks/useDragAndDrop"
 import { getLeadFields } from "../leadFields/leadFieldServices"
 import { useNavigate } from "react-router-dom"
-import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material"
+import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, useTheme } from "@mui/material"
+import { lighten } from "@mui/material/styles"
 
 interface LeadListTableProps {
     leads: Lead[],
@@ -23,6 +24,7 @@ export const LeadListTable = ({ leads, campaignId, modalProps }: LeadListTablePr
 
     const DEFAULT_N_OF_FIELDS = 6
     const nav = useNavigate()
+    const {palette} = useTheme()
 
     const [leadFields, setLeadFields] = useState<LeadField[]>([])
 
@@ -93,7 +95,7 @@ export const LeadListTable = ({ leads, campaignId, modalProps }: LeadListTablePr
                 <LeadColumnSelector itemsList={leadFields} selectedIds={selectedIds!} handleSelectedIds={handleSelectedIds} handleClose={modalProps.handleClose} showField="name" />
             </GenericModal>
             <TableContainer component={Paper}>
-                <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                <Table sx={{ minWidth: 650, backgroundColor: lighten(palette.background.paper,.1) }} aria-label="simple table">
                     <TableHead>
                         <TableRow>
                             {selectedColumns.map((column, idx) =>

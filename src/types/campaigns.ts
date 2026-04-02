@@ -20,7 +20,7 @@ export interface WorkspacePost {
   organization_id: number | null;
 }
 export interface Workspace extends WorkspacePost {
-  id: number | null;
+  id: number;
 }
 export interface WorkspaceDetailed extends Workspace, Metadata {
   campaigns: CampaignDetailed[];
