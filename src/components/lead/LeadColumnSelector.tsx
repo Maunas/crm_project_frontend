@@ -1,14 +1,6 @@
 import * as React from 'react';
-import Grid from '@mui/material/Grid';
-import List from '@mui/material/List';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import Checkbox from '@mui/material/Checkbox';
-import Button from '@mui/material/Button';
-import Paper from '@mui/material/Paper';
-import { Stack, ButtonGroup, Typography, Box } from '@mui/material';
-import { alpha, useTheme } from '@mui/material/styles';
+import { Grid, List, Stack, ListItemButton, ListItemIcon, ListItemText, Checkbox, Button, Paper, ButtonGroup, Typography, Box } from '@mui/material';
+import { alpha, lighten, useTheme } from '@mui/material/styles';
 
 function not(a: readonly number[], b: readonly number[]) {
   return a.filter((value) => !b.includes(value));
@@ -69,7 +61,7 @@ export default function LeadColumnSelector<T extends { id: number }>
     setChecked(not(checked, rightChecked));
   };
 
-  const theme = useTheme()
+  const { palette } = useTheme()
 
   //Permite identificar el objeto cuando paso de una lista a otra
   const globalDraggedIndex = React.useRef<number | null>(null)
@@ -124,9 +116,12 @@ export default function LeadColumnSelector<T extends { id: number }>
     }
 
     return (
-      <Paper >
+      <Paper sx={{ backgroundColor: lighten(palette.background.paper, .15) }}  >
         {title &&
-          <Box p=".5rem" sx={{ backgroundColor: alpha(theme.palette.secondary.light, .8) }}>
+          <Box p=".5rem" sx={{
+            backgroundColor: palette.primary.light,
+            color: palette.primary.contrastText
+          }}>
             <Typography variant="body2" fontWeight={600}>{title}</Typography>
           </Box>}
         <Stack height="25rem">
@@ -150,10 +145,10 @@ export default function LeadColumnSelector<T extends { id: number }>
                   className='column-list-item'
                   sx={{
                     cursor: dragIndex !== null ? "grabbing" : "grab",
-                    backgroundColor: dragIndex === idx ? `${alpha(theme.palette.background.default, .5)}` : "",
-                    border: dragIndex === idx ? `2px solid ${alpha(theme.palette.contrast.light, .5)}` : "",
-                    borderTop: (dragOver === idx && dragIndex !== null && dragOver < dragIndex) ? `4px solid ${alpha(theme.palette.secondary.main, .6)}` : "",
-                    borderBottom: (dragOver === idx && dragIndex !== null && dragOver > dragIndex) ? `4px solid ${alpha(theme.palette.secondary.main, .6)}` : "",
+                    backgroundColor: dragIndex === idx ? `${alpha(palette.background.default, .5)}` : "",
+                    border: dragIndex === idx ? `2px solid ${alpha(palette.contrast.light, .5)}` : "",
+                    borderTop: (dragOver === idx && dragIndex !== null && dragOver < dragIndex) ? `4px solid ${alpha(palette.secondary.main, .6)}` : "",
+                    borderBottom: (dragOver === idx && dragIndex !== null && dragOver > dragIndex) ? `4px solid ${alpha(palette.secondary.main, .6)}` : "",
                   }}
                 >
                   <ListItemIcon sx={{ pointerEvents: "none" }}>
