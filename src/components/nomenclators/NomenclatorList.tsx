@@ -1,22 +1,22 @@
 import { useContext, useEffect, useState } from 'react'
-import type { UserContextItems } from '../users/UserProvider'
-import { UserContext } from '../common/contexts'
-import { useSidebar } from '../hooks/useSidebar'
-import { useListPagination } from '../hooks/useListPagination'
-import type { Paginable } from '../../types/common'
 import { ContainerWithSidebar } from '../common/layout/GenericContainer'
-import { Button, Grid, IconButton, Link, List, ListItem, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
+import { NomenclatorFormSidebar } from './NomenclatorForm'
+import { NomenclatorDetails } from './NomenclatorDetails'
 import { CommonButton } from '../common/details/DetailsCommonButton'
 import { PaginationComponent } from '../common/lists/PaginationComponent'
+import type { Paginable } from '../../types/common'
+import type { NomenclatorDetailed } from '../../types/nomenclators'
+import { useSidebar } from '../hooks/useSidebar'
+import { useListPagination } from '../hooks/useListPagination'
 import { disableNomenclator, enableNomenclator, getNomenclator, getNomenclators } from './nomenclatorService'
-import { NomenclatorDetails } from './NomenclatorDetails'
+import type { UserContextItems } from '../users/UserProvider'
+import { UserContext } from '../common/contexts'
+import { Link as RouterLink, useSearchParams } from 'react-router-dom'
+import { Grid, IconButton, Link, List, ListItem, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
-import { Link as RouterLink, useSearchParams } from 'react-router-dom'
-import { NomenclatorFormSidebar } from './NomenclatorForm'
-import type { NomenclatorDetailed } from '../../types/nomenclators'
 
 export const NomenclatorList = () => {
 
@@ -92,63 +92,71 @@ export const NomenclatorList = () => {
                 closeSidebar={closeSidebar} updateEntityOnList={updateEntityOnList}
                 handleActive={handleActive} />
         }>
-            <Stack spacing={2}>
-                <Grid container spacing={2} justifyContent="space-between" alignItems="center">
-                    <Grid size="grow" minWidth="15rem">
-                        <Typography variant="h1">Lista de Nomencladores</Typography>
-                    </Grid>
-                    <Grid size="auto" minWidth="15rem">
-                        {nomenclators && nomenclators.items?.length > 0 &&
-                            <CommonButton actionType="CREATE" handleClick={() => { handleSidebar("CREATE_NOM", null) }}>Crear Nomenclador</CommonButton>
-                        }
-                    </Grid>
+            <Stack gap={3}>
+                <Grid container gap={2} justifyContent="space-between" alignItems="center">
+                    <Typography variant="h1">Lista de Nomencladores</Typography>
+                    {nomenclators && nomenclators.items?.length > 0 &&
+                        <CommonButton actionType="CREATE" handleClick={() => { handleSidebar("CREATE_NOM", null) }}
+                            sx={{ marginLeft: "auto" }}>
+                            Crear Nomenclador
+                        </CommonButton>
+                    }
                 </Grid>
-                {
-                    nomenclators && nomenclators.items?.length > 0 ?
-                        <List>
-                            {nomenclators.items.map(nom =>
-                                <ListItem key={nom.id} disablePadding secondaryAction={
-                                    <Grid container spacing={1} alignItems="center">
-                                        <IconButton edge="end" aria-label="details" onClick={() => handleSidebar("DETAILS_NOM", nom)}>
-                                            <SearchIcon />
-                                        </IconButton>
-                                        {nom.organization_id &&
-                                            <>
-                                                <IconButton edge="end" aria-label="modify" onClick={() => handleSidebar("UPDATE_NOM", nom)}>
-                                                    <EditIcon />
-                                                </IconButton>
-                                                <IconButton edge="end" aria-label={nom.active ? "delete" : "restore"}
-                                                    onClick={() => handleActive(nom)}>
-                                                    {nom.active ?
-                                                        <DeleteIcon color="error" /> :
-                                                        <RestoreFromTrashIcon color="success" />
-                                                    }
-                                                </IconButton>
-                                            </>}
-                                    </Grid>
-                                }>
-                                    <ListItemButton onClick={() => handleSidebar("DETAILS_NOM", nom)} >
-                                        <ListItemText primary={<>
-                                            <Stack spacing={1} direction="row">
-                                                <Typography fontWeight="bold">{nom.name}</Typography>
-                                            {!nom.organization_id && <Typography variant="body1" fontStyle="italic" >(Nomenclador del Sistema)</Typography> }
-                                            </Stack>
-                                                {nom.campaign_id
-                                                    ? <Link component={RouterLink} to={`/campaigns/${nom.campaign_id}`}>Perteneciente a la Campaña {nom.campaign_id}</Link>
-                                                    : <Typography variant="body1" >Nomenclador Global.</Typography>
-                                                }
-                                        </>} />
-                                    </ListItemButton>
-                                </ListItem>
-                            )}
-                        </List>
-                        : <Grid container spacing={2} justifyContent="center" alignItems="center" direction="column">
-                            <Typography variant="h4" color="initial">No se han encontrado nomencladores...</Typography>
-                            <Button onClick={() => { handleSidebar("CREATE_NOM", null) }} variant="contained">Crear Nomenclador</Button>
-                        </Grid>
-                }
+                <Stack gap={2}>
+                    {
+                        nomenclators && nomenclators.items?.length > 0 ?
+                            <List>
+                                {nomenclators.items.map(nom =>
+                                    <ListItem key={nom.id} disablePadding secondaryAction={
+                                        <Grid container gap={1} alignItems="center">
+                                            <IconButton edge="end" aria-label="details" onClick={() => handleSidebar("DETAILS_NOM", nom)}>
+                                                <SearchIcon />
+                                            </IconButton>
+                                            {nom.organization_id &&
+                                                <>
+                                                    <IconButton edge="end" aria-label="modify" onClick={() => handleSidebar("UPDATE_NOM", nom)}>
+                                                        <EditIcon />
+                                                    </IconButton>
+                                                    <IconButton edge="end" aria-label={nom.active ? "delete" : "restore"}
+                                                        onClick={() => handleActive(nom)}>
+                                                        {nom.active ?
+                                                            <DeleteIcon color="error" /> :
+                                                            <RestoreFromTrashIcon color="success" />
+                                                        }
+                                                    </IconButton>
+                                                </>}
+                                        </Grid>
+                                    }>
+                                        <ListItemButton onClick={() => handleSidebar("DETAILS_NOM", nom)} >
+                                            <ListItemText primary={
+                                                <Stack gap={1} direction="row">
+                                                    <Typography fontWeight="bold">{nom.name}</Typography>
+                                                    {!nom.organization_id && <Typography fontStyle="italic" >
+                                                        (Nomenclador del Sistema)
+                                                    </Typography>}
+                                                </Stack>
+                                            }
+                                                secondary={
+                                                    nom.campaign_id
+                                                        ? <Link component={RouterLink} to={`/campaigns/${nom.campaign_id}`}>
+                                                            Perteneciente a la Campaña {nom.campaign_id}
+                                                        </Link>
+                                                        : "Nomenclador Global"
+                                                } />
+                                        </ListItemButton>
+                                    </ListItem>
+                                )}
+                            </List>
+                            : <Grid container gap={2} justifyContent="center" alignItems="center" direction="column">
+                                <Typography variant="h4">No se han encontrado nomencladores...</Typography>
+                                <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_NOM", null) }} variant="contained">
+                                    Crear Nomenclador
+                                </CommonButton>
+                            </Grid>
+                    }
+                    <PaginationComponent {...pageComponentProps} />
+                </Stack>
             </Stack>
-            <PaginationComponent {...pageComponentProps} />
         </ContainerWithSidebar >
     )
 }

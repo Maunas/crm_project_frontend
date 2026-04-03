@@ -1,20 +1,22 @@
 import { useEffect, useId, useMemo, useState } from "react"
-import { GenericModal } from "../common/layout/GenericContainer.tsx"
+import { LeadActivities } from "./activities/LeadActivities.tsx"
+import { GenericModal, GenericPaper } from "../common/layout/GenericContainer.tsx"
+import { CommonButton } from "../common/details/DetailsCommonButton.tsx"
+import { CustomChip } from "../../theme/styledMUIDisplayComponents.tsx"
 import type { LeadDetailed } from "../../types/leads"
 import type { LeadFieldValue } from "../../types/leadFields"
 import { getFieldType } from "../../generalService.ts"
 import { disableLead, enableLead, getLead } from "./leadService.ts"
+import { useModal } from "../hooks/useModal.tsx"
 import DOMPurify from 'dompurify';
 import Markdown from 'react-markdown'
 import { Link as RouterLink, useNavigate, useParams } from "react-router-dom"
-import { Accordion, AccordionDetails, AccordionSummary, Box, Chip, Container, Divider, Grid, Paper, Typography, Button, Link, Rating, Slider, ButtonGroup } from "@mui/material"
+import { Accordion, AccordionDetails, AccordionSummary, Box, Container, Divider, Grid, Paper, Typography, Button, Link, Rating, Slider, ButtonGroup, Stack } from "@mui/material"
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import { useModal } from "../hooks/useModal.tsx"
-import { LeadActivities } from "./activities/LeadActivities.tsx"
 
 export const LeadDetails = () => {
 
@@ -28,7 +30,7 @@ export const LeadDetails = () => {
 
     const fieldValues = useMemo(() => {
         if (!lead?.field_values) return []
-        return lead.field_values.filter(i => (i.field.is_visible &&
+        return lead.field_values.filter(i => (i.field.is_visible && i.field.active && i.active &&
             (i.value || i.nomenclator_items?.length > 0 || i.related_leads?.length > 0)))
             .sort((a, b) => a.field.order - b.field.order)
     }
@@ -44,55 +46,61 @@ export const LeadDetails = () => {
 
     return (
         <Container maxWidth={false}>
-            <Grid container spacing={3}>
+            <Grid container gap={3}>
                 <Grid size={{ xs: 12, md: 4, lg: 4 }} minWidth="20rem" >
                     {lead && fieldValues &&
-                        <Box>
-                            <Paper sx={{ p: 2, borderRadius: "1em", marginBottom: "1rem" }}>
-                                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>
-                                    <Typography variant="h1">{fieldValues[0]?.value ?? "Lead no encontrado"} {fieldValues[1]?.value ?? ""}</Typography>
-                                    <Chip label={lead?.active ? "Habilitado" : "Deshabilitado"} color={lead?.active ? "success" : "error"} />
-                                </Box>
-                                <ButtonGroup fullWidth>
-                                    <Button variant="outlined" color={lead.active ? "error" : "success"} onClick={() => handleActive(lead)}
-                                        sx={{ marginBlock: 1 }}>
-                                        {lead.active ? "Deshabilitar" : "Habilitar"}
-                                    </Button>
-                                    <Button variant="contained" color="primary" component={RouterLink} to={`/leads/modify/${lead?.id}`}
-                                        sx={{ marginBlock: 1 }}>
-                                        Modificar Lead
-                                    </Button>
-                                </ButtonGroup>
-
-                            </Paper>
-                            <Paper sx={{ p: 1, borderRadius: "1em" }}>
+                        <Stack gap={2}>
+                            <GenericPaper>
+                                <Grid container gap={3} alignItems="center">
+                                    <Grid container size="grow" gap={2} alignItems="center" justifyContent="space-between">
+                                        <Typography variant="h1">
+                                            {fieldValues[0]?.value ?? "Lead no encontrado"}
+                                        </Typography>
+                                        <CustomChip label={lead?.active ? "Habilitado" : "Deshabilitado"}
+                                            color={lead?.active ? "success" : "error"} sx={{ marginLeft: "auto" }} />
+                                    </Grid>
+                                    <ButtonGroup fullWidth>
+                                        <CommonButton actionType={lead.active ? "DISABLE" : "ENABLE"} variant="outlined"
+                                            color={lead.active ? "error" : "success"} onClick={() => handleActive(lead)}>
+                                            {lead.active ? "Eliminar" : "Habilitar"}
+                                        </CommonButton>
+                                        <CommonButton actionType="MODIFY" variant="contained" color="primary"
+                                            component={RouterLink} to={`/leads/modify/${lead?.id}`}>
+                                            Modificar
+                                        </CommonButton>
+                                    </ButtonGroup>
+                                </Grid>
+                            </GenericPaper>
+                            <Paper sx={{ borderRadius: 1 }}>
                                 <LeadFieldSections fieldValues={fieldValues} />
-
                                 <Accordion disableGutters sx={{ boxShadow: "none" }}>
-                                    <AccordionSummary sx={{ height: "64px" }}
+                                    <AccordionSummary sx={{ height: "4rem" }}
                                         expandIcon={<ArrowDropDownIcon />}
                                         aria-controls="panel0-content" id="panel0-header"
                                     >
                                         <Typography variant="h2">Creación de Lead</Typography>
                                     </AccordionSummary>
                                     <AccordionDetails sx={{ paddingTop: 0 }}>
-                                        <Divider sx={{ marginBottom: "1rem" }} ></Divider>
-                                        <Typography sx={{ fontWeight: "bold" }} component="h3">Fecha de Creación:</Typography>
-
-                                        <LeadFieldByType value={lead?.created_at} type="DATE" />
-                                        <Typography sx={{ fontWeight: "bold" }} component="h3">Fecha de Última Modificación:</Typography>
-                                        <LeadFieldByType value={lead?.updated_at} type="DATE" />
+                                        <Divider sx={{ marginBottom: 2 }} />
+                                        <Box px={2}>
+                                            <Typography sx={{ fontWeight: 600 }} variant="body1">Fecha de Creación:</Typography>
+                                            <LeadFieldByType value={lead?.created_at} type="DATE" />
+                                            <Typography sx={{ fontWeight: 600 }} variant="body1">Fecha de Última Modificación:</Typography>
+                                            <LeadFieldByType value={lead?.updated_at} type="DATE" />
+                                        </Box>
                                     </AccordionDetails>
                                 </Accordion>
                             </Paper>
-                        </Box>
+                        </Stack>
                     }
                 </Grid>
-                <Grid size="grow" minWidth="20rem">
-                    <Paper sx={{ minHeight: "100%", p: 2, borderRadius: "1em" }}>
+                <Grid size="grow" minWidth="20rem" component={GenericPaper} >
+                    <Stack height="100%" gap={3}>
                         <Typography variant="h2">Actividades</Typography>
-                        <LeadActivities leadId={Number(id)}/>
-                    </Paper>
+                        <Stack height="100%" gap={2}>
+                            <LeadActivities leadId={Number(id)} />
+                        </Stack>
+                    </Stack>
                 </Grid>
             </Grid >
         </Container >
@@ -132,25 +140,28 @@ export const LeadFieldSections = ({ fieldValues }: LeadFieldSectionsProps) => {
             {
                 leadSections?.length > 0 &&
                 leadSections.map((section, idx) =>
-                    <Accordion key={idx} defaultExpanded={idx === 0} disableGutters sx={{ boxShadow: "none" }}>
-                        <AccordionSummary sx={{ height: "64px" }}
-                            expandIcon={<ArrowDropDownIcon />}
-                            aria-controls={`panel${idx + 1}-content`} id={`panel${idx + 1}-header`}
-                        >
-                            <Typography variant="h2">{section.name}</Typography>
-                        </AccordionSummary>
-                        <AccordionDetails sx={{ paddingTop: 0 }}>
-                            <Divider sx={{ marginBottom: "1rem" }} ></Divider>
-
-                            {section?.fields.map((fieldValue, idx) =>
-                                <Box key={idx}>
-                                    <Typography sx={{ fontWeight: "bold" }} component="h3">{fieldValue?.field?.name}:</Typography>
-                                    <LeadFieldByType fieldValue={fieldValue} type={fieldValue.field.field_type_code!}
-                                        value={fieldValue.value!} template={fieldValue.field.field_template_code} modalProps={modalProps} />
+                    <Box key={idx}>
+                        <Accordion defaultExpanded={idx === 0} disableGutters sx={{ boxShadow: "none" }}>
+                            <AccordionSummary sx={{ height: "4rem" }}
+                                expandIcon={<ArrowDropDownIcon />}
+                                aria-controls={`panel${idx + 1}-content`} id={`panel${idx + 1}-header`}
+                            >
+                                <Typography variant="h2">{section.name}</Typography>
+                            </AccordionSummary>
+                            <AccordionDetails sx={{ paddingTop: 0 }}>
+                                <Divider sx={{ marginBottom: 2 }} />
+                                <Box px={2}>
+                                    {section?.fields.map((fieldValue, idx) =>
+                                        <Box key={idx}>
+                                            <Typography sx={{ fontWeight: 600 }} variant="body1">{fieldValue?.field?.name}:</Typography>
+                                            <LeadFieldByType fieldValue={fieldValue} type={fieldValue.field.field_type_code!}
+                                                value={fieldValue.value!} template={fieldValue.field.field_template_code} modalProps={modalProps} />
+                                        </Box>
+                                    )}
                                 </Box>
-                            )}
-                        </AccordionDetails>
-                    </Accordion>
+                            </AccordionDetails>
+                        </Accordion>
+                    </Box>
                 )
             }
         </>
@@ -255,16 +266,16 @@ export const LeadFieldByType = ({ fieldValue, value, type, modalProps, template 
             return <ul style={{ margin: 0 }}>
                 {fieldValue?.nomenclator_items && fieldValue.nomenclator_items?.length > 0 &&
                     fieldValue.nomenclator_items.map(i =>
-                        <Typography sx={{ paddingLeft: ".5rem" }} key={i.code}>
+                        <Typography sx={{ paddingLeft: ".5rem" }} key={i.id}>
                             <li> {i.value}</li>
                         </Typography>
                     )}
             </ul>
         case "TAGS":
-            return <Chip color="primary"
+            return <CustomChip color="primary"
                 label={value} sx={{ ml: ".5rem", marginBottom: ".5rem", fontWeight: "bold" }} />
         case "BOOL":
-            return <Chip color={getFieldType("BOOL", value) ? "success" : "error"}
+            return <CustomChip color={getFieldType("BOOL", value) ? "success" : "error"}
                 label={<Grid alignItems="center" container justifyContent="space-between">
                     {getFieldType("BOOL", value) ? <><CheckIcon /> Si</>
                         : <><CloseIcon /> No</>}
@@ -333,7 +344,7 @@ const RatingField = ({ value, subtype }: { value: string, subtype: string }) => 
                     />
                 </Grid>
             }
-            <Chip color="secondary" label={value} />
+            <CustomChip color="secondary" label={value} />
         </Grid>
     )
 }

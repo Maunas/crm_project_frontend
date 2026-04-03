@@ -3,12 +3,12 @@ import type { DeleteResponse, ListParams, Paginable } from "../../../types/commo
 import type { LeadComment, LeadCommentPost } from "../../../types/leads";
 
 interface CommentParams extends ListParams {
-    leadId: number
+    lead_id: number
 }
 
 export const getComments = async (params?: CommentParams): Promise<Paginable<LeadComment>> => {
     const com = await axiosCRM.get("lead_comments", { params })
-    return { ...com.data, items: com.data.items.filter((i: LeadComment) => i.lead_id === params?.leadId) }
+    return com.data
 }
 
 export const createComment = async (data: LeadCommentPost) => {

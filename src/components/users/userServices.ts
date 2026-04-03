@@ -1,6 +1,6 @@
+import type { UserData, UserLogin, UserSignup } from "../../types/users"
 import type { Paginable } from "../../types/common"
 import { API_BASE_URL, axiosCRM } from "../../generalService"
-import type { UserData, UserLogin, UserSignup } from "../../types/users"
 
 export const getUsers = async ():
     Promise<Paginable<UserData>> => {

@@ -1,16 +1,17 @@
 import { Autocomplete, Checkbox, CircularProgress, FormControl, FormControlLabel, FormGroup, FormHelperText, FormLabel, Radio, RadioGroup, TextField } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { Controller, type Control, type ControllerRenderProps, type FieldValues, type Path } from 'react-hook-form'
-import { FormErrorMessage } from '../../../styles/styledMUIFormComponents'
+import { FormErrorMessage } from '../../../theme/styledMUIFormComponents'
 
-interface BasicMultileInputProps<Option> {
+interface BasicMultipleInputProps<Option> {
     label?: string,
     options: Option[],
     required?: boolean,
     errorMessage?: string | null,
+    size?: "small" | "medium"
 }
 
-interface BasicControlFormInput<T extends FieldValues, Option> extends BasicMultileInputProps<Option> {
+interface BasicControlFormInput<T extends FieldValues, Option> extends BasicMultipleInputProps<Option> {
     control: Control<T>,
     name: Path<T>,
     returnField?: keyof Option | null,
@@ -25,13 +26,13 @@ interface ControlledACProps<T extends FieldValues, Option> extends BasicControlF
     disableClearable?: boolean,
     autocomplete?: string,
     helper?: string,
-    placeholder?:string
+    placeholder?: string
 }
 
 export const ControlledAutocomplete = <T extends FieldValues, Option>
     ({ control, name, label, options, getOptionLabel, getOptionKey, returnField = null,
         required = false, multiple = false, disabled = false, hidden = false, disableClearable = false,
-        errorMessage = null, autocomplete = "one-time-code", helper, placeholder, ...props }: ControlledACProps<T, Option>) => {
+        errorMessage = null, autocomplete = "one-time-code", helper, placeholder, size = "medium", ...props }: ControlledACProps<T, Option>) => {
 
     const handleChange = (field: ControllerRenderProps<T, Path<T>>, values: Option | Option[] | null) => {
         //Por defecto, si no hay valores devuelve null o []
@@ -78,11 +79,12 @@ export const ControlledAutocomplete = <T extends FieldValues, Option>
                     value={handleValue(field)}
                     getOptionLabel={getOptionLabel} getOptionKey={getOptionKey}
                     isOptionEqualToValue={(option, value) => getOptionKey(option) === getOptionKey(value)}
+                    fullWidth
                     renderInput={(params) =>
                         <>
                             <TextField {...params} label={label} required={required}
                                 error={!!errorMessage} autoComplete={autocomplete}
-                                placeholder={placeholder}
+                                placeholder={placeholder} size={size} fullWidth
                                 slotProps={{
                                     input: {
                                         ...params.InputProps,
@@ -186,7 +188,7 @@ export const ControlledGroupedCheckbox = <T extends FieldValues, Option>
     )
 }
 
-interface GroupedCheckboxProps<T extends FieldValues, Option> extends BasicMultileInputProps<Option> {
+interface GroupedCheckboxProps<T extends FieldValues, Option> extends BasicMultipleInputProps<Option> {
     field: ControllerRenderProps<T, Path<T>>,
     returnField?: keyof Option | null,
     keyField: keyof Option,

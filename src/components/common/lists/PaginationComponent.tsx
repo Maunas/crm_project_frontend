@@ -1,4 +1,4 @@
-import { Pagination } from "@mui/material"
+import { Box, Pagination } from "@mui/material"
 
 interface PaginationComponentProps {
   totalPages: number,
@@ -7,12 +7,14 @@ interface PaginationComponentProps {
 }
 export const PaginationComponent = ({ totalPages, page, handlePage }: PaginationComponentProps) => {
   return (
-    <Pagination
-      count={totalPages}
-      page={page}
-      shape="rounded"
-      color="secondary"
-      onChange={handlePage}
-    />
+    <Box width="100%">
+      <Pagination
+        count={totalPages}
+        page={page}
+        shape="rounded"
+        color="primary"
+        onChange={handlePage}
+      />
+    </Box>
   )
 }

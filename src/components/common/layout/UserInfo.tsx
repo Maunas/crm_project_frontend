@@ -1,10 +1,11 @@
-import { Box, Button, Divider, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Stack, Typography } from '@mui/material'
+import { Avatar, Box, Button, Divider, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Stack, Typography } from '@mui/material'
 import MoreIcon from '@mui/icons-material/More';
 import React from 'react'
 import { AccountCircle, Check } from '@mui/icons-material';
 import type { UserContextItems } from '../../users/UserProvider';
 import { UserContext } from '../contexts';
 import { Link } from 'react-router-dom';
+import theme from '../../../theme/theme';
 
 export const UserInfo = () => {
 
@@ -49,7 +50,7 @@ export const UserInfo = () => {
             onClose={handleMenuClose}
         >
             <MenuItem >
-                <ListItemText>Tus Organizaciones</ListItemText>
+                <ListItemText>Organizaciones</ListItemText>
                 <Divider />
             </MenuItem>
             {
@@ -67,7 +68,7 @@ export const UserInfo = () => {
             }
             <Divider />
 
-            <MenuItem dense onClick={() => logout()}>
+            <MenuItem dense onClick={() => logout()} sx={{ "&:hover": { color: theme.palette.error.main } }}>
                 <ListItemText>
                     Cerrar Sesión
                 </ListItemText>
@@ -100,11 +101,11 @@ export const UserInfo = () => {
                     aria-haspopup="true"
                     color="inherit"
                 >
-                    <AccountCircle />
+                    <Avatar sx={{ color: theme.palette.secondary.dark, backgroundColor: theme.palette.secondary.light }} />
                 </IconButton>
                 <Stack>
-                    <Typography variant="body1" color="initial">{user?.email}</Typography>
-                    <Typography variant="body2" color="initial">{selectedOrg?.name}</Typography>
+                    <Typography variant="body2" fontWeight={600}>{user?.email}</Typography>
+                    <Typography variant="body2">{selectedOrg?.name}</Typography>
                 </Stack>
             </MenuItem>
         </Menu>
@@ -114,8 +115,8 @@ export const UserInfo = () => {
         <>
             <Box sx={{ display: { xs: 'none', md: 'flex' } }} alignItems="center">
                 <Stack>
-                    <Typography variant="body1" textAlign="end" fontWeight={600} fontSize=".9rem" sx={{ color: "white" }} color="initial">{user.email}</Typography>
-                    <Typography variant="body2" textAlign="end" fontSize=".8rem" sx={{ color: "white" }} color="initial">{selectedOrg?.name}</Typography>
+                    <Typography variant="body2" textAlign="end" fontWeight={600}>{user.email}</Typography>
+                    <Typography variant="body2" textAlign="end">{selectedOrg?.name}</Typography>
                 </Stack>
                 <IconButton
                     size="large"
@@ -124,9 +125,8 @@ export const UserInfo = () => {
                     aria-controls={menuId}
                     aria-haspopup="true"
                     onClick={handleProfileMenuOpen}
-                    color="inherit"
                 >
-                    <AccountCircle />
+                    <Avatar sx={{ color: theme.palette.secondary.dark, backgroundColor: theme.palette.secondary.light }} />
                 </IconButton>
             </Box>
             <Box sx={{ display: { xs: 'flex', md: 'none' } }}>

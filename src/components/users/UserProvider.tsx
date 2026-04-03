@@ -1,10 +1,10 @@
-import React, { useEffect, useMemo, useState, type ReactNode } from 'react'
+import React, { useEffect, useState, type ReactNode } from 'react'
+import type { UserData, UserLogin, UserSignup } from '../../types/users';
 import type { OrganizationDetailed } from '../../types/campaigns';
+import { loginUser, signupUser } from './userServices';
 import { getOrganizations } from '../workspaces/workspaceServices';
 import { UserContext } from '../common/contexts';
-import type { UserData, UserLogin, UserSignup } from '../../types/users';
 import { useNavigate } from 'react-router-dom';
-import { loginUser, signupUser } from './userServices';
 
 export interface UserContextItems {
     userOrganizations: OrganizationDetailed[],
@@ -15,7 +15,7 @@ export interface UserContextItems {
     fetchOrganizations: () => void,
     user: UserData | null,
     login: (data: UserLogin) => Promise<void>,
-    signup: (data: UserLogin) => Promise<void>,
+    signup: (data: UserSignup) => Promise<void>,
     logout: () => void
 }
 
@@ -40,20 +40,22 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         fetchOrganizations()
     }, [])
 
+    /*
     const userOrganizations = useMemo(() => {
         if (!organizations || !user) return []
         const userOrganizationAccessIds = user.organizations_access.map(org => org.organization_id)
         return organizations.filter(org => userOrganizationAccessIds.includes(org.id))
     }, [user, organizations])
 
-    const activeOrganizations = useMemo(() => userOrganizations.filter(org => org.active), [userOrganizations])
+        const activeOrganizations = useMemo(() => userOrganizations.filter(org => org.active), [userOrganizations])
+    */
 
     const login = (data: UserLogin) => {
         return loginUser(data).then(user => {
             setUser(user)
         })
     }
-    
+
     const signup = (data: UserSignup) => {
         return signupUser(data).then(user => {
             setUser(user)

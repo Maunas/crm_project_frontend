@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { generalSearch } from '../../generalService'
-import { Box, Button, List, ListItem, ListItemButton, ListItemText, Tab, Tabs, Typography } from '@mui/material'
+import { Box, Button, List, ListItem, ListItemButton, ListItemText, Stack, Tab, Tabs, Typography } from '@mui/material'
 import { GenericContainer } from './layout/GenericContainer';
 import type { Lead } from '../../types/leads';
 import type { Campaign, Workspace } from '../../types/campaigns';
@@ -26,7 +26,7 @@ function CustomTabPanel(props: TabPanelProps) {
             aria-labelledby={`simple-tab-${index}`}
             {...other}
         >
-            {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+            {value === index && <Box paddingBlock={1}>{children}</Box>}
         </div>
     );
 }
@@ -101,7 +101,7 @@ export const SearchResultsList = () => {
         },
         {
             label: "Ítems de Nomenclador", id: "search-nomenclator_items", "aria-controls": "search-tab-nomenclator_items", length: results?.nomenclator_items?.length ?? 0,
-            list: results?.nomenclator_items ?? [], getPrimaryText: (item: NomenclatorItem) => `${item.code} - ${item.value}`, getDetailsLink: (item: NomenclatorItem) => `/nomenclators/${item.nomenclator_id}?selected=${item.id}`
+            list: results?.nomenclator_items ?? [], getPrimaryText: (item: NomenclatorItem) => `${item.value}`, getDetailsLink: (item: NomenclatorItem) => `/nomenclators/${item.nomenclator_id}?selected=${item.id}`
         },
     ]
 
@@ -113,36 +113,41 @@ export const SearchResultsList = () => {
 
     return (
         <GenericContainer maxWidth="xl">
-            <Typography variant="h1" color="initial">Resultado de la Búsqueda: "{query}"</Typography>
-            {totalResults > 0 ?
-                <Box sx={{ width: '100%' }}>
-                    <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                        <Tabs value={openTab} onChange={handleChange} aria-label="basic tabs example"
-                            variant="scrollable" scrollButtons="auto">
-                            {tabs.map(tab => {
-                                return (<Tab id={tab.id} aria-controls={tab["aria-controls"]} key={`tab-${tab.id}`}
-                                    disabled={tab.length === 0}
-                                    label={
-                                        <>
-                                            <Typography variant="body1" fontWeight={600}>{tab.label}</Typography>
-                                            <Typography variant="body2" fontStyle="italic">{getLengthText(tab.length)}</Typography>
-                                        </>
-                                    }
-                                />)
-                            })}
-                        </Tabs>
+            <Stack gap={3}>
+                <Typography variant="h1">Resultado de la Búsqueda: "{query}"</Typography>
+                {totalResults > 0 ?
+                    <Box sx={{ width: '100%' }}>
+                        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                            <Tabs value={openTab} onChange={handleChange} aria-label="basic tabs example"
+                                variant="scrollable" scrollButtons="auto">
+                                {tabs.map(tab => {
+                                    return (<Tab id={tab.id} aria-controls={tab["aria-controls"]} key={`tab-${tab.id}`}
+                                        disabled={tab.length === 0}
+                                        label={
+                                            <>
+                                                <Typography variant="body1" fontWeight={600}>{tab.label}</Typography>
+                                                <Typography variant="body2" fontStyle="italic">{getLengthText(tab.length)}</Typography>
+                                            </>
+                                        }
+                                    />)
+                                })}
+                            </Tabs>
+                        </Box>
+                        {tabs.map((tab, idx) => {
+                            return (
+                                <CustomTabPanel value={openTab} index={idx} key={`content-${tab.id}`}>
+                                    <SearchList list={tab.list} listId={tab.id}
+                                        getPrimaryText={tab.getPrimaryText} getSecondaryText={tab.getSecondaryText} getDetailsLink={tab.getDetailsLink} />
+                                </CustomTabPanel>
+                            )
+                        })
+                        }
                     </Box>
-                    {tabs.map((tab, idx) => {
-                        return (<CustomTabPanel value={openTab} index={idx} key={`content-${tab.id}`}>
-                            <SearchList list={tab.list} listId={tab.id}
-                                getPrimaryText={tab.getPrimaryText} getSecondaryText={tab.getSecondaryText} getDetailsLink={tab.getDetailsLink} />
-                        </CustomTabPanel>)
-                    })
-                    }
-                </Box>
-                :
-                <Typography variant="h3" color="initial" textAlign="center">No se han encontrado resultados para la búsqueda.</Typography>
-            }
+                    :
+                    <Typography variant="h3" textAlign="center">No se han encontrado resultados para la búsqueda.</Typography>
+                }
+
+            </Stack>
         </GenericContainer>
     )
 }
@@ -156,8 +161,9 @@ interface SearchListProps<Item> {
 }
 
 const SearchList = <Item,>({ list, listId, getPrimaryText, getSecondaryText, getDetailsLink }: SearchListProps<Item>) => {
+
     if (list.length === 0) return (
-        <Typography variant="h3" color="initial" textAlign="center">No se han encontrado resultados para la búsqueda.</Typography>
+        <Typography variant="h3" textAlign="center">No se han encontrado resultados para la búsqueda.</Typography>
     )
 
     return (

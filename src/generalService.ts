@@ -1,4 +1,4 @@
-import type { ErrorBody, ErrorMessage } from "./types/common";
+import type { Dictionary, ErrorBody, ErrorMessage } from "./types/common";
 import axios from "axios"
 import type { FieldValues, UseFormSetError } from "react-hook-form";
 export const API_BASE_URL = "http://localhost:8000";
@@ -23,6 +23,10 @@ export const generalSearch = async (query: string) => {
   return res.data
 }
 
+export const getDictionaries = async (keys: string): Promise<Dictionary> => {
+  const res = await axiosCRM.get(`${API_BASE_URL}/metadata/dictionaries`, { params: { keys } })
+  return res.data
+}
 export const getFieldType = (
   fieldType: string,
   value: string | boolean | number,

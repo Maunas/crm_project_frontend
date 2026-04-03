@@ -3,9 +3,10 @@ import { RegisteredTextInput } from '../common/forms/CustomInputs'
 import type { Organization, OrganizationDetailed, OrganizationPost } from '../../types/campaigns'
 import { setFormErrors } from '../../generalService'
 import { createOrganization, updateOrganization } from '../workspaces/workspaceServices'
-import { Button, Grid, Typography, ButtonGroup } from '@mui/material'
+import { Grid, Typography, ButtonGroup, Stack } from '@mui/material'
 import { useEffect, useMemo } from 'react'
-import { FormErrorMessage } from '../../styles/styledMUIFormComponents'
+import { FormErrorMessage } from '../../theme/styledMUIFormComponents'
+import { CommonButton } from '../common/details/DetailsCommonButton'
 
 interface OrganizationSidebarProps {
     existingOrg?: Organization,
@@ -30,9 +31,7 @@ export const OrganizationFormSidebar = ({ existingOrg, closeSidebar, handleSideb
         }
     }
 
-    return (
-        <OrganizationForm existingOrg={existingOrg} submit={submit} onCancel={closeSidebar} />
-    )
+    return <OrganizationForm existingOrg={existingOrg} submit={submit} onCancel={closeSidebar} />
 }
 
 
@@ -60,33 +59,35 @@ const OrganizationForm = ({ existingOrg, submit, onCancel }: OrganizationProps) 
 
     return (
         <form>
-            <Typography variant="h1" color="initial">
-                {!existingOrg ? "Crear Organización" : `Modificar Organización: ${existingOrg.name}`}
-            </Typography>
-            <Grid container spacing={2} sx={{
-                justifyContent: "center",
-                alignItems: "center",
-                margin: "1rem 1rem 2rem 1rem"
-            }}>
-                <Grid size="grow" minWidth={"20rem"}>
-                    <RegisteredTextInput name="name" register={register} label="Nombre"
-                        required errorMessage={errors.name?.message} />
+            <Stack gap={2}>
+                <Typography variant="h2">
+                    {!existingOrg ? "Crear Organización" : `Modificar Organización: ${existingOrg.name}`}
+                </Typography>
+                <Grid container spacing={2} sx={{
+                    justifyContent: "center",
+                    alignItems: "center",
+                }}>
+                    <Grid size="grow" minWidth={"20rem"}>
+                        <RegisteredTextInput name="name" register={register} label="Nombre"
+                            required errorMessage={errors.name?.message} />
+                    </Grid>
+                    <Grid size="grow" minWidth={"20rem"}>
+                        <RegisteredTextInput name="description" register={register} label="Descripción"
+                            errorMessage={errors.description?.message} />
+                    </Grid>
                 </Grid>
-                <Grid size="grow" minWidth={"20rem"}>
-                    <RegisteredTextInput name="description" register={register} label="Descripción"
-                        errorMessage={errors.description?.message} />
-                </Grid>
-            </Grid>
-            {errors?.root &&
-                <FormErrorMessage>{errors?.root?.message}</FormErrorMessage>}
-            <ButtonGroup fullWidth>
-                <Button variant="outlined" onClick={onCancel} fullWidth>
-                    Cancelar
-                </Button>
-                <Button variant="contained" onClick={handleSubmit(onSubmit)} fullWidth>
-                    Guardar Organización
-                </Button>
-            </ButtonGroup>
+                {errors?.root &&
+                    <FormErrorMessage>{errors?.root?.message}</FormErrorMessage>}
+                <ButtonGroup sx={{marginLeft:"auto"}}>
+                    <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel}>
+                        Cancelar
+                    </CommonButton>
+                    <CommonButton actionType={existingOrg ? "MODIFY" : "CREATE"} variant="contained" 
+                    onClick={handleSubmit(onSubmit)}>
+                        Guardar Organización
+                    </CommonButton>
+                </ButtonGroup>
+            </Stack>
         </form>
     )
 }

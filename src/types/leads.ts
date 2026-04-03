@@ -1,5 +1,6 @@
 import type { Metadata } from "./common";
 import type { LeadFieldValue, LeadFieldValueDetailed } from "./leadFields";
+import type { ColorTypes } from "./mui-theme.d";
 
 export interface LeadPostValue {
   field_id: number;
@@ -24,9 +25,9 @@ export interface LeadDetailed extends Lead, Metadata {
 export interface LeadCommentPost {
   lead_id: number,
   content: string
+  color?: ColorTypes
 }
 
 export interface LeadComment extends LeadCommentPost, Metadata {
   id: number,
-  color?: string
 }

@@ -1,5 +1,6 @@
 import type {
-    LeadField, LeadFieldDetailed, LeadFieldPost, LeadFieldType, LeadFieldTypeDetailed, LeadFieldTemplate, LeadFieldSection, LeadFieldSectionDetailed
+    LeadField, LeadFieldDetailed, LeadFieldPost, LeadFieldType, LeadFieldTypeDetailed, LeadFieldTemplate, LeadFieldSection, LeadFieldSectionDetailed,
+    InputMaskTemplate
 } from "../../types/leadFields";
 import type { DeleteResponse, EnableResponse, ListParams, Paginable } from "../../types/common";
 import { API_BASE_URL, axiosCRM, orderList } from "../../generalService";
@@ -45,6 +46,11 @@ export const getFieldTemplates = async (): Promise<LeadFieldTemplate[]> => {
     return tmp.data;
 };
 
+export const getInputMaskTemplates = async (): Promise<InputMaskTemplate[]> => {
+    const tmp = await axiosCRM.get(`${API_BASE_URL}/templates/lead_fields/input_masks`);
+    return tmp.data;
+};
+
 export const getFieldTypes = async <T extends ListParams>(params?: T): Promise<Paginable<
     T["detailed"] extends true ? LeadFieldTypeDetailed : LeadFieldType
 >> => {
@@ -62,8 +68,8 @@ export const getFieldSections = async <T extends ListParams>(params?: T): Promis
 /****************************************Mapeo de Datos****************************************** */
 
 //Organiza los datos de LeadField, para evitar enviar campos incompatibles con el método de creación (template/manual)
-export const getFieldDataByType = (data: LeadFieldPost, isTemplate = false,): LeadFieldPost => {
-    const requiredData: LeadFieldPost = {
+export const getFieldDataByType = (data: LeadFieldPost, isTemplate = false, isMaskTemplate = false): LeadFieldPost => {
+    let requiredData: LeadFieldPost = {
         name: data.name,
         order: data.order,
         campaign_id: data.campaign_id,
@@ -72,11 +78,19 @@ export const getFieldDataByType = (data: LeadFieldPost, isTemplate = false,): Le
         is_visible: data.is_visible,
         lead_field_section_id: data.lead_field_section_id,
         default_value: data.default_value,
-        input_mask: data.input_mask,
     };
+
+    //Si la máscara es por template, devuelve el código unicamente
+    if (isMaskTemplate) {
+        requiredData = { ...requiredData, mask_template_code: data.mask_template_code }
+    } else {
+        requiredData = { ...requiredData, input_mask: data.input_mask }
+    }
+
     //Si es por template, devuelve el código unicamente
     if (isTemplate)
         return { ...requiredData, field_template_code: data.field_template_code };
+
     //Si no se ha enviado el tipo, se recibe error de validación del backend
     if (!data.field_type_code) return requiredData;
 
