@@ -101,8 +101,8 @@ export const CampaignForm = ({ existingCmp, submit, onCancel }: CampaignProps) =
                 <Typography variant="h2">
                     {!existingCmp ? "Crear Campaña" : `Modificar Campaña ${existingCmp.name}`}
                 </Typography>
-                <Stack direction="column" spacing="1rem">
-                    <Grid container spacing={1} sx={{
+                <Stack direction="column" gap={2}>
+                    <Grid container gap={1} sx={{
                         justifyContent: "center",
                         alignItems: "center"
                     }}>
@@ -124,11 +124,11 @@ export const CampaignForm = ({ existingCmp, submit, onCancel }: CampaignProps) =
                     </Grid>
                     {errors?.root &&
                         <FormErrorMessage>{errors?.root?.message}</FormErrorMessage>}
-                    <ButtonGroup fullWidth>
-                        <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel} fullWidth>
+                    <ButtonGroup sx={{marginLeft:"auto"}}>
+                        <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel}>
                             Cancelar
                         </CommonButton>
-                        <CommonButton actionType={existingCmp? "MODIFY" : "CREATE"} variant="contained" type="submit" fullWidth>
+                        <CommonButton actionType={existingCmp? "MODIFY" : "CREATE"} variant="contained" type="submit">
                             Guardar Campaña
                         </CommonButton>
                     </ButtonGroup>

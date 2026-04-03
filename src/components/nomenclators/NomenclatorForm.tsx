@@ -114,11 +114,11 @@ export const NomenclatorForm = ({ existingNom, submit, onCancel }: NomenclatorPr
                 {errors?.root &&
                     <FormErrorMessage >{errors?.root?.message}</FormErrorMessage>
                 }
-                <ButtonGroup fullWidth>
-                    <Button variant="outlined" onClick={onCancel} fullWidth>
+                <ButtonGroup>
+                    <Button variant="outlined" onClick={onCancel}>
                         Cancelar
                     </Button>
-                    <Button variant="contained" onClick={handleSubmit(onSubmit)} fullWidth>
+                    <Button variant="contained" onClick={handleSubmit(onSubmit)}>
                         Guardar Nomenclador
                     </Button>
                 </ButtonGroup>

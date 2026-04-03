@@ -28,6 +28,7 @@ export const CampaignList = ({ selectedWorkspaceId, handleSidebar }: CampaignLis
 
     if (campaigns?.items && campaigns.items.length > 0) return (
         <Stack gap="1rem">
+            <Typography variant="h3">Lista de Campañas</Typography>
             <CampaignListData campaigns={campaigns.items} />
             <PaginationComponent {...pageComponentProps} />
         </Stack>

@@ -86,6 +86,13 @@ const theme = createTheme({
         }
       },
     },
+    MuiFormControl: {
+      styleOverrides: {
+        root: {
+          marginBlock: ".25rem"
+        }
+      },
+    },
   },
 });
 
