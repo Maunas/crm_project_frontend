@@ -109,10 +109,11 @@ export const LeadList = () => {
         <Stack gap={3}>
             <Grid container justifyContent="space-between" alignItems="center" spacing="1rem">
                 <Typography variant="h1">Lista de Leads</Typography>
-                <CommonButton actionType='CREATE' variant="contained" color="primary" sx={{ marginLeft: "auto" }}
-                    component={RouterLink} to="/leads/new">
-                    Crear Lead
-                </CommonButton>
+                {leads && leads.items.length > 0 &&
+                    <CommonButton actionType='CREATE' variant="contained" color="primary" sx={{ marginLeft: "auto" }}
+                        component={RouterLink} to="/leads/new">
+                        Agregar Lead
+                    </CommonButton>}
             </Grid>
             <Stack gap={2}>
                 <Grid container alignItems="center" justifyContent="space-between" gap={2}>
@@ -134,21 +135,26 @@ export const LeadList = () => {
                                     Modificar Columnas
                                 </CommonButton>
                             }
-                        </Grid>
+                        </Grid> 
                         <Grid sx={{ marginLeft: 'auto' }}>
-                            <Badge badgeContent={filters.length} color="success">
-                                <GenericModal idModal="lead_filters" modalProps={modalProps} buttonText="Aplicar Filtros" maxWidth="lg"
-                                    actionType='FILTER' color='secondary'>
-                                    <LeadFilters applyFilters={applyFilters} filters={{ filters, headers }} campaignId={Number(campaignId)}
-                                        onClose={() => modalProps.handleClose()} />
-                                </GenericModal>
-                            </Badge>
+                            {leads && leads.items.length > 0 &&
+                                <Badge badgeContent={filters.length} color="success">
+                                <CommonButton actionType="FILTER" color="secondary" onClick={() => modalProps.handleOpen("lead_filters")}>
+                                    Aplicar Filtros
+                                </CommonButton>
+                            </Badge>}
+                            <GenericModal idModal="lead_filters" modalProps={modalProps} buttonText="Aplicar Filtros" maxWidth="lg"
+                                actionType='FILTER' color='secondary' showButton={false} >
+                                <LeadFilters applyFilters={applyFilters} filters={{ filters, headers }} campaignId={Number(campaignId)}
+                                    onClose={() => modalProps.handleClose()} />
+                            </GenericModal>
                         </Grid>
                     </Grid>
                 </Grid>
                 {
-                    leads && leads?.items?.length > 0 && !!campaignId &&
-                    <LeadListTable leads={leads.items} campaignId={Number(campaignId)} modalProps={modalProps} />
+                    leads && !!campaignId &&
+                    <LeadListTable leads={leads.items} campaignId={Number(campaignId)} modalProps={modalProps}
+                        activeFilters={filters.length} />
                 }
                 <PaginationComponent {...pageComponentProps} />
             </Stack >

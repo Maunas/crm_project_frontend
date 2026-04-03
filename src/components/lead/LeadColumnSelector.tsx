@@ -21,9 +21,10 @@ interface LeadColumnSelectorProps<T> {
 
 export default function LeadColumnSelector<T extends { id: number }>
   ({ itemsList, selectedIds, handleSelectedIds, handleClose, showField }: LeadColumnSelectorProps<T>) {
+
   const [checked, setChecked] = React.useState<readonly number[]>([]);
   const [left, setLeft] = React.useState<number[]>(not(itemsList.map(f => f.id), selectedIds) ?? []);
-  const [right, setRight] = React.useState<number[]>(selectedIds ?? []);
+  const [right, setRight] = React.useState<number[]>(intersection(itemsList.map(f => f.id), selectedIds));
 
   const leftChecked = intersection(checked, left);
   const rightChecked = intersection(checked, right);
@@ -173,7 +174,7 @@ export default function LeadColumnSelector<T extends { id: number }>
     )
   };
 
-  return (
+  return ( 
     <Stack alignItems="start" spacing="1rem">
       <Typography variant="h2" >Seleccionar Columnas</Typography>
       <Grid

@@ -4,9 +4,9 @@ import { ControlledCheckbox, ControlledNumber } from '../common/forms/CustomInpu
 import { ControlledAutocomplete } from '../common/forms/CustomMultipleInputs'
 import { LeadFormBool, LeadFormMoney, LeadFormNumber, LeadFormRating, LeadFormText } from './LeadFormFieldTypes'
 import { FormErrorMessage } from '../../theme/styledMUIFormComponents'
-import type { DictionaryItem, LeadFilter, LeadListParams } from '../../types/common'
+import type { LeadFilter, LeadListParams } from '../../types/common'
 import { getLeadFields } from '../leadFields/leadFieldServices'
-import { getDictionaries, setFormErrors } from '../../generalService'
+import { setFormErrors } from '../../generalService'
 import { dictOperatorsMock } from '../../mocks/operators'
 import { useFieldArray, useForm, useWatch, type Control, type FieldErrors, type Path, type UseFieldArrayRemove, type UseFormRegister } from 'react-hook-form'
 import { alpha, Button, Divider, Grid, Typography, Stack, ButtonGroup, useColorScheme, useTheme } from '@mui/material'
@@ -28,12 +28,6 @@ interface LeadFiltersProps {
 export const LeadFilters = ({ campaignId, filters, applyFilters, onClose }: LeadFiltersProps) => {
 
     const [leadFields, setLeadFields] = useState<LeadField[]>([])
-    const [operators, setOperators] = useState<DictionaryItem[]>([])
-
-    useEffect(() => {
-        getDictionaries("lead_search_operators")
-            .then(res => setOperators(res.lead_search_operators ?? []))
-    }, [])
 
     useEffect(() => {
         getLeadFields({ campaign_id: campaignId, only_active: true, page_size: 0 })
@@ -90,7 +84,7 @@ export const LeadFilters = ({ campaignId, filters, applyFilters, onClose }: Lead
                             <Stack gap={1} direction="column">
                                 {fields.map((filter, idx) => (
                                     <LeadFiltersItem key={filter.id} idx={idx} control={control} register={register} leadFields={leadFields}
-                                        operators={operators} errors={errors} remove={remove} />
+                                        errors={errors} remove={remove} />
                                 ))}
                             </Stack>
                         </>
@@ -124,7 +118,6 @@ export const LeadFilters = ({ campaignId, filters, applyFilters, onClose }: Lead
 interface LeadFiltersItemProps {
     idx: number,
     leadFields: LeadField[],
-    operators: DictionaryItem[],
     control: Control<LeadListParams & LeadListFilters, unknown, LeadListParams & LeadListFilters>,
     register: UseFormRegister<LeadListFilters>,
     errors: FieldErrors<LeadListParams & LeadListFilters>,
@@ -144,18 +137,21 @@ export const LeadFiltersItem = ({ idx, leadFields, control, register, errors, re
 
     const filteredOperators = useMemo(() => {
         if (!selectedField) return []
-        switch (selectedField?.field_type_code) {
-            case "BOOL": {
-                return operators.filter(op => op.type.includes("bool"))
+        return operators.filter(op => {
+            switch (selectedField?.field_type_code) {
+                case "CALCULATED": return true
+                case "BOOL": {
+                    return op.type.includes("bool")
+                }
+                case "DATE": case "DATE_TIME": {
+                    return op.type.includes("date")
+                }
+                case "NUMBER": case "INT": case "RATING": case "MONEY": {
+                    return op.type.includes("number")
+                }
+                default: return op.type.includes("string")
             }
-            case "DATE": case "DATE_TIME": {
-                return operators.filter(op => op.type.includes("date"))
-            }
-            case "NUMBER": case "INT": case "RATING": case "MONEY": {
-                return operators.filter(op => op.type.includes("number"))
-            }
-            default: return operators.filter(op => op.type.includes("string"))
-        }
+        })
     }, [selectedField, operators])
 
     return (
@@ -198,7 +194,7 @@ export const LeadFiltersItem = ({ idx, leadFields, control, register, errors, re
             }}>
                 <CloseIcon />
             </Button>
-        </Grid>
+        </Grid >
     )
 }
 interface LeadFormFieldTypeProps {
