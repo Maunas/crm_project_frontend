@@ -11,6 +11,8 @@ import Button from '@mui/material/Button';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import SettingsIcon from '@mui/icons-material/Settings';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
+import { styled } from '@mui/material/styles';
+import type { ColorTypes } from '../../../types/mui-theme.d';
 
 interface DisableBtnProps {
     active: boolean,
@@ -48,9 +50,19 @@ interface CommonBtnProps extends MuiButtonProps {
     to?: string,
     children: ReactNode,
 }
-export const CommonButton = ({ actionType= "NONE", handleClick, children, ...btnProps }: CommonBtnProps) => {
+
+const LightButton = styled(Button)(({ theme, color="primary", variant="contained" }) => {
+    if (variant !== "outlined") return []
+    return [
+        theme.applyStyles('dark', {
+            color: theme.palette[color as ColorTypes].light
+        }
+        )]
+})
+
+export const CommonButton = ({ actionType = "NONE", handleClick, children, ...btnProps }: CommonBtnProps) => {
     return (
-        <Button variant="contained" fullWidth onClick={handleClick} {...btnProps}>
+        <LightButton variant="contained" fullWidth onClick={handleClick} {...btnProps}>
             <Stack gap={1} direction="row">
                 {actionType === "MODIFY" && <EditIcon fontSize={btnProps.size} />}
                 {actionType === "CLOSE" && <CloseIcon fontSize={btnProps.size} />}
@@ -63,6 +75,6 @@ export const CommonButton = ({ actionType= "NONE", handleClick, children, ...btn
                 {actionType === "OPTIONS" && <SettingsIcon fontSize={btnProps.size} />}
                 {children}
             </Stack>
-        </Button>
+        </LightButton>
     )
 }

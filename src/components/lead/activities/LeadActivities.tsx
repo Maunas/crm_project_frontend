@@ -1,7 +1,6 @@
-import { Box, Tab, Tabs } from '@mui/material'
 import { useState } from 'react';
 import { LeadComments } from './LeadComments';
-import { LeadAudit } from './LeadAudit';
+import { Box, Tab, Tabs } from '@mui/material'
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -39,9 +38,6 @@ export const LeadActivities = ({ leadId }: { leadId: number }) => {
       <Box sx={{ height: "100%" }}>
         <CustomTabPanel value={openTab} index={0}>
           <LeadComments leadId={leadId} />
-        </CustomTabPanel>
-        <CustomTabPanel value={openTab} index={1}>
-          <LeadAudit />
         </CustomTabPanel>
       </Box>
     </>

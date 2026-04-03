@@ -4,12 +4,12 @@ import { FormErrorMessage } from "../../styledComponents/styledMUIFormComponents
 import { LeadFormAddress, LeadFormBool, LeadFormCheckbox, LeadFormFile, LeadFormMoney, LeadFormNumber, LeadFormPassword, LeadFormRating, LeadFormRelatedLead, LeadFormSelector, LeadFormText } from "./LeadFormFieldTypes"
 import type { Lead, LeadPost, LeadPostValue } from "../../types/leads"
 import type { LeadField, LeadFieldValue } from "../../types/leadFields"
+import type { NomenclatorItem } from "../../types/nomenclators"
 import { createFormDataFromLead, getLeads, getSelectorField, setLeadFormErrors, updateSelectorOptions } from "./leadService"
 import { getLeadFields } from "../leadFields/leadFieldServices"
+import { getNomenclatorItems } from "../nomenclators/nomenclatorService"
 import { useFieldArray, useForm, type Control, type Path, type UseFormRegister } from "react-hook-form"
 import { Button, Grid, ButtonGroup } from "@mui/material"
-import { getNomenclatorItems } from "../nomenclators/nomenclatorService"
-import type { NomenclatorItem } from "../../types/nomenclators"
 
 //Para permitir mantener los datos de cada campo
 export interface LeadPostFormValues extends LeadPostValue {

@@ -1,16 +1,16 @@
-import { alpha, Button, Divider, Grid, Typography, Stack, ButtonGroup, useColorScheme, useTheme } from '@mui/material'
-import { ControlledCheckbox, ControlledNumber } from '../common/forms/CustomInputs'
-import { useFieldArray, useForm, useWatch, type Control, type FieldErrors, type Path, type UseFieldArrayRemove, type UseFormRegister } from 'react-hook-form'
-import type { DictionaryItem, LeadFilter, LeadListParams } from '../../types/common'
 import { useEffect, useMemo, useState } from 'react'
+import type { LeadField } from '../../types/leadFields'
+import { ControlledCheckbox, ControlledNumber } from '../common/forms/CustomInputs'
+import { ControlledAutocomplete } from '../common/forms/CustomMultipleInputs'
+import { LeadFormBool, LeadFormMoney, LeadFormNumber, LeadFormRating, LeadFormText } from './LeadFormFieldTypes'
+import { FormErrorMessage } from '../../styledComponents/styledMUIFormComponents'
+import type { DictionaryItem, LeadFilter, LeadListParams } from '../../types/common'
 import { getLeadFields } from '../leadFields/leadFieldServices'
 import { getDictionaries, setFormErrors } from '../../generalService'
-import { ControlledAutocomplete } from '../common/forms/CustomMultipleInputs'
-import { FormErrorMessage } from '../../styledComponents/styledMUIFormComponents'
-import type { LeadField } from '../../types/leadFields'
-import CloseIcon from '@mui/icons-material/Close';
-import { LeadFormBool, LeadFormMoney, LeadFormNumber, LeadFormRating, LeadFormText } from './LeadFormFieldTypes'
 import { dictOperatorsMock } from '../../mocks/operators'
+import { useFieldArray, useForm, useWatch, type Control, type FieldErrors, type Path, type UseFieldArrayRemove, type UseFormRegister } from 'react-hook-form'
+import { alpha, Button, Divider, Grid, Typography, Stack, ButtonGroup, useColorScheme, useTheme } from '@mui/material'
+import CloseIcon from '@mui/icons-material/Close';
 
 interface LeadListFilters {
     filters: LeadFilter[],

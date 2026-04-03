@@ -1,7 +1,9 @@
 import { useEffect, useState, type ReactNode } from "react"
+import { CreateCommentWrapper, UpdateCommentFromNote } from "./LeadCommentForm"
 import { PaginationComponent } from "../../common/lists/PaginationComponent"
 import type { Paginable } from "../../../types/common"
 import type { LeadComment } from "../../../types/leads"
+import type { ColorTypes } from "../../../types/mui-theme.d"
 import { useListPagination } from "../../hooks/useListPagination"
 import { deleteComment, getComments } from "./leadActivitiesService"
 import dayjs from "dayjs"
@@ -10,8 +12,6 @@ import { alpha, styled, useTheme } from "@mui/material/styles"
 import EditIcon from '@mui/icons-material/Edit';
 import CloseIcon from '@mui/icons-material/Close';
 import WatchLaterIcon from '@mui/icons-material/WatchLater';
-import type { ColorTypes } from "../../../types/mui-theme.d"
-import { CreateCommentWrapper, UpdateCommentFromNote } from "./LeadCommentForm"
 
 export const LeadComments = ({ leadId }: { leadId: number }) => {
 

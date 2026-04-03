@@ -1,9 +1,13 @@
 import { useEffect, useId, useMemo, useState } from "react"
+import { LeadActivities } from "./activities/LeadActivities.tsx"
 import { GenericModal } from "../common/layout/GenericContainer.tsx"
+import { CommonButton } from "../common/details/DetailsCommonButton.tsx"
+import { CustomChip } from "../../styledComponents/styledMUIDisplayComponents.tsx"
 import type { LeadDetailed } from "../../types/leads"
 import type { LeadFieldValue } from "../../types/leadFields"
 import { getFieldType } from "../../generalService.ts"
 import { disableLead, enableLead, getLead } from "./leadService.ts"
+import { useModal } from "../hooks/useModal.tsx"
 import DOMPurify from 'dompurify';
 import Markdown from 'react-markdown'
 import { Link as RouterLink, useNavigate, useParams } from "react-router-dom"
@@ -13,9 +17,6 @@ import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import { useModal } from "../hooks/useModal.tsx"
-import { CustomChip } from "../../styledComponents/styledMUIDisplayComponents.tsx"
-import { LeadActivities } from "./activities/LeadActivities.tsx"
 
 export const LeadDetails = () => {
 
@@ -50,25 +51,28 @@ export const LeadDetails = () => {
                     {lead && fieldValues &&
                         <Box>
                             <Paper sx={{ p: 2, borderRadius: "1em", marginBottom: "1rem" }}>
-                                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>
-                                    <Typography variant="h1">{fieldValues[0]?.value ?? "Lead no encontrado"} {fieldValues[1]?.value ?? ""}</Typography>
-                                    <CustomChip label={lead?.active ? "Habilitado" : "Deshabilitado"} color={lead?.active ? "success" : "error"} />
-                                </Box>
-                                <ButtonGroup fullWidth>
-                                    <Button variant="outlined" color={lead.active ? "error" : "success"} onClick={() => handleActive(lead)}
-                                        sx={{ marginBlock: 1 }}>
-                                        {lead.active ? "Deshabilitar" : "Habilitar"}
-                                    </Button>
-                                    <Button variant="contained" color="primary" component={RouterLink} to={`/leads/modify/${lead?.id}`}
-                                        sx={{ marginBlock: 1 }}>
-                                        Modificar Lead
-                                    </Button>
-                                </ButtonGroup>
-
+                                <Grid container gap="1.5rem" alignItems="center">
+                                    <Grid container size="grow" gap=".5rem 1rem" alignItems="center" justifyContent="space-between">
+                                        <Typography variant="h1">
+                                            {fieldValues[0]?.value ?? "Lead no encontrado"} {fieldValues[1]?.value ?? ""}
+                                        </Typography>
+                                        <CustomChip label={lead?.active ? "Habilitado" : "Deshabilitado"}
+                                            color={lead?.active ? "success" : "error"} sx={{ marginLeft: "auto" }} />
+                                    </Grid>
+                                    <ButtonGroup fullWidth>
+                                        <CommonButton actionType={lead.active ? "DISABLE" : "ENABLE"} variant="outlined"
+                                            color={lead.active ? "error" : "success"} onClick={() => handleActive(lead)}>
+                                            {lead.active ? "Deshabilitar" : "Habilitar"}
+                                        </CommonButton>
+                                        <CommonButton actionType="MODIFY" variant="contained" color="primary"
+                                            component={RouterLink} to={`/leads/modify/${lead?.id}`}>
+                                            Modificar
+                                        </CommonButton>
+                                    </ButtonGroup>
+                                </Grid>
                             </Paper>
                             <Paper sx={{ p: 1, borderRadius: "1em" }}>
                                 <LeadFieldSections fieldValues={fieldValues} />
-
                                 <Accordion disableGutters sx={{ boxShadow: "none" }}>
                                     <AccordionSummary sx={{ height: "64px" }}
                                         expandIcon={<ArrowDropDownIcon />}
@@ -89,13 +93,13 @@ export const LeadDetails = () => {
                         </Box>
                     }
                 </Grid>
-                <Grid size="grow" minWidth="20rem" component={Paper} sx={{p: 2, borderRadius: "1em" }} >
-                        <Stack height="100%" gap="1.5rem">
-                            <Typography variant="h2">Actividades</Typography>
-                            <Stack height="100%" gap="1rem">
-                                <LeadActivities leadId={Number(id)} />
-                            </Stack>
+                <Grid size="grow" minWidth="20rem" component={Paper} sx={{ p: 2, borderRadius: "1em" }} >
+                    <Stack height="100%" gap="1.5rem">
+                        <Typography variant="h2">Actividades</Typography>
+                        <Stack height="100%" gap="1rem">
+                            <LeadActivities leadId={Number(id)} />
                         </Stack>
+                    </Stack>
                 </Grid>
             </Grid >
         </Container >

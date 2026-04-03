@@ -1,7 +1,10 @@
 import { useMemo, useState } from "react"
 import { CommentInstance } from "./LeadComments"
 import { RegisteredTextInput } from "../../common/forms/CustomInputs"
+import { CommonButton } from "../../common/details/DetailsCommonButton"
+import { FormErrorMessage } from "../../../styledComponents/styledMUIFormComponents"
 import type { LeadComment, LeadCommentPost } from "../../../types/leads"
+import type { ColorTypes } from "../../../types/mui-theme.d"
 import { setFormErrors } from "../../../generalService"
 import { createComment, updateComment } from "./leadActivitiesService"
 import { Controller, useForm, type Control } from "react-hook-form"
@@ -9,9 +12,6 @@ import { Box, Grid, IconButton, Stack } from "@mui/material"
 import CircleIcon from '@mui/icons-material/Circle';
 import { alpha, styled, useTheme } from "@mui/material/styles"
 import type { PaletteColor } from "@mui/material/styles"
-import type { ColorTypes } from "../../../types/mui-theme.d"
-import { FormErrorMessage } from "../../../styledComponents/styledMUIFormComponents"
-import { CommonButton } from "../../common/details/DetailsCommonButton"
 
 interface CommentFromNoteProps {
     leadId: number,
@@ -36,7 +36,7 @@ export const UpdateCommentFromNote = ({ existingComment, leadId, onUpdate, onClo
                 <CommentInstance color={color} onDelete={() => onClose()}
                     title={existingComment ? "Modificar Comentario" : "Agregar Comentario"}>
                     <CommentForm existingComment={existingComment} leadId={leadId} submit={postComment}
-                        onClose={() => onClose()} setColor={setColor} size="small"/>
+                        onClose={() => onClose()} setColor={setColor} size="small" />
                 </CommentInstance>
             </Grid>
         </Grid>
@@ -85,7 +85,7 @@ export const CreateCommentWrapper = ({ leadId, onCreate }: CommentWrapperProps) 
     return (
         <Box width="100%" bgcolor={alpha(palette.background.default, .5)} borderRadius="1rem">
             <NewCommentBox color={color} boxShadow="inherit">
-                <CommentForm leadId={leadId} submit={postComment} setColor={setColor} size="medium"/>
+                <CommentForm leadId={leadId} submit={postComment} setColor={setColor} size="medium" />
             </NewCommentBox>
         </Box>
     )
