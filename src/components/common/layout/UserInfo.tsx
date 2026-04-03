@@ -5,7 +5,7 @@ import { AccountCircle, Check } from '@mui/icons-material';
 import type { UserContextItems } from '../../users/UserProvider';
 import { UserContext } from '../contexts';
 import { Link } from 'react-router-dom';
-import theme from '../../../styledComponents/theme';
+import theme from '../../../theme/theme';
 
 export const UserInfo = () => {
 
@@ -104,7 +104,7 @@ export const UserInfo = () => {
                     <Avatar sx={{ color: theme.palette.secondary.dark, backgroundColor: theme.palette.secondary.light }} />
                 </IconButton>
                 <Stack>
-                    <Typography variant="body2" fontWeight={600}>{user.email}</Typography>
+                    <Typography variant="body2" fontWeight={600}>{user?.email}</Typography>
                     <Typography variant="body2">{selectedOrg?.name}</Typography>
                 </Stack>
             </MenuItem>

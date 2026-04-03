@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { FormErrorMessage } from "../../styledComponents/styledMUIFormComponents"
 import { LeadForm } from "./LeadForm"
+import { FormErrorMessage } from "../../theme/styledMUIFormComponents"
 import type { LeadField, LeadFieldDetailed, LeadFieldValue } from "../../types/leadFields"
 import type { LeadDetailed } from "../../types/leads"
 import type { Campaign, Workspace } from "../../types/campaigns"
@@ -35,10 +35,10 @@ export const CreateLeadFormPage = () => {
     }, [nav])
 
     return (
-        <form autoComplete="off">
-            <Stack spacing={2}>
-                <Typography variant="h1">Nuevo Lead</Typography>
-                <Grid container spacing={2}>
+        <Stack gap={3}>
+            <Typography variant="h1">Nuevo Lead</Typography>
+            <Stack gap={2}>
+                <Grid container gap={1}>
                     <Grid size="grow" minWidth="20rem">
                         <Autocomplete options={workspaces} loading={workspaces.length === 0} disabled={workspaces.length === 0}
                             onChange={(_, value) => setSelectedWorkspace(value)} value={selectedWorkspace}
@@ -57,31 +57,56 @@ export const CreateLeadFormPage = () => {
                     </Grid>
                 </Grid>
                 {campaignError && <FormErrorMessage>{campaignError}</FormErrorMessage>}
-                <Divider />
+                {selectedCampaign && <Divider />}
                 <LeadForm campaignId={selectedCampaign?.id} onSubmit={onSubmit} onCancel={() => nav("/leads")} setCampaignError={setCampaignError} />
             </Stack>
-        </form>
+        </Stack>
     )
 }
 
+//Convierte LeadFieldDetailed a LeadField
+const detailedToNormalLeadField = (leadField: LeadFieldDetailed) => {
+    let newFieldData: LeadField = {
+        ...leadField,
+        lead_field_section_id: leadField.lead_field_section.id
+    }
+    if (leadField.nomenclator) newFieldData = {
+        ...newFieldData,
+        nomenclator_id: leadField.nomenclator.id
+    }
+    if (leadField.related_campaign) newFieldData = {
+        ...newFieldData,
+        related_campaign_id: leadField.related_campaign.id
+    }
+    return newFieldData as LeadField
+}
+
 interface SimulateProps {
-    campaignId: number,
+    campaign: Campaign,
+    leadFields: LeadFieldDetailed[],
     onCancel: () => void
 }
-export const SimulateLeadFormModal = ({ campaignId, onCancel }: SimulateProps) => {
+export const SimulateLeadFormModal = ({ campaign, leadFields, onCancel }: SimulateProps) => {
 
     const onSubmit = useCallback((data: FormData) => {
         return simulateCreateLead(data)
             .then(() => alert("El formulario se envió correctamente."))
     }, [])
 
+    //Convierte arreglo de LeadFieldDetailed a arreglo de LeadField
+    const formattedLeadFields: LeadField[] = useMemo(() => {
+        if (!leadFields) return []
+        return leadFields
+            .filter(leadField => leadField.active)
+            .map(leadField => detailedToNormalLeadField(leadField))
+    }, [leadFields])
+
     return (
-        <form autoComplete="off">
-            <Stack spacing={2}>
-                <Typography variant="h1">Simulación de Nuevo Lead: Campaña {campaignId}</Typography>
-                <LeadForm campaignId={campaignId} onSubmit={onSubmit} onCancel={onCancel} submitBtnLabel="Validar Datos" />
-            </Stack>
-        </form>
+        <Stack gap={3}>
+            <Typography variant="h1">Simulación de Nuevo Lead: Campaña {campaign.name}</Typography>
+            <LeadForm campaignId={campaign.id} existingLeadFields={formattedLeadFields}
+                onSubmit={onSubmit} onCancel={onCancel} submitBtnLabel="Validar Datos" />
+        </Stack>
     )
 }
 
@@ -95,53 +120,34 @@ export const UpdateLeadFormPage = () => {
         getLead(Number(id)).then(setLead)
     }, [id])
 
-    //Convierte LeadFieldDetailed a LeadField
-    const detailedToNormalLeadField = (leadField: LeadFieldDetailed) => {
-        let newFieldData: LeadField = {
-            ...leadField,
-            lead_field_section_id: leadField.lead_field_section.id
-        }
-        if (leadField.nomenclator) newFieldData = {
-            ...newFieldData,
-            nomenclator_id: leadField.nomenclator.id
-        }
-        if (leadField.related_campaign) newFieldData = {
-            ...newFieldData,
-            related_campaign_id: leadField.related_campaign.id
-        }
-        return newFieldData as LeadField
-    }
-
-
-    //Convierte LeadFieldDetailed a LeadField
-    const formattedLeadFields: LeadField[] = useMemo(() => {
-        if (!lead || !lead.field_values) return []
-        return lead.field_values.filter(value => value.field.active)
-            .map(fieldValue => detailedToNormalLeadField(fieldValue.field))
-    }, [lead])
-
-    //Convierte LeadFieldValueDetailed a LeadFieldValue
+    //Formatea LeadFieldValue para el formulario.
     const formattedLeadValues: LeadFieldValue[] = useMemo(() => {
         if (!lead || !lead.field_values) return []
-        return lead.field_values.filter(value => value.active && value.field.active)
-            .map(fieldValue => {
-                const fieldData = fieldValue.field
-                const newFieldData = detailedToNormalLeadField(fieldData)
-                return ({ ...fieldValue, field: newFieldData }) as LeadFieldValue
-            })
+        return (
+            lead.field_values
+                .filter(value => value.active && value.field.active)
+                .map(fieldValue => {
+                    const newFieldData = detailedToNormalLeadField(fieldValue.field)
+                    return ({ ...fieldValue, field: newFieldData }) as LeadFieldValue
+                })
+        )
     }, [lead])
+
+    //Convierte arreglo de LeadFieldDetailed a arreglo de LeadField
+    const formattedLeadFields: LeadField[] = useMemo(() => {
+        if (!formattedLeadValues) return []
+        return formattedLeadValues.map(leadField => leadField.field)
+    }, [formattedLeadValues])
 
     const onSubmit = useCallback((data: FormData) => {
         return updateLead(data, lead!.id).then(lead => nav(`/leads/${lead.id}`))
     }, [nav, lead])
 
     if (lead && lead.campaign_id) return (
-        <form autoComplete="off">
-            <Stack spacing={2}>
-                <Typography variant="h1">{`Modificar Lead: ${lead?.field_values[0].value} ${lead?.field_values[1].value}`}</Typography>
-                <LeadForm existingValues={formattedLeadValues} existingLeadFields={formattedLeadFields}
-                    campaignId={lead.campaign_id} onSubmit={onSubmit} onCancel={() => nav(`/leads/${lead.id}`)} />
-            </Stack>
-        </form>
+        <Stack gap={3}>
+            <Typography variant="h1">{`Modificar Lead: ${lead?.field_values[0].value} ${lead?.field_values[1].value}`}</Typography>
+            <LeadForm existingValues={formattedLeadValues} existingLeadFields={formattedLeadFields}
+                campaignId={lead.campaign_id} onSubmit={onSubmit} onCancel={() => nav(`/leads/${lead.id}`)} />
+        </Stack>
     )
 }

@@ -27,6 +27,7 @@ export interface LeadFieldPost {
   lead_field_section_id: number | null;
   default_value?: string | null;
   input_mask?: string | null;
+  mask_template_code?: string | null;
   //Plantilla
   field_template_code?: string | null;
   //Manual con Subtype
@@ -69,6 +70,11 @@ export interface LeadFieldTemplate {
   };
 }
 
+export interface InputMaskTemplate {
+  code: string;
+  name: string;
+  mask: string;
+}
 export interface LeadFieldType {
   id: number;
   code: string;

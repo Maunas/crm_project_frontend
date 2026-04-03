@@ -23,9 +23,10 @@ export const Navbar = ({ open }: NavbarProps) => {
   return (
     <List>
       {options?.map((item) => (
-        <ListItem key={item.name} disablePadding sx={{ display: 'block',
-          "&:hover": {backgroundColor: theme.palette.contrast.light}         
-          }}>
+        <ListItem key={item.name} disablePadding sx={{
+          display: 'block',
+          "&:hover": { backgroundColor: theme.palette.contrast.light }
+        }}>
           <ListItemButton
             component={Link} to={item.link}
             sx={[
@@ -43,10 +44,7 @@ export const Navbar = ({ open }: NavbarProps) => {
             </ListItemIcon>
             <ListItemText
               primary={item.name}
-              sx={{
-                opacity: open ? 1 : 0,
-              }
-              }
+              sx={{ opacity: open ? 1 : 0, }}
             />
           </ListItemButton>
         </ListItem>

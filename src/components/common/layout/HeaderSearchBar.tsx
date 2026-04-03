@@ -1,5 +1,5 @@
 import { CircularProgress, InputBase, List, ListItem, ListItemButton, ListItemText, Paper, Stack, Typography } from "@mui/material";
-import { alpha, styled } from "@mui/material/styles";
+import { styled } from "@mui/material/styles";
 import SearchIcon from '@mui/icons-material/Search';
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
@@ -10,7 +10,7 @@ import { useDebounce } from "../../hooks/useDebounce";
 const Search = styled('div')(({ theme }) => ({
     borderRadius: theme.shape.borderRadius,
     backgroundColor: theme.palette.background.default,
-    border: `1px solid ${theme.palette.contrast[200]}`,
+    border: `1px solid ${theme.palette.contrast.light}`,
     '&:hover': {
         backgroundColor: theme.palette.background.paper,
         border: `2px solid ${theme.palette.primary.main}`,

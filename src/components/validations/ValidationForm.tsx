@@ -2,11 +2,12 @@ import { useEffect, useMemo, useState } from "react";
 import { ControlledTextInput, RegisteredTextInput } from "../common/forms/CustomInputs";
 import { ControlledAutocomplete, ControlledRadio } from "../common/forms/CustomMultipleInputs";
 import { EnabledIcon } from "../common/lists/Badges";
+import { CommonButton } from "../common/details/DetailsCommonButton";
+import { FormErrorMessage } from "../../theme/styledMUIFormComponents";
 import type { FieldValidationRule, FieldValidationRulePost, FieldValidationRuleTemplate, LeadFieldDetailed } from "../../types/leadFields";
 import { createValidation, deleteValidation, getValidationDataByType, getValidationTemplates, setValFormErrors, updateValidation } from "./validationService";
 import { useFieldArray, useForm, useWatch, type Control, type FieldErrors, type UseFieldArrayRemove, type UseFormClearErrors, type UseFormGetValues, type UseFormRegister, type UseFormSetValue } from "react-hook-form";
-import { Button, Divider, Grid, Stack, Typography, ButtonGroup } from "@mui/material";
-import { FormErrorMessage } from "../../styledComponents/styledMUIFormComponents";
+import { Divider, Grid, Stack, Typography, ButtonGroup } from "@mui/material";
 
 export interface FieldValidationListPostInstance extends FieldValidationRulePost {
     required_params: string[];
@@ -116,16 +117,14 @@ export const ValidationRuleForm = ({ leadField, onSubmit, onSubmitAll, onErrorAl
             })
         )
         //Se eliminan todos los campos a la vez, despues de setear todos los errores, para evitar inconsistencias.
-        remove(idxToDelete) 
+        remove(idxToDelete)
         return errorFlag ? onErrorAll(newLeadFieldValidationList) : onSubmitAll(newLeadFieldValidationList)
     }
 
     return (
-        <Stack spacing={2}>
-            <Stack>
-                <Typography variant="h2">{leadField.name}</Typography>
-                <Typography variant="h3">Reglas de Validación</Typography>
-            </Stack>
+        <Stack gap={2}>
+            <Typography variant="h2">{leadField.name}</Typography>
+            <Typography variant="h3">Reglas de Validación</Typography>
             <Divider />
             {fields?.length > 0 ?
                 fields.map((field, idx) => (
@@ -135,9 +134,9 @@ export const ValidationRuleForm = ({ leadField, onSubmit, onSubmitAll, onErrorAl
                 ))
                 : <Typography variant="h4" textAlign="center">No hay reglas de Validación.</Typography>
             }
-            <ButtonGroup>
-                <Button onClick={onCancel} fullWidth>Cerrar</Button>
-                <Button variant="contained" onClick={() =>
+            <ButtonGroup sx={{ marginLeft: "auto" }}>
+                <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel}>Cancelar</CommonButton>
+                <CommonButton actionType="CREATE" variant="contained" onClick={() =>
                     append({
                         name: "",
                         error_message: "",
@@ -147,10 +146,10 @@ export const ValidationRuleForm = ({ leadField, onSubmit, onSubmitAll, onErrorAl
                         field_id: leadField.id,
                         to_delete: false
                     })
-                } fullWidth>
+                } color="secondary">
                     Agregar Validación
-                </Button>
-                <Button onClick={handleSubmit(submit)} fullWidth>Guardar Cambios</Button>
+                </CommonButton>
+                <CommonButton actionType="MODIFY" onClick={handleSubmit(submit)}>Guardar Lista</CommonButton>
             </ButtonGroup>
         </Stack>
     );
@@ -215,32 +214,31 @@ export const ValidationInstance = ({ idx, templates, register, control, setValue
     }
 
     return (
-        <>
-            <Grid container justifyContent="center" marginBlock={2}>
-                <Grid size="grow">
-                    <Stack gap={1} direction="row" alignItems="center" >
-                        <Typography variant="h4" color={toDelete ? "error" : "textPrimary"} >Validación {idx + 1}</Typography>
-                        {existingValId && <EnabledIcon active={!!existingValId && !toDelete} trueTooltip="Creado" falseTooltip="Para eliminar" />}
-                    </Stack>
-                </Grid>
-                <Grid size="auto">
-                    <Button variant="outlined" color={!toDelete ? "error" : "success"} onClick={() => handleRemove(idx)}>
-                        {!toDelete ? "Eliminar Validación" : "Cancelar Eliminación"}
-                    </Button>
-                </Grid>
+        <Stack gap={2}>
+            <Grid container justifyContent="space-between" alignContent="center">
+                <Stack gap={1} direction="row" alignItems="center" >
+                    <Typography variant="h4" color={toDelete ? "error" : "textPrimary"} >Validación {idx + 1}</Typography>
+                    {existingValId && <EnabledIcon active={!!existingValId && !toDelete} trueTooltip="Creado" falseTooltip="Para eliminar" />}
+                </Stack>
+                <CommonButton actionType={toDelete ? "ENABLE" : "DISABLE"} variant="outlined"
+                    color={!toDelete ? "error" : "success"} onClick={() => handleRemove(idx)}
+                    sx={{ marginLeft: "auto" }} size="small">
+                    {!toDelete ? "Eliminar Validación" : "Cancelar Eliminación"}
+                </CommonButton>
             </Grid >
 
             <input {...register(`validation_rules.${idx}.field_id`)} readOnly hidden />
             <input {...register(`validation_rules.${idx}.required_params`)} readOnly hidden />
 
-            <Grid container spacing={2} justifyContent="center">
-                <Grid container spacing={2} minWidth="20rem" size={12}>
-                    <Grid size="grow" minWidth="20rem">
+            <Grid container gap={1} justifyContent="center">
+                <Grid container gap={1} minWidth="20rem" size={12} alignItems="center">
+                    <Grid size="grow" minWidth="12rem">
                         <RegisteredTextInput
                             name={`validation_rules.${idx}.name`}
                             register={register}
                             label="Nombre de la Regla"
                             required
+                            size="small"
                             errorMessage={errors?.validation_rules?.[idx]?.name?.message}
                         />
                     </Grid>
@@ -260,12 +258,13 @@ export const ValidationInstance = ({ idx, templates, register, control, setValue
                 </Grid>
                 {!toDelete &&
                     <>
-                        <Grid container spacing={2} size="grow" minWidth="20rem">
-                            <Grid size="grow" minWidth="15rem" justifyContent="center">
+                        <Grid container gap={1} size="grow" minWidth="20rem" alignItems="center">
+                            <Grid size="grow" minWidth="12rem" justifyContent="center">
                                 <ControlledTextInput
                                     control={control}
                                     label="Mensaje de Error"
                                     name={`validation_rules.${idx}.error_message`}
+                                    size="small"
                                     errorMessage={
                                         errors?.validation_rules?.[idx]?.error_message?.message
                                     }
@@ -274,14 +273,15 @@ export const ValidationInstance = ({ idx, templates, register, control, setValue
                             {creationMethod === "template" &&
                                 selectedTemplate?.error_message && (
                                     <Grid size="auto" justifyContent="center">
-                                        <Button variant="outlined" onClick={generateErrorMessage} fullWidth>
+                                        <CommonButton actionType="OPTIONS" variant="outlined"
+                                            onClick={generateErrorMessage} fullWidth>
                                             Generar
-                                        </Button>
+                                        </CommonButton>
                                     </Grid>
                                 )}
                         </Grid>
 
-                        <Grid container spacing={2} minWidth="20rem" size="grow">
+                        <Grid container gap={1} minWidth="20rem" size="grow">
                             {creationMethod === "manual" && (
                                 <Grid size="grow">
                                     <RegisteredTextInput
@@ -295,26 +295,25 @@ export const ValidationInstance = ({ idx, templates, register, control, setValue
                                     />
                                 </Grid>
                             )}
-                            {creationMethod === "template" && !existingValId &&(
-                                <>
-                                    <Grid size="grow" spacing={2} minWidth="15rem">
-                                        <ControlledAutocomplete control={control} name={`validation_rules.${idx}.template_code`} options={templates}
-                                            label="Plantilla" getOptionKey={(op) => op.code} getOptionLabel={(op) => op.name} returnField="code"
-                                            required errorMessage={errors?.validation_rules?.[idx]?.template_code?.message}
-                                            helper={selectedTemplate?.description}
-                                        />
-                                    </Grid>
-                                </>
+                            {creationMethod === "template" && !existingValId && (
+                                <Grid size="grow" minWidth="15rem">
+                                    <ControlledAutocomplete control={control} name={`validation_rules.${idx}.template_code`} options={templates}
+                                        label="Plantilla" getOptionKey={(op) => op.code} getOptionLabel={(op) => op.name} returnField="code"
+                                        required errorMessage={errors?.validation_rules?.[idx]?.template_code?.message}
+                                        helper={selectedTemplate?.description} size="small"
+                                    />
+                                </Grid>
                             )}
                         </Grid>
-                        {selectedTemplate && !existingValId &&
+                        {creationMethod === "template" && selectedTemplate && !existingValId &&
                             selectedTemplate.required_params?.length > 0 &&
-                            <Grid container spacing={2} size="grow" minWidth="8rem">
+                            <Grid container gap={1} size="grow" minWidth="8rem">
                                 {selectedTemplate?.required_params.map((param) => (
-                                    <Grid container size="grow" minWidth="4rem" spacing={2} key={`${idx}-${param}`} >
+                                    <Grid container size="grow" minWidth="4rem" gap={2} key={`${idx}-${param}`} >
                                         <RegisteredTextInput register={register} name={`validation_rules.${idx}.template_params.${param}`}
                                             label={param} id={`validation_rules.${idx}.template_params.${param}-${selectedTemplate.name}`}
                                             required errorMessage={errors?.validation_rules?.[idx]?.template_params?.[param]?.message}
+                                            size="small"
                                         />
                                     </Grid>
                                 ))}
@@ -323,8 +322,9 @@ export const ValidationInstance = ({ idx, templates, register, control, setValue
                     </>
                 }
             </Grid>
-            <FormErrorMessage>{errors.validation_rules?.[idx]?.root?.message}</FormErrorMessage>
-            <Divider sx={{ marginBlock: "1rem" }} />
-        </>
+            {errors.validation_rules?.[idx]?.root &&
+                <FormErrorMessage>{errors.validation_rules?.[idx]?.root?.message}</FormErrorMessage>}
+            <Divider />
+        </Stack>
     );
 };

@@ -2,14 +2,15 @@ import type { Metadata } from "./common";
 
 //Campaigns
 export interface CampaignPost {
-  name: string | null;
-  description?: string | null;
-  workspace_id: number | null;
+  name: string;
+  description?: string;
+  workspace_id: number;
 }
 export interface Campaign extends CampaignPost {
-  id: number | null;
+  id: number;
   organization_id: number | null;
 }
+
 export interface CampaignDetailed extends Campaign, Metadata {}
 
 //Workspaces
@@ -19,7 +20,7 @@ export interface WorkspacePost {
   organization_id: number | null;
 }
 export interface Workspace extends WorkspacePost {
-  id: number | null;
+  id: number;
 }
 export interface WorkspaceDetailed extends Workspace, Metadata {
   campaigns: CampaignDetailed[];
