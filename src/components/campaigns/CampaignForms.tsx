@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { RegisteredTextInput } from "../common/forms/CustomInputs"
 import { ControlledAutocomplete } from "../common/forms/CustomMultipleInputs"
-import { FormErrorMessage } from "../../styledComponents/styledMUIFormComponents"
+import { FormErrorMessage } from "../../theme/styledMUIFormComponents"
 import type { CampaignDetailed, CampaignPost, Workspace, WorkspaceDetailed } from "../../types/campaigns"
 import type { LeadFieldPost } from "../../types/leadFields"
 import { setFormErrors } from "../../generalService"
@@ -9,7 +9,8 @@ import { getWorkspace, getWorkspaces } from "../workspaces/workspaceServices"
 import { createCampaign, updateCampaign } from "./campaignServices"
 import { createLeadField } from "../leadFields/leadFieldServices"
 import { useForm } from "react-hook-form"
-import { Button, ButtonGroup, Grid, Stack, Typography } from "@mui/material"
+import { ButtonGroup, Grid, Stack, Typography } from "@mui/material"
+import { CommonButton } from "../common/details/DetailsCommonButton"
 
 interface UpdateCampaignSidebarProps {
     existingCmp: CampaignDetailed,
@@ -96,12 +97,12 @@ export const CampaignForm = ({ existingCmp, submit, onCancel }: CampaignProps) =
 
     return (
         <form onSubmit={handleSubmit(onSubmit)}>
-            <Stack direction="column" spacing="1.5rem">
+            <Stack direction="column" gap={3}>
                 <Typography variant="h2">
                     {!existingCmp ? "Crear Campaña" : `Modificar Campaña ${existingCmp.name}`}
                 </Typography>
                 <Stack direction="column" spacing="1rem">
-                    <Grid container spacing=".5rem" sx={{
+                    <Grid container spacing={1} sx={{
                         justifyContent: "center",
                         alignItems: "center"
                     }}>
@@ -124,12 +125,12 @@ export const CampaignForm = ({ existingCmp, submit, onCancel }: CampaignProps) =
                     {errors?.root &&
                         <FormErrorMessage>{errors?.root?.message}</FormErrorMessage>}
                     <ButtonGroup fullWidth>
-                        <Button variant="outlined" onClick={onCancel} fullWidth>
+                        <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel} fullWidth>
                             Cancelar
-                        </Button>
-                        <Button variant="contained" type="submit" fullWidth>
+                        </CommonButton>
+                        <CommonButton actionType={existingCmp? "MODIFY" : "CREATE"} variant="contained" type="submit" fullWidth>
                             Guardar Campaña
-                        </Button>
+                        </CommonButton>
                     </ButtonGroup>
                 </Stack>
             </Stack>

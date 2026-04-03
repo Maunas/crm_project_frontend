@@ -5,7 +5,7 @@ import { setFormErrors } from "../../generalService"
 import { createWorkspace, updateWorkspace } from "./workspaceServices"
 import { useForm } from "react-hook-form"
 import { Typography, Button, Grid, ButtonGroup } from "@mui/material"
-import { FormErrorMessage } from "../../styledComponents/styledMUIFormComponents"
+import { FormErrorMessage } from "../../theme/styledMUIFormComponents"
 
 interface WorkspaceSidebarProps {
     existingWsp?: Workspace,

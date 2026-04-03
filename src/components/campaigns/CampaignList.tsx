@@ -7,6 +7,7 @@ import { getCampaigns } from "./campaignServices"
 import { useListPagination } from "../hooks/useListPagination"
 import { Link } from "react-router-dom"
 import { Button, Grid, Stack, Typography, useTheme } from "@mui/material"
+import { CommonButton } from "../common/details/DetailsCommonButton"
 
 interface CampaignListProps {
     selectedWorkspaceId: number,
@@ -26,15 +27,15 @@ export const CampaignList = ({ selectedWorkspaceId, handleSidebar }: CampaignLis
     }, [selectedWorkspaceId, refresh, fetchPage, pageSize])
 
     if (campaigns?.items && campaigns.items.length > 0) return (
-        <>
+        <Stack gap="1rem">
             <CampaignListData campaigns={campaigns.items} />
             <PaginationComponent {...pageComponentProps} />
-        </>
+        </Stack>
     )
     else return (
-        <Grid container spacing={2} justifyContent="center" alignItems="center" direction="column">
+        <Grid container spacing="1rem" justifyContent="center" alignItems="center" direction="column">
             <Typography variant="h4">No se han encontrado campañas para este espacio de trabajo...</Typography>
-            <Button onClick={() => handleSidebar("CREATE_CMP", null)} variant="contained">Agregar Campaña</Button>
+            <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_CMP", null)} variant="contained">Agregar Campaña</CommonButton>
         </Grid>
     )
 }
@@ -44,12 +45,12 @@ export const CampaignListData = ({ campaigns }: { campaigns: CampaignDetailed[] 
     const theme = useTheme()
 
     return (
-        <Grid sx={{ marginLeft: 6 }} container>
+        <Grid container gap={1} sx={{ marginInline: 1 }}>
             {campaigns.map((cmp, idx) =>
-                <Grid key={`cmp-${idx}`} size="grow" minWidth="15rem">
+                <Grid container key={`cmp-${idx}`} size="grow" minWidth="15rem">
                     <Button key={`cmp-${idx}`} variant="text" sx={{ color: theme.palette.text.primary }}
                         component={Link} to={`/campaigns/${cmp.id}`} fullWidth >
-                        <Stack spacing={1} direction="row" width="100%" color="inherit">
+                        <Stack spacing={1} direction="row" width="100%" color="inherit" alignItems="center">
                             <EnabledIcon active={cmp.active} />
                             <Typography fontWeight="bold" color="inherit">{cmp.name}</Typography>
                         </Stack>

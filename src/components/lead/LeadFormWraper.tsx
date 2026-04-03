@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { LeadForm } from "./LeadForm"
-import { FormErrorMessage } from "../../styledComponents/styledMUIFormComponents"
+import { FormErrorMessage } from "../../theme/styledMUIFormComponents"
 import type { LeadField, LeadFieldDetailed, LeadFieldValue } from "../../types/leadFields"
 import type { LeadDetailed } from "../../types/leads"
 import type { Campaign, Workspace } from "../../types/campaigns"
@@ -35,10 +35,10 @@ export const CreateLeadFormPage = () => {
     }, [nav])
 
     return (
-        <Stack spacing="1.5rem">
+        <Stack gap={3}>
             <Typography variant="h1">Nuevo Lead</Typography>
-            <Stack spacing="1rem">
-                <Grid container spacing=".5rem">
+            <Stack gap={2}>
+                <Grid container gap={1}>
                     <Grid size="grow" minWidth="20rem">
                         <Autocomplete options={workspaces} loading={workspaces.length === 0} disabled={workspaces.length === 0}
                             onChange={(_, value) => setSelectedWorkspace(value)} value={selectedWorkspace}
@@ -57,7 +57,7 @@ export const CreateLeadFormPage = () => {
                     </Grid>
                 </Grid>
                 {campaignError && <FormErrorMessage>{campaignError}</FormErrorMessage>}
-                <Divider />
+                {selectedCampaign && <Divider />}
                 <LeadForm campaignId={selectedCampaign?.id} onSubmit={onSubmit} onCancel={() => nav("/leads")} setCampaignError={setCampaignError} />
             </Stack>
         </Stack>
@@ -102,7 +102,7 @@ export const SimulateLeadFormModal = ({ campaign, leadFields, onCancel }: Simula
     }, [leadFields])
 
     return (
-        <Stack spacing="1.5rem">
+        <Stack gap={3}>
             <Typography variant="h1">Simulación de Nuevo Lead: Campaña {campaign.name}</Typography>
             <LeadForm campaignId={campaign.id} existingLeadFields={formattedLeadFields}
                 onSubmit={onSubmit} onCancel={onCancel} submitBtnLabel="Validar Datos" />
@@ -144,7 +144,7 @@ export const UpdateLeadFormPage = () => {
     }, [nav, lead])
 
     if (lead && lead.campaign_id) return (
-        <Stack spacing="1.5rem">
+        <Stack gap={3}>
             <Typography variant="h1">{`Modificar Lead: ${lead?.field_values[0].value} ${lead?.field_values[1].value}`}</Typography>
             <LeadForm existingValues={formattedLeadValues} existingLeadFields={formattedLeadFields}
                 campaignId={lead.campaign_id} onSubmit={onSubmit} onCancel={() => nav(`/leads/${lead.id}`)} />

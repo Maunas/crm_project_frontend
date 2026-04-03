@@ -106,7 +106,7 @@ export const LeadList = () => {
     })
 
     return (
-        <Stack spacing={2}>
+        <Stack gap={3}>
             <Grid container justifyContent="space-between" alignItems="center" spacing="1rem">
                 <Typography variant="h1">Lista de Leads</Typography>
                 <Grid>
@@ -115,44 +115,44 @@ export const LeadList = () => {
                     </CommonButton>
                 </Grid>
             </Grid>
-            <Grid container alignItems="center" justifyContent="space-between" spacing="1rem">
-                <Grid container alignItems="center" spacing=".5rem">
-                    <Autocomplete {...autocompleteCommonProps(workspaces, "Espacio de Trabajo")}
-                        value={Number(workspaceId)} onChange={(_, val) => setWorkspaceId(val)}
-                    />
-                    <ArrowForwardIcon />
-                    <Autocomplete {...autocompleteCommonProps(campaigns, "Campaña")}
-                        value={Number(campaignId)} onChange={(_, val) => setCampaignId(val)}
-                        disabled={!workspaceId}
-                    />
-                </Grid>
-                <Grid container alignItems="center" spacing="1rem" sx={{ marginLeft: 'auto' }}>
-                    <Grid sx={{ marginLeft: 'auto' }}>
-                        {
-                            leads && leads?.items?.length > 0 && !!campaignId &&
-                            <CommonButton actionType='OPTIONS' color='secondary' onClick={() => modalProps.handleOpen("columns_selector")} >
-                                Modificar Columnas
-                            </CommonButton>
-                        }
+            <Stack gap={2}>
+                <Grid container alignItems="center" justifyContent="space-between" gap={2}>
+                    <Grid container alignItems="center" gap={1}>
+                        <Autocomplete {...autocompleteCommonProps(workspaces, "Espacio de Trabajo")}
+                            value={Number(workspaceId)} onChange={(_, val) => setWorkspaceId(val)}
+                        />
+                        <ArrowForwardIcon />
+                        <Autocomplete {...autocompleteCommonProps(campaigns, "Campaña")}
+                            value={Number(campaignId)} onChange={(_, val) => setCampaignId(val)}
+                            disabled={!workspaceId}
+                        />
                     </Grid>
-                    <Grid sx={{ marginLeft: 'auto' }}>
-                        <Badge badgeContent={filters.length} color="success">
-                            <GenericModal idModal="lead_filters" modalProps={modalProps} buttonText="Aplicar Filtros" maxWidth="lg"
-                                actionType='FILTER' color='secondary'>
-                                <LeadFilters applyFilters={applyFilters} filters={{ filters, headers }} campaignId={Number(campaignId)} />
-                            </GenericModal>
-                        </Badge>
+                    <Grid container alignItems="center" spacing={1} sx={{ marginLeft: 'auto' }}>
+                        <Grid sx={{ marginLeft: 'auto' }}>
+                            {
+                                leads && leads?.items?.length > 0 && !!campaignId &&
+                                <CommonButton actionType='OPTIONS' color='secondary' onClick={() => modalProps.handleOpen("columns_selector")} >
+                                    Modificar Columnas
+                                </CommonButton>
+                            }
+                        </Grid>
+                        <Grid sx={{ marginLeft: 'auto' }}>
+                            <Badge badgeContent={filters.length} color="success">
+                                <GenericModal idModal="lead_filters" modalProps={modalProps} buttonText="Aplicar Filtros" maxWidth="lg"
+                                    actionType='FILTER' color='secondary'>
+                                    <LeadFilters applyFilters={applyFilters} filters={{ filters, headers }} campaignId={Number(campaignId)}
+                                    onClose={()=>modalProps.handleClose()} />
+                                </GenericModal>
+                            </Badge>
+                        </Grid>
                     </Grid>
                 </Grid>
-            </Grid>
-            {
-                leads && leads?.items?.length > 0 && !!campaignId &&
-                <LeadListTable leads={leads.items} campaignId={Number(campaignId)} modalProps={modalProps} />
-            }
-            <PaginationComponent {...pageComponentProps} />
-        </Stack >
+                {
+                    leads && leads?.items?.length > 0 && !!campaignId &&
+                    <LeadListTable leads={leads.items} campaignId={Number(campaignId)} modalProps={modalProps} />
+                }
+                <PaginationComponent {...pageComponentProps} />
+            </Stack >
+        </Stack>
     )
 }
-
-
-

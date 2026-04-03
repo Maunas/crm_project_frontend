@@ -2,7 +2,7 @@ import { useMemo, useState } from "react"
 import { CommentInstance } from "./LeadComments"
 import { RegisteredTextInput } from "../../common/forms/CustomInputs"
 import { CommonButton } from "../../common/details/DetailsCommonButton"
-import { FormErrorMessage } from "../../../styledComponents/styledMUIFormComponents"
+import { FormErrorMessage } from "../../../theme/styledMUIFormComponents"
 import type { LeadComment, LeadCommentPost } from "../../../types/leads"
 import type { ColorTypes } from "../../../types/mui-theme.d"
 import { setFormErrors } from "../../../generalService"
@@ -49,9 +49,7 @@ const NewCommentBox = styled(Box)(({ theme, color = "secondary" }) => {
     return [{
         border: "1px solid",
         borderColor: alpha(paletteColor.main, .5),
-        borderRadius: "1rem",
         backgroundColor: alpha(paletteColor.light, OPACITY),
-        padding: "1rem 1.5rem",
         width: "100%",
         "& .MuiInputBase-root": {
             backgroundColor: theme.palette.background.paper,
@@ -83,15 +81,13 @@ export const CreateCommentWrapper = ({ leadId, onCreate }: CommentWrapperProps) 
     })
 
     return (
-        <Box width="100%" bgcolor={alpha(palette.background.default, .5)} borderRadius="1rem">
-            <NewCommentBox color={color} boxShadow="inherit">
+        <Box width="100%" bgcolor={alpha(palette.background.default, .5)} borderRadius={3}>
+            <NewCommentBox color={color} boxShadow="inherit" borderRadius={3} py={2} px={3}>
                 <CommentForm leadId={leadId} submit={postComment} setColor={setColor} size="medium" />
             </NewCommentBox>
         </Box>
     )
 }
-
-
 
 interface CommentFormProps {
     existingComment?: LeadComment,
@@ -123,12 +119,12 @@ const CommentForm = ({ existingComment, leadId, onClose, submit, setColor, size 
 
     return (
         < form onSubmit={handleSubmit(onSubmit)} >
-            <Grid container spacing=".5rem" alignItems="center" justifyContent="end">
+            <Grid container gap={1} alignItems="center" justifyContent="end">
                 <Grid size={12}>
                     <RegisteredTextInput register={register} name={"content"} label="Comentario"
                         errorMessage={errors.content?.message} size={size} multiline />
                 </Grid>
-                <Grid container size="grow" spacing=".5rem" direction="row" alignItems="space-between" justifyContent="space-between">
+                <Grid container size="grow" gap={1} direction="row" alignItems="space-between" justifyContent="space-between">
                     <Grid size="auto">
                         <CommentColorSelector control={control} setColor={setColor} />
                     </Grid>
@@ -167,7 +163,7 @@ const CommentColorSelector = ({ control, setColor }: CommentColorSelectorProps) 
                             <CircleIcon sx={{
                                 color: field.value === colorName ? paletteColor.main : paletteColor.light,
                                 borderRadius: "50%",
-                                border: field.value === colorName ? "2px solid gray" : ""
+                                border: field.value === colorName ? `2px solid ${palette.text.secondary}` : ""
                             }} fontSize="small" />
                         </IconButton>
                     })

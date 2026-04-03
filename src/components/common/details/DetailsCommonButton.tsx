@@ -62,8 +62,8 @@ const LightButton = styled(Button)(({ theme, color="primary", variant="contained
 
 export const CommonButton = ({ actionType = "NONE", handleClick, children, ...btnProps }: CommonBtnProps) => {
     return (
-        <LightButton variant="contained" fullWidth onClick={handleClick} {...btnProps}>
-            <Stack gap={1} direction="row">
+        <LightButton variant="contained" onClick={handleClick} {...btnProps}>
+            <Stack gap={1} direction="row" alignItems="center">
                 {actionType === "MODIFY" && <EditIcon fontSize={btnProps.size} />}
                 {actionType === "CLOSE" && <CloseIcon fontSize={btnProps.size} />}
                 {actionType === "CREATE" && <AddIcon fontSize={btnProps.size} />}

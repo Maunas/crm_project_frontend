@@ -6,7 +6,7 @@ import type { UserLogin } from "../../types/users"
 import { useForm } from "react-hook-form"
 import { setFormErrors } from "../../generalService"
 import { PasswordField, RegisteredTextInput } from "../common/forms/CustomInputs"
-import { FormErrorMessage } from "../../styledComponents/styledMUIFormComponents"
+import { FormErrorMessage } from "../../theme/styledMUIFormComponents"
 
 
 export const LoginFormPage = () => {

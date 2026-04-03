@@ -3,7 +3,7 @@ import type { LeadField } from '../../types/leadFields'
 import { ControlledCheckbox, ControlledNumber } from '../common/forms/CustomInputs'
 import { ControlledAutocomplete } from '../common/forms/CustomMultipleInputs'
 import { LeadFormBool, LeadFormMoney, LeadFormNumber, LeadFormRating, LeadFormText } from './LeadFormFieldTypes'
-import { FormErrorMessage } from '../../styledComponents/styledMUIFormComponents'
+import { FormErrorMessage } from '../../theme/styledMUIFormComponents'
 import type { DictionaryItem, LeadFilter, LeadListParams } from '../../types/common'
 import { getLeadFields } from '../leadFields/leadFieldServices'
 import { getDictionaries, setFormErrors } from '../../generalService'
@@ -11,6 +11,7 @@ import { dictOperatorsMock } from '../../mocks/operators'
 import { useFieldArray, useForm, useWatch, type Control, type FieldErrors, type Path, type UseFieldArrayRemove, type UseFormRegister } from 'react-hook-form'
 import { alpha, Button, Divider, Grid, Typography, Stack, ButtonGroup, useColorScheme, useTheme } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close';
+import { CommonButton } from '../common/details/DetailsCommonButton'
 
 interface LeadListFilters {
     filters: LeadFilter[],
@@ -20,10 +21,11 @@ interface LeadListFilters {
 interface LeadFiltersProps {
     campaignId: number,
     filters: LeadListParams & LeadListFilters,
-    applyFilters: (data: LeadListParams & LeadListFilters) => Promise<void>
+    applyFilters: (data: LeadListParams & LeadListFilters) => Promise<void>,
+    onClose: () => void
 }
 
-export const LeadFilters = ({ campaignId, filters, applyFilters }: LeadFiltersProps) => {
+export const LeadFilters = ({ campaignId, filters, applyFilters, onClose }: LeadFiltersProps) => {
 
     const [leadFields, setLeadFields] = useState<LeadField[]>([])
     const [operators, setOperators] = useState<DictionaryItem[]>([])
@@ -67,11 +69,11 @@ export const LeadFilters = ({ campaignId, filters, applyFilters }: LeadFiltersPr
     }
 
     return (
-        <Stack spacing="1.5rem">
+        <Stack gap={3}>
             <Typography variant="h2">Filtros de Búsqueda</Typography>
             <form onSubmit={handleSubmit(onSubmit)} >
-                <Grid container direction="column" spacing="1rem">
-                    <Grid container size="grow" alignItems="center" spacing=".5rem">
+                <Grid container direction="column" gap={2}>
+                    <Grid container size="grow" alignItems="center" gap={1}>
                         <Grid size="grow" minWidth="10rem">
                             <ControlledNumber control={control} size="small" name="headers.page_size" label="Items por página" min={5} step={5}
                                 errorMessage={errors.headers?.page_size?.message} />
@@ -81,11 +83,11 @@ export const LeadFilters = ({ campaignId, filters, applyFilters }: LeadFiltersPr
                                 errorMessage={errors.headers?.only_active?.message} />
                         </Grid>
                     </Grid>
-                    <Divider />
                     {!!campaignId &&
                         <>
-                            <Typography variant="h4">Filtros por Campo</Typography>
-                            <Stack spacing=".5rem" direction="column">
+                            <Divider />
+                            <Typography variant="h3">Filtros por Campo</Typography>
+                            <Stack gap={1} direction="column">
                                 {fields.map((filter, idx) => (
                                     <LeadFiltersItem key={filter.id} idx={idx} control={control} register={register} leadFields={leadFields}
                                         operators={operators} errors={errors} remove={remove} />
@@ -99,13 +101,18 @@ export const LeadFilters = ({ campaignId, filters, applyFilters }: LeadFiltersPr
                     <Grid alignSelf="end">
                         <ButtonGroup >
                             {!!campaignId &&
-                                <Button variant="outlined" color="primary" onClick={() => append({})}>
-                                    Agregar Filtro
-                                </Button>
+                                <CommonButton actionType='CLOSE' variant="outlined" color="primary" onClick={onClose}>
+                                    Cancelar
+                                </CommonButton>
                             }
-                            <Button variant="contained" color="primary" type='submit'>
+                            {!!campaignId &&
+                                <CommonButton actionType='CREATE' variant="contained" color="secondary" onClick={() => append({})}>
+                                    Agregar Filtro
+                                </CommonButton>
+                            }
+                            <CommonButton actionType='FILTER' variant="contained" color="primary" type='submit'>
                                 Aplicar Filtros
-                            </Button>
+                            </CommonButton>
                         </ButtonGroup>
                     </Grid>
                 </Grid>
@@ -152,12 +159,12 @@ export const LeadFiltersItem = ({ idx, leadFields, control, register, errors, re
     }, [selectedField, operators])
 
     return (
-        <Grid container direction="row" spacing="1rem" overflow="hidden"
-            border={`1px solid ${alpha(theme.palette.contrast.light, .5)}`} borderRadius=".5rem">
-            <Grid container size="grow" spacing=".5rem" direction="column" padding="0 1rem .5rem 1rem">
-                <Typography variant="h5">Filtro N° {idx + 1}</Typography>
-                <Grid container direction="row" spacing=".5rem" alignItems="center">
-                    <Grid spacing=".5rem" size="grow" minWidth="12rem">
+        <Grid container direction="row" gap={2} overflow="hidden"
+            border={`1px solid ${alpha(theme.palette.contrast.light, .5)}`} borderRadius={1}>
+            <Grid container size="grow" gap={2} direction="column" paddingBlock={1} paddingInlineStart={2}>
+                <Typography variant="body1" fontWeight={600}>Filtro N° {idx + 1}</Typography>
+                <Grid container direction="row" gap={1} alignItems="center">
+                    <Grid size="grow" minWidth="12rem">
                         <ControlledAutocomplete control={control} name={`filters.${idx}.field_id`} options={leadFields}
                             getOptionKey={option => `${option.id}`} getOptionLabel={option => `${option.name}`} returnField="id"
                             label="Campo a Filtrar" size="small"
@@ -165,13 +172,13 @@ export const LeadFiltersItem = ({ idx, leadFields, control, register, errors, re
                     </Grid>
                     {selectedFieldId &&
                         <>
-                            <Grid spacing=".5rem" size={3} minWidth="10rem">
+                            <Grid size={3} minWidth="10rem">
                                 <ControlledAutocomplete control={control} name={`filters.${idx}.operator`} options={filteredOperators}
                                     getOptionKey={option => option.code} getOptionLabel={option => option.label} returnField="code"
                                     label="Operación" size="small"
                                     errorMessage={errors.filters?.[idx]?.operator?.message} />
                             </Grid>
-                            <Grid spacing=".5rem" size="grow" minWidth="20rem">
+                            <Grid size="grow" minWidth="12rem">
                                 <LeadFormFieldType register={register} control={control} name={`filters.${idx}.value`} label="Valor de Comparación"
                                     errorMessage={errors.filters?.[idx]?.value?.message} leadField={selectedField} />
                             </Grid>
@@ -184,7 +191,7 @@ export const LeadFiltersItem = ({ idx, leadFields, control, register, errors, re
                 color: systemMode === "light" ? theme.palette.error.darker : theme.palette.error.light,
                 borderRadius: 0,
                 minWidth: 0,
-                padding: "1rem",
+                padding: 2,
                 "&:hover": {
                     backgroundColor: systemMode === "light" ? alpha(theme.palette.error.light, .4) : alpha(theme.palette.error.darker, .3)
                 }

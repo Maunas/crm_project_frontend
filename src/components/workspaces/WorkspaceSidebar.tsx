@@ -5,7 +5,7 @@ import { Stack, Typography, ButtonGroup, Divider, Grid } from "@mui/material"
 import { CampaignList } from "../campaigns/CampaignList"
 import { CommonButton, DisableButton } from "../common/details/DetailsCommonButton"
 import { CreateCampaignFormSidebar } from "../campaigns/CampaignForms"
-import { CustomChip } from "../../styledComponents/styledMUIDisplayComponents"
+import { CustomChip } from "../../theme/styledMUIDisplayComponents"
 
 interface SidebarProps {
     mode: string | null,

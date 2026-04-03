@@ -10,23 +10,24 @@ interface GenericContainerProps {
     paperSx?: object
 }
 
-export const GenericContainer = ({ children, maxWidth = "lg", containerSx = {}, paperSx = {}, ...props }: GenericContainerProps) => {
-
-    return (
-        <Container sx={{ ...containerSx }} maxWidth={maxWidth} {...props}>
-            <Paper sx={{ paddingInline: 4, paddingBlock: 2, width: "100%", ...paperSx }}>
-                {children}
-            </Paper>
-        </Container>
-    )
-}
 
 export const GenericPaper = ({ children, paperSx = {}, ...props }: GenericContainerProps) => {
 
     return (
-        <Paper sx={{ paddingInline: 5, paddingBlock: 3, width: "100%", ...paperSx }} {...props}>
+        <Paper sx={{ paddingInline: 4, paddingBlock: 3, width: "100%", ...paperSx }} {...props}>
             {children}
         </Paper>
+    )
+}
+
+export const GenericContainer = ({ children, maxWidth = "lg", containerSx = {}, paperSx = {}, ...props }: GenericContainerProps) => {
+
+    return (
+        <Container sx={{ ...containerSx }} maxWidth={maxWidth} {...props}>
+            <GenericPaper paperSx={paperSx}>
+                {children}
+            </GenericPaper>
+        </Container>
     )
 }
 

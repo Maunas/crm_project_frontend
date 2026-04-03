@@ -1,9 +1,9 @@
+import { CommonButton, DisableButton } from "../common/details/DetailsCommonButton"
+import { CustomChip } from "../../theme/styledMUIDisplayComponents"
+import type { NomenclatorDetailed } from "../../types/nomenclators"
 import { Button, ButtonGroup, Divider, Grid, Link, Stack, Typography } from "@mui/material"
 import { Link as RouterLink } from "react-router-dom"
 import dayjs from "dayjs"
-import { CommonButton, DisableButton } from "../common/details/DetailsCommonButton"
-import type { NomenclatorDetailed } from "../../types/nomenclators"
-import { CustomChip } from "../../styledComponents/styledMUIDisplayComponents"
 
 interface NomenclatorDetailsProps {
     entity: NomenclatorDetailed | null,

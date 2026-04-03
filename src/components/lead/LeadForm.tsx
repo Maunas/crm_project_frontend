@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useMemo, useState } from "react"
-import { FormErrorMessage } from "../../styledComponents/styledMUIFormComponents"
+import { FormErrorMessage } from "../../theme/styledMUIFormComponents"
 import { LeadFormAddress, LeadFormBool, LeadFormCheckbox, LeadFormFile, LeadFormMoney, LeadFormNumber, LeadFormPassword, LeadFormRating, LeadFormRelatedLead, LeadFormSelector, LeadFormText } from "./LeadFormFieldTypes"
 import type { Lead, LeadPost, LeadPostValue } from "../../types/leads"
 import type { LeadField, LeadFieldValue } from "../../types/leadFields"
@@ -9,7 +9,8 @@ import { createFormDataFromLead, getLeads, getSelectorField, setLeadFormErrors, 
 import { getLeadFields } from "../leadFields/leadFieldServices"
 import { getNomenclatorItems } from "../nomenclators/nomenclatorService"
 import { useFieldArray, useForm, type Control, type Path, type UseFormRegister } from "react-hook-form"
-import { Button, Grid, ButtonGroup } from "@mui/material"
+import { Grid, ButtonGroup } from "@mui/material"
+import { CommonButton } from "../common/details/DetailsCommonButton"
 
 //Para permitir mantener los datos de cada campo
 export interface LeadPostFormValues extends LeadPostValue {
@@ -55,7 +56,7 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
 
     const [leadFields, setLeadFields] = useState<LeadField[]>(existingLeadFields ?? [])
 
-    console.log("cambio",campaignId, existingLeadFields, leadFields )
+    console.log("cambio", campaignId, existingLeadFields, leadFields)
     //Actualiza los leadFields respecto al campaignId seleccionado. Si ya hay existingLeadFields, no busca.
     useEffect(() => {
         if (campaignId == null) return
@@ -120,8 +121,8 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
     return (
         <form onSubmit={handleSubmit(submit)}>
             <input type="text" {...register("campaign_id", { setValueAs: value => (value === "" || !value) ? null : Number(value) })} hidden />
-            <Grid container spacing="1rem">
-                <Grid container spacing=".5rem">
+            <Grid container spacing={2}>
+                <Grid container spacing={1}>
                     {campaignId &&
                         fields.map((field, idx) =>
                             <Grid size="grow" alignItems="center" minWidth="20rem" key={field.id}>
@@ -135,9 +136,10 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
                 {errors.root &&
                     <FormErrorMessage>{errors.root.message}</FormErrorMessage>}
                 <ButtonGroup sx={{ marginLeft: "auto" }}>
-                    {onCancel && <Button onClick={onCancel} >Cancelar</Button>}
+                    {onCancel && <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel} >Cancelar</CommonButton>}
                     {campaignId &&
-                        <Button type="submit" variant="contained">{submitBtnLabel}</Button>}
+                        <CommonButton actionType={existingValues ? "MODIFY" : "CREATE"}
+                            type="submit" variant="contained">{submitBtnLabel}</CommonButton>}
                 </ButtonGroup>
             </Grid>
         </form>

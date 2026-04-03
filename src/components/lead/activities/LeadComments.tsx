@@ -46,11 +46,11 @@ export const LeadComments = ({ leadId }: { leadId: number }) => {
     const { palette } = useTheme()
 
     return (
-        <Stack spacing="1rem" height="100%">
-            <Stack flexGrow={1} gap="1rem" borderRadius="1rem" p="1rem 1.5rem" 
-            bgcolor={alpha(palette.background.default, .5)} alignItems="center">
+        <Stack gap={2} height="100%">
+            <Stack flexGrow={1} gap={2} borderRadius={3} px={3} py={2}
+                bgcolor={alpha(palette.background.default, .5)} alignItems="center">
                 <Grid container justifyContent="space-around" alignItems="start" alignContent="start"
-                    flexGrow={1} gap="1rem" minWidth="20rem">
+                    flexGrow={1} gap={2} minWidth="20rem">
                     {comments?.items.map(com =>
                         <Grid key={com.id} size="grow" minWidth="20rem" maxWidth="40rem">
                             {com.id !== selectedCommentId ? (
@@ -59,9 +59,7 @@ export const LeadComments = ({ leadId }: { leadId: number }) => {
                                     {com.content}
                                 </CommentInstance>
                             )
-                                : (
-                                    <UpdateCommentFromNote leadId={leadId} existingComment={com} onUpdate={onUpdateComment} onClose={() => setSelectedCommentId(null)} />
-                                )
+                                : <UpdateCommentFromNote leadId={leadId} existingComment={com} onUpdate={onUpdateComment} onClose={() => setSelectedCommentId(null)} />
                             }
                         </Grid>
                     )}
@@ -88,18 +86,14 @@ const CommentNote = styled(Paper)(({ theme, ...props }) => {
             flexWrap: "wrap",
         },
         "& .comment-header": {
-            paddingInline: "1rem",
             backgroundColor: alpha(theme.palette[paletteColor].light, .5),
             borderBottom: `1px solid ${theme.palette[paletteColor].main}`,
         },
         "& .comment-footer": {
-            gap: ".5rem",
-            paddingInline: "1rem",
             backgroundColor: alpha(theme.palette[paletteColor].light, .5),
             borderTop: `1px solid ${theme.palette[paletteColor].main}`,
         },
         "& .comment-main": {
-            padding: ".75rem 1rem",
             minHeight: "3rem",
         },
     },
@@ -131,7 +125,7 @@ export const CommentInstance = ({ comment, title, color, footerContent, onEdit, 
 
     return (
         <CommentNote color={comment?.color ?? color ?? "secondary"}>
-            <Box className="comment-header">
+            <Box className="comment-header" px={2}>
                 <Typography variant="subtitle2" fontWeight={600}>{title}</Typography>
                 <Stack direction="row">
                     {onEdit && <IconButton aria-label="edit" size="small" onClick={() => onEdit()} color="inherit">
@@ -142,11 +136,11 @@ export const CommentInstance = ({ comment, title, color, footerContent, onEdit, 
                     </IconButton>}
                 </Stack>
             </Box>
-            <Box className="comment-main">
+            <Box className="comment-main" px={2} py={1.5}>
                 {children}
             </Box>
             {footerContent &&
-                <Box className="comment-footer" width="100%">
+                <Box className="comment-footer" width="100%" gap={1} px={2}>
                     {footerContent}
                 </Box>
             }
@@ -159,14 +153,14 @@ export const CommentInstance = ({ comment, title, color, footerContent, onEdit, 
 export const Metadata = ({ comment }: { comment: LeadComment }) => {
     return (
         <>
-            <Grid container spacing=".5rem" minWidth="15rem" size="grow" alignItems="center">
+            <Grid container gap={1} minWidth="15rem" size="grow" alignItems="center">
                 <WatchLaterIcon />
                 <Stack justifyContent="center">
                     <Typography variant="body2"><span style={{ fontWeight: "bold" }}>Creado:</span> {dayjs(comment?.created_at).format("DD/MM/YYYY")}</Typography>
                     <Typography variant="body2"><span style={{ fontWeight: "bold" }}>Por:</span> {comment?.created_by}</Typography>
                 </Stack>
             </Grid>
-            <Grid container spacing=".5rem" minWidth="15rem" size="grow" alignItems="center">
+            <Grid container gap={1} minWidth="15rem" size="grow" alignItems="center">
                 <WatchLaterIcon />
                 <Stack justifyContent="center">
                     <Typography variant="body2"><span style={{ fontWeight: "bold" }}>Modificado:</span> {dayjs(comment?.created_at).format("DD/MM/YYYY")}</Typography>
@@ -178,7 +172,7 @@ export const Metadata = ({ comment }: { comment: LeadComment }) => {
 
 const MetadataShort = ({ comment }: { comment: LeadComment }) => {
     return (
-        <Stack justifyContent="center" direction="row" spacing=".5rem">
+        <Stack justifyContent="center" direction="row" gap={1}>
             <Typography variant="body2"><span style={{ fontWeight: "bold" }}>Por</span> {comment?.created_by ?? comment?.updated_by} - </Typography>
             <Typography variant="body2" textTransform="capitalize"> {dayjs(comment?.updated_at ?? comment?.created_at).format("dddd DD/MM/YYYY HH:mm")}</Typography>
         </Stack>

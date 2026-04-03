@@ -16,7 +16,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import { CommonButton, DisableButton } from '../common/details/DetailsCommonButton'
-import { CustomChip } from '../../styledComponents/styledMUIDisplayComponents'
+import { CustomChip } from '../../theme/styledMUIDisplayComponents'
 dayjs.locale('es')
 
 export const OrganizationList = () => {

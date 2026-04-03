@@ -1,19 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
 import { ControlledCheckbox, ControlledTextInput } from "../common/forms/CustomInputs";
 import { ControlledAutocomplete, ControlledRadio } from "../common/forms/CustomMultipleInputs";
+import { FormErrorMessage } from "../../theme/styledMUIFormComponents";
 import type {
   InputMaskTemplate,
   LeadFieldDetailed, LeadFieldPost, LeadFieldSection, LeadFieldTemplate, LeadFieldTypeDetailed,
 } from "../../types/leadFields";
 import type { Campaign, CampaignDetailed } from "../../types/campaigns";
+import type { Nomenclator } from "../../types/nomenclators";
 import { setFormErrors } from "../../generalService";
 import { createLeadField, getFieldDataByType, getFieldSections, getFieldTemplates, getFieldTypes, getInputMaskTemplates, updateLeadField } from "./leadFieldServices";
 import { getCampaigns } from "../campaigns/campaignServices";
-import { useForm, useWatch, type Control, type FieldErrors, type UseFormRegister } from "react-hook-form";
-import { Button, Grid, FormGroup, Typography, ButtonGroup, Stack } from "@mui/material";
-import { FormErrorMessage } from "../../styledComponents/styledMUIFormComponents";
 import { getNomenclators } from "../nomenclators/nomenclatorService";
-import type { Nomenclator } from "../../types/nomenclators";
+import { useForm, useWatch, type Control, type FieldErrors, type UseFormRegister } from "react-hook-form";
+import { Grid, FormGroup, Typography, ButtonGroup, Stack } from "@mui/material";
+import { CommonButton } from "../common/details/DetailsCommonButton";
 
 
 interface LeadFieldSidebarProps {
@@ -132,38 +133,39 @@ export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFi
 
   return (
     <form>
-      <Stack spacing={2}>
+      <Stack gap={3}>
         {!existingLF ? (
-          <>
-            <Typography variant="h1">
-              Crear Campo para: "{campaign?.name}"
-            </Typography>
-          </>
+          <Typography variant="h1">
+            Crear Campo para: "{campaign?.name}"
+          </Typography>
         ) : (
           <Typography variant="h1">
             Modificar el Campo {existingLF?.name} para: {campaign?.name}
           </Typography>
         )}
+        <Stack gap={2}>
+          <LeadFieldFormFields templates={fieldTemplates} sections={fieldSections}
+            nomenclators={nomenclators} campaigns={campaigns} types={fieldTypes}
+            errors={errors} register={register} control={control} maskTemplates={maskTemplates}
+            campaignId={campaign.id} existingLFId={existingLF?.id}
+          />
 
-        <LeadFieldFormFields templates={fieldTemplates} sections={fieldSections}
-          nomenclators={nomenclators} campaigns={campaigns} types={fieldTypes}
-          errors={errors} register={register} control={control} maskTemplates={maskTemplates}
-          campaignId={campaign.id} existingLFId={existingLF?.id}
-        />
-
-        <ButtonGroup>
-          <Button variant="outlined" onClick={onCancel}>
-            Cancelar
-          </Button>
-          <Button variant="contained" onClick={handleSubmit((data) => onSaveLeadField(data))}>
-            Guardar Cambios
-          </Button>
-          {!existingLF && (
-            <Button variant="contained" onClick={handleSubmit(onSubmitAndReset)} >
-              Guardar y crear otro
-            </Button>
-          )}
-        </ButtonGroup>
+          <Stack gap={.5}>
+            <ButtonGroup fullWidth>
+              <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel}>
+                Cancelar
+              </CommonButton>
+              <CommonButton actionType={existingLF ? "MODIFY" : "CREATE"} variant="contained" onClick={handleSubmit((data) => onSaveLeadField(data))}>
+                Guardar
+              </CommonButton>
+            </ButtonGroup>
+            {!existingLF && (
+              <CommonButton actionType="CREATE" variant="contained" onClick={handleSubmit(onSubmitAndReset)} >
+                Guardar y crear otro
+              </CommonButton>
+            )}
+          </Stack>
+        </Stack>
       </Stack>
     </form>
   );
@@ -201,7 +203,7 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
   );
 
   return (
-    <Grid container spacing={2} justifyContent="center">
+    <Grid container spacing={1} justifyContent="center">
       <input
         type="hidden"
         {...register("campaign_id", { value: campaignId })}
@@ -354,7 +356,7 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
               </Grid>
             )}
             {fieldTypeCode === "STRING" && !existingLFId && (
-              <Grid size="grow" minWidth="20rem" justifyContent="center" gap=".5rem">
+              <Grid size="grow" minWidth="20rem" justifyContent="center" gap={1}>
                 <Grid size={4} minWidth="20rem" justifyContent="center">
                   <ControlledRadio control={control} name="input_mask_method" label="Método de Carga de Máscara" options={creationMethodRadioOptions}
                     getRadioLabel={option => option.label} keyField="value" returnField="value" row />

@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Grid, List, Stack, ListItemButton, ListItemIcon, ListItemText, Checkbox, Button, Paper, ButtonGroup, Typography, Box } from '@mui/material';
 import { alpha, lighten, useTheme } from '@mui/material/styles';
+import { CommonButton } from '../common/details/DetailsCommonButton';
 
 function not(a: readonly number[], b: readonly number[]) {
   return a.filter((value) => !b.includes(value));
@@ -116,9 +117,9 @@ export default function LeadColumnSelector<T extends { id: number }>
     }
 
     return (
-      <Paper sx={{ backgroundColor: lighten(palette.background.paper, .15) }}  >
+      <Paper sx={{ backgroundColor: lighten(palette.background.paper, .15), overflow: "hidden" }} >
         {title &&
-          <Box p=".5rem" sx={{
+          <Box p={1} sx={{
             backgroundColor: palette.primary.light,
             color: palette.primary.contrastText
           }}>
@@ -185,9 +186,8 @@ export default function LeadColumnSelector<T extends { id: number }>
           <CustomList isLeftList={true} title={"Columnas Disponibles"} />
         </Grid>
         <Grid>
-          <Grid container direction="column" sx={{ alignItems: 'center' }}>
+          <Grid container gap={1} direction="column" sx={{ alignItems: 'center' }}>
             <Button
-              sx={{ my: 0.5 }}
               variant="contained"
               size="small"
               onClick={handleAllRight}
@@ -197,7 +197,6 @@ export default function LeadColumnSelector<T extends { id: number }>
               ≫
             </Button>
             <Button
-              sx={{ my: 0.5 }}
               variant="contained"
               size="small"
               onClick={handleCheckedToRight}
@@ -207,7 +206,6 @@ export default function LeadColumnSelector<T extends { id: number }>
               &gt;
             </Button>
             <Button
-              sx={{ my: 0.5 }}
               variant="contained"
               size="small"
               onClick={handleCheckedToLeft}
@@ -217,7 +215,6 @@ export default function LeadColumnSelector<T extends { id: number }>
               &lt;
             </Button>
             <Button
-              sx={{ my: 0.5 }}
               variant="contained"
               size="small"
               onClick={handleAllLeft}
@@ -234,12 +231,12 @@ export default function LeadColumnSelector<T extends { id: number }>
       </Grid>
       <Stack width="100%" alignItems="end">
         <ButtonGroup >
-          <Button variant="outlined" onClick={() => handleClose()}>
+          <CommonButton actionType='CLOSE' variant="outlined" onClick={() => handleClose()}>
             Cancelar
-          </Button>
-          <Button variant="contained" onClick={() => handleSelectedIds(right)} disabled={right.length === 0}>
+          </CommonButton>
+          <CommonButton actionType='OPTIONS' variant="contained" onClick={() => handleSelectedIds(right)} disabled={right.length === 0}>
             Guardar Cambios
-          </Button>
+          </CommonButton>
         </ButtonGroup>
       </Stack>
     </Stack>

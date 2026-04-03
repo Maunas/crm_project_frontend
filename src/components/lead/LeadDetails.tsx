@@ -1,8 +1,8 @@
 import { useEffect, useId, useMemo, useState } from "react"
 import { LeadActivities } from "./activities/LeadActivities.tsx"
-import { GenericModal } from "../common/layout/GenericContainer.tsx"
+import { GenericModal, GenericPaper } from "../common/layout/GenericContainer.tsx"
 import { CommonButton } from "../common/details/DetailsCommonButton.tsx"
-import { CustomChip } from "../../styledComponents/styledMUIDisplayComponents.tsx"
+import { CustomChip } from "../../theme/styledMUIDisplayComponents.tsx"
 import type { LeadDetailed } from "../../types/leads"
 import type { LeadFieldValue } from "../../types/leadFields"
 import { getFieldType } from "../../generalService.ts"
@@ -46,13 +46,13 @@ export const LeadDetails = () => {
 
     return (
         <Container maxWidth={false}>
-            <Grid container spacing={3}>
+            <Grid container gap={3}>
                 <Grid size={{ xs: 12, md: 4, lg: 4 }} minWidth="20rem" >
                     {lead && fieldValues &&
-                        <Box>
-                            <Paper sx={{ p: 2, borderRadius: "1em", marginBottom: "1rem" }}>
-                                <Grid container gap="1.5rem" alignItems="center">
-                                    <Grid container size="grow" gap=".5rem 1rem" alignItems="center" justifyContent="space-between">
+                        <Stack gap={2}>
+                            <GenericPaper>
+                                <Grid container gap={3} alignItems="center">
+                                    <Grid container size="grow" gap={2} alignItems="center" justifyContent="space-between">
                                         <Typography variant="h1">
                                             {fieldValues[0]?.value ?? "Lead no encontrado"}
                                         </Typography>
@@ -62,7 +62,7 @@ export const LeadDetails = () => {
                                     <ButtonGroup fullWidth>
                                         <CommonButton actionType={lead.active ? "DISABLE" : "ENABLE"} variant="outlined"
                                             color={lead.active ? "error" : "success"} onClick={() => handleActive(lead)}>
-                                            {lead.active ? "Deshabilitar" : "Habilitar"}
+                                            {lead.active ? "Eliminar" : "Habilitar"}
                                         </CommonButton>
                                         <CommonButton actionType="MODIFY" variant="contained" color="primary"
                                             component={RouterLink} to={`/leads/modify/${lead?.id}`}>
@@ -70,33 +70,34 @@ export const LeadDetails = () => {
                                         </CommonButton>
                                     </ButtonGroup>
                                 </Grid>
-                            </Paper>
-                            <Paper sx={{ p: 1, borderRadius: "1em" }}>
+                            </GenericPaper>
+                            <Paper sx={{ borderRadius: 1 }}>
                                 <LeadFieldSections fieldValues={fieldValues} />
                                 <Accordion disableGutters sx={{ boxShadow: "none" }}>
-                                    <AccordionSummary sx={{ height: "64px" }}
+                                    <AccordionSummary sx={{ height: "4rem" }}
                                         expandIcon={<ArrowDropDownIcon />}
                                         aria-controls="panel0-content" id="panel0-header"
                                     >
                                         <Typography variant="h2">Creación de Lead</Typography>
                                     </AccordionSummary>
                                     <AccordionDetails sx={{ paddingTop: 0 }}>
-                                        <Divider sx={{ marginBottom: "1rem" }} ></Divider>
-                                        <Typography sx={{ fontWeight: "bold" }} component="h3">Fecha de Creación:</Typography>
-
-                                        <LeadFieldByType value={lead?.created_at} type="DATE" />
-                                        <Typography sx={{ fontWeight: "bold" }} component="h3">Fecha de Última Modificación:</Typography>
-                                        <LeadFieldByType value={lead?.updated_at} type="DATE" />
+                                        <Divider sx={{ marginBottom: 2 }} />
+                                        <Box px={2}>
+                                            <Typography sx={{ fontWeight: 600 }} variant="body1">Fecha de Creación:</Typography>
+                                            <LeadFieldByType value={lead?.created_at} type="DATE" />
+                                            <Typography sx={{ fontWeight: 600 }} variant="body1">Fecha de Última Modificación:</Typography>
+                                            <LeadFieldByType value={lead?.updated_at} type="DATE" />
+                                        </Box>
                                     </AccordionDetails>
                                 </Accordion>
                             </Paper>
-                        </Box>
+                        </Stack>
                     }
                 </Grid>
-                <Grid size="grow" minWidth="20rem" component={Paper} sx={{ p: 2, borderRadius: "1em" }} >
-                    <Stack height="100%" gap="1.5rem">
+                <Grid size="grow" minWidth="20rem" component={GenericPaper} >
+                    <Stack height="100%" gap={3}>
                         <Typography variant="h2">Actividades</Typography>
-                        <Stack height="100%" gap="1rem">
+                        <Stack height="100%" gap={2}>
                             <LeadActivities leadId={Number(id)} />
                         </Stack>
                     </Stack>
@@ -139,25 +140,28 @@ export const LeadFieldSections = ({ fieldValues }: LeadFieldSectionsProps) => {
             {
                 leadSections?.length > 0 &&
                 leadSections.map((section, idx) =>
-                    <Accordion key={idx} defaultExpanded={idx === 0} disableGutters sx={{ boxShadow: "none" }}>
-                        <AccordionSummary sx={{ height: "64px" }}
-                            expandIcon={<ArrowDropDownIcon />}
-                            aria-controls={`panel${idx + 1}-content`} id={`panel${idx + 1}-header`}
-                        >
-                            <Typography variant="h2">{section.name}</Typography>
-                        </AccordionSummary>
-                        <AccordionDetails sx={{ paddingTop: 0 }}>
-                            <Divider sx={{ marginBottom: "1rem" }} ></Divider>
-
-                            {section?.fields.map((fieldValue, idx) =>
-                                <Box key={idx}>
-                                    <Typography sx={{ fontWeight: "bold" }} component="h3">{fieldValue?.field?.name}:</Typography>
-                                    <LeadFieldByType fieldValue={fieldValue} type={fieldValue.field.field_type_code!}
-                                        value={fieldValue.value!} template={fieldValue.field.field_template_code} modalProps={modalProps} />
+                    <Box key={idx}>
+                        <Accordion defaultExpanded={idx === 0} disableGutters sx={{ boxShadow: "none" }}>
+                            <AccordionSummary sx={{ height: "4rem" }}
+                                expandIcon={<ArrowDropDownIcon />}
+                                aria-controls={`panel${idx + 1}-content`} id={`panel${idx + 1}-header`}
+                            >
+                                <Typography variant="h2">{section.name}</Typography>
+                            </AccordionSummary>
+                            <AccordionDetails sx={{ paddingTop: 0 }}>
+                                <Divider sx={{ marginBottom: 2 }} />
+                                <Box px={2}>
+                                    {section?.fields.map((fieldValue, idx) =>
+                                        <Box key={idx}>
+                                            <Typography sx={{ fontWeight: 600 }} variant="body1">{fieldValue?.field?.name}:</Typography>
+                                            <LeadFieldByType fieldValue={fieldValue} type={fieldValue.field.field_type_code!}
+                                                value={fieldValue.value!} template={fieldValue.field.field_template_code} modalProps={modalProps} />
+                                        </Box>
+                                    )}
                                 </Box>
-                            )}
-                        </AccordionDetails>
-                    </Accordion>
+                            </AccordionDetails>
+                        </Accordion>
+                    </Box>
                 )
             }
         </>

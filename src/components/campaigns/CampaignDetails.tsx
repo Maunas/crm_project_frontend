@@ -5,7 +5,7 @@ import { UpdateCampaignFormSidebar } from './CampaignForms'
 import { LeadFieldTable } from '../leadFields/LeadFieldTable'
 import { LeadFieldDetail } from '../leadFields/LeadFieldDetail'
 import { LeadFieldFormSidebar } from '../leadFields/LeadFieldForm'
-import { CustomChip } from '../../styledComponents/styledMUIDisplayComponents'
+import { CustomChip } from '../../theme/styledMUIDisplayComponents'
 import type { CampaignDetailed } from '../../types/campaigns'
 import type { LeadFieldDetailed } from '../../types/leadFields'
 import { disableCampaign, enableCampaign, getCampaign } from './campaignServices'
@@ -99,62 +99,67 @@ export const CampaignDetails = () => {
         <ContainerWithSidebar isSidebarOpen={!!sidebarMode} containerSize="xl"
             sidebarComponent={campaign &&
                 <CampaignDetailSidebar mode={sidebarMode} entity={selectedEntity} campaign={campaign}
-                    handleSidebar={handleSidebar} closeSidebar={closeSidebar} updateEntity={updateEntity} />} >
-            <Breadcrumbs aria-label="breadcrumb">
-                <Link component={RouterLink} to="/campaigns" underline="hover" color="inherit">
-                    Espacios de Trabajo
-                </Link>
-                {campaign &&
-                    <Typography sx={{ color: 'text.primary' }}>{campaign.name}</Typography>}
-            </Breadcrumbs>
-
-            {campaign &&
-                <Stack spacing={2} >
-                    <Grid size={12} container spacing={2} justifyContent="space-between" alignItems="center">
-                        <Typography variant="h1">{campaign.name}</Typography>
-                        {campaign.active ? <CustomChip color='success' label="Habilitado" /> :
-                            <CustomChip color='error' label="Deshabilitado" />}
-                    </Grid>
-                    <Grid container spacing={2}>
-                        <Grid size="grow" minWidth="30rem">
-
-                            {campaign.description
-                                ? <Typography variant="body1">{campaign.description}</Typography>
-                                : <Typography variant="body1" fontStyle="italic">No tiene descripción.</Typography>
-                            }
+                    handleSidebar={handleSidebar} closeSidebar={closeSidebar} updateEntity={updateEntity} />}
+        >
+            <Stack gap={3}>
+                <Stack gap={2}>
+                    <Breadcrumbs aria-label="breadcrumb">
+                        <Link component={RouterLink} to="/campaigns" underline="hover" color="inherit">
+                            Espacios de Trabajo
+                        </Link>
+                        {campaign &&
+                            <Typography sx={{ color: 'text.primary' }}>{campaign.name}</Typography>}
+                    </Breadcrumbs>
+                    {campaign &&
+                        <Grid size="grow" container gap={3} justifyContent="space-between" alignItems="center">
+                            <Typography variant="h1">{campaign.name}</Typography>
+                            {campaign.active ? <CustomChip sx={{ marginLeft: "auto" }} color='success' label="Habilitado" /> :
+                                <CustomChip sx={{ marginLeft: "auto" }} color='error' label="Deshabilitado" />}
                         </Grid>
-                        <Grid container spacing={2} size={{ sm: 12, md: 12, lg: 3 }} minWidth="20rem">
-                            <Grid size="grow" minWidth="18rem">
-                                <Typography variant="body1" fontWeight="bold">Fecha de creación:</Typography>
-                                <Typography variant="body1" paddingInlineStart={2} sx={{ textTransform: "capitalize" }}>
-                                    {dayjs(campaign?.created_at).format('dddd DD/MM/YYYY HH:mm:ss')}
-                                </Typography>
-                            </Grid>
-                            <Grid size="grow" minWidth="18rem">
-                                <Typography variant="body1" fontWeight="bold">Fecha de última modificación:</Typography>
-                                <Typography variant="body1" paddingInlineStart={2} sx={{ textTransform: "capitalize" }}>
-                                    {dayjs(campaign?.updated_at).format('dddd DD/MM/YYYY HH:mm:ss')}
-                                </Typography>
-                            </Grid>
-                        </Grid>
-                    </Grid>
-                    <Divider />
-                    <Grid size="grow" container justifyContent="center" alignItems="center" gap={2}>
-                        <Grid size="grow" minWidth="16rem" >
-                            <Typography variant="h2">Acciones</Typography>
-                        </Grid >
-                        <Grid size="grow" minWidth="20rem" >
-                            <ButtonGroup fullWidth>
-                                <CommonButton handleClick={() => handleSidebar("UPDATE_CMP", null)} actionType="MODIFY">Modificar</CommonButton>
-                                <DisableButton active={campaign.active} handleActive={() => handleActiveCampaign(campaign)} />
-                            </ButtonGroup>
-                        </Grid >
-                    </Grid>
-                    <Divider />
-                    <LeadFieldTable campaign={campaign} leadFields={leadFields} updateLeadFields={updateLeadFields}
-                        handleSidebar={handleSidebar} updateEntity={updateEntity} />
+                    }
                 </Stack>
-            }
+                {campaign &&
+                    <Stack spacing={2} >
+                        <Grid container spacing={2}>
+                            <Grid size="grow" minWidth="30rem">
+                                {campaign.description
+                                    ? <Typography variant="body1">{campaign.description}</Typography>
+                                    : <Typography variant="body1" fontStyle="italic">No tiene descripción.</Typography>
+                                }
+                            </Grid>
+                            <Grid container spacing=".5rem" size={{ sm: 12, md: 12, lg: 3 }} minWidth="20rem">
+                                <Grid size="grow" minWidth="18rem">
+                                    <Typography variant="body1" fontWeight="bold">Fecha de creación:</Typography>
+                                    <Typography variant="body1" paddingInlineStart={2} sx={{ textTransform: "capitalize" }}>
+                                        {dayjs(campaign?.created_at).format('dddd DD/MM/YYYY HH:mm:ss')}
+                                    </Typography>
+                                </Grid>
+                                <Grid size="grow" minWidth="18rem">
+                                    <Typography variant="body1" fontWeight="bold">Fecha de última modificación:</Typography>
+                                    <Typography variant="body1" paddingInlineStart={2} sx={{ textTransform: "capitalize" }}>
+                                        {dayjs(campaign?.updated_at).format('dddd DD/MM/YYYY HH:mm:ss')}
+                                    </Typography>
+                                </Grid>
+                            </Grid>
+                        </Grid>
+                        <Divider />
+                        <Grid size="grow" container justifyContent="center" alignItems="center" gap={2}>
+                            <Grid size="grow" minWidth="16rem" >
+                                <Typography variant="h2">Acciones</Typography>
+                            </Grid >
+                            <Grid size="grow" minWidth="20rem" >
+                                <ButtonGroup fullWidth>
+                                    <CommonButton handleClick={() => handleSidebar("UPDATE_CMP", null)} actionType="MODIFY">Modificar</CommonButton>
+                                    <DisableButton active={campaign.active} handleActive={() => handleActiveCampaign(campaign)} />
+                                </ButtonGroup>
+                            </Grid >
+                        </Grid>
+                        <Divider />
+                        <LeadFieldTable campaign={campaign} leadFields={leadFields} updateLeadFields={updateLeadFields}
+                            handleSidebar={handleSidebar} updateEntity={updateEntity} />
+                    </Stack>
+                }
+            </Stack>
         </ContainerWithSidebar>
     )
 }
