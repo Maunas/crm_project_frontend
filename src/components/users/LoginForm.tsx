@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form"
 import { setFormErrors } from "../../generalService"
 import { PasswordField, RegisteredTextInput } from "../common/forms/CustomInputs"
 import { FormErrorMessage } from "../../theme/styledMUIFormComponents"
+import { CommonButton } from "../common/details/DetailsCommonButton"
 
 
 export const LoginFormPage = () => {
@@ -44,38 +45,41 @@ const LoginForm = ({ submit, onCancel }: LoginFormProps) => {
 
   return (
     <form>
-      <Typography variant="h1" textAlign="center">
-        CRM
-      </Typography>
-      <Typography variant="h2" textAlign="center">
-        Iniciar Sesión
-      </Typography>
-      <Grid container spacing={2} sx={{
-        justifyContent: "center",
-        alignItems: "center",
-        margin: "1rem"
-      }}>
-        <Grid size="grow" minWidth={"20rem"}>
-          <RegisteredTextInput name="email" register={register} label="Nombre"
-            required errorMessage={errors.email?.message} />
-        </Grid>
-        <Grid size="grow" minWidth={"20rem"}>
-          <PasswordField name="password" register={register} label="Contraseña" errorMessage={errors.password?.message} required />
-        </Grid>
-      </Grid>
-      {errors?.root &&
-        <FormErrorMessage >{errors?.root?.message}</FormErrorMessage>
-      }
-      <ButtonGroup fullWidth>
-        <Button variant="outlined" onClick={onCancel} fullWidth>
-          Cancelar
-        </Button>
-        <Button variant="contained" onClick={handleSubmit(onSubmit)} fullWidth>
+      <Stack gap={3}>
+        <Typography variant="h1" textAlign="center">
+          CRM
+        </Typography>
+        <Typography variant="h2" textAlign="center">
           Iniciar Sesión
-        </Button>
-      </ButtonGroup>
-      <Stack justifyContent="center" alignItems="center">
-        <Button variant="text" component={Link} to="/signup">Crear Cuenta</Button>
+        </Typography>
+        <Stack gap={2}>
+          <Grid container gap={1} sx={{
+            justifyContent: "center",
+            alignItems: "center",
+          }}>
+            <Grid size="grow" minWidth={"20rem"}>
+              <RegisteredTextInput name="email" register={register} label="Nombre"
+                required errorMessage={errors.email?.message} />
+            </Grid>
+            <Grid size="grow" minWidth={"20rem"}>
+              <PasswordField name="password" register={register} label="Contraseña" errorMessage={errors.password?.message} required />
+            </Grid>
+          </Grid>
+          {errors?.root &&
+            <FormErrorMessage >{errors?.root?.message}</FormErrorMessage>
+          }
+          <Stack gap={1}>
+            <ButtonGroup fullWidth>
+              <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel} fullWidth>
+                Cancelar
+              </CommonButton>
+              <CommonButton actionType="LOGIN" variant="contained" onClick={handleSubmit(onSubmit)} fullWidth>
+                Iniciar Sesión
+              </CommonButton>
+            </ButtonGroup>
+            <Button fullWidth variant="text" component={Link} to="/signup">Crear Cuenta</Button>
+          </Stack>
+        </Stack>
       </Stack>
     </form>
   )

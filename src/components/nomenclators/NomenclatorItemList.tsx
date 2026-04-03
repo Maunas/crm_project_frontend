@@ -112,6 +112,7 @@ export const NomenclatorItemList = () => {
                         }
                     </ButtonGroup>
                 </Grid>
+            <Stack gap={2}>
                 {
                     nomenclatorItems && nomenclatorItems.items?.length > 0 ?
                         <List>
@@ -151,8 +152,9 @@ export const NomenclatorItemList = () => {
                             <CommonButton actionType='CREATE' onClick={() => { handleSidebar("CREATE_NOM", null) }} variant="contained">Crear Opción</CommonButton>
                         </Grid>
                 }
-            </Stack>
             <PaginationComponent {...pageComponentProps} />
+            </Stack> 
+            </Stack> 
         </ContainerWithSidebar >
     )
 }

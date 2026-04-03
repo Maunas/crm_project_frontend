@@ -14,6 +14,8 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import SettingsIcon from '@mui/icons-material/Settings';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import PersonIcon from '@mui/icons-material/Person';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
 
 interface DisableBtnProps {
     active: boolean,
@@ -45,7 +47,9 @@ export const DisableButton = ({ active, handleActive,
 type MuiButtonProps = ComponentProps<typeof Button>;
 
 interface CommonBtnProps extends MuiButtonProps {
-    actionType?: "MODIFY" | "CLOSE" | "CREATE" | "DISABLE" | "ENABLE" | "DETAILS" | "FILTER" | "OPTIONS" | "SAVE" | "RETURN" | "NONE",
+    actionType?: "MODIFY" | "CLOSE" | "CREATE" | "DISABLE" | "ENABLE" | 
+    "DETAILS" | "FILTER" | "OPTIONS" | "SAVE" | "RETURN" | 
+    "LOGIN" | "SIGNUP" | "NONE",
     handleClick?: () => void,
     component?: React.ForwardRefExoticComponent<LinkProps & React.RefAttributes<HTMLAnchorElement>>,
     to?: string,
@@ -75,6 +79,8 @@ export const CommonButton = ({ actionType = "NONE", handleClick, children, ...bt
                 {actionType === "FILTER" && <FilterListIcon fontSize={btnProps.size} />}
                 {actionType === "OPTIONS" && <SettingsIcon fontSize={btnProps.size} />}
                 {actionType === "RETURN" && <ArrowBackIcon fontSize={btnProps.size} />}
+                {actionType === "LOGIN" && <PersonIcon fontSize={btnProps.size} />}
+                {actionType === "SIGNUP" && <PersonAddIcon fontSize={btnProps.size} />}
                 {children}
             </Stack>
         </LightButton>

@@ -22,32 +22,26 @@ const theme = createTheme({
     h1: {
       fontSize: '2em',
       fontWeight: 700,
-      paddingTop: '.5rem',
     },
     h2: {
       fontSize: '1.7em',
       fontWeight: 700,
-      paddingTop: '.5rem',
     },
     h3: {
       fontSize: '1.37em',
       fontWeight: 700,
-      paddingTop: '.5rem',
     },
     h4: {
       fontSize: '1.2em',
       fontWeight: 700,
-      paddingTop: '.5rem',
     },
     h5: {
       fontSize: '1.03em',
       fontWeight: 700,
-      paddingTop: '.5rem',
     },
     h6: {
       fontSize: '0.87rem',
       fontWeight: 700,
-      paddingTop: '.5rem',
     },
     button: {
       textTransform: 'none',
