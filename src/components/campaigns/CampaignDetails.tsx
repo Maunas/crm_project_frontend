@@ -147,12 +147,10 @@ export const CampaignDetails = () => {
                             <Grid size="grow" minWidth="16rem" >
                                 <Typography variant="h2">Acciones</Typography>
                             </Grid >
-                            <Grid size="grow" minWidth="20rem" >
-                                <ButtonGroup fullWidth>
+                                <ButtonGroup sx={{ marginLeft: "auto" }}>
                                     <CommonButton handleClick={() => handleSidebar("UPDATE_CMP", null)} actionType="MODIFY">Modificar</CommonButton>
                                     <DisableButton active={campaign.active} handleActive={() => handleActiveCampaign(campaign)} />
                                 </ButtonGroup>
-                            </Grid >
                         </Grid>
                         <Divider />
                         <LeadFieldTable campaign={campaign} leadFields={leadFields} updateLeadFields={updateLeadFields}

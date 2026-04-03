@@ -1,18 +1,19 @@
+import type { ComponentProps, ReactNode } from 'react';
+import type { ColorTypes } from '../../../types/mui-theme.d';
+import type { LinkProps } from 'react-router-dom';
 import { Stack } from '@mui/material'
+import { styled } from '@mui/material/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import EditIcon from '@mui/icons-material/Edit';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
-import type { ComponentProps, ReactNode } from 'react';
-import type { LinkProps } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import SettingsIcon from '@mui/icons-material/Settings';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
-import { styled } from '@mui/material/styles';
-import type { ColorTypes } from '../../../types/mui-theme.d';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 interface DisableBtnProps {
     active: boolean,
@@ -44,7 +45,7 @@ export const DisableButton = ({ active, handleActive,
 type MuiButtonProps = ComponentProps<typeof Button>;
 
 interface CommonBtnProps extends MuiButtonProps {
-    actionType?: "MODIFY" | "CLOSE" | "CREATE" | "DISABLE" | "ENABLE" | "DETAILS" | "FILTER" | "OPTIONS" | "SAVE" | "NONE",
+    actionType?: "MODIFY" | "CLOSE" | "CREATE" | "DISABLE" | "ENABLE" | "DETAILS" | "FILTER" | "OPTIONS" | "SAVE" | "RETURN" | "NONE",
     handleClick?: () => void,
     component?: React.ForwardRefExoticComponent<LinkProps & React.RefAttributes<HTMLAnchorElement>>,
     to?: string,
@@ -73,6 +74,7 @@ export const CommonButton = ({ actionType = "NONE", handleClick, children, ...bt
                 {actionType === "SAVE" && <SaveOutlinedIcon fontSize={btnProps.size} />}
                 {actionType === "FILTER" && <FilterListIcon fontSize={btnProps.size} />}
                 {actionType === "OPTIONS" && <SettingsIcon fontSize={btnProps.size} />}
+                {actionType === "RETURN" && <ArrowBackIcon fontSize={btnProps.size} />}
                 {children}
             </Stack>
         </LightButton>

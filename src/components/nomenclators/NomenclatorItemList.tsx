@@ -5,7 +5,7 @@ import { useSidebar } from '../hooks/useSidebar'
 import { useListPagination } from '../hooks/useListPagination'
 import type { Paginable } from '../../types/common'
 import { ContainerWithSidebar } from '../common/layout/GenericContainer'
-import { Button, ButtonGroup, Grid, IconButton, List, ListItem, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
+import { ButtonGroup, Grid, IconButton, List, ListItem, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
 import { CommonButton } from '../common/details/DetailsCommonButton'
 import { PaginationComponent } from '../common/lists/PaginationComponent'
 import { disableNomenclatorItem, enableNomenclatorItem, getNomenclator, getNomenclatorItem, getNomenclatorItems } from './nomenclatorService'
@@ -100,27 +100,24 @@ export const NomenclatorItemList = () => {
                 closeSidebar={closeSidebar} updateEntityOnList={updateEntityOnList} nomenclator={nomenclator}
                 handleActive={handleActive} />
         }>
-            <Stack spacing={2}>
-                <Grid container spacing={2} justifyContent="space-between" alignItems="center">
-                    <Grid size="grow" minWidth="15rem">
-                        <Typography variant="h1">Opciones de {nomenclator?.name}</Typography>
-                    </Grid>
-
-                    <Grid size="grow" maxWidth="25rem">
-                        <ButtonGroup variant="outlined" fullWidth >
-                            <Button component={RouterLink} to="/nomenclators" fullWidth>Volver</Button>
-                            {nomenclatorItems && nomenclatorItems.items?.length > 0 &&
-                                <CommonButton actionType="CREATE" handleClick={() => { handleSidebar("CREATE_NOM", null) }}>Crear Opciones</CommonButton>
-                            }
-                        </ButtonGroup>
-                    </Grid>
+            <Stack gap={3}>
+                <Grid container gap={2} justifyContent="space-between" alignItems="center">
+                    <Typography variant="h1">Opciones de {nomenclator?.name}</Typography>
+                    <ButtonGroup variant="outlined" sx={{ marginLeft: "auto" }} >
+                        <CommonButton actionType='RETURN' variant='outlined' component={RouterLink} to="/nomenclators">Volver</CommonButton>
+                        {nomenclatorItems && nomenclatorItems.items?.length > 0 &&
+                            <CommonButton actionType="CREATE" handleClick={() => { handleSidebar("CREATE_NOM", null) }}>
+                                Crear Opciones
+                            </CommonButton>
+                        }
+                    </ButtonGroup>
                 </Grid>
                 {
                     nomenclatorItems && nomenclatorItems.items?.length > 0 ?
                         <List>
                             {nomenclatorItems.items.map(nom =>
                                 <ListItem key={nom.id} disablePadding secondaryAction={
-                                    <Grid container spacing={1} alignItems="center">
+                                    <Grid container gap={1} alignItems="center">
                                         <IconButton edge="end" aria-label="details" onClick={() => handleSidebar("DETAILS_NOM", nom)}>
                                             <SearchIcon />
                                         </IconButton>
@@ -139,21 +136,19 @@ export const NomenclatorItemList = () => {
                                     </Grid>
                                 }>
                                     <ListItemButton onClick={() => handleSidebar("DETAILS_NOM", nom)} >
-                                        <ListItemText primary={<>
-                                            <Stack spacing={1} direction="row">
-                                                <Typography fontWeight="bold">{nom.code} -</Typography>
-                                                <Typography >{nom.value} </Typography>
+                                        <ListItemText primary={
+                                            <Stack gap={1} direction="row">
+                                                <Typography fontWeight="bold">{nom.value}</Typography>
                                             </Stack>
-                                            {!nom.organization_id && <Typography variant="body1" fontStyle="italic" >(Opción del Sistema)</Typography>}
-
-                                        </>} />
+                                        }
+                                            secondary={!nom.organization_id && "(Opción del Sistema)"} />
                                     </ListItemButton>
                                 </ListItem>
                             )}
                         </List>
-                        : <Grid container spacing={2} justifyContent="center" alignItems="center" direction="column">
+                        : <Grid container gap={2} justifyContent="center" alignItems="center" direction="column">
                             <Typography variant="h4">No se han encontrado opciones en este nomenclador...</Typography>
-                            <Button onClick={() => { handleSidebar("CREATE_NOM", null) }} variant="contained">Crear Opción</Button>
+                            <CommonButton actionType='CREATE' onClick={() => { handleSidebar("CREATE_NOM", null) }} variant="contained">Crear Opción</CommonButton>
                         </Grid>
                 }
             </Stack>
@@ -199,5 +194,4 @@ export const NomenclatorItemSidebar = ({ mode, entity, nomenclator, closeSidebar
             return <NomenclatorItemDetails entity={entity as NomenclatorItemDetailed} parentEntity={parentItem} closeSidebar={closeSidebar}
                 handleSidebar={handleSidebar} handleActive={handleActive} />
     }
-
 }

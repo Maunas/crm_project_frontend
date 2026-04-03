@@ -109,11 +109,10 @@ export const LeadList = () => {
         <Stack gap={3}>
             <Grid container justifyContent="space-between" alignItems="center" spacing="1rem">
                 <Typography variant="h1">Lista de Leads</Typography>
-                <Grid>
-                    <CommonButton actionType='CREATE' variant="contained" color="primary" component={RouterLink} to="/leads/new">
-                        Crear Lead
-                    </CommonButton>
-                </Grid>
+                <CommonButton actionType='CREATE' variant="contained" color="primary" sx={{ marginLeft: "auto" }}
+                    component={RouterLink} to="/leads/new">
+                    Crear Lead
+                </CommonButton>
             </Grid>
             <Stack gap={2}>
                 <Grid container alignItems="center" justifyContent="space-between" gap={2}>
@@ -141,7 +140,7 @@ export const LeadList = () => {
                                 <GenericModal idModal="lead_filters" modalProps={modalProps} buttonText="Aplicar Filtros" maxWidth="lg"
                                     actionType='FILTER' color='secondary'>
                                     <LeadFilters applyFilters={applyFilters} filters={{ filters, headers }} campaignId={Number(campaignId)}
-                                    onClose={()=>modalProps.handleClose()} />
+                                        onClose={() => modalProps.handleClose()} />
                                 </GenericModal>
                             </Badge>
                         </Grid>
