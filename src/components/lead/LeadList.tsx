@@ -105,6 +105,12 @@ export const LeadList = () => {
         renderInput: (params: AutocompleteRenderInputParams) => <TextField {...params} label={label} />
     })
 
+    const orderList = (fieldId: number | null, ascending: boolean) => {
+        const newHeaders = fieldId ? { ...headers, order_by: fieldId, ascending } : { ...headers, order_by: null }
+        setHeaders(newHeaders)
+        fetchLeads(leads?.page ?? 1, filters, newHeaders)
+    }
+
     return (
         <Stack gap={3}>
             <Grid container justifyContent="space-between" alignItems="center" spacing="1rem">
@@ -135,14 +141,14 @@ export const LeadList = () => {
                                     Modificar Columnas
                                 </CommonButton>
                             }
-                        </Grid> 
+                        </Grid>
                         <Grid sx={{ marginLeft: 'auto' }}>
                             {leads && leads.items.length > 0 &&
                                 <Badge badgeContent={filters.length} color="success">
-                                <CommonButton actionType="FILTER" color="secondary" onClick={() => modalProps.handleOpen("lead_filters")}>
-                                    Aplicar Filtros
-                                </CommonButton>
-                            </Badge>}
+                                    <CommonButton actionType="FILTER" color="secondary" onClick={() => modalProps.handleOpen("lead_filters")}>
+                                        Aplicar Filtros
+                                    </CommonButton>
+                                </Badge>}
                             <GenericModal idModal="lead_filters" modalProps={modalProps} buttonText="Aplicar Filtros" maxWidth="lg"
                                 actionType='FILTER' color='secondary' showButton={false} >
                                 <LeadFilters applyFilters={applyFilters} filters={{ filters, headers }} campaignId={Number(campaignId)}
@@ -154,7 +160,7 @@ export const LeadList = () => {
                 {
                     leads && !!campaignId &&
                     <LeadListTable leads={leads.items} campaignId={Number(campaignId)} modalProps={modalProps}
-                        activeFilters={filters.length} />
+                        activeFilters={filters.length} headers={headers} orderList={orderList}/>
                 }
                 <PaginationComponent {...pageComponentProps} />
             </Stack >

@@ -41,7 +41,9 @@ export interface CampaignParams extends ListParams {
   workspace_id?: number
 }
 export interface LeadListParams extends ListParams {
-  campaign_id?: number
+  campaign_id?: number,
+  order_by?: number | null,
+  ascending?: boolean
 }
 
 /**

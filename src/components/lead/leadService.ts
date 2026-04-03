@@ -2,19 +2,19 @@ import type { LeadPostForm } from "./LeadForm";
 import type { DeleteResponse, EnableResponse, ErrorBody, ErrorMessage, LeadFilter, ListParams, Paginable } from "../../types/common";
 import type { Lead, LeadDetailed, LeadPostValue } from "../../types/leads";
 import type { LeadField } from "../../types/leadFields";
-import { API_BASE_URL, axiosCRM, orderList, setFormErrors } from "../../generalService";
+import { API_BASE_URL, axiosCRM, setFormErrors } from "../../generalService";
 import type { FieldArrayWithId, UseFormSetError } from "react-hook-form";
 
 export const getLeads = async <T extends ListParams>(params?: T)
   : Promise<Paginable<T["detailed"] extends true ? LeadDetailed : Lead>> => {
   const lead = await axiosCRM.get(`${API_BASE_URL}/leads`, { params });
-  return { ...lead.data, items: orderList(lead.data.items) };
+  return lead.data;
 };
 
-export const getFilteredLeads = async <T extends ListParams>(body: {filters: LeadFilter[]}, params?: T)
+export const getFilteredLeads = async <T extends ListParams>(body: { filters: LeadFilter[] }, params?: T)
   : Promise<Paginable<T["detailed"] extends true ? LeadDetailed : Lead>> => {
   const lead = await axiosCRM.post(`${API_BASE_URL}/leads/search`, body, { params });
-  return { ...lead.data, items: orderList(lead.data.items) };
+  return lead.data;
 };
 
 export const getLead = async (id: number): Promise<LeadDetailed> => {

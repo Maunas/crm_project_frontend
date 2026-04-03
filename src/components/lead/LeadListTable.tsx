@@ -7,9 +7,12 @@ import type { Lead } from "../../types/leads"
 import { useDragAndDrop } from "../hooks/useDragAndDrop"
 import { getLeadFields } from "../leadFields/leadFieldServices"
 import { useNavigate } from "react-router-dom"
-import { Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, useTheme, ButtonGroup, Badge } from "@mui/material"
-import { lighten } from "@mui/material/styles"
+import { Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, useTheme, ButtonGroup, Badge, IconButton } from "@mui/material"
+import { alpha, lighten } from "@mui/material/styles"
 import { CommonButton } from "../common/details/DetailsCommonButton"
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import type { LeadListParams } from "../../types/common"
 
 interface LeadListTableProps {
     leads: Lead[],
@@ -19,10 +22,15 @@ interface LeadListTableProps {
         handleOpen: (idModal: string | number) => void;
         handleClose: () => void;
     },
-    activeFilters: number
+    activeFilters: number,
+    orderList: (
+        fieldId: number | null,
+        ascending: boolean
+    ) => void,
+    headers: LeadListParams
 }
 
-export const LeadListTable = ({ leads, campaignId, activeFilters = 0, modalProps }: LeadListTableProps) => {
+export const LeadListTable = ({ leads, campaignId, activeFilters = 0, orderList, headers, modalProps }: LeadListTableProps) => {
 
     const DEFAULT_N_OF_FIELDS = 6
     const nav = useNavigate()
@@ -91,6 +99,16 @@ export const LeadListTable = ({ leads, campaignId, activeFilters = 0, modalProps
 
     const { dragStyles, dragEvents } = useDragAndDrop(selectedIds, (items) => setSelectedIds(items))
 
+
+
+    //Ascendente -> Descendente -> Sin orden
+    const handleOrderList = (fieldId: number | null) => {
+        if (headers.order_by !== fieldId) return orderList(fieldId, true)
+        if (headers.ascending) return orderList(fieldId, false)
+
+        orderList(null, true)
+    }
+
     //Si hay leads, pero no hay columnas seleccionadas
     if (selectedColumns?.length === 0 && leads.length > 0) return (
         <Stack gap={3} my={3} alignItems="center">
@@ -148,7 +166,30 @@ export const LeadListTable = ({ leads, campaignId, activeFilters = 0, modalProps
                                             ...dragStyles(idx, "row")
                                         }}
                                     >
-                                        {column.name}
+                                        <Stack direction="row" gap={1} alignItems="center">
+                                            {column.name}
+                                            {headers.order_by !== column.id &&
+                                                <IconButton size="small" onClick={() => handleOrderList(column.id)}>
+                                                    <ArrowUpwardIcon />
+                                                </IconButton>
+                                            }
+                                            {headers.order_by === column.id &&
+                                                <IconButton size="small" onClick={() => handleOrderList(column.id)}
+                                                    sx={{
+                                                        backgroundColor: alpha(palette.secondary.light, .7),
+                                                        color: palette.secondary.contrastText,
+                                                        "&:hover": {
+                                                            backgroundColor: palette.secondary.main,
+                                                        }
+                                                    }}>
+                                                    {(headers.ascending ?
+                                                        <ArrowUpwardIcon />
+                                                        :
+                                                        <ArrowDownwardIcon />
+                                                    )}
+                                                </IconButton>
+                                            }
+                                        </Stack>
                                     </TableCell>
                                 )
                                 }
