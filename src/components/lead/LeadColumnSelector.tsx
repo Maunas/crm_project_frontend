@@ -1,14 +1,7 @@
 import * as React from 'react';
-import Grid from '@mui/material/Grid';
-import List from '@mui/material/List';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import Checkbox from '@mui/material/Checkbox';
-import Button from '@mui/material/Button';
-import Paper from '@mui/material/Paper';
-import { Stack, ButtonGroup, Typography, Box } from '@mui/material';
-import { alpha, useTheme } from '@mui/material/styles';
+import { Grid, List, Stack, ListItemButton, ListItemIcon, ListItemText, Checkbox, Button, Paper, ButtonGroup, Typography, Box } from '@mui/material';
+import { alpha, lighten, useTheme } from '@mui/material/styles';
+import { CommonButton } from '../common/details/DetailsCommonButton';
 
 function not(a: readonly number[], b: readonly number[]) {
   return a.filter((value) => !b.includes(value));
@@ -28,9 +21,10 @@ interface LeadColumnSelectorProps<T> {
 
 export default function LeadColumnSelector<T extends { id: number }>
   ({ itemsList, selectedIds, handleSelectedIds, handleClose, showField }: LeadColumnSelectorProps<T>) {
+
   const [checked, setChecked] = React.useState<readonly number[]>([]);
   const [left, setLeft] = React.useState<number[]>(not(itemsList.map(f => f.id), selectedIds) ?? []);
-  const [right, setRight] = React.useState<number[]>(selectedIds ?? []);
+  const [right, setRight] = React.useState<number[]>(intersection(itemsList.map(f => f.id), selectedIds));
 
   const leftChecked = intersection(checked, left);
   const rightChecked = intersection(checked, right);
@@ -69,7 +63,7 @@ export default function LeadColumnSelector<T extends { id: number }>
     setChecked(not(checked, rightChecked));
   };
 
-  const theme = useTheme()
+  const { palette } = useTheme()
 
   //Permite identificar el objeto cuando paso de una lista a otra
   const globalDraggedIndex = React.useRef<number | null>(null)
@@ -124,9 +118,12 @@ export default function LeadColumnSelector<T extends { id: number }>
     }
 
     return (
-      <Paper >
+      <Paper sx={{ backgroundColor: lighten(palette.background.paper, .15), overflow: "hidden" }} >
         {title &&
-          <Box p=".5rem" sx={{ backgroundColor: alpha(theme.palette.secondary.light, .8) }}>
+          <Box p={1} sx={{
+            backgroundColor: palette.primary.light,
+            color: palette.primary.contrastText
+          }}>
             <Typography variant="body2" fontWeight={600}>{title}</Typography>
           </Box>}
         <Stack height="25rem">
@@ -150,10 +147,10 @@ export default function LeadColumnSelector<T extends { id: number }>
                   className='column-list-item'
                   sx={{
                     cursor: dragIndex !== null ? "grabbing" : "grab",
-                    backgroundColor: dragIndex === idx ? `${alpha(theme.palette.background.default, .5)}` : "",
-                    border: dragIndex === idx ? `2px solid ${alpha(theme.palette.contrast.light, .5)}` : "",
-                    borderTop: (dragOver === idx && dragIndex !== null && dragOver < dragIndex) ? `4px solid ${alpha(theme.palette.secondary.main, .6)}` : "",
-                    borderBottom: (dragOver === idx && dragIndex !== null && dragOver > dragIndex) ? `4px solid ${alpha(theme.palette.secondary.main, .6)}` : "",
+                    backgroundColor: dragIndex === idx ? `${alpha(palette.background.default, .5)}` : "",
+                    border: dragIndex === idx ? `2px solid ${alpha(palette.contrast.light, .5)}` : "",
+                    borderTop: (dragOver === idx && dragIndex !== null && dragOver < dragIndex) ? `4px solid ${alpha(palette.secondary.main, .6)}` : "",
+                    borderBottom: (dragOver === idx && dragIndex !== null && dragOver > dragIndex) ? `4px solid ${alpha(palette.secondary.main, .6)}` : "",
                   }}
                 >
                   <ListItemIcon sx={{ pointerEvents: "none" }}>
@@ -177,7 +174,7 @@ export default function LeadColumnSelector<T extends { id: number }>
     )
   };
 
-  return (
+  return ( 
     <Stack alignItems="start" spacing="1rem">
       <Typography variant="h2" >Seleccionar Columnas</Typography>
       <Grid
@@ -190,9 +187,8 @@ export default function LeadColumnSelector<T extends { id: number }>
           <CustomList isLeftList={true} title={"Columnas Disponibles"} />
         </Grid>
         <Grid>
-          <Grid container direction="column" sx={{ alignItems: 'center' }}>
+          <Grid container gap={1} direction="column" sx={{ alignItems: 'center' }}>
             <Button
-              sx={{ my: 0.5 }}
               variant="contained"
               size="small"
               onClick={handleAllRight}
@@ -202,7 +198,6 @@ export default function LeadColumnSelector<T extends { id: number }>
               ≫
             </Button>
             <Button
-              sx={{ my: 0.5 }}
               variant="contained"
               size="small"
               onClick={handleCheckedToRight}
@@ -212,7 +207,6 @@ export default function LeadColumnSelector<T extends { id: number }>
               &gt;
             </Button>
             <Button
-              sx={{ my: 0.5 }}
               variant="contained"
               size="small"
               onClick={handleCheckedToLeft}
@@ -222,7 +216,6 @@ export default function LeadColumnSelector<T extends { id: number }>
               &lt;
             </Button>
             <Button
-              sx={{ my: 0.5 }}
               variant="contained"
               size="small"
               onClick={handleAllLeft}
@@ -239,12 +232,13 @@ export default function LeadColumnSelector<T extends { id: number }>
       </Grid>
       <Stack width="100%" alignItems="end">
         <ButtonGroup >
-          <Button variant="outlined" onClick={() => handleClose()}>
+          <CommonButton actionType='CLOSE' variant="outlined" onClick={() => handleClose()}>
             Cancelar
-          </Button>
-          <Button variant="contained" onClick={() => handleSelectedIds(right)} disabled={right.length === 0}>
+          </CommonButton>
+          <CommonButton actionType='OPTIONS' variant="contained" onClick={() => handleSelectedIds(right)}
+            disabled={right.length === 0}>
             Guardar Cambios
-          </Button>
+          </CommonButton>
         </ButtonGroup>
       </Stack>
     </Stack>
