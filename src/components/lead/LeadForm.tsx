@@ -56,7 +56,6 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
 
     const [leadFields, setLeadFields] = useState<LeadField[]>(existingLeadFields ?? [])
 
-    console.log("cambio", campaignId, existingLeadFields, leadFields)
     //Actualiza los leadFields respecto al campaignId seleccionado. Si ya hay existingLeadFields, no busca.
     useEffect(() => {
         if (campaignId == null) return
