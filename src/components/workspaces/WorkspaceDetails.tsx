@@ -1,38 +1,35 @@
-import { ButtonGroup, Divider, Grid, Link, Stack, Typography } from "@mui/material"
-import { Link as RouterLink } from "react-router-dom"
-import dayjs from "dayjs"
+import { CampaignList } from "../campaigns/CampaignList"
 import { CommonButton, DisableButton } from "../common/details/DetailsCommonButton"
-import type { NomenclatorItemDetailed } from "../../types/nomenclators"
 import { CustomChip } from "../../theme/styledMUIDisplayComponents"
+import type { CampaignDetailed, WorkspaceDetailed } from "../../types/campaigns"
+import dayjs from "dayjs"
+import { Stack, Typography, ButtonGroup, Divider, Grid } from "@mui/material"
 
-interface NomenclatorDetailsProps {
-    entity: NomenclatorItemDetailed | null,
-    parentEntity?: NomenclatorItemDetailed | null,
+interface WorkspaceDetailsProps {
+    entity: WorkspaceDetailed | null,
     closeSidebar: () => void,
-    handleSidebar: (mode: string, entity: NomenclatorItemDetailed | null) => void,
-    handleActive: (entity: NomenclatorItemDetailed) => void
+    handleSidebar: (mode: string, entity: WorkspaceDetailed | CampaignDetailed | null) => void,
+    handleActive: (entity: WorkspaceDetailed) => void
 }
 
-export const NomenclatorItemDetails = ({ entity, parentEntity, closeSidebar, handleSidebar, handleActive }: NomenclatorDetailsProps) => {
+export const WorkspaceDetails = ({ entity, closeSidebar, handleSidebar, handleActive }: WorkspaceDetailsProps) => {
 
     if (entity) return (
         <Stack gap={3} >
             <Grid container gap={2} justifyContent="space-between" alignItems="center">
-                <Typography variant="h2">{entity.value}</Typography>
+                <Typography variant="h2">{entity.name}</Typography>
                 {entity.active ? <CustomChip sx={{ marginLeft: "auto" }} color='success' label="Habilitado" /> :
                     <CustomChip sx={{ marginLeft: "auto" }} color='error' label="Deshabilitado" />}
             </Grid>
             <Stack gap={2} >
-                {!entity.organization_id && <Typography variant="body1" fontStyle="italic" >(Nomenclador del Sistema)</Typography>}
+                {entity.description ? <Typography variant="body1">{entity.description}</Typography>
+                    : <Typography variant="body1" fontStyle="italic">No tiene descripción.</Typography>
+                }
                 <Divider />
-                {parentEntity &&
-                    <>
-                        <Stack direction="row" gap={1}>
-                            <Typography variant="body1">Depende del Item de Nomenclador</Typography>
-                            <Link component={RouterLink} to={`/nomenclators/${parentEntity?.nomenclator_id}`}>{parentEntity?.value}</Link>
-                        </Stack>
-                        <Divider />
-                    </>}
+                {entity.campaigns &&
+                    <CampaignList selectedWorkspaceId={entity.id} handleSidebar={handleSidebar} />
+                }
+                <Divider />
                 <Grid container gap={1} >
                     <Grid size="grow" minWidth="18rem">
                         <Typography variant="body1" fontWeight="bold">Fecha de creación:</Typography>
@@ -48,14 +45,11 @@ export const NomenclatorItemDetails = ({ entity, parentEntity, closeSidebar, han
                     </Grid>
                 </Grid>
                 <Divider />
-                <ButtonGroup sx={{ marginLeft: "auto" }}>
+
+                <ButtonGroup sx={{marginLeft:"auto"}}>
                     <CommonButton handleClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
-                    {entity.organization_id &&
-                        <DisableButton active={entity.active} handleActive={() => handleActive(entity)} />
-                    }
-                    {entity.organization_id &&
-                        <CommonButton handleClick={() => handleSidebar("UPDATE_NOM", entity)} actionType="MODIFY" >Modificar</CommonButton>
-                    }
+                    <DisableButton active={entity.active} handleActive={() => handleActive(entity)} />
+                    <CommonButton handleClick={() => handleSidebar("UPDATE_WSP", entity)} actionType="MODIFY" >Modificar</CommonButton>
                 </ButtonGroup>
             </Stack>
         </Stack>

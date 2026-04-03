@@ -1,7 +1,6 @@
-import { Box, Tab, Tabs } from '@mui/material'
 import { useState } from 'react';
 import { LeadComments } from './LeadComments';
-import { LeadAudit } from './LeadAudit';
+import { Box, Tab, Tabs } from '@mui/material'
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -18,29 +17,29 @@ function CustomTabPanel(props: TabPanelProps) {
       hidden={value !== index}
       id={`simple-tabpanel-${index}`}
       aria-labelledby={`simple-tab-${index}`}
+      style={{ height: "100%" }}
       {...other}
     >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+      {value === index && children}
     </div>
   );
 }
 
-export const LeadActivities = ({leadId}: {leadId: number}) => {
+export const LeadActivities = ({ leadId }: { leadId: number }) => {
 
   const [openTab, setOpenTab] = useState<number>(0)
 
   return (
     <>
-      <Tabs value={openTab} onChange={(_,val) => { setOpenTab(val) }} aria-label="activities tabs">
+      <Tabs value={openTab} onChange={(_, val) => { setOpenTab(val) }} aria-label="activities tabs">
         <Tab label="Comentarios" id="tab-comments" />
         <Tab label="Auditoría" id="tab-audit" />
       </Tabs>
-      <CustomTabPanel value={openTab} index={0}>
-        <LeadComments leadId={leadId} />
-      </CustomTabPanel>
-      <CustomTabPanel value={openTab} index={1}>
-        <LeadAudit />
-      </CustomTabPanel>
+      <Box sx={{ height: "100%" }}>
+        <CustomTabPanel value={openTab} index={0}>
+          <LeadComments leadId={leadId} />
+        </CustomTabPanel>
+      </Box>
     </>
   )
 }

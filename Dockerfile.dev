@@ -1,14 +1,16 @@
-FROM node:25-alpine3.22
+FROM node:20-slim
+
+RUN corepack enable
 
 WORKDIR /app
 
-COPY package*.json .
+COPY package.json pnpm-lock.yaml ./
 
-# Install project dependencies using npm ci (ensures a clean, reproducible install)
-RUN --mount=type=cache,target=/root/.npm npm ci
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile
 
 COPY . .
 
 EXPOSE 5173
 
-CMD ["npm", "run", "dev", "--", "--host"]
+CMD ["pnpm", "run", "dev", "--", "--host"]
