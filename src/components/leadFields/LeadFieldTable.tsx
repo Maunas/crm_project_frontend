@@ -1,17 +1,17 @@
 import { useEffect } from "react"
 import { GenericModal } from "../common/layout/GenericContainer"
+import { SimulateLeadFormModal } from "../lead/LeadFormWraper"
 import { EnabledIcon } from "../common/lists/Badges"
 import { CommonButton } from "../common/details/DetailsCommonButton"
 import type { LeadFieldDetailed } from "../../types/leadFields"
 import type { CampaignDetailed } from "../../types/campaigns"
 import { disableLeadField, enableLeadField } from "./leadFieldServices"
+import { useModal } from "../hooks/useModal"
 import { ButtonGroup, Grid, IconButton, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material"
 import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
-import { SimulateLeadFormModal } from "../lead/LeadFormWraper"
-import { useModal } from "../hooks/useModal"
 
 interface LeadFieldTableProps {
     campaign: CampaignDetailed,
@@ -112,7 +112,7 @@ export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateE
                                                     <IconButton size='small' edge="end" onClick={() => handleSidebar("DETAILS_FIELD", row)}>
                                                         <SearchIcon />
                                                     </IconButton>
-                                                    {row.order > 2 &&
+                                                    {row.order > 1 &&
                                                         <>
                                                             <IconButton size='small' edge="end" onClick={() => handleSidebar("UPDATE_FIELD", row)}>
                                                                 <EditIcon />

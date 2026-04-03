@@ -54,7 +54,7 @@ export const LeadDetails = () => {
                                 <Grid container gap="1.5rem" alignItems="center">
                                     <Grid container size="grow" gap=".5rem 1rem" alignItems="center" justifyContent="space-between">
                                         <Typography variant="h1">
-                                            {fieldValues[0]?.value ?? "Lead no encontrado"} {fieldValues[1]?.value ?? ""}
+                                            {fieldValues[0]?.value ?? "Lead no encontrado"}
                                         </Typography>
                                         <CustomChip label={lead?.active ? "Habilitado" : "Deshabilitado"}
                                             color={lead?.active ? "success" : "error"} sx={{ marginLeft: "auto" }} />

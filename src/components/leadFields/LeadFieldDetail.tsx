@@ -148,11 +148,11 @@ export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeS
             <Divider />
             <ButtonGroup>
                 <CommonButton handleClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
-                {leadField.order > 2 &&
-                    <>
-                        <DisableButton active={leadField.active} handleActive={() => handleActive(leadField)} />
-                        <CommonButton handleClick={() => handleSidebar("UPDATE_FIELD", leadField)} actionType="MODIFY" >Modificar</CommonButton>
-                    </>
+                {leadField.order > 1 && //Si no se separa el condicional arruina el estilo del ButtonGroup
+                    <DisableButton active={leadField.active} handleActive={() => handleActive(leadField)} />
+                }
+                {leadField.order > 1 &&
+                    <CommonButton handleClick={() => handleSidebar("UPDATE_FIELD", leadField)} actionType="MODIFY" >Modificar</CommonButton>
                 }
             </ButtonGroup>
         </Stack >
