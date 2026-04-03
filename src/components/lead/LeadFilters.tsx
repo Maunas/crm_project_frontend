@@ -149,7 +149,7 @@ export const LeadFiltersItem = ({ idx, leadFields, control, register, errors, re
                 case "NUMBER": case "INT": case "RATING": case "MONEY": {
                     return op.type.includes("number")
                 }
-                default: op.type.includes("string")
+                default: return op.type.includes("string")
             }
         })
     }, [selectedField, operators])
