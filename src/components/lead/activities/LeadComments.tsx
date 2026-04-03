@@ -1,23 +1,23 @@
 import { useEffect, useState, type ReactNode } from "react"
 import { PaginationComponent } from "../../common/lists/PaginationComponent"
-import { CommentFromNote } from "./LeadCommentForm"
 import type { Paginable } from "../../../types/common"
 import type { LeadComment } from "../../../types/leads"
 import { useListPagination } from "../../hooks/useListPagination"
 import { deleteComment, getComments } from "./leadActivitiesService"
 import dayjs from "dayjs"
 import { Box, Divider, Grid, IconButton, Paper, Stack, Typography } from "@mui/material"
-import { alpha, styled } from "@mui/material/styles"
+import { alpha, styled, useTheme } from "@mui/material/styles"
 import EditIcon from '@mui/icons-material/Edit';
 import CloseIcon from '@mui/icons-material/Close';
 import WatchLaterIcon from '@mui/icons-material/WatchLater';
 import type { ColorTypes } from "../../../types/mui-theme.d"
+import { CreateCommentWrapper, UpdateCommentFromNote } from "./LeadCommentForm"
 
 export const LeadComments = ({ leadId }: { leadId: number }) => {
 
     const [comments, setComments] = useState<Paginable<LeadComment> | null>(null)
     const [selectedCommentId, setSelectedCommentId] = useState<number | null>(null)
-    const { fetchPage, pageSize, pageComponentProps } = useListPagination(comments)
+    const { fetchPage, pageSize, pageComponentProps } = useListPagination(comments, 12)
 
     useEffect(() => {
         getComments({ detailed: true, lead_id: leadId, page: fetchPage, page_size: pageSize })
@@ -43,27 +43,33 @@ export const LeadComments = ({ leadId }: { leadId: number }) => {
         setSelectedCommentId(null)
     }
 
+    const { palette } = useTheme()
+
     return (
-        <Stack spacing="1rem">
-            <CommentFromNote leadId={leadId} onCreate={onCreateComment} />
-            <Divider />
-            <Grid container spacing={4}>
-                {comments?.items.map(com =>
-                    <Grid key={com.id} size="grow" minWidth="20rem">
-                        {com.id !== selectedCommentId ? (
-                            <CommentInstance comment={com} onEdit={() => setSelectedCommentId(com.id)}
-                                onDelete={() => onDeleteComment(com.id)} title={<MetadataShort comment={com} />} >
-                                {com.content}
-                            </CommentInstance>
-                        )
-                            : (
-                                <CommentFromNote leadId={leadId} existingComment={com} onUpdate={onUpdateComment} onClose={() => setSelectedCommentId(null)} />
+        <Stack spacing="1rem" height="100%">
+            <Stack flexGrow={1} gap="1rem" borderRadius="1rem" p="1rem 1.5rem" 
+            bgcolor={alpha(palette.background.default, .5)} alignItems="center">
+                <Grid container justifyContent="space-around" alignItems="start" alignContent="start"
+                    flexGrow={1} gap="1rem" minWidth="20rem">
+                    {comments?.items.map(com =>
+                        <Grid key={com.id} size="grow" minWidth="20rem" maxWidth="40rem">
+                            {com.id !== selectedCommentId ? (
+                                <CommentInstance comment={com} onEdit={() => setSelectedCommentId(com.id)}
+                                    onDelete={() => onDeleteComment(com.id)} title={<MetadataShort comment={com} />} >
+                                    {com.content}
+                                </CommentInstance>
                             )
-                        }
-                    </Grid>
-                )}
-            </Grid>
-            <PaginationComponent {...pageComponentProps} />
+                                : (
+                                    <UpdateCommentFromNote leadId={leadId} existingComment={com} onUpdate={onUpdateComment} onClose={() => setSelectedCommentId(null)} />
+                                )
+                            }
+                        </Grid>
+                    )}
+                </Grid>
+                <PaginationComponent {...pageComponentProps} />
+            </Stack>
+            <Divider />
+            <CreateCommentWrapper leadId={leadId} onCreate={onCreateComment} />
         </Stack>
     )
 }
@@ -88,13 +94,13 @@ const CommentNote = styled(Paper)(({ theme, ...props }) => {
         },
         "& .comment-footer": {
             gap: ".5rem",
-            padding: ".25rem 1rem",
+            paddingInline: "1rem",
             backgroundColor: alpha(theme.palette[paletteColor].light, .5),
             borderTop: `1px solid ${theme.palette[paletteColor].main}`,
         },
         "& .comment-main": {
-            padding: "1rem",
-            minHeight: "4rem",
+            padding: ".75rem 1rem",
+            minHeight: "3rem",
         },
     },
     theme.applyStyles('dark', {
@@ -123,27 +129,29 @@ interface CommentInstanceProps {
 
 export const CommentInstance = ({ comment, title, color, footerContent, onEdit, onDelete, children }: CommentInstanceProps) => {
 
-    return <CommentNote color={comment?.color ?? color ?? "secondary"}>
-        <Box className="comment-header">
-            <Typography variant="body1" fontWeight={600} >{title}</Typography>
-            <Stack direction="row">
-                {onEdit && <IconButton aria-label="edit" size="small" onClick={() => onEdit()} color="inherit">
-                    <EditIcon fontSize="small" />
-                </IconButton>}
-                {onDelete && <IconButton aria-label="delete" size="small" onClick={() => onDelete()} color="inherit">
-                    <CloseIcon fontSize="small" />
-                </IconButton>}
-            </Stack>
-        </Box>
-        <Box className="comment-main">
-            {children}
-        </Box>
-        {footerContent &&
-            <Box className="comment-footer" width="100%">
-                {footerContent}
+    return (
+        <CommentNote color={comment?.color ?? color ?? "secondary"}>
+            <Box className="comment-header">
+                <Typography variant="subtitle2" fontWeight={600}>{title}</Typography>
+                <Stack direction="row">
+                    {onEdit && <IconButton aria-label="edit" size="small" onClick={() => onEdit()} color="inherit">
+                        <EditIcon fontSize="small" />
+                    </IconButton>}
+                    {onDelete && <IconButton aria-label="delete" size="small" onClick={() => onDelete()} color="inherit">
+                        <CloseIcon fontSize="small" />
+                    </IconButton>}
+                </Stack>
             </Box>
-        }
-    </CommentNote>
+            <Box className="comment-main">
+                {children}
+            </Box>
+            {footerContent &&
+                <Box className="comment-footer" width="100%">
+                    {footerContent}
+                </Box>
+            }
+        </CommentNote>
+    )
 }
 
 

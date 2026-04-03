@@ -4,111 +4,177 @@ import { RegisteredTextInput } from "../../common/forms/CustomInputs"
 import type { LeadComment, LeadCommentPost } from "../../../types/leads"
 import { setFormErrors } from "../../../generalService"
 import { createComment, updateComment } from "./leadActivitiesService"
-import { useForm } from "react-hook-form"
-import { Button, Grid, IconButton, Stack } from "@mui/material"
+import { Controller, useForm, type Control } from "react-hook-form"
+import { Box, Grid, IconButton, Stack } from "@mui/material"
 import CircleIcon from '@mui/icons-material/Circle';
-import { useTheme } from "@mui/material/styles"
+import { alpha, styled, useTheme } from "@mui/material/styles"
 import type { PaletteColor } from "@mui/material/styles"
 import type { ColorTypes } from "../../../types/mui-theme.d"
+import { FormErrorMessage } from "../../../styledComponents/styledMUIFormComponents"
+import { CommonButton } from "../../common/details/DetailsCommonButton"
 
 interface CommentFromNoteProps {
     leadId: number,
-    existingComment?: LeadComment,
-    onUpdate?: (com: LeadComment) => void,
-    onClose?: () => void,
-    onCreate?: () => void,
+    existingComment: LeadComment,
+    onUpdate: (com: LeadComment) => void,
+    onClose: () => void,
 }
 
-export const CommentFromNote = ({ existingComment, leadId, onUpdate, onCreate, onClose }: CommentFromNoteProps) => {
+export const UpdateCommentFromNote = ({ existingComment, leadId, onUpdate, onClose }: CommentFromNoteProps) => {
 
-    const [commentColor, setCommentColor] = useState<string>(existingComment?.color ?? "secondary")
-    const [openForm, setOpenForm] = useState<boolean>(false)
+    const [color, setColor] = useState<ColorTypes>(existingComment?.color ?? "secondary")
 
     const postComment = ((data: LeadCommentPost) => {
-        if (existingComment) return updateComment({ ...data, color: commentColor }, existingComment.id).then((res) => {
-            onUpdate!({ ...res, color: commentColor })
-        })
-        else return createComment({ ...data, color: commentColor }).then(() => {
-            onCreate!()
+        return updateComment({ ...data }, existingComment.id).then((res) => {
+            onUpdate(res)
         })
     })
 
-    const onNoteClose = () => {
-        if (existingComment && onClose) return onClose()
-        else return setOpenForm(false)
-    }
-
     return (
         <Grid container justifyContent="end">
-            {(openForm || existingComment) &&
-                <Grid size="grow">
-                    <CommentInstance onDelete={() => onNoteClose()} color={commentColor} title={existingComment ? "Modificar Comentario" : "Agregar Comentario"}
-                        footerContent={<CommentColorSelector commentColor={commentColor} setCommentColor={setCommentColor} />}
-                    >
-                        <CommentForm existingComment={existingComment} leadId={leadId} submit={postComment} onClose={() => onNoteClose()} />
-                    </CommentInstance>
-                </Grid>
-            }
-            {(!openForm && !existingComment) &&
-                <Button variant="contained" onClick={() => setOpenForm(true)}>Agregar Comentario</Button>
-            }
+            <Grid size="grow">
+                <CommentInstance color={color} onDelete={() => onClose()}
+                    title={existingComment ? "Modificar Comentario" : "Agregar Comentario"}>
+                    <CommentForm existingComment={existingComment} leadId={leadId} submit={postComment}
+                        onClose={() => onClose()} setColor={setColor} size="small"/>
+                </CommentInstance>
+            </Grid>
         </Grid>
     )
 }
 
+const NewCommentBox = styled(Box)(({ theme, color = "secondary" }) => {
+    const paletteColor = theme.palette[color as ColorTypes] ?? theme.palette.secondary
+    const OPACITY = .12
+    return [{
+        border: "1px solid",
+        borderColor: alpha(paletteColor.main, .5),
+        borderRadius: "1rem",
+        backgroundColor: alpha(paletteColor.light, OPACITY),
+        padding: "1rem 1.5rem",
+        width: "100%",
+        "& .MuiInputBase-root": {
+            backgroundColor: theme.palette.background.paper,
+        }
+    },
+    //Invierte los tonos en darkmode
+    theme.applyStyles('dark', {
+        backgroundColor: alpha(paletteColor.darker, OPACITY),
+        borderColor: alpha(paletteColor.dark, .5),
+    })
+    ]
+})
+
+interface CommentWrapperProps {
+    leadId: number,
+    onCreate: (com: LeadComment) => void,
+}
+
+export const CreateCommentWrapper = ({ leadId, onCreate }: CommentWrapperProps) => {
+
+    const [color, setColor] = useState<ColorTypes>("secondary")
+
+    const { palette } = useTheme()
+
+    const postComment = ((data: LeadCommentPost) => {
+        return createComment(data).then((res) => {
+            onCreate(res)
+        })
+    })
+
+    return (
+        <Box width="100%" bgcolor={alpha(palette.background.default, .5)} borderRadius="1rem">
+            <NewCommentBox color={color} boxShadow="inherit">
+                <CommentForm leadId={leadId} submit={postComment} setColor={setColor} size="medium"/>
+            </NewCommentBox>
+        </Box>
+    )
+}
+
+
+
 interface CommentFormProps {
     existingComment?: LeadComment,
     leadId: number,
-    onClose: () => void,
-    submit: (data: LeadCommentPost) => Promise<void>
+    submit: (data: LeadCommentPost) => Promise<void>,
+    onClose?: () => void,
+    setColor: React.Dispatch<React.SetStateAction<ColorTypes>>,
+    size?: "small" | "medium"
 }
 
-const CommentForm = ({ existingComment, leadId, onClose, submit }: CommentFormProps) => {
+const CommentForm = ({ existingComment, leadId, onClose, submit, setColor, size = "medium" }: CommentFormProps) => {
 
     const defaultValues = useMemo(() => ({
         lead_id: leadId,
         content: existingComment?.content,
+        color: existingComment?.color ?? "secondary"
     }), [existingComment, leadId])
 
-    const { register, handleSubmit, reset, setError, formState: { errors } } = useForm<LeadCommentPost>({ defaultValues })
+    const { control, register, handleSubmit, reset, setError, formState: { errors } } = useForm<LeadCommentPost>({ defaultValues })
 
     const onSubmit = ((data: LeadCommentPost) => {
-        submit(data).then(() => {
-            reset(defaultValues)
-            onClose()
-        })
+        submit(data)
+            .then(() => {
+                reset(defaultValues)
+                if (onClose) onClose()
+            })
             .catch(e => setFormErrors(e, setError))
     })
 
-    return < form onSubmit={handleSubmit(onSubmit)} >
-        <Grid container spacing={2} alignItems="center" justifyContent="end">
-            <Grid size="grow" minWidth="15rem">
-                <RegisteredTextInput register={register} name={"content"} label="Comentario" errorMessage={errors.content?.message} multiline />
-            </Grid>
-            <Grid size="auto">
-                <Button variant="contained" color="primary" type="submit">Guardar Comentario</Button>
-            </Grid>
-        </Grid>
-    </form >
+    return (
+        < form onSubmit={handleSubmit(onSubmit)} >
+            <Grid container spacing=".5rem" alignItems="center" justifyContent="end">
+                <Grid size={12}>
+                    <RegisteredTextInput register={register} name={"content"} label="Comentario"
+                        errorMessage={errors.content?.message} size={size} multiline />
+                </Grid>
+                <Grid container size="grow" spacing=".5rem" direction="row" alignItems="space-between" justifyContent="space-between">
+                    <Grid size="auto">
+                        <CommentColorSelector control={control} setColor={setColor} />
+                    </Grid>
+                    <Grid size="auto" sx={{ ml: "auto" }}>
+                        <CommonButton actionType="SAVE" variant="contained" color="primary" type="submit" size={size}>Guardar</CommonButton>
+                    </Grid>
+                </Grid>
+            </Grid >
+        </form >
+    )
 }
 
-const CommentColorSelector = ({ commentColor, setCommentColor }: { commentColor: string, setCommentColor: React.Dispatch<React.SetStateAction<string>> }) => {
+interface CommentColorSelectorProps {
+    control: Control<LeadCommentPost>,
+    setColor?: React.Dispatch<React.SetStateAction<ColorTypes>>
+}
+
+const CommentColorSelector = ({ control, setColor }: CommentColorSelectorProps) => {
 
     const COLORS: ColorTypes[] = ["primary", "secondary", "contrast", "info", "success", "warning", "error"]
     const { palette } = useTheme()
     return (
-        <Stack direction="row" justifyContent="end" width="100%">
-            {COLORS.map(color => {
-                const paletteColor: PaletteColor = palette[color]
-                return <IconButton size="small" key={color} onClick={() => setCommentColor(color)}>
-                    <CircleIcon sx={{
-                        color: commentColor === color ? paletteColor.main : paletteColor.light,
-                        borderRadius: "50%",
-                        border: commentColor === color ? "2px solid gray" : ""
-                    }} fontSize="small" />
-                </IconButton>
-            })
-            }
-        </Stack>
+        <Controller control={control} name="color"
+            render={({ field, fieldState }) => (
+                <Stack direction="row" justifyContent="end" width="100%">
+                    {fieldState.error?.message && typeof fieldState.error?.message === "string" && (
+                        <FormErrorMessage>{fieldState.error?.message}</FormErrorMessage>
+                    )}
+                    {COLORS.map(colorName => {
+                        const paletteColor: PaletteColor = palette[colorName]
+                        return <IconButton size="small" key={colorName}
+                            onClick={() => {
+                                field.onChange(colorName)
+                                if (setColor) setColor(colorName)
+                            }}>
+                            <CircleIcon sx={{
+                                color: field.value === colorName ? paletteColor.main : paletteColor.light,
+                                borderRadius: "50%",
+                                border: field.value === colorName ? "2px solid gray" : ""
+                            }} fontSize="small" />
+                        </IconButton>
+                    })
+                    }
+                </Stack>
+            )}
+        />
+
     )
 }

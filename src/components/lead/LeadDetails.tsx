@@ -7,7 +7,7 @@ import { disableLead, enableLead, getLead } from "./leadService.ts"
 import DOMPurify from 'dompurify';
 import Markdown from 'react-markdown'
 import { Link as RouterLink, useNavigate, useParams } from "react-router-dom"
-import { Accordion, AccordionDetails, AccordionSummary, Box, Container, Divider, Grid, Paper, Typography, Button, Link, Rating, Slider, ButtonGroup } from "@mui/material"
+import { Accordion, AccordionDetails, AccordionSummary, Box, Container, Divider, Grid, Paper, Typography, Button, Link, Rating, Slider, ButtonGroup, Stack } from "@mui/material"
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
@@ -89,11 +89,13 @@ export const LeadDetails = () => {
                         </Box>
                     }
                 </Grid>
-                <Grid size="grow" minWidth="20rem">
-                    <Paper sx={{ minHeight: "100%", p: 2, borderRadius: "1em" }}>
-                        <Typography variant="h2">Actividades</Typography>
-                        <LeadActivities leadId={Number(id)} />
-                    </Paper>
+                <Grid size="grow" minWidth="20rem" component={Paper} sx={{p: 2, borderRadius: "1em" }} >
+                        <Stack height="100%" gap="1.5rem">
+                            <Typography variant="h2">Actividades</Typography>
+                            <Stack height="100%" gap="1rem">
+                                <LeadActivities leadId={Number(id)} />
+                            </Stack>
+                        </Stack>
                 </Grid>
             </Grid >
         </Container >
@@ -174,20 +176,20 @@ export const LeadFieldByType = ({ fieldValue, value, type, modalProps, template 
 
     const idModal = useId()
 
-        if (template) {
-            switch (template) {
-                case "INSTAGRAM_USER":
-                    return <Link sx={{ paddingLeft: ".5rem" }} href={`https://instagram.com/${value?.substring(1)}`} target="_blank" rel="noopener">
-                        {value}
-                    </Link>
-                case "POSTAL_CODE":
-                    return <Link sx={{ paddingLeft: ".5rem" }} href={`https://www.google.com/maps/search/${value.replaceAll(" ", "+")}`} target="_blank" rel="noopener">
-                        {value}
-                    </Link>
-                case "CREDIT_CARD_SIMPLE":
-                    return <CardField value={value} />
-            }
+    if (template) {
+        switch (template) {
+            case "INSTAGRAM_USER":
+                return <Link sx={{ paddingLeft: ".5rem" }} href={`https://instagram.com/${value?.substring(1)}`} target="_blank" rel="noopener">
+                    {value}
+                </Link>
+            case "POSTAL_CODE":
+                return <Link sx={{ paddingLeft: ".5rem" }} href={`https://www.google.com/maps/search/${value.replaceAll(" ", "+")}`} target="_blank" rel="noopener">
+                    {value}
+                </Link>
+            case "CREDIT_CARD_SIMPLE":
+                return <CardField value={value} />
         }
+    }
     switch (type) {
         case "FILE":
             return <Link sx={{ paddingLeft: ".5rem" }} href={`${value}`} target="_blank" rel="noopener">
