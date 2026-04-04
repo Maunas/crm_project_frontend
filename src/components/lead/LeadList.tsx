@@ -26,9 +26,9 @@ export const LeadList = () => {
     const { fetchPage, pageComponentProps } = useListPagination(leads)
 
     useEffect(() => {
-        getLeads({ page: fetchPage, ...filters }).then(setLeads)
-        /* eslint-disable-next-line react-hooks/exhaustive-deps */
-    }, [fetchPage])
+        if (!campaignId) return
+        fetchLeads(fetchPage, filters, headers)
+    }, [campaignId, fetchPage, refresh])
 
     const { control, handleSubmit } = useForm<LeadListParams>({
         defaultValues: { workspace_id: filters.workspace_id, campaign_id: filters.campaign_id, only_active: filters.only_active, page_size: filters.page_size }
@@ -55,51 +55,60 @@ export const LeadList = () => {
         <Stack spacing={2}>
             <Grid container justifyContent="space-between" alignItems="center">
                 <Typography variant="h1">Lista de Leads</Typography>
-                <Grid>
-                    <Button variant="contained" color="primary" component={RouterLink} to="/leads/new">
-                        Crear Lead
-                    </Button>
-                </Grid>
+                {leads && leads.items.length > 0 &&
+                    <CommonButton actionType='CREATE' variant="contained" color="primary" sx={{ marginLeft: "auto" }}
+                        component={RouterLink} to="/leads/new">
+                        Agregar Lead
+                    </CommonButton>}
             </Grid>
-            <Accordion disableGutters sx={{ boxShadow: "none", border: "1px solid gray" }}>
-                <AccordionSummary sx={{ height: "64px" }}
-                    expandIcon={<ArrowDropDownIcon />}
-                    aria-controls="filter-content" id="filter-header"
-                >
-                    <Typography variant="h2" >Filtros</Typography>
-                </AccordionSummary>
-                <AccordionDetails sx={{ paddingTop: 0 }}>
-
-                    <form >
-                        <Grid container direction="column" spacing={2} alignItems="flex-end">
-                            <Grid container size="grow" spacing={2}>
-                                <Grid size="grow" minWidth="20rem">
-                                    <ControlledAutocomplete name='workspace_id' control={control} options={workspaces ?? []}
-                                        getOptionLabel={o => o.name!} getOptionKey={o => `${o.id}`} label='Workspace' returnField="id" disableClearable />
-                                </Grid>
-                                <Grid size="grow" minWidth="20rem">
-                                    <ControlledAutocomplete name='campaign_id' control={control} options={campaigns?.filter(c => c.workspace_id === selectedWorkspace) ?? []}
-                                        getOptionLabel={o => o.name!} getOptionKey={o => `${o.id}`} label='Campaña' returnField="id"
-                                        disabled={!selectedWorkspace} disableClearable />
-                                </Grid>
-                                <Grid size="grow" minWidth="20rem">
-                                    <ControlledCheckbox control={control} name="only_active" label="Mostrar sólo Leads habilitados" />
-                                </Grid>
-                                <Grid size="grow" minWidth="20rem">
-                                    <ControlledNumber control={control} name="page_size" label="Items por página" min={5} step={5} />
-                                </Grid>
-                            </Grid>
-                            <Button variant="contained" color="secondary" onClick={handleSubmit(applyFilters)}>
-                                Aplicar Filtros
-                            </Button>
+            <Stack gap={2}>
+                <Grid container alignItems="center" justifyContent="space-between" gap={2}>
+                    <Grid container alignItems="center" gap={1}>
+                        <Autocomplete {...autocompleteCommonProps(workspaces, "Espacio de Trabajo")}
+                            value={Number(workspaceId)} onChange={(_, val) => setWorkspaceId(val)}
+                        />
+                        <ArrowForwardIcon />
+                        <Autocomplete {...autocompleteCommonProps(campaigns, "Campaña")}
+                            value={Number(campaignId)} onChange={(_, val) => setCampaignId(val)}
+                            disabled={!workspaceId}
+                        />
+                    </Grid>
+                    <Grid container alignItems="center" spacing={1} sx={{ marginLeft: 'auto' }}>
+                        <Grid sx={{ marginLeft: 'auto' }}>
+                            {
+                                leads && leads?.items?.length > 0 && !!campaignId &&
+                                <CommonButton actionType='OPTIONS' color='secondary' onClick={() => modalProps.handleOpen("columns_selector")} >
+                                    Modificar Columnas
+                                </CommonButton>
+                            }
                         </Grid>
-                    </form>
-                </AccordionDetails>
-            </Accordion>
-            {leads && leads?.items?.length > 0 && filters.campaign_id &&
-                <LeadTable leads={leads.items} campaignId={filters.campaign_id} />
-            }
-            <PaginationComponent {...pageComponentProps} />
+                        <Grid sx={{ marginLeft: 'auto' }}>
+                            {leads && leads.items.length > 0 &&
+                                <Badge badgeContent={filters.length} color="success">
+                                    <CommonButton actionType="FILTER" color="secondary" onClick={() => modalProps.handleOpen("lead_filters")}>
+                                        Aplicar Filtros
+                                    </CommonButton>
+                                </Badge>}
+                            <GenericModal idModal="lead_filters" modalProps={modalProps} buttonText="Aplicar Filtros" maxWidth="lg"
+                                actionType='FILTER' color='secondary' showButton={false} >
+                                <LeadFilters applyFilters={applyFilters} filters={{ filters, headers }} campaignId={Number(campaignId)}
+                                    onClose={() => modalProps.handleClose()} />
+                            </GenericModal>
+                        </Grid>
+                    </Grid>
+                </Grid> 
+                {
+                    leads && !!campaignId ?
+                        <LeadListTable leads={leads.items} campaignId={Number(campaignId)} modalProps={modalProps}
+                            activeFilters={filters.length} orderList={orderList} />
+                        :
+                        <Stack gap={3} alignItems="center" my={3}>
+                            <Typography variant="h3">No hay leads para presentar</Typography>
+                            <Typography variant="h4">Revisa que haya una campaña seleccionada</Typography>
+                        </Stack>
+                }
+                <PaginationComponent {...pageComponentProps} />
+            </Stack >
         </Stack>
     )
 }
