@@ -9,7 +9,7 @@ import { createFormDataFromLead, getLeads, getSelectorField, setLeadFormErrors, 
 import { getLeadFields } from "../leadFields/leadFieldServices"
 import { getNomenclatorItems } from "../nomenclators/nomenclatorService"
 import { useFieldArray, useForm, type Control, type Path, type UseFormRegister } from "react-hook-form"
-import { Grid, ButtonGroup } from "@mui/material"
+import { Grid, ButtonGroup, Stack } from "@mui/material"
 import { CommonButton } from "../common/details/DetailsCommonButton"
 
 //Para permitir mantener los datos de cada campo
@@ -120,8 +120,8 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
     return (
         <form onSubmit={handleSubmit(submit)}>
             <input type="text" {...register("campaign_id", { setValueAs: value => (value === "" || !value) ? null : Number(value) })} hidden />
-            <Grid container spacing={2}>
-                <Grid container spacing={1}>
+            <Stack gap={2}>
+                <Grid container gap={1}>
                     {campaignId &&
                         fields.map((field, idx) =>
                             <Grid size="grow" alignItems="center" minWidth="20rem" key={field.id}>
@@ -134,13 +134,13 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
                 </Grid>
                 {errors.root &&
                     <FormErrorMessage>{errors.root.message}</FormErrorMessage>}
-                <ButtonGroup sx={{ marginLeft: "auto" }}>
+                <ButtonGroup sx={{ marginLeft: "auto", }}>
                     {onCancel && <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel} >Cancelar</CommonButton>}
                     {campaignId &&
                         <CommonButton actionType={existingValues ? "MODIFY" : "CREATE"}
                             type="submit" variant="contained">{submitBtnLabel}</CommonButton>}
                 </ButtonGroup>
-            </Grid>
+            </Stack>
         </form>
     )
 }

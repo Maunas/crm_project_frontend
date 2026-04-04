@@ -6,10 +6,13 @@ import type { LeadField, LeadFieldValue } from "../../types/leadFields"
 import type { Lead } from "../../types/leads"
 import { useDragAndDrop } from "../hooks/useDragAndDrop"
 import { getLeadFields } from "../leadFields/leadFieldServices"
-import { useNavigate } from "react-router-dom"
-import { Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, useTheme, ButtonGroup, Badge } from "@mui/material"
-import { lighten } from "@mui/material/styles"
+import { Link, useNavigate } from "react-router-dom"
+import { Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, useTheme, ButtonGroup, Badge, IconButton } from "@mui/material"
+import { alpha, lighten } from "@mui/material/styles"
 import { CommonButton } from "../common/details/DetailsCommonButton"
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import { useOrderList } from "../hooks/useOrderList"
 
 interface LeadListTableProps {
     leads: Lead[],
@@ -19,10 +22,14 @@ interface LeadListTableProps {
         handleOpen: (idModal: string | number) => void;
         handleClose: () => void;
     },
-    activeFilters: number
+    activeFilters: number,
+    orderList: (
+        fieldId: number | string | null,
+        ascending: boolean
+    ) => void,
 }
 
-export const LeadListTable = ({ leads, campaignId, activeFilters = 0, modalProps }: LeadListTableProps) => {
+export const LeadListTable = ({ leads, campaignId, activeFilters = 0, orderList, modalProps }: LeadListTableProps) => {
 
     const DEFAULT_N_OF_FIELDS = 6
     const nav = useNavigate()
@@ -91,6 +98,8 @@ export const LeadListTable = ({ leads, campaignId, activeFilters = 0, modalProps
 
     const { dragStyles, dragEvents } = useDragAndDrop(selectedIds, (items) => setSelectedIds(items))
 
+    const { orderBy, ascending, handleOrderList } = useOrderList(orderList)
+
     //Si hay leads, pero no hay columnas seleccionadas
     if (selectedColumns?.length === 0 && leads.length > 0) return (
         <Stack gap={3} my={3} alignItems="center">
@@ -116,7 +125,7 @@ export const LeadListTable = ({ leads, campaignId, activeFilters = 0, modalProps
                 </Typography>
             </Stack>
             <ButtonGroup >
-                <CommonButton actionType="CREATE" color="primary" >
+                <CommonButton actionType="CREATE" color="primary" component={Link} to="/leads/new">
                     Agregar Lead
                 </CommonButton>
                 {activeFilters > 0 &&
@@ -141,7 +150,7 @@ export const LeadListTable = ({ leads, campaignId, activeFilters = 0, modalProps
                         <TableHead>
                             <TableRow>
                                 {selectedColumns.map((column, idx) =>
-                                    <TableCell align={idx > 1 ? "right" : "left"} key={column.id}
+                                    <TableCell align="left" key={column.id}
                                         {...dragEvents(idx, false)}
                                         sx={{
                                             fontWeight: 600,
@@ -149,6 +158,29 @@ export const LeadListTable = ({ leads, campaignId, activeFilters = 0, modalProps
                                         }}
                                     >
                                         {column.name}
+                                        <IconButton size="small" onClick={() => handleOrderList(column.id)}
+                                            sx={{
+                                                backgroundColor: orderBy === column.id ? alpha(palette.secondary.light, .7) : "none",
+                                                color: orderBy === column.id ? palette.secondary.contrastText : palette.text.primary,
+                                                marginInlineStart: ".5rem",
+                                                "&:hover": {
+                                                    backgroundColor: palette.secondary.main,
+                                                    color: palette.secondary.contrastText
+                                                }
+                                            }}
+                                        >
+                                            {orderBy !== column.id &&
+                                                <ArrowUpwardIcon />
+                                            }
+                                            {orderBy === column.id &&
+
+                                                (ascending ?
+                                                    <ArrowUpwardIcon />
+                                                    :
+                                                    <ArrowDownwardIcon />
+                                                )
+                                            }
+                                        </IconButton>
                                     </TableCell>
                                 )
                                 }
@@ -159,13 +191,13 @@ export const LeadListTable = ({ leads, campaignId, activeFilters = 0, modalProps
                                 <TableRow onClick={() => nav(`/leads/${lead.id}`)} className='selectable'
                                     key={lead.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                                 >
-                                    {selectedColumns.map((column, idx) => {
+                                    {selectedColumns.map((column) => {
                                         const leadValue = lead.field_values.find(lv => lv.field_id === column.id)
                                         //Si no se encuentra, no hay valor
-                                        if (!leadValue) return <TableCell component="td" scope="row" align={idx === 0 ? "left" : "right"} key={`${lead.id}-${column.id}`}>---</TableCell>
+                                        if (!leadValue) return <TableCell component="td" scope="row" align="left" key={`${lead.id}-${column.id}`}>---</TableCell>
                                         //Si es el primer elemento, nombre completo
                                         else return (
-                                            <TableCell component="td" scope="row" align={idx > 1 ? "right" : "left"} key={`${lead.id}-${column.id}`}>{getValue(leadValue)}</TableCell>
+                                            <TableCell component="td" scope="row" align="left" key={`${lead.id}-${column.id}`}>{getValue(leadValue)}</TableCell>
                                         )
                                     })
                                     }
