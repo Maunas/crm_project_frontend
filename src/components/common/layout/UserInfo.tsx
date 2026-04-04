@@ -1,4 +1,4 @@
-import { Avatar, Box, Button, Divider, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Stack, Typography } from '@mui/material'
+import { Avatar, Box, Button, Divider, FormControlLabel, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Stack, Typography } from '@mui/material'
 import MoreIcon from '@mui/icons-material/More';
 import React from 'react'
 import { AccountCircle, Check } from '@mui/icons-material';
@@ -6,10 +6,20 @@ import type { UserContextItems } from '../../users/UserProvider';
 import { UserContext } from '../contexts';
 import { Link } from 'react-router-dom';
 import theme from '../../../theme/theme';
+import { MaterialUISwitch } from './ThemeSlider';
+import { useColorScheme, useTheme } from '@mui/material/styles';
 
 export const UserInfo = () => {
 
     const { user, logout, activeOrganizations, selectedOrg, setSelectedOrg } = React.useContext<UserContextItems>(UserContext)
+
+    const { setMode } = useColorScheme();
+    const { palette } = useTheme();
+
+    const handleMode = (darkMode: boolean) => {
+        if (darkMode) return setMode("dark")
+        else setMode("light")
+    }
 
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -67,7 +77,13 @@ export const UserInfo = () => {
                 })
             }
             <Divider />
-
+            <MenuItem >
+                <FormControlLabel sx={{width:"9rem"}}
+                    control={<MaterialUISwitch checked={palette.mode === "dark"}
+                    onChange={(_, checked) => handleMode(checked)} />}
+                    label={palette.mode === "dark" ? "Modo Oscuro" : "Modo Claro"}
+                />
+            </MenuItem>
             <MenuItem dense onClick={() => logout()} sx={{ "&:hover": { color: theme.palette.error.main } }}>
                 <ListItemText>
                     Cerrar Sesión

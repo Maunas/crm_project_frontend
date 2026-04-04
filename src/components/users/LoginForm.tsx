@@ -44,7 +44,7 @@ const LoginForm = ({ submit, onCancel }: LoginFormProps) => {
   }
 
   return (
-    <form>
+    <form onSubmit={handleSubmit(onSubmit)}>
       <Stack gap={3}>
         <Typography variant="h1" textAlign="center">
           CRM
@@ -73,7 +73,7 @@ const LoginForm = ({ submit, onCancel }: LoginFormProps) => {
               <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel} fullWidth>
                 Cancelar
               </CommonButton>
-              <CommonButton actionType="LOGIN" variant="contained" onClick={handleSubmit(onSubmit)} fullWidth>
+              <CommonButton actionType="LOGIN" variant="contained" type="submit" fullWidth>
                 Iniciar Sesión
               </CommonButton>
             </ButtonGroup>
