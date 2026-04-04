@@ -47,6 +47,7 @@ export const LeadList = () => {
     }
 
     useEffect(() => {
+        if (!campaignId) return
         fetchLeads(fetchPage, filters, headers)
     }, [campaignId, fetchPage, refresh])
 
@@ -156,11 +157,16 @@ export const LeadList = () => {
                             </GenericModal>
                         </Grid>
                     </Grid>
-                </Grid>
+                </Grid> 
                 {
-                    leads && !!campaignId &&
-                    <LeadListTable leads={leads.items} campaignId={Number(campaignId)} modalProps={modalProps}
-                        activeFilters={filters.length} orderList={orderList} />
+                    leads && !!campaignId ?
+                        <LeadListTable leads={leads.items} campaignId={Number(campaignId)} modalProps={modalProps}
+                            activeFilters={filters.length} orderList={orderList} />
+                        :
+                        <Stack gap={3} alignItems="center" my={3}>
+                            <Typography variant="h3">No hay leads para presentar</Typography>
+                            <Typography variant="h4">Revisa que haya una campaña seleccionada</Typography>
+                        </Stack>
                 }
                 <PaginationComponent {...pageComponentProps} />
             </Stack >

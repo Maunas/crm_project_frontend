@@ -115,13 +115,13 @@ export const LeadListTable = ({ leads, campaignId, activeFilters = 0, orderList,
             </CommonButton>
         </Stack>
     )
-
+ 
     if (leads.length === 0) return (
         <Stack gap={3} my={3} alignItems="center">
             <Stack gap={2} alignItems="center">
-                <Typography variant="h3">No hay leads para presentar.</Typography>
+                <Typography variant="h3">No hay leads para presentar</Typography>
                 <Typography variant="h4">Agrega un lead nuevo
-                    {activeFilters > 0 && " o revisa los filtros activos."}
+                    {activeFilters > 0 && " o revisa los filtros activos"}
                 </Typography>
             </Stack>
             <ButtonGroup >
