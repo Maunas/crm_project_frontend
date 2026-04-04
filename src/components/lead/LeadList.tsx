@@ -105,8 +105,8 @@ export const LeadList = () => {
         renderInput: (params: AutocompleteRenderInputParams) => <TextField {...params} label={label} />
     })
 
-    const orderList = (fieldId: number | null, ascending: boolean) => {
-        const newHeaders = fieldId ? { ...headers, order_by: fieldId, ascending } : { ...headers, order_by: null }
+    const orderList = (fieldId: number | string | null, ascending: boolean) => {
+        const newHeaders = { ...headers, order_by: fieldId, ascending }
         setHeaders(newHeaders)
         fetchLeads(leads?.page ?? 1, filters, newHeaders)
     }
@@ -160,7 +160,7 @@ export const LeadList = () => {
                 {
                     leads && !!campaignId &&
                     <LeadListTable leads={leads.items} campaignId={Number(campaignId)} modalProps={modalProps}
-                        activeFilters={filters.length} headers={headers} orderList={orderList}/>
+                        activeFilters={filters.length} orderList={orderList} />
                 }
                 <PaginationComponent {...pageComponentProps} />
             </Stack >

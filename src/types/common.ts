@@ -32,7 +32,9 @@ export interface ListParams {
   only_active?: boolean,
   detailed?: boolean,
   page?: number,
-  page_size?: number
+  page_size?: number,
+  order_by?: number | string | null,
+  ascending?: boolean
 }
 export interface WorkspaceParams extends ListParams {
   organization_id?: number
@@ -41,9 +43,7 @@ export interface CampaignParams extends ListParams {
   workspace_id?: number
 }
 export interface LeadListParams extends ListParams {
-  campaign_id?: number,
-  order_by?: number | null,
-  ascending?: boolean
+  campaign_id?: number
 }
 
 /**

@@ -6,13 +6,13 @@ import type { LeadField, LeadFieldValue } from "../../types/leadFields"
 import type { Lead } from "../../types/leads"
 import { useDragAndDrop } from "../hooks/useDragAndDrop"
 import { getLeadFields } from "../leadFields/leadFieldServices"
-import { useNavigate } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, useTheme, ButtonGroup, Badge, IconButton } from "@mui/material"
 import { alpha, lighten } from "@mui/material/styles"
 import { CommonButton } from "../common/details/DetailsCommonButton"
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
-import type { LeadListParams } from "../../types/common"
+import { useOrderList } from "../hooks/useOrderList"
 
 interface LeadListTableProps {
     leads: Lead[],
@@ -24,13 +24,12 @@ interface LeadListTableProps {
     },
     activeFilters: number,
     orderList: (
-        fieldId: number | null,
+        fieldId: number | string | null,
         ascending: boolean
     ) => void,
-    headers: LeadListParams
 }
 
-export const LeadListTable = ({ leads, campaignId, activeFilters = 0, orderList, headers, modalProps }: LeadListTableProps) => {
+export const LeadListTable = ({ leads, campaignId, activeFilters = 0, orderList, modalProps }: LeadListTableProps) => {
 
     const DEFAULT_N_OF_FIELDS = 6
     const nav = useNavigate()
@@ -99,15 +98,7 @@ export const LeadListTable = ({ leads, campaignId, activeFilters = 0, orderList,
 
     const { dragStyles, dragEvents } = useDragAndDrop(selectedIds, (items) => setSelectedIds(items))
 
-
-
-    //Ascendente -> Descendente -> Sin orden
-    const handleOrderList = (fieldId: number | null) => {
-        if (headers.order_by !== fieldId) return orderList(fieldId, true)
-        if (headers.ascending) return orderList(fieldId, false)
-
-        orderList(null, true)
-    }
+    const { orderBy, ascending, handleOrderList } = useOrderList(orderList)
 
     //Si hay leads, pero no hay columnas seleccionadas
     if (selectedColumns?.length === 0 && leads.length > 0) return (
@@ -134,7 +125,7 @@ export const LeadListTable = ({ leads, campaignId, activeFilters = 0, orderList,
                 </Typography>
             </Stack>
             <ButtonGroup >
-                <CommonButton actionType="CREATE" color="primary" >
+                <CommonButton actionType="CREATE" color="primary" component={Link} to="/leads/new">
                     Agregar Lead
                 </CommonButton>
                 {activeFilters > 0 &&
@@ -159,37 +150,37 @@ export const LeadListTable = ({ leads, campaignId, activeFilters = 0, orderList,
                         <TableHead>
                             <TableRow>
                                 {selectedColumns.map((column, idx) =>
-                                    <TableCell align={idx > 1 ? "right" : "left"} key={column.id}
+                                    <TableCell align="left" key={column.id}
                                         {...dragEvents(idx, false)}
                                         sx={{
                                             fontWeight: 600,
                                             ...dragStyles(idx, "row")
                                         }}
                                     >
-                                        <Stack direction="row" gap={1} alignItems="center">
-                                            {column.name}
-                                            {headers.order_by !== column.id &&
-                                                <IconButton size="small" onClick={() => handleOrderList(column.id)}>
+                                        {column.name}
+                                        <IconButton size="small" onClick={() => handleOrderList(column.id)}
+                                            sx={{
+                                                backgroundColor: orderBy === column.id ? alpha(palette.secondary.light, .7) : "none",
+                                                color: orderBy === column.id ? palette.secondary.contrastText : palette.text.primary,
+                                                marginInlineStart: ".5rem",
+                                                "&:hover": {
+                                                    backgroundColor: palette.secondary.main,
+                                                    color: palette.secondary.contrastText
+                                                }
+                                            }}
+                                        >
+                                            {orderBy !== column.id &&
+                                                <ArrowUpwardIcon />
+                                            }
+                                            {orderBy === column.id &&
+
+                                                (ascending ?
                                                     <ArrowUpwardIcon />
-                                                </IconButton>
+                                                    :
+                                                    <ArrowDownwardIcon />
+                                                )
                                             }
-                                            {headers.order_by === column.id &&
-                                                <IconButton size="small" onClick={() => handleOrderList(column.id)}
-                                                    sx={{
-                                                        backgroundColor: alpha(palette.secondary.light, .7),
-                                                        color: palette.secondary.contrastText,
-                                                        "&:hover": {
-                                                            backgroundColor: palette.secondary.main,
-                                                        }
-                                                    }}>
-                                                    {(headers.ascending ?
-                                                        <ArrowUpwardIcon />
-                                                        :
-                                                        <ArrowDownwardIcon />
-                                                    )}
-                                                </IconButton>
-                                            }
-                                        </Stack>
+                                        </IconButton>
                                     </TableCell>
                                 )
                                 }
@@ -200,13 +191,13 @@ export const LeadListTable = ({ leads, campaignId, activeFilters = 0, orderList,
                                 <TableRow onClick={() => nav(`/leads/${lead.id}`)} className='selectable'
                                     key={lead.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                                 >
-                                    {selectedColumns.map((column, idx) => {
+                                    {selectedColumns.map((column) => {
                                         const leadValue = lead.field_values.find(lv => lv.field_id === column.id)
                                         //Si no se encuentra, no hay valor
-                                        if (!leadValue) return <TableCell component="td" scope="row" align={idx === 0 ? "left" : "right"} key={`${lead.id}-${column.id}`}>---</TableCell>
+                                        if (!leadValue) return <TableCell component="td" scope="row" align="left" key={`${lead.id}-${column.id}`}>---</TableCell>
                                         //Si es el primer elemento, nombre completo
                                         else return (
-                                            <TableCell component="td" scope="row" align={idx > 1 ? "right" : "left"} key={`${lead.id}-${column.id}`}>{getValue(leadValue)}</TableCell>
+                                            <TableCell component="td" scope="row" align="left" key={`${lead.id}-${column.id}`}>{getValue(leadValue)}</TableCell>
                                         )
                                     })
                                     }
