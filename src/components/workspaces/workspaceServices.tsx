@@ -1,7 +1,7 @@
 import axios from "axios"
-import { API_BASE_URL } from "../../generalService"
-import type { ListParams, Paginable, WorkspaceParams } from "../../types/common"
+import type { DeleteResponse, EnableResponse, ListParams, Paginable, WorkspaceParams } from "../../types/common"
 import type { Organization, OrganizationDetailed, OrganizationPost, Workspace, WorkspaceDetailed, WorkspacePost } from "../../types/campaigns"
+import { API_BASE_URL, axiosCRM } from "../../generalService"
 
 /**************************** Organizations ****************************/
 //Multitipo en Typescript. Se crea un tipo T a partir de Params, si T["detailed"] es verdadero, da el tipo Detailed.
@@ -9,6 +9,10 @@ export const getOrganizations = async<T extends ListParams>(params?: T):
     Promise<Paginable<
         T["detailed"] extends true ? OrganizationDetailed : Organization>> => {
     const org = await axios.get(`${API_BASE_URL}/organizations`, { params })
+    return org.data
+}
+export const getOrganization = async (id: number): Promise<OrganizationDetailed> => {
+    const org = await axios.get(`${API_BASE_URL}/organizations/${id}`)
     return org.data
 }
 export const createOrganization = async (body: OrganizationPost): Promise<OrganizationDetailed> => {
@@ -19,11 +23,11 @@ export const updateOrganization = async (body: OrganizationPost, id: number): Pr
     const org = await axios.put(`${API_BASE_URL}/organizations/${id}`, body)
     return org.data
 }
-export const disableOrganization = async (id: number): Promise<{ action: string }> => {
+export const disableOrganization = async (id: number): Promise<DeleteResponse> => {
     const org = await axios.delete(`${API_BASE_URL}/organizations/${id}`)
     return org.data
 }
-export const enableOrganization = async (id: number): Promise<{ actived: boolean }> => {
+export const enableOrganization = async (id: number): Promise<EnableResponse> => {
     const org = await axios.put(`${API_BASE_URL}/organizations/active/${id}`)
     return org.data
 }
@@ -31,27 +35,27 @@ export const enableOrganization = async (id: number): Promise<{ actived: boolean
 export const getWorkspaces = async<T extends WorkspaceParams>(params?: T):
     Promise<Paginable<
         T["detailed"] extends true ? WorkspaceDetailed : Workspace>> => {
-    const wsp = await axios.get(`${API_BASE_URL}/workspaces`, { params })
+    const wsp = await axiosCRM.get(`${API_BASE_URL}/workspaces`, { params })
     return wsp.data
 }
 export const getWorkspace = async (id: number): Promise<WorkspaceDetailed> => {
-    const wsp = await axios.get(`${API_BASE_URL}/workspaces/${id}`)
+    const wsp = await axiosCRM.get(`${API_BASE_URL}/workspaces/${id}`)
     return wsp.data
 }
 export const createWorkspace = async (body: WorkspacePost): Promise<WorkspaceDetailed> => {
-    const wsp = await axios.post(`${API_BASE_URL}/workspaces`, body)
+    const wsp = await axiosCRM.post(`workspaces`, body)
     return wsp.data
 }
 export const updateWorkspace = async (body: WorkspacePost, id: number): Promise<WorkspaceDetailed> => {
-    const wsp = await axios.put(`${API_BASE_URL}/workspaces/${id}`, body)
+    const wsp = await axiosCRM.put(`workspaces/${id}`, body)
     return wsp.data
 }
 
-export const disableWorkspace = async (id: number): Promise<{ action: string }> => {
-    const org = await axios.delete(`${API_BASE_URL}/workspaces/${id}`)
+export const disableWorkspace = async (id: number): Promise<DeleteResponse> => {
+    const org = await axiosCRM.delete(`${API_BASE_URL}/workspaces/${id}`)
     return org.data
 }
-export const enableWorkspace = async (id: number): Promise<{ actived: boolean }> => {
-    const org = await axios.put(`${API_BASE_URL}/workspaces/active/${id}`)
+export const enableWorkspace = async (id: number): Promise<EnableResponse> => {
+    const org = await axiosCRM.put(`${API_BASE_URL}/workspaces/active/${id}`)
     return org.data
 }

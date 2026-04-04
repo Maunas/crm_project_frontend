@@ -10,23 +10,24 @@ interface GenericContainerProps {
     paperSx?: object
 }
 
-export const GenericContainer = ({ children, maxWidth = "lg", containerSx = {}, paperSx = {}, ...props }: GenericContainerProps) => {
-
-    return (
-        <Container sx={{ ...containerSx }} maxWidth={maxWidth} {...props}>
-            <Paper sx={{ paddingInline: 4, paddingBlock: 2, width: "100%", ...paperSx }}>
-                {children}
-            </Paper>
-        </Container>
-    )
-}
 
 export const GenericPaper = ({ children, paperSx = {}, ...props }: GenericContainerProps) => {
 
     return (
-        <Paper sx={{ paddingInline: 5, paddingBlock: 3, width: "100%", ...paperSx }} {...props}>
+        <Paper sx={{ paddingInline: 4, paddingBlock: 3, width: "100%", ...paperSx }} {...props}>
             {children}
         </Paper>
+    )
+}
+
+export const GenericContainer = ({ children, maxWidth = "lg", containerSx = {}, paperSx = {}, ...props }: GenericContainerProps) => {
+
+    return (
+        <Container sx={{ ...containerSx }} maxWidth={maxWidth} {...props}>
+            <GenericPaper paperSx={paperSx}>
+                {children}
+            </GenericPaper>
+        </Container>
     )
 }
 
@@ -37,15 +38,20 @@ interface GenericModalProps extends GenericContainerProps, ComponentProps<typeof
         handleOpen: (idModal: string | number) => void,
         handleClose: () => void
     },
-    idModal: string | number
+    idModal: string | number,
+    showButton?: boolean,
 }
 
-export const GenericModal = ({ idModal, modalProps: { open, handleOpen, handleClose },
-    buttonText, maxWidth = "lg", containerSx = {}, paperSx = {}, children, ...btnProps
+export const GenericModal = ({ idModal, modalProps: { open, handleOpen, handleClose }, showButton = true,
+    buttonText, maxWidth = "lg", containerSx = {}, paperSx = {}, children, actionType, ...btnProps
 }: GenericModalProps) => {
     return (
         <>
-            <CommonButton handleClick={() => handleOpen(idModal)} {...btnProps}>{buttonText}</CommonButton>
+            {showButton &&
+                <CommonButton handleClick={() => handleOpen(idModal)} actionType={actionType} {...btnProps}>
+                    {buttonText}
+                </CommonButton>
+            }
             <Modal
                 open={open === idModal}
                 onClose={handleClose}

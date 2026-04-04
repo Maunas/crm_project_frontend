@@ -1,53 +1,53 @@
-import { useEffect, useState } from 'react'
+import { useContext } from 'react'
 import { ContainerWithSidebar } from '../common/layout/GenericContainer'
-import { PaginationComponent } from '../common/lists/PaginationComponent'
+import { CommonButton, DisableButton } from '../common/details/DetailsCommonButton'
 import { EnabledIcon } from '../common/lists/Badges'
+import { CustomChip } from '../../theme/styledMUIDisplayComponents'
 import { OrganizationFormSidebar } from './OrganizationForm'
 import { useSidebar } from '../hooks/useSidebar'
-import { useListPagination } from '../hooks/useListPagination'
-import type { Paginable } from '../../types/common'
 import type { OrganizationDetailed } from '../../types/campaigns'
-import { disableOrganization, enableOrganization, getOrganizations } from '../workspaces/workspaceServices'
-import { Link } from 'react-router-dom'
-import dayjs from 'dayjs'
-import 'dayjs/locale/es'
-import { Button, ButtonGroup, Chip, Divider, Grid, IconButton, List, ListItem, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
+import { disableOrganization, enableOrganization, getOrganization } from '../workspaces/workspaceServices'
+import { UserContext } from '../common/contexts'
+import type { UserContextItems } from '../users/UserProvider'
+import { Link, useSearchParams } from 'react-router-dom'
+import { ButtonGroup, Divider, Grid, IconButton, List, ListItem, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
-import { CommonButton, DisableButton } from '../common/details/DetailsCommonButton'
+import dayjs from 'dayjs'
+import 'dayjs/locale/es'
 dayjs.locale('es')
 
 export const OrganizationList = () => {
-    const [organizations, setOrganizations] = useState<Paginable<OrganizationDetailed> | null>(null)
 
-    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<OrganizationDetailed>()
+    const [params, setParams] = useSearchParams()
 
-    const { fetchPage, pageSize, pageComponentProps } = useListPagination(organizations)
+    const { userOrganizations, selectedOrg, fetchOrganizations, updateOrganizations } = useContext<UserContextItems>(UserContext)
 
-    useEffect(() => {
-        getOrganizations({ detailed: true, page_size: pageSize, page: fetchPage, only_active: false }).then(setOrganizations)
-    }, [fetchPage, pageSize])
+    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<OrganizationDetailed>(params, setParams, getOrganization, "DETAILS_ORG", 'id')
 
     const updateEntityOnList = (newOrg: OrganizationDetailed, mode: string) => {
         switch (mode) {
             case "CREATE_ORG":
-                getOrganizations({ detailed: true, only_active: false, page_size: pageSize, page: organizations?.page ?? 1 })
-                    .then(setOrganizations)
+                fetchOrganizations()
                 break;
             case "UPDATE_ORG": {
-                if (!organizations) break
-                const newOrganizationsItems = [...organizations.items]
+                if (!userOrganizations) break
+                const newOrganizationsItems = [...userOrganizations]
                 const orgIdx = newOrganizationsItems.findIndex(org => org.id === newOrg.id)
                 if (orgIdx === -1) break
                 newOrganizationsItems[orgIdx] = newOrg
-                setOrganizations({ ...organizations, items: [...newOrganizationsItems] })
+                updateOrganizations(newOrganizationsItems)
                 break;
             }
             case "DELETE_ORG": {
-                getOrganizations({ detailed: true, only_active: false, page_size: pageSize, page: 1 })
-                    .then(setOrganizations)
+                if (selectedOrg?.id === newOrg.id) break
+                if (selectedEntity && newOrg.id === selectedEntity.id) closeSidebar()
+                if (!userOrganizations) break
+                const newOrganizationsItems = [...userOrganizations]
+                const filteredOrganizations = newOrganizationsItems.filter(org => org.id !== newOrg.id)
+                updateOrganizations(filteredOrganizations)
                 break;
             }
         }
@@ -68,8 +68,8 @@ export const OrganizationList = () => {
             }
         }
         if (org.active) {
+            if (selectedOrg?.id === org.id) return
             disableOrganization(org.id).then((res) => {
-                console.log(res.action)
                 if (res.action === "disabled") updateActive(org)
                 if (res.action === "deleted") deleteOrg(org)
             })
@@ -83,56 +83,58 @@ export const OrganizationList = () => {
             <OrganizationSidebar mode={sidebarMode} entity={selectedEntity} handleSidebar={handleSidebar}
                 closeSidebar={closeSidebar} updateEntityOnList={updateEntityOnList} handleActive={handleActive} />
         }>
-            <Stack spacing={2}>
-                <Grid container spacing={2} justifyContent="space-between" alignItems="center">
-                    <Grid size="grow" minWidth="15rem">
-                        <Typography variant="h1">Lista de Organizaciones</Typography>
-                    </Grid>
-                    <Grid size="auto" minWidth="15rem">
-                        {organizations && organizations?.items?.length > 0 &&
+            <Stack gap={3}>
+                <Grid container gap={2} justifyContent="space-between" alignItems="center">
+                    <Typography variant="h1">Lista de Organizaciones</Typography>
+                    <Grid size="auto" sx={{ marginLeft: "auto" }}>
+                        {userOrganizations && userOrganizations?.length > 0 &&
                             <CommonButton actionType="CREATE" handleClick={() => handleSidebar("CREATE_ORG", null)}>Crear Organización</CommonButton>
                         }
                     </Grid>
                 </Grid>
-                {
-                    organizations && organizations?.items?.length > 0 ?
+                <Stack gap={2}>
+                    {userOrganizations && userOrganizations?.length > 0 ?
                         <List>
-                            {organizations.items.map(org =>
+                            {userOrganizations.map(org =>
                                 <ListItem key={org.id} disablePadding secondaryAction={
-                                    <Grid container spacing={1} alignItems="center">
+                                    <Grid container gap={1} alignItems="center">
                                         <IconButton edge="end" aria-label="details" onClick={() => handleSidebar("DETAILS_ORG", org)}>
                                             <SearchIcon />
                                         </IconButton>
                                         <IconButton edge="end" aria-label="modify" onClick={() => handleSidebar("UPDATE_ORG", org)}>
                                             <EditIcon />
                                         </IconButton>
-                                        <IconButton edge="end" aria-label={org.active ? "delete" : "restore"}
-                                            onClick={() => handleActive(org)}>
-                                            {org.active ?
-                                                <DeleteIcon color="error" /> :
-                                                <RestoreFromTrashIcon color="success" />
-                                            }
-                                        </IconButton>
+                                        {selectedOrg?.id !== org.id &&
+                                            <IconButton edge="end" aria-label={org.active ? "delete" : "restore"}
+                                                onClick={() => handleActive(org)}>
+                                                {org.active ?
+                                                    <DeleteIcon color="error" /> :
+                                                    <RestoreFromTrashIcon color="success" />
+                                                }
+                                            </IconButton>
+                                        }
                                     </Grid>
                                 }>
                                     <ListItemButton onClick={() => handleSidebar("DETAILS_ORG", org)}>
-                                        <ListItemText primary={<>
-                                            <Stack spacing={1} direction="row">
+                                        <ListItemText primary={
+                                            <Stack gap={1} direction="row">
                                                 <EnabledIcon active={org.active} />
-                                                <Typography fontWeight="bold">{org.name} </Typography>
+                                                <Typography fontWeight="bold">{org.name}</Typography>
                                             </Stack>
-                                            {org.description && <Typography paddingInlineStart={2}>{org.description}</Typography>}
-                                        </>} />
+                                        }
+                                            secondary={org.description} />
                                     </ListItemButton>
                                 </ListItem>
                             )}
                         </List>
-                        : <Grid container spacing={2} justifyContent="center" alignItems="center" direction="column">
-                            <Typography variant="h4" color="initial">No se han encontrado organizaciones...</Typography>
-                            <Button onClick={() => handleSidebar("CREATE_ORG", null)} variant="contained">Crear Organización</Button>
+                        : <Grid container gap={2} justifyContent="center" alignItems="center" direction="column">
+                            <Typography variant="h4">No se han encontrado organizaciones...</Typography>
+                            <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_ORG", null)} variant="contained">
+                                Crear Organización
+                            </CommonButton>
                         </Grid>
-                }
-                <PaginationComponent {...pageComponentProps} />
+                    }
+                </Stack>
             </Stack>
         </ContainerWithSidebar >
     )
@@ -169,42 +171,48 @@ interface DetailsProps {
     handleActive: (org: OrganizationDetailed) => void
 }
 const OrganizationDetails = ({ entity, closeSidebar, handleSidebar, handleActive }: DetailsProps) => {
+    const { selectedOrg } = useContext<UserContextItems>(UserContext)
+
     if (!entity) return
 
     return (
-        <Stack spacing={2} >
-            <Grid container spacing={2} justifyContent="space-between" alignItems="center">
-                <Typography variant="h2" color="initial">{entity.name}</Typography>
-                {entity.active ? <Chip color='success' label="Habilitado" /> :
-                    <Chip color='error' label="Deshabilitado" />}
+        <Stack gap={3} >
+            <Grid container gap={2} justifyContent="space-between" alignItems="center">
+                <Typography variant="h2">{entity.name}</Typography>
+                {entity.active ? <CustomChip sx={{ marginLeft: "auto" }} color='success' label="Habilitado" /> :
+                    <CustomChip sx={{ marginLeft: "auto" }} color='error' label="Deshabilitado" />}
             </Grid>
-            {entity.description
-                ? <Typography variant="body1" color="initial">{entity.description}</Typography>
-                : <Typography variant="body1" fontStyle="italic">No tiene descripción.</Typography>
-            }
-            <Divider />
+            <Stack gap={2} >
+                {entity.description
+                    ? <Typography variant="body1">{entity.description}</Typography>
+                    : <Typography variant="body1" fontStyle="italic">No tiene descripción.</Typography>
+                }
+                <Divider />
                 <CommonButton actionType="DETAILS" component={Link} to={`/campaigns`} >Ver Workspaces</CommonButton>
-            <Divider />
-            <Grid container spacing={2} size="grow" minWidth="50 rem">
-                <Grid size="grow" minWidth="18rem">
-                    <Typography variant="body1" fontWeight="bold">Fecha de creación:</Typography>
-                    <Typography variant="body1" paddingInlineStart={2} sx={{ textTransform: "capitalize" }}>
-                        {dayjs(entity?.created_at).format('dddd DD/MM/YYYY HH:mm:ss')}
-                    </Typography>
+                <Divider />
+                <Grid container gap={1} size="grow" minWidth="50 rem">
+                    <Grid size="grow" minWidth="18rem">
+                        <Typography variant="body1" fontWeight="bold">Fecha de creación:</Typography>
+                        <Typography variant="body1" paddingInlineStart={2} sx={{ textTransform: "capitalize" }}>
+                            {dayjs(entity?.created_at).format('dddd DD/MM/YYYY HH:mm:ss')}
+                        </Typography>
+                    </Grid>
+                    <Grid size="grow" minWidth="18rem">
+                        <Typography variant="body1" fontWeight="bold">Fecha de última modificación:</Typography>
+                        <Typography variant="body1" paddingInlineStart={2} sx={{ textTransform: "capitalize" }}>
+                            {dayjs(entity?.updated_at).format('dddd DD/MM/YYYY HH:mm:ss')}
+                        </Typography>
+                    </Grid>
                 </Grid>
-                <Grid size="grow" minWidth="18rem">
-                    <Typography variant="body1" fontWeight="bold">Fecha de última modificación:</Typography>
-                    <Typography variant="body1" paddingInlineStart={2} sx={{ textTransform: "capitalize" }}>
-                        {dayjs(entity?.updated_at).format('dddd DD/MM/YYYY HH:mm:ss')}
-                    </Typography>
-                </Grid>
-            </Grid>
-            <Divider />
-            <ButtonGroup>
-                <CommonButton handleClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
-                <DisableButton active={entity.active} handleActive={() => handleActive(entity)} />
-                <CommonButton handleClick={() => handleSidebar("UPDATE_ORG", entity)} actionType="MODIFY" >Modificar</CommonButton>
-            </ButtonGroup>
+                <Divider />
+                <ButtonGroup sx={{ marginLeft: "auto" }}>
+                    <CommonButton handleClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
+                    {selectedOrg?.id !== entity.id &&
+                        <DisableButton active={entity.active} handleActive={() => handleActive(entity)} />
+                    }
+                    <CommonButton handleClick={() => handleSidebar("UPDATE_ORG", entity)} actionType="MODIFY" >Modificar</CommonButton>
+                </ButtonGroup>
+            </Stack>
         </Stack>
     )
 }

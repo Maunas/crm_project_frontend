@@ -1,13 +1,32 @@
-import type { FieldValues, UseFormSetError } from "react-hook-form";
+import type { Dictionary, ErrorBody, ErrorMessage } from "./types/common";
 import axios from "axios"
-import type { ErrorBody, ErrorMessage } from "./types/common";
+import type { FieldValues, UseFormSetError } from "react-hook-form";
 export const API_BASE_URL = "http://localhost:8000";
 
+export const axiosCRM = axios.create({
+  baseURL: 'http://localhost:8000/',
+})
+
+axiosCRM.interceptors.request.use(config => {
+  // Haz algo antes que la petición se ha enviada+
+  const org = window.localStorage.getItem("selected_org")
+  if (org) config.headers["X-Organization-Id"] = JSON.parse(org).id
+  return config;
+}, function (error) {
+  // Haz algo con el error de la petición
+  alert("Error de conexión.")
+  return Promise.reject(error);
+});
+
 export const generalSearch = async (query: string) => {
-  const res = await axios.get(`${API_BASE_URL}/search`, { params: { query } })
+  const res = await axiosCRM.get(`${API_BASE_URL}/search`, { params: { query } })
   return res.data
 }
 
+export const getDictionaries = async (keys: string): Promise<Dictionary> => {
+  const res = await axiosCRM.get(`${API_BASE_URL}/metadata/dictionaries`, { params: { keys } })
+  return res.data
+}
 export const getFieldType = (
   fieldType: string,
   value: string | boolean | number,
@@ -48,10 +67,14 @@ export const setFormErrors = <T extends FieldValues,>(error: ErrorBody<T>, setEr
     //Setea los errores en el formulario.
     else return errorDetail?.forEach((error: ErrorMessage<T>) => {
       if (error.field === "general") setError("root", { message: error.message });
-      else setError(error.field, { message: error.message });
+      else {
+        setError(error.field, { message: error.message });
+      }
     })
   }
   //Un solo error de formulario
   if (errorDetail.field === "general") setError("root", { message: error.message });
-  else setError(errorDetail.field, { message: errorDetail.message });
+  else {
+    setError(errorDetail.field, { message: errorDetail.message });
+  }
 }

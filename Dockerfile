@@ -1,0 +1,31 @@
+#https://docs.docker.com/guides/reactjs/containerize/
+
+ARG NODE_VERSION=24.11.1
+
+FROM node:${NODE_VERSION}-slim AS builder
+
+RUN corepack enable
+
+WORKDIR /app
+
+COPY package.json pnpm-lock.yaml ./
+
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile
+
+COPY . .
+
+RUN pnpm build
+
+
+FROM node:${NODE_VERSION}-slim AS runner
+
+RUN npm i -g serve
+
+WORKDIR /app
+
+COPY --from=builder /app/dist /app/dist
+
+EXPOSE 5173
+
+CMD [ "serve", "-s", "dist", "-p", "5173" ]

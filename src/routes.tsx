@@ -8,19 +8,27 @@ import { GenericContainer } from "./components/common/layout/GenericContainer";
 import { CreateLeadFormPage, UpdateLeadFormPage } from "./components/lead/LeadFormWraper";
 import { LeadList } from "./components/lead/LeadList";
 import { OrganizationList } from "./components/organizations/OrganizationList";
+import { NomenclatorList } from "./components/nomenclators/NomenclatorList";
+import { NomenclatorItemList } from "./components/nomenclators/NomenclatorItemList";
+import { SearchResultsList } from "./components/common/SearchResults";
+import { LoginFormPage } from "./components/users/LoginForm";
+import { UserProvider } from "./components/users/UserProvider";
+import { SignupFormPage } from "./components/users/SignupForm";
 
 export const router = createBrowserRouter([
     {
         path: "/login",
-        element: <div className="">Login</div>,
+        element: <UserProvider>
+            <LoginFormPage />
+        </UserProvider>
+        ,
     },
     {
         path: "/signup",
-        element: <div className="">Signup</div>,
-    },
-    {
-        path: "/signup",
-        element: <div className="">Signup</div>,
+        element: <UserProvider>
+            <SignupFormPage />
+        </UserProvider>
+        ,
     },
     {
         //Layout principal
@@ -53,12 +61,24 @@ export const router = createBrowserRouter([
                 Component: WorkspaceList
             },
             {
+                path: "/nomenclators/",
+                Component: NomenclatorList
+            },
+            {
+                path: "/nomenclators/:nomenclatorId",
+                Component: NomenclatorItemList
+            },
+            {
                 path: "/organizations/",
                 Component: OrganizationList
             },
             {
                 path: "/campaigns/:id",
                 Component: CampaignDetails
+            },
+            {
+                path: "/search",
+                Component: SearchResultsList,
             },
             {
                 path: "*", //Si no coincide con nada más.

@@ -1,42 +1,47 @@
-import axios from "axios";
-import { API_BASE_URL, orderList, setFormErrors } from "../../generalService";
-import type { Lead, LeadDetailed, LeadPostValue } from "../../types/leads";
-import type { ErrorBody, ErrorMessage, LeadListParams, Paginable } from "../../types/common";
 import type { LeadPostForm } from "./LeadForm";
+import type { DeleteResponse, EnableResponse, ErrorBody, ErrorMessage, LeadFilter, ListParams, Paginable } from "../../types/common";
+import type { Lead, LeadDetailed, LeadPostValue } from "../../types/leads";
 import type { LeadField } from "../../types/leadFields";
+import { API_BASE_URL, axiosCRM, setFormErrors } from "../../generalService";
 import type { FieldArrayWithId, UseFormSetError } from "react-hook-form";
 
-export const getLeads = async <T extends LeadListParams>(params?: T)
+export const getLeads = async <T extends ListParams>(params?: T)
   : Promise<Paginable<T["detailed"] extends true ? LeadDetailed : Lead>> => {
-  const lead = await axios.get(`${API_BASE_URL}/leads`, { params });
-  return { ...lead.data, items: orderList(lead.data.items) };
+  const lead = await axiosCRM.get(`${API_BASE_URL}/leads`, { params });
+  return lead.data;
+};
+
+export const getFilteredLeads = async <T extends ListParams>(body: { filters: LeadFilter[] }, params?: T)
+  : Promise<Paginable<T["detailed"] extends true ? LeadDetailed : Lead>> => {
+  const lead = await axiosCRM.post(`${API_BASE_URL}/leads/search`, body, { params });
+  return lead.data;
 };
 
 export const getLead = async (id: number): Promise<LeadDetailed> => {
-  const lead = await axios.get(`${API_BASE_URL}/leads/${id}`);
+  const lead = await axiosCRM.get(`${API_BASE_URL}/leads/${id}`);
   return lead.data;
 };
 export const simulateCreateLead = async (body: FormData): Promise<Lead> => {
-  const lead = await axios.post(`${API_BASE_URL}/leads/simulate`, body);
+  const lead = await axiosCRM.post(`${API_BASE_URL}/leads/simulate`, body);
   return lead.data;
 };
 
 export const createLead = async (body: FormData): Promise<LeadDetailed> => {
-  const lead = await axios.post(`${API_BASE_URL}/leads`, body);
+  const lead = await axiosCRM.post(`${API_BASE_URL}/leads`, body);
   return lead.data;
 };
 
 export const updateLead = async (body: FormData, id: number): Promise<Lead> => {
-  const lead = await axios.put(`${API_BASE_URL}/leads/${id}`, body);
+  const lead = await axiosCRM.put(`${API_BASE_URL}/leads/${id}`, body);
   return lead.data;
 };
 
-export const enableLead = async (id: number): Promise<{ actived: boolean }> => {
-  const lead = await axios.put(`${API_BASE_URL}/leads/active/${id}`);
+export const enableLead = async (id: number): Promise<EnableResponse> => {
+  const lead = await axiosCRM.put(`${API_BASE_URL}/leads/active/${id}`);
   return lead.data;
 };
-export const disableLead = async (id: number): Promise<{ action: string }> => {
-  const lead = await axios.delete(`${API_BASE_URL}/leads/${id}`);
+export const disableLead = async (id: number): Promise<DeleteResponse> => {
+  const lead = await axiosCRM.delete(`${API_BASE_URL}/leads/${id}`);
   return lead.data;
 };
 
@@ -112,16 +117,14 @@ export const setLeadFormErrors = (fields: FieldArrayWithId<LeadPostForm, "values
   const leadErrorMapping = (errorArray: ErrorMessage<LeadPostForm>[]) => {
     errorArray.forEach(error => {
       //Revisa si el error no viene de un campo no relacionado a values.
-      if (error.field === "campaign_id") setError("campaign_id", { message: error.message })
-      if (["general", "root"].includes(error.field)) setError("root", { message: error.message });
+      if (error.field === "campaign_id") return setError("campaign_id", { message: error.message })
       //Busca el indice del field para asignarle el error.
       const fieldIdx = fields.findIndex(field => error.field === field.fieldData.name)
       //Si no coincide con un nombre, va a root.
-      if (fieldIdx === -1) setError("root", { message: error.message });
-      setError(`values.${fieldIdx}.value`, { message: error.message })
+      if (fieldIdx === -1) return setError("root", { message: error.message });
+      return setError(`values.${fieldIdx}.value`, { message: error.message })
     })
   }
-
   setFormErrors(error, setError, leadErrorMapping)
 }
 
