@@ -1,3 +1,4 @@
+import { formatMoney } from "../../../generalService"
 import type { LeadFieldValue } from "../../../types/leadFields"
 
 interface CellValueProps {
@@ -20,7 +21,8 @@ export const LeadListCellValue = ({ fieldValue, type, subtype }: CellValueProps)
     }
 
     switch (type) {
-        case "MONEY": return new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS" }).format(Number(getValue(fieldValue)))
+        case "MONEY": return formatMoney(Number(getValue(fieldValue)))
+
         default: return `${getValue(fieldValue)} ${type} ${subtype}`
     }
 

@@ -5,7 +5,7 @@ import { CommonButton } from "../../common/details/DetailsCommonButton.tsx"
 import { CustomChip } from "../../../theme/styledMUIDisplayComponents.tsx"
 import type { LeadDetailed } from "../../../types/leads"
 import type { LeadFieldValue } from "../../../types/leadFields"
-import { getFieldType } from "../../../generalService.ts"
+import { formatMoney, getFieldType } from "../../../generalService.ts"
 import { disableLead, enableLead, getLead } from "../leadService.ts"
 import { useModal } from "../../hooks/useModal.tsx"
 import DOMPurify from 'dompurify';
@@ -281,9 +281,13 @@ export const LeadFieldByType = ({ fieldValue, value, type, modalProps, template 
                         : <><CloseIcon /> No</>}
                 </Grid>
                 } sx={{ ml: ".5rem", marginBottom: ".5rem", fontWeight: "bold" }} />
+        case "MONEY":
+            return <Typography sx={{ paddingLeft: ".5rem" }}>
+                {formatMoney(Number(value))}
+            </Typography>
         default:
             return <Typography sx={{ paddingLeft: ".5rem" }}>
-                {type === "MONEY" && "$"} {value}
+                {value}
             </Typography>
     }
 }

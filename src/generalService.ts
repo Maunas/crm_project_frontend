@@ -78,3 +78,7 @@ export const setFormErrors = <T extends FieldValues,>(error: ErrorBody<T>, setEr
     setError(errorDetail.field, { message: errorDetail.message });
   }
 }
+
+export const formatMoney = (money: number, code: string = "es-AR", currencyCode: string = "ARS") => {
+  return new Intl.NumberFormat(code, { style: "currency", currency: currencyCode }).format(money)
+}
