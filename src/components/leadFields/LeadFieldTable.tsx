@@ -1,6 +1,6 @@
 import { useEffect } from "react"
 import { GenericModal } from "../common/layout/GenericContainer"
-import { SimulateLeadFormModal } from "../lead/LeadFormWraper"
+import { SimulateLeadFormModal } from "../lead/leadForm/LeadFormWraper"
 import { EnabledIcon } from "../common/lists/Badges"
 import { CommonButton } from "../common/details/DetailsCommonButton"
 import type { LeadFieldDetailed } from "../../types/leadFields"

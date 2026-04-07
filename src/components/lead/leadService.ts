@@ -1,4 +1,4 @@
-import type { LeadPostForm } from "./LeadForm";
+import type { LeadPostForm } from "./leadForm/LeadForm";
 import type { DeleteResponse, EnableResponse, ErrorBody, ErrorMessage, LeadFilter, ListParams, Paginable } from "../../types/common";
 import type { Lead, LeadDetailed, LeadPostValue } from "../../types/leads";
 import type { LeadField } from "../../types/leadFields";

@@ -1,20 +1,20 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useContext, useEffect, useState } from 'react'
-import { PaginationComponent } from '../common/lists/PaginationComponent'
+import { PaginationComponent } from '../../common/lists/PaginationComponent'
 import { LeadListTable } from './LeadListTable'
 import { LeadFilters } from './LeadFilters'
-import { CommonButton } from '../common/details/DetailsCommonButton'
-import { GenericModal } from '../common/layout/GenericContainer'
-import type { LeadFilter, LeadListParams, Paginable } from '../../types/common'
-import type { Lead } from '../../types/leads'
-import type { Campaign, Workspace } from '../../types/campaigns'
-import { useListPagination } from '../hooks/useListPagination'
-import { useModal } from '../hooks/useModal'
-import { type UserContextItems } from '../users/UserProvider'
-import { UserContext } from '../common/contexts'
-import { getFilteredLeads, getLeads } from './leadService'
-import { getWorkspaces } from '../workspaces/workspaceServices'
-import { getCampaigns } from '../campaigns/campaignServices'
+import { CommonButton } from '../../common/details/DetailsCommonButton'
+import { GenericModal } from '../../common/layout/GenericContainer'
+import type { LeadFilter, LeadListParams, Paginable } from '../../../types/common'
+import type { Lead } from '../../../types/leads'
+import type { Campaign, Workspace } from '../../../types/campaigns'
+import { useListPagination } from '../../hooks/useListPagination'
+import { useModal } from '../../hooks/useModal'
+import { type UserContextItems } from '../../users/UserProvider'
+import { UserContext } from '../../common/contexts'
+import { getFilteredLeads, getLeads } from '../leadService'
+import { getWorkspaces } from '../../workspaces/workspaceServices'
+import { getCampaigns } from '../../campaigns/campaignServices'
 import { Link as RouterLink, useSearchParams } from 'react-router-dom'
 import { Typography, Grid, Stack, Autocomplete, TextField, type AutocompleteRenderInputParams, Badge } from '@mui/material'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
@@ -157,7 +157,7 @@ export const LeadList = () => {
                             </GenericModal>
                         </Grid>
                     </Grid>
-                </Grid> 
+                </Grid>
                 {
                     leads && !!campaignId ?
                         <LeadListTable leads={leads.items} campaignId={Number(campaignId)} modalProps={modalProps}

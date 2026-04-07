@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Grid, List, Stack, ListItemButton, ListItemIcon, ListItemText, Checkbox, Button, Paper, ButtonGroup, Typography, Box } from '@mui/material';
 import { alpha, lighten, useTheme } from '@mui/material/styles';
-import { CommonButton } from '../common/details/DetailsCommonButton';
+import { CommonButton } from '../../common/details/DetailsCommonButton';
 
 function not(a: readonly number[], b: readonly number[]) {
   return a.filter((value) => !b.includes(value));
@@ -174,7 +174,7 @@ export default function LeadColumnSelector<T extends { id: number }>
     )
   };
 
-  return ( 
+  return (
     <Stack alignItems="start" spacing="1rem">
       <Typography variant="h2" >Seleccionar Columnas</Typography>
       <Grid

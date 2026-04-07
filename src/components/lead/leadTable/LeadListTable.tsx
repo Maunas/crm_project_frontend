@@ -1,18 +1,19 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useMemo, useState } from "react"
-import { GenericModal } from "../common/layout/GenericContainer"
+import { GenericModal } from "../../common/layout/GenericContainer"
 import LeadColumnSelector from "./LeadColumnSelector"
-import type { LeadField, LeadFieldValue } from "../../types/leadFields"
-import type { Lead } from "../../types/leads"
-import { useDragAndDrop } from "../hooks/useDragAndDrop"
-import { getLeadFields } from "../leadFields/leadFieldServices"
+import type { LeadField } from "../../../types/leadFields"
+import type { Lead } from "../../../types/leads"
+import { useDragAndDrop } from "../../hooks/useDragAndDrop"
+import { getLeadFields } from "../../leadFields/leadFieldServices"
 import { Link, useNavigate } from "react-router-dom"
 import { Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, useTheme, ButtonGroup, Badge, IconButton } from "@mui/material"
 import { alpha, lighten } from "@mui/material/styles"
-import { CommonButton } from "../common/details/DetailsCommonButton"
+import { CommonButton } from "../../common/details/DetailsCommonButton"
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
-import { useOrderList } from "../hooks/useOrderList"
+import { useOrderList } from "../../hooks/useOrderList"
+import { LeadListCellValue } from "./LeadListCellValue"
 
 interface LeadListTableProps {
     leads: Lead[],
@@ -76,20 +77,6 @@ export const LeadListTable = ({ leads, campaignId, activeFilters = 0, orderList,
         window.localStorage.setItem("sel_lead_fields", JSON.stringify(newTotalSelectedFields))
     }, [selectedIds])
 
-    const getValue = (field_value: LeadFieldValue) => {
-        if (field_value.value && field_value.value !== "") return `${field_value.value}`
-        else if (field_value?.nomenclator_items?.length > 0) {
-            return field_value.nomenclator_items?.reduce((acc, item) =>
-                `${acc}${acc.length > 0 ? " | " : ""}${item.value}`
-                , "")
-        }
-        else if (field_value?.related_leads?.length > 0) {
-            return field_value.related_leads?.reduce((acc, item) =>
-                `${acc}${acc.length > 0 ? " | " : ""}${item?.field_values?.[0]?.value}`
-                , "")
-        }
-        else return "---"
-    }
 
     const handleSelectedIds = (ids: number[]) => {
         setSelectedIds(ids)
@@ -115,7 +102,7 @@ export const LeadListTable = ({ leads, campaignId, activeFilters = 0, orderList,
             </CommonButton>
         </Stack>
     )
- 
+
     if (leads.length === 0) return (
         <Stack gap={3} my={3} alignItems="center">
             <Stack gap={2} alignItems="center">
@@ -173,7 +160,6 @@ export const LeadListTable = ({ leads, campaignId, activeFilters = 0, orderList,
                                                 <ArrowUpwardIcon />
                                             }
                                             {orderBy === column.id &&
-
                                                 (ascending ?
                                                     <ArrowUpwardIcon />
                                                     :
@@ -189,15 +175,14 @@ export const LeadListTable = ({ leads, campaignId, activeFilters = 0, orderList,
                         <TableBody>
                             {leads.map(lead => (
                                 <TableRow onClick={() => nav(`/leads/${lead.id}`)} className='selectable'
-                                    key={lead.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                    key={lead.id} sx={{ cursor: "pointer", '&:last-child td, &:last-child th': { border: 0 } }}
                                 >
                                     {selectedColumns.map((column) => {
                                         const leadValue = lead.field_values.find(lv => lv.field_id === column.id)
-                                        //Si no se encuentra, no hay valor
-                                        if (!leadValue) return <TableCell component="td" scope="row" align="left" key={`${lead.id}-${column.id}`}>---</TableCell>
-                                        //Si es el primer elemento, nombre completo
-                                        else return (
-                                            <TableCell component="td" scope="row" align="left" key={`${lead.id}-${column.id}`}>{getValue(leadValue)}</TableCell>
+                                        return (
+                                            <TableCell component="td" scope="row" align="left" key={`${lead.id}-${column.id}`}>
+                                                <LeadListCellValue fieldValue={leadValue} type={column.field_type_code} subtype={column.field_subtype_code} />
+                                            </TableCell>
                                         )
                                     })
                                     }
@@ -210,3 +195,4 @@ export const LeadListTable = ({ leads, campaignId, activeFilters = 0, orderList,
         </>
     )
 }
+

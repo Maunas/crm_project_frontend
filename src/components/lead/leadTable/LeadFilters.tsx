@@ -1,17 +1,17 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { LeadField } from '../../types/leadFields'
-import { ControlledCheckbox, ControlledNumber } from '../common/forms/CustomInputs'
-import { ControlledAutocomplete } from '../common/forms/CustomMultipleInputs'
-import { LeadFormBool, LeadFormMoney, LeadFormNumber, LeadFormRating, LeadFormText } from './LeadFormFieldTypes'
-import { FormErrorMessage } from '../../theme/styledMUIFormComponents'
-import type { LeadFilter, LeadListParams } from '../../types/common'
-import { getLeadFields } from '../leadFields/leadFieldServices'
-import { setFormErrors } from '../../generalService'
-import { dictOperatorsMock } from '../../mocks/operators'
+import type { LeadField } from '../../../types/leadFields'
+import { ControlledCheckbox, ControlledNumber } from '../../common/forms/CustomInputs'
+import { ControlledAutocomplete } from '../../common/forms/CustomMultipleInputs'
+import { LeadFormBool, LeadFormMoney, LeadFormNumber, LeadFormRating, LeadFormText } from '../leadForm/LeadFormFieldTypes'
+import { FormErrorMessage } from '../../../theme/styledMUIFormComponents'
+import type { LeadFilter, LeadListParams } from '../../../types/common'
+import { getLeadFields } from '../../leadFields/leadFieldServices'
+import { setFormErrors } from '../../../generalService'
+import { dictOperatorsMock } from '../../../mocks/operators'
 import { useFieldArray, useForm, useWatch, type Control, type FieldErrors, type Path, type UseFieldArrayRemove, type UseFormRegister } from 'react-hook-form'
 import { alpha, Button, Divider, Grid, Typography, Stack, ButtonGroup, useColorScheme, useTheme } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close';
-import { CommonButton } from '../common/details/DetailsCommonButton'
+import { CommonButton } from '../../common/details/DetailsCommonButton'
 
 interface LeadListFilters {
     filters: LeadFilter[],
