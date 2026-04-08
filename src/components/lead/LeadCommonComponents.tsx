@@ -176,12 +176,13 @@ export const BoolValue = ({ value, size = "medium" }: { value: string, size?: "m
 }
 
 interface ListValuesProps {
+    idFieldValue: number,
     value: Lead[] | NomenclatorItem[] | string;
     type: "Lead" | "Selector";
     maxItems?: number | false;
     isNav?: boolean;
 }
-export const ListValues = ({ value, type, isNav = false, maxItems = false }: ListValuesProps) => {
+export const ListValues = ({ value, idFieldValue, type, isNav = false, maxItems = false }: ListValuesProps) => {
 
     if (!value || typeof value === "string") return null
 
@@ -203,7 +204,7 @@ export const ListValues = ({ value, type, isNav = false, maxItems = false }: Lis
                         <>
                             <CustomChip
                                 onClick={e => e.stopPropagation()}
-                                key={`lead-${val.id}`}
+                                key={`${idFieldValue}-${val.id}`}
                                 label={getLabel(val)}
                                 color="secondary" size="sm" sx={{ fontWeight: "bold" }}
                                 {...(isNav && { component: RouterLink, to: getLink(val) })}

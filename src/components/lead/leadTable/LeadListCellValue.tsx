@@ -46,8 +46,8 @@ export const LeadListCellValue = ({ fieldValue, type, subtype, modalProps }: Cel
             idModal={`file-${fieldValue?.id}`} modalProps={modalProps}
             type={type} subtype={subtype!} />
         case "BOOL": return <BoolValue value={`${value}`} size="small" />
-        case "SELECTOR": case "CHECKBOX": return <ListValues value={value} type="Selector" maxItems={3} />
-        case "LEAD": return <ListValues value={value} type="Lead" maxItems={3} isNav />
+        case "SELECTOR": case "CHECKBOX": return <ListValues value={value} idFieldValue={fieldValue.id} type="Selector" maxItems={3} />
+        case "LEAD": return <ListValues value={value} idFieldValue={fieldValue.id} type="Lead" maxItems={3} isNav />
         default: return `${value}`
     }
 }
