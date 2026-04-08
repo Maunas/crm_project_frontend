@@ -197,7 +197,7 @@ export const PasswordField = <T extends FieldValues>
           <InputAdornment position="end">
             <IconButton
               aria-label={showPassword ? "Ocultar contraseña." : "Ver contraseña."}
-              onClick={handleClickShowPassword} edge="end"
+              onClick={handleClickShowPassword} edge="end" color="primary"
             >
               {showPassword ? <VisibilityOff /> : <Visibility />}
             </IconButton>

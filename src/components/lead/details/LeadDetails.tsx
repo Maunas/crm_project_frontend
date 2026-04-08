@@ -1,22 +1,17 @@
-import { useEffect, useId, useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { LeadActivities } from "./LeadActivities.tsx"
-import { GenericModal, GenericPaper } from "../../common/layout/GenericContainer.tsx"
+import { GenericPaper } from "../../common/layout/GenericContainer.tsx"
 import { CommonButton } from "../../common/details/DetailsCommonButton.tsx"
 import { CustomChip } from "../../../theme/styledMUIDisplayComponents.tsx"
 import type { LeadDetailed } from "../../../types/leads"
 import type { LeadFieldValue } from "../../../types/leadFields"
-import { formatMoney, getFieldType } from "../../../generalService.ts"
+import { formatMoney } from "../../../generalService.ts"
 import { disableLead, enableLead, getLead } from "../leadService.ts"
 import { useModal } from "../../hooks/useModal.tsx"
-import DOMPurify from 'dompurify';
-import Markdown from 'react-markdown'
 import { Link as RouterLink, useNavigate, useParams } from "react-router-dom"
-import { Accordion, AccordionDetails, AccordionSummary, Box, Container, Divider, Grid, Paper, Typography, Button, Link, Rating, Slider, ButtonGroup, Stack } from "@mui/material"
+import { Accordion, AccordionDetails, AccordionSummary, Box, Container, Divider, Grid, Paper, Typography, Link, ButtonGroup, Stack } from "@mui/material"
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import { AddressValue, BoolValue, CardValue, DateValue, ListValues, ModalValue, NewTabLink, PasswordValue, RatingValue } from "../LeadCommonComponents.tsx"
 
 export const LeadDetails = () => {
 
@@ -154,8 +149,10 @@ export const LeadFieldSections = ({ fieldValues }: LeadFieldSectionsProps) => {
                                     {section?.fields.map((fieldValue, idx) =>
                                         <Box key={idx}>
                                             <Typography sx={{ fontWeight: 600 }} variant="body1">{fieldValue?.field?.name}:</Typography>
-                                            <LeadFieldByType fieldValue={fieldValue} type={fieldValue.field.field_type_code!}
-                                                value={fieldValue.value!} template={fieldValue.field.field_template_code} modalProps={modalProps} />
+                                            <Box paddingLeft={1}>
+                                                <LeadFieldByType fieldValue={fieldValue} type={fieldValue.field.field_type_code!}
+                                                    value={fieldValue.value!} template={fieldValue.field.field_template_code} modalProps={modalProps} />
+                                            </Box>
                                         </Box>
                                     )}
                                 </Box>
@@ -182,173 +179,37 @@ interface LeadFieldProps {
 
 export const LeadFieldByType = ({ fieldValue, value, type, modalProps, template = null }: LeadFieldProps) => {
 
-    const idModal = useId()
-
     if (template) {
         switch (template) {
             case "INSTAGRAM_USER":
-                return <Link sx={{ paddingLeft: ".5rem" }} href={`https://instagram.com/${value?.substring(1)}`} target="_blank" rel="noopener">
+                return <Link href={`https://instagram.com/${value?.substring(1)}`} target="_blank" rel="noopener">
                     {value}
                 </Link>
             case "POSTAL_CODE":
-                return <Link sx={{ paddingLeft: ".5rem" }} href={`https://www.google.com/maps/search/${value.replaceAll(" ", "+")}`} target="_blank" rel="noopener">
+                return <Link href={`https://www.google.com/maps/search/${value.replaceAll(" ", "+")}`} target="_blank" rel="noopener">
                     {value}
                 </Link>
             case "CREDIT_CARD_SIMPLE":
-                return <CardField value={value} />
+                return <CardValue value={value} />
         }
     }
+
     switch (type) {
-        case "FILE":
-            return <Link sx={{ paddingLeft: ".5rem" }} href={`${value}`} target="_blank" rel="noopener">
-                {//Obtiene el nombre del archivo, formateado
-                    value.split("/").at(-1)?.split(".")[0].replaceAll("%20", " ")
-                }
-            </Link>
-        case "ADDRESS":
-            if (fieldValue?.field?.field_subtype_code === "MAPS_URL") {
-                return <><Link sx={{ paddingLeft: ".5rem" }} href={`${value}`} target="_blank" rel="noopener">
-                    {value}
-                </Link>
-                </>
-            } else {
-                return <Link sx={{ paddingLeft: ".5rem" }} href={`https://www.google.com/maps/search/${value.replaceAll(" ", "+")}`} target="_blank" rel="noopener">
-                    {value}
-                </Link>
-            }
-        case "RATING":
-            return <RatingField value={value} subtype={fieldValue!.field.field_subtype_code!} />
-        case "PASSWORD":
-            return <PasswordField value={value} />
-        case "EMAIL":
-            return <Link sx={{ paddingLeft: ".5rem" }} href={`mailto:${value}`} target="_blank" rel="noopener">
-                {value}
-            </Link>
-        case "URL":
-            return <Link sx={{ paddingLeft: ".5rem" }} href={`${value}`} target="_blank" rel="noopener">
-                {value}
-            </Link>
-        case "RICH_TEXT":
-            if (fieldValue?.field?.field_subtype_code === "HTML") {
-                const purifiedHTML = DOMPurify.sanitize(value)
-                return <GenericModal idModal={idModal} modalProps={modalProps!}
-                    buttonText='Ver HTML' variant="outlined" containerSx={{ minWidth: "80vw" }} >
-                    {purifiedHTML
-                        ? <div style={{ paddingLeft: ".5rem" }} dangerouslySetInnerHTML={{ __html: purifiedHTML }} />
-                        : <Typography variant="body1" color="error">Contenido HTML no seguro, no se puede mostrar.</Typography>}
-                    <Grid container justifyContent="end">
-                        <Button variant="outlined" onClick={modalProps!.handleClose}>Cerrar Modal</Button>
-                    </Grid>
-                </GenericModal>
-            } else {
-                return <>
-                    <GenericModal idModal={idModal} modalProps={modalProps!}
-                        buttonText='Ver Markdown' variant="outlined" containerSx={{ minWidth: "80vw" }} >
-                        <Markdown >{value as string}</Markdown>
-                        <Grid container justifyContent="end">
-                            <Button variant="outlined" onClick={modalProps!.handleClose}>Cerrar Modal</Button>
-                        </Grid>
-                    </GenericModal>
-                </>
-            }
-        case "LEAD":
-            return <ul style={{ margin: 0 }}>
-                {fieldValue?.related_leads && fieldValue?.related_leads?.length > 0 &&
-                    fieldValue?.related_leads.map(lead =>
-                        <li key={lead.id}>
-                            <Link component={RouterLink} to={`/leads/${lead.id}`} sx={{ paddingLeft: ".5rem" }}>
-                                {lead.field_values[0]?.value} {lead.field_values[1]?.value}
-                            </Link>
-                        </li>
-                    )}
-            </ul >
-        case "SELECTOR": case "CHECKBOX":
-            return <ul style={{ margin: 0 }}>
-                {fieldValue?.nomenclator_items && fieldValue.nomenclator_items?.length > 0 &&
-                    fieldValue.nomenclator_items.map(i =>
-                        <Typography sx={{ paddingLeft: ".5rem" }} key={i.id}>
-                            <li> {i.value}</li>
-                        </Typography>
-                    )}
-            </ul>
-        case "TAGS":
-            return <CustomChip color="primary"
-                label={value} sx={{ ml: ".5rem", marginBottom: ".5rem", fontWeight: "bold" }} />
-        case "BOOL":
-            return <CustomChip color={getFieldType("BOOL", value) ? "success" : "error"}
-                label={<Grid alignItems="center" container justifyContent="space-between">
-                    {getFieldType("BOOL", value) ? <><CheckIcon /> Si</>
-                        : <><CloseIcon /> No</>}
-                </Grid>
-                } sx={{ ml: ".5rem", marginBottom: ".5rem", fontWeight: "bold" }} />
-        case "MONEY":
-            return <Typography sx={{ paddingLeft: ".5rem" }}>
-                {formatMoney(Number(value))}
-            </Typography>
-        default:
-            return <Typography sx={{ paddingLeft: ".5rem" }}>
-                {value}
-            </Typography>
+        case "MONEY": return formatMoney(Number(value))
+        case "RATING": return <RatingValue value={value} subtype={fieldValue!.field.field_subtype_code!} counter />
+        case "URL": return <NewTabLink url={value} />
+        case "EMAIL": return <NewTabLink url={`mailto:${value}`} value={`${value}`} />
+        case "ADDRESS": return <AddressValue value={value} subtype={fieldValue!.field.field_subtype_code!} />
+        case "DATE": return <DateValue date={value} />
+        case "DATE_TIME": return <DateValue date={value} isDatetime />
+        case "PASSWORD": return <PasswordValue value={value} allowShow />
+        case "FILE": case "RICH_TEXT": return <ModalValue value={`${value}`}
+            idModal={`file-${fieldValue?.id}`} modalProps={modalProps}
+            type={fieldValue!.field.field_type_code!} subtype={fieldValue!.field.field_subtype_code!} />
+        case "BOOL": return <BoolValue value={`${value}`} />
+        case "SELECTOR": case "CHECKBOX": return <ListValues value={fieldValue!.nomenclator_items} type="Selector" />
+        case "LEAD": return <ListValues value={fieldValue!.related_leads} type="Lead" isNav />
+        default: return `${value}`
     }
 }
 
-
-const PasswordField = ({ value }: { value: string }) => {
-    const [showPassword, setShowPassword] = useState<boolean>(false);
-    return (
-        <Grid container spacing={2} alignItems="center">
-            <Typography sx={{ paddingLeft: ".5rem" }}>
-                {showPassword ? value : "********"}
-            </Typography>
-            <Button variant="text" onClick={() => setShowPassword(!showPassword)}>
-                {showPassword ?
-                    <VisibilityOffIcon /> : <VisibilityIcon />
-                }
-            </Button>
-        </Grid>
-    )
-}
-const CardField = ({ value }: { value: string }) => {
-    const [showPassword, setShowPassword] = useState<boolean>(false);
-    return (
-        <Grid container spacing={2} alignItems="center">
-            <Typography sx={{ paddingLeft: ".5rem" }}>
-                {showPassword
-                    ? `${value.substring(0, 4)}-${value.substring(4, 8)}-${value.substring(8, 12)}-${value.slice(-4)}`
-                    : `****-****-****-${value?.slice(-4)}`}
-            </Typography>
-            <Button variant="text" onClick={() => setShowPassword(!showPassword)}>
-                {showPassword ?
-                    <VisibilityOffIcon /> : <VisibilityIcon />
-                }
-            </Button>
-        </Grid>
-    )
-}
-const RatingField = ({ value, subtype }: { value: string, subtype: string }) => {
-
-    return (
-        <Grid container alignItems="center" spacing={2}>
-            {subtype === "STAR_RATING" &&
-                <Rating name="read-only" value={Number(value)} readOnly />
-            }
-            {subtype === "NPS" &&
-                <Grid size={8}>
-                    <Slider
-                        min={1} max={10} step={1}
-                        value={Number(value)}
-                    />
-                </Grid>
-            }
-            {subtype === "SCORE" &&
-                <Grid size={8}>
-                    <Slider
-                        min={0} max={100} step={1}
-                        defaultValue={Number(value)}
-                    />
-                </Grid>
-            }
-            <CustomChip color="secondary" label={value} />
-        </Grid>
-    )
-}

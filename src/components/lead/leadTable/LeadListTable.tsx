@@ -144,29 +144,30 @@ export const LeadListTable = ({ leads, campaignId, activeFilters = 0, orderList,
                                             ...dragStyles(idx, "row")
                                         }}
                                     >
-                                        {column.name}
-                                        <IconButton size="small" onClick={() => handleOrderList(column.id)}
-                                            sx={{
-                                                backgroundColor: orderBy === column.id ? alpha(palette.secondary.light, .7) : "none",
-                                                color: orderBy === column.id ? palette.secondary.contrastText : palette.text.primary,
-                                                marginInlineStart: ".5rem",
-                                                "&:hover": {
-                                                    backgroundColor: palette.secondary.main,
-                                                    color: palette.secondary.contrastText
+                                        <Stack gap={1} direction="row" alignItems="center">
+                                            {column.name}
+                                            <IconButton size="small" onClick={() => handleOrderList(column.id)}
+                                                sx={{
+                                                    backgroundColor: orderBy === column.id ? alpha(palette.secondary.light, .7) : "none",
+                                                    color: orderBy === column.id ? palette.secondary.contrastText : palette.text.primary,
+                                                    "&:hover": {
+                                                        backgroundColor: palette.secondary.main,
+                                                        color: palette.secondary.contrastText
+                                                    }
+                                                }}
+                                            >
+                                                {orderBy !== column.id &&
+                                                    <ArrowUpwardIcon fontSize="small" />
                                                 }
-                                            }}
-                                        >
-                                            {orderBy !== column.id &&
-                                                <ArrowUpwardIcon />
-                                            }
-                                            {orderBy === column.id &&
-                                                (ascending ?
-                                                    <ArrowUpwardIcon />
-                                                    :
-                                                    <ArrowDownwardIcon />
-                                                )
-                                            }
-                                        </IconButton>
+                                                {orderBy === column.id &&
+                                                    (ascending ?
+                                                        <ArrowUpwardIcon fontSize="small" />
+                                                        :
+                                                        <ArrowDownwardIcon fontSize="small" />
+                                                    )
+                                                }
+                                            </IconButton>
+                                        </Stack>
                                     </TableCell>
                                 )
                                 }
@@ -174,14 +175,15 @@ export const LeadListTable = ({ leads, campaignId, activeFilters = 0, orderList,
                         </TableHead>
                         <TableBody>
                             {leads.map(lead => (
-                                <TableRow onClick={() => nav(`/leads/${lead.id}`)} className='selectable'
-                                    key={lead.id} sx={{ cursor: "pointer", '&:last-child td, &:last-child th': { border: 0 } }}
+                                <TableRow onClick={() => nav(`/leads/${lead.id}`)}
+                                    key={lead.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                                 >
                                     {selectedColumns.map((column) => {
                                         const leadValue = lead.field_values.find(lv => lv.field_id === column.id)
                                         return (
                                             <TableCell component="td" scope="row" align="left" key={`${lead.id}-${column.id}`}>
-                                                <LeadListCellValue fieldValue={leadValue} type={column.field_type_code} subtype={column.field_subtype_code} />
+                                                <LeadListCellValue leadId={lead.id} fieldValue={leadValue} modalProps={modalProps}
+                                                    type={column.field_type_code} subtype={column.field_subtype_code} />
                                             </TableCell>
                                         )
                                     })
