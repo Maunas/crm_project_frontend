@@ -3,7 +3,7 @@ import { ControlledTextInput, RegisteredTextInput } from "../common/forms/Custom
 import { ControlledAutocomplete, ControlledRadio } from "../common/forms/CustomMultipleInputs";
 import { EnabledIcon } from "../common/lists/Badges";
 import { CommonButton } from "../common/details/DetailsCommonButton";
-import { FormErrorMessage } from "../../theme/styledMUIFormComponents";
+import { FormErrorMessage } from "../common/forms/StyledFormComponents";
 import type { FieldValidationRule, FieldValidationRulePost, FieldValidationRuleTemplate, LeadFieldDetailed } from "../../types/leadFields";
 import { createValidation, deleteValidation, getValidationDataByType, getValidationTemplates, setValFormErrors, updateValidation } from "./validationService";
 import { useFieldArray, useForm, useWatch, type Control, type FieldErrors, type UseFieldArrayRemove, type UseFormClearErrors, type UseFormGetValues, type UseFormRegister, type UseFormSetValue } from "react-hook-form";

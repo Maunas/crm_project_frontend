@@ -1,6 +1,6 @@
 import { CampaignList } from "../campaigns/CampaignList"
 import { CommonButton, DisableButton } from "../common/details/DetailsCommonButton"
-import { CustomChip } from "../../theme/styledMUIDisplayComponents"
+import { CustomChip } from "../common/details/StyledDisplayComponents"
 import type { CampaignDetailed, WorkspaceDetailed } from "../../types/campaigns"
 import dayjs from "dayjs"
 import { Stack, Typography, ButtonGroup, Divider, Grid } from "@mui/material"
@@ -46,7 +46,7 @@ export const WorkspaceDetails = ({ entity, closeSidebar, handleSidebar, handleAc
                 </Grid>
                 <Divider />
 
-                <ButtonGroup sx={{marginLeft:"auto"}}>
+                <ButtonGroup sx={{ marginLeft: "auto" }}>
                     <CommonButton handleClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
                     <DisableButton active={entity.active} handleActive={() => handleActive(entity)} />
                     <CommonButton handleClick={() => handleSidebar("UPDATE_WSP", entity)} actionType="MODIFY" >Modificar</CommonButton>

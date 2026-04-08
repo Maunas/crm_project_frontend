@@ -1,7 +1,7 @@
 import { ControlledNumber, ControlledSlider, ControlledSwitch, PasswordField, SingleFileField } from "../../common/forms/CustomInputs";
 import { AutocompleteLoader, ControlledAutocomplete, ControlledGroupedCheckbox, ControlledRadio } from "../../common/forms/CustomMultipleInputs";
 import type { LeadPostFormValues } from "./LeadForm";
-import { FormErrorMessage } from "../../../theme/styledMUIFormComponents";
+import { FormErrorMessage } from "../../common/forms/StyledFormComponents";
 import type { Lead } from "../../../types/leads";
 import type { NomenclatorItem } from "../../../types/nomenclators";
 import { type Control, type FieldValues, type Path, type UseFormRegister } from "react-hook-form";

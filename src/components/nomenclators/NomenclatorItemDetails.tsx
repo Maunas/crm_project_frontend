@@ -3,7 +3,7 @@ import { Link as RouterLink } from "react-router-dom"
 import dayjs from "dayjs"
 import { CommonButton, DisableButton } from "../common/details/DetailsCommonButton"
 import type { NomenclatorItemDetailed } from "../../types/nomenclators"
-import { CustomChip } from "../../theme/styledMUIDisplayComponents"
+import { CustomChip } from "../common/details/StyledDisplayComponents"
 
 interface NomenclatorDetailsProps {
     entity: NomenclatorItemDetailed | null,

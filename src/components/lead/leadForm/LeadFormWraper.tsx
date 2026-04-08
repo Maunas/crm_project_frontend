@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { LeadForm } from "./LeadForm"
-import { FormErrorMessage } from "../../../theme/styledMUIFormComponents"
+import { FormErrorMessage } from "../../common/forms/StyledFormComponents"
 import type { LeadField, LeadFieldDetailed, LeadFieldValue } from "../../../types/leadFields"
 import type { LeadDetailed } from "../../../types/leads"
 import type { Campaign, Workspace } from "../../../types/campaigns"

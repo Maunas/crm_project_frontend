@@ -1,5 +1,5 @@
 import { Tooltip } from "@mui/material"
-import { CustomChip } from "../../../theme/styledMUIDisplayComponents"
+import { CustomChip } from "./StyledDisplayComponents"
 import type { ReactElement } from "react"
 import { useTheme } from "@mui/material/styles"
 import type { ColorTypes } from "../../../types/mui-theme.d"

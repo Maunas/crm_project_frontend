@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useMemo, useState } from "react"
-import { FormErrorMessage } from "../../../theme/styledMUIFormComponents"
+import { FormErrorMessage } from "../../common/forms/StyledFormComponents"
 import { LeadFormAddress, LeadFormBool, LeadFormCheckbox, LeadFormFile, LeadFormMoney, LeadFormNumber, LeadFormPassword, LeadFormRating, LeadFormRelatedLead, LeadFormSelector, LeadFormText } from "./LeadFormFieldTypes"
 import type { Lead, LeadPost, LeadPostValue } from "../../../types/leads"
 import type { LeadField, LeadFieldValue } from "../../../types/leadFields"

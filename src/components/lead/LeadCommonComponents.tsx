@@ -1,6 +1,6 @@
 import { Box, Grid, IconButton, Link, Rating, Stack, Typography } from '@mui/material'
 import { useState } from 'react'
-import { CustomBar, CustomChip } from '../../theme/styledMUIDisplayComponents'
+import { CustomBar, CustomChip } from '../common/details/StyledDisplayComponents'
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import dayjs from 'dayjs';
