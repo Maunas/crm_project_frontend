@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useContext, useEffect, useState } from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 import { PaginationComponent } from '../../common/lists/PaginationComponent'
 import { LeadListTable } from './LeadListTable'
 import { LeadFilters } from './LeadFilters'
@@ -18,6 +18,7 @@ import { getCampaigns } from '../../campaigns/campaignServices'
 import { Link as RouterLink, useSearchParams } from 'react-router-dom'
 import { Typography, Grid, Stack, Autocomplete, TextField, type AutocompleteRenderInputParams, Badge } from '@mui/material'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import { useOrderList } from '../../hooks/useOrderList'
 
 export const LeadList = () => {
 
@@ -66,7 +67,6 @@ export const LeadList = () => {
 
         })
     }, [workspaceId])
-
     //Actualización de los campaign y workspace elegidos como searchParams
     useEffect(() => {
         setParams(prev => {
@@ -90,8 +90,9 @@ export const LeadList = () => {
 
     //Al aplicar filtros vuelve a la primera página
     const applyFilters = (data: { headers: LeadListParams, filters: LeadFilter[] }) => {
-        return fetchLeads(1, data.filters, data.headers).then(() => {
-            setHeaders({ ...headers, ...data.headers })
+        const newHeaders = { ...headers, ...data.headers }
+        return fetchLeads(1, data.filters, newHeaders).then(() => {
+            setHeaders(newHeaders)
             setFilters(data.filters)
             modalProps.handleClose()
         })
@@ -101,16 +102,17 @@ export const LeadList = () => {
         size: "small" as "small" | "medium",
         disablePortal: true,
         options: list.map(i => i.id),
-        getOptionLabel: (option: number | null) => campaigns.find(i => i.id === option)?.name ?? "",
+        getOptionLabel: (option: number | null) => list.find(i => i.id === option)?.name ?? "",
         sx: { width: 200 },
         renderInput: (params: AutocompleteRenderInputParams) => <TextField {...params} label={label} />
     })
 
-    const orderList = (fieldId: number | string | null, ascending: boolean) => {
+    const orderList = useCallback((fieldId: number | string | null, ascending: boolean) => {
         const newHeaders = { ...headers, order_by: fieldId, ascending }
         setHeaders(newHeaders)
         fetchLeads(leads?.page ?? 1, filters, newHeaders)
-    }
+    }, [campaignId])
+    const orderProps = useOrderList(orderList)
 
     return (
         <Stack gap={3}>
@@ -161,7 +163,7 @@ export const LeadList = () => {
                 {
                     leads && !!campaignId ?
                         <LeadListTable leads={leads.items} campaignId={Number(campaignId)} modalProps={modalProps}
-                            activeFilters={filters.length} orderList={orderList} />
+                            activeFilters={filters.length} orderProps={orderProps} />
                         :
                         <Stack gap={3} alignItems="center" my={3}>
                             <Typography variant="h3">No hay leads para presentar</Typography>

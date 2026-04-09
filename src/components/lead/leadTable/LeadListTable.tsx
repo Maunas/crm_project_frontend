@@ -12,7 +12,6 @@ import { alpha, lighten } from "@mui/material/styles"
 import { CommonButton } from "../../common/details/DetailsCommonButton"
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
-import { useOrderList } from "../../hooks/useOrderList"
 import { LeadListCellValue } from "./LeadListCellValue"
 
 interface LeadListTableProps {
@@ -24,13 +23,14 @@ interface LeadListTableProps {
         handleClose: () => void;
     },
     activeFilters: number,
-    orderList: (
-        fieldId: number | string | null,
-        ascending: boolean
-    ) => void,
+    orderProps: {
+        orderBy: string | number | null;
+        ascending: boolean;
+        handleOrderList: (field: string | number | null) => void;
+    }
 }
 
-export const LeadListTable = ({ leads, campaignId, activeFilters = 0, orderList, modalProps }: LeadListTableProps) => {
+export const LeadListTable = ({ leads, campaignId, activeFilters = 0, modalProps, orderProps }: LeadListTableProps) => {
 
     const DEFAULT_N_OF_FIELDS = 6
     const nav = useNavigate()
@@ -84,9 +84,6 @@ export const LeadListTable = ({ leads, campaignId, activeFilters = 0, orderList,
     }
 
     const { dragStyles, dragEvents } = useDragAndDrop(selectedIds, (items) => setSelectedIds(items))
-
-    const { orderBy, ascending, handleOrderList } = useOrderList(orderList)
-
     //Si hay leads, pero no hay columnas seleccionadas
     if (selectedColumns?.length === 0 && leads.length > 0) return (
         <Stack gap={3} my={3} alignItems="center">
@@ -146,21 +143,21 @@ export const LeadListTable = ({ leads, campaignId, activeFilters = 0, orderList,
                                     >
                                         <Stack gap={1} direction="row" alignItems="center">
                                             {column.name}
-                                            <IconButton size="small" onClick={() => handleOrderList(column.id)}
+                                            <IconButton size="small" onClick={() => orderProps.handleOrderList(column.id)}
                                                 sx={{
-                                                    backgroundColor: orderBy === column.id ? alpha(palette.secondary.light, .7) : "none",
-                                                    color: orderBy === column.id ? palette.secondary.contrastText : palette.text.primary,
+                                                    backgroundColor: orderProps.orderBy === column.id ? alpha(palette.secondary.light, .7) : "none",
+                                                    color: orderProps.orderBy === column.id ? palette.secondary.contrastText : palette.text.primary,
                                                     "&:hover": {
                                                         backgroundColor: palette.secondary.main,
                                                         color: palette.secondary.contrastText
                                                     }
                                                 }}
                                             >
-                                                {orderBy !== column.id &&
+                                                {orderProps.orderBy !== column.id &&
                                                     <ArrowUpwardIcon fontSize="small" />
                                                 }
-                                                {orderBy === column.id &&
-                                                    (ascending ?
+                                                {orderProps.orderBy === column.id &&
+                                                    (orderProps.ascending ?
                                                         <ArrowUpwardIcon fontSize="small" />
                                                         :
                                                         <ArrowDownwardIcon fontSize="small" />

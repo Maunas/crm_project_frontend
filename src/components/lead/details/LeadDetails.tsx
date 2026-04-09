@@ -207,8 +207,8 @@ export const LeadFieldByType = ({ fieldValue, value, type, modalProps, template 
             idModal={`file-${fieldValue?.id}`} modalProps={modalProps}
             type={fieldValue!.field.field_type_code!} subtype={fieldValue!.field.field_subtype_code!} />
         case "BOOL": return <BoolValue value={`${value}`} />
-        case "SELECTOR": case "CHECKBOX": return <ListValues value={fieldValue!.nomenclator_items} type="Selector" />
-        case "LEAD": return <ListValues value={fieldValue!.related_leads} type="Lead" isNav />
+        case "SELECTOR": case "CHECKBOX": return <ListValues value={fieldValue!.nomenclator_items} idFieldValue={fieldValue!.id} type="Selector" />
+        case "LEAD": return <ListValues value={fieldValue!.related_leads} idFieldValue={fieldValue!.id} type="Lead" isNav />
         default: return `${value}`
     }
 }

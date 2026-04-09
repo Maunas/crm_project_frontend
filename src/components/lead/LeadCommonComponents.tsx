@@ -201,15 +201,13 @@ export const ListValues = ({ value, idFieldValue, type, isNav = false, maxItems 
                 {value
                     .slice(0, (typeof maxItems === "number" ? maxItems : undefined))
                     .map(val =>
-                        <>
-                            <CustomChip
-                                onClick={e => e.stopPropagation()}
-                                key={`${idFieldValue}-${val.id}`}
-                                label={getLabel(val)}
-                                color="secondary" size="sm" sx={{ fontWeight: "bold" }}
-                                {...(isNav && { component: RouterLink, to: getLink(val) })}
-                            />
-                        </>
+                        <CustomChip
+                            onClick={e => e.stopPropagation()}
+                            key={`${idFieldValue}-${val.id}`}
+                            label={getLabel(val)}
+                            color="secondary" size="sm" sx={{ fontWeight: "bold" }}
+                            {...(isNav && { component: RouterLink, to: getLink(val) })}
+                        />
                     )}
                 {maxItems && value.length > maxItems &&
                     <CustomChip color="secondary" size="sm"
