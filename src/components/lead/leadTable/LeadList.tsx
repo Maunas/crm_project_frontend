@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useContext, useEffect, useState } from 'react'
 import { PaginationComponent } from '../../common/lists/PaginationComponent'
 import { LeadListTable } from './LeadListTable'
@@ -111,7 +110,7 @@ export const LeadList = () => {
         const newHeaders = { ...headers, order_by: fieldId, ascending }
         setHeaders(newHeaders)
         fetchLeads(leads?.page ?? 1, filters, newHeaders)
-    }, [campaignId])
+    }, [campaignId, filters, headers, leads?.page, fetchLeads])
     const orderProps = useOrderList(orderList)
 
     return (

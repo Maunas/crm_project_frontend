@@ -1,5 +1,5 @@
 import { Container, Grid, Modal, Paper, type Breakpoint } from '@mui/material'
-import { type ComponentProps, type ReactNode } from 'react'
+import { memo, type ComponentProps, type ReactNode } from 'react'
 import { CommonButton } from '../details/DetailsCommonButton'
 
 
@@ -42,7 +42,7 @@ interface GenericModalProps extends GenericContainerProps, ComponentProps<typeof
     showButton?: boolean,
 }
 
-export const GenericModal = ({ idModal, modalProps: { open, handleOpen, handleClose }, showButton = true,
+export const GenericModal = memo(({ idModal, modalProps: { open, handleOpen, handleClose }, showButton = true,
     buttonText, maxWidth = "lg", containerSx = {}, paperSx = {}, children, actionType, ...btnProps
 }: GenericModalProps) => {
     return (
@@ -74,7 +74,7 @@ export const GenericModal = ({ idModal, modalProps: { open, handleOpen, handleCl
             </Modal>
         </>
     )
-}
+})
 
 interface ContainerWithSidebarProps {
     isSidebarOpen: boolean,

@@ -25,7 +25,7 @@ export const OrganizationList = () => {
 
     const { userOrganizations, selectedOrg, fetchOrganizations, updateOrganizations } = useContext<UserContextItems>(UserContext)
 
-    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<OrganizationDetailed>(params, setParams, getOrganization, "DETAILS_ORG", 'id')
+    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<OrganizationDetailed>("id", params, setParams, getOrganization, "DETAILS_ORG")
 
     const updateEntityOnList = (newOrg: OrganizationDetailed, mode: string) => {
         switch (mode) {

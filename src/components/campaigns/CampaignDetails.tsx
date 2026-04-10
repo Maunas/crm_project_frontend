@@ -22,7 +22,7 @@ export const CampaignDetails = () => {
 
     const [params, setParams] = useSearchParams()
 
-    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<LeadFieldDetailed>(params, setParams, getLeadField, "DETAILS_FIELD", 'id')
+    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<LeadFieldDetailed>("id", params, setParams, getLeadField, "DETAILS_FIELD")
 
     const nav = useNavigate()
 

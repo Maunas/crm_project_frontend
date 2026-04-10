@@ -26,7 +26,7 @@ export const NomenclatorList = () => {
 
     const [params, setParams] = useSearchParams()
 
-    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<NomenclatorDetailed>(params, setParams, getNomenclator, "DETAILS_NOM", "id")
+    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<NomenclatorDetailed>("id", params, setParams, getNomenclator, "DETAILS_NOM")
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(nomenclators)
 
