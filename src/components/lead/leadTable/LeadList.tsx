@@ -35,83 +35,100 @@ export const LeadList = () => {
 
     const { selectedOrg } = useContext<UserContextItems>(UserContext)
 
-    const { fetchPage, refresh, pageComponentProps } = useListPagination(leads)
+    const { fetchPage, pageComponentProps } = useListPagination(leads)
 
     //Si tiene filtros, debe usar otro endpoint.
-    const fetchLeads = (page: number, filters: LeadFilter[], headers: LeadListParams) => {
+    const fetchLeads = useCallback((page: number, filters: LeadFilter[], headers: LeadListParams, campaignId: string | number) => {
         if (filters.length > 0) {
             return getFilteredLeads({ filters: filters }, { campaign_id: campaignId, page, ...headers }).then(setLeads)
         } else {
             return getLeads({ campaign_id: campaignId, page, ...headers }).then(setLeads)
         }
-    }
+    }, [])
 
     useEffect(() => {
         if (!campaignId) return
-        fetchLeads(fetchPage, filters, headers)
-    }, [campaignId, fetchPage, refresh])
+        fetchLeads(fetchPage, filters, headers, campaignId)
+    }, [campaignId, fetchPage, fetchLeads])
 
+    //Inicialización al cambiar de organización
     useEffect(() => {
-        getWorkspaces({ only_active: true, page_size: 0 }).then(res => {
-            setWorkspaces(res.items)
-            if (!workspaceId || !res.items.map(i => i.id).includes(Number(workspaceId))) setWorkspaceId(res.items[0].id)
+        getWorkspaces({ only_active: true, page_size: 0 }).then(wsps => {
+            setWorkspaces(wsps.items)
+            if (wsps.items.length === 0) {
+                setWorkspaceId(null)
+                return
+            }
+            //Si hay un workspaceId en params, y es parte de la lista, lo setea, si no el primer elemento
+            const newWorkspaceId = (workspaceId && wsps.items.map(i => i.id).includes(Number(workspaceId))) ? workspaceId : wsps.items[0].id
+            setWorkspaceId(newWorkspaceId)
+
+            if (!newWorkspaceId) return
+            getCampaigns({ only_active: true, workspace_id: newWorkspaceId as number, page_size: 0 }).then(cmps => {
+                setCampaigns(cmps.items)
+                if (cmps.items.length === 0) {
+                    setCampaignId(null)
+                    return
+                }
+                const newCampaignId = (campaignId && cmps.items.map(i => i.id).includes(Number(campaignId))) ? campaignId : cmps.items[0].id
+                setCampaignId(newCampaignId)
+            })
         })
     }, [selectedOrg])
 
-    useEffect(() => {
-        if (!workspaceId) return
-        getCampaigns({ only_active: true, workspace_id: workspaceId as number, page_size: 0 }).then(res => {
+    const handleWorkspaceChange = useCallback((newWorkspaceId: number | null) => {
+        if (!newWorkspaceId) return
+        setWorkspaceId(newWorkspaceId)
+        getCampaigns({ only_active: true, workspace_id: newWorkspaceId, page_size: 0 }).then(res => {
             setCampaigns(res.items)
-            if (!campaignId || !res.items.map(i => i.id).includes(Number(campaignId))) setCampaignId(res.items[0].id)
-
+            setCampaignId(res.items[0].id)
         })
-    }, [workspaceId])
+    }, [])
+
     //Actualización de los campaign y workspace elegidos como searchParams
     useEffect(() => {
         setParams(prev => {
+            if (prev.get("workspace_id") === workspaceId && prev.get("campaign_id") === campaignId) return prev
             const next = new URLSearchParams(prev)
             if (workspaceId) next.set("workspace_id", `${workspaceId}`)
             else next.delete("workspace_id")
-            return next
-        }, { replace: true })
-    }, [workspaceId, setParams])
-
-    useEffect(() => {
-        setParams(prev => {
-            const next = new URLSearchParams(prev)
             if (campaignId) next.set("campaign_id", `${campaignId}`)
             else next.delete("campaign_id")
             return next
         }, { replace: true })
-    }, [campaignId, setParams])
-
+    }, [campaignId, workspaceId, setParams])
     const { modalProps } = useModal()
 
     //Al aplicar filtros vuelve a la primera página
-    const applyFilters = (data: { headers: LeadListParams, filters: LeadFilter[] }) => {
+    const applyFilters = useCallback((data: { headers: LeadListParams, filters: LeadFilter[] }) => {
+        if (!campaignId) return null
         const newHeaders = { ...headers, ...data.headers }
-        return fetchLeads(1, data.filters, newHeaders).then(() => {
+        return fetchLeads(1, data.filters, newHeaders, campaignId).then(() => {
             setHeaders(newHeaders)
             setFilters(data.filters)
             modalProps.handleClose()
         })
-    }
+    }, [campaignId, fetchLeads, headers, modalProps])
 
-    const autocompleteCommonProps = (list: (Campaign | Workspace)[], label: string) => ({
+    const orderList = useCallback((fieldId: number | string | null, ascending: boolean) => {
+        if (!campaignId) return null
+        const newHeaders = { ...headers, order_by: fieldId, ascending }
+        setHeaders(newHeaders)
+        fetchLeads(leads?.page ?? 1, filters, newHeaders, campaignId)
+    }, [campaignId, filters, headers, leads?.page, fetchLeads])
+
+    const { orderProps } = useOrderList(orderList)
+
+
+    const autocompleteCommonProps = useCallback((list: (Campaign | Workspace)[], label: string) => ({
         size: "small" as "small" | "medium",
         disablePortal: true,
         options: list.map(i => i.id),
         getOptionLabel: (option: number | null) => list.find(i => i.id === option)?.name ?? "",
         sx: { width: 200 },
         renderInput: (params: AutocompleteRenderInputParams) => <TextField {...params} label={label} />
-    })
+    }), [])
 
-    const orderList = useCallback((fieldId: number | string | null, ascending: boolean) => {
-        const newHeaders = { ...headers, order_by: fieldId, ascending }
-        setHeaders(newHeaders)
-        fetchLeads(leads?.page ?? 1, filters, newHeaders)
-    }, [campaignId, filters, headers, leads?.page, fetchLeads])
-    const orderProps = useOrderList(orderList)
 
     return (
         <Stack gap={3}>
@@ -127,7 +144,7 @@ export const LeadList = () => {
                 <Grid container alignItems="center" justifyContent="space-between" gap={2}>
                     <Grid container alignItems="center" gap={1}>
                         <Autocomplete {...autocompleteCommonProps(workspaces, "Espacio de Trabajo")}
-                            value={Number(workspaceId)} onChange={(_, val) => setWorkspaceId(val)}
+                            value={Number(workspaceId)} onChange={(_, val) => handleWorkspaceChange(val)}
                         />
                         <ArrowForwardIcon />
                         <Autocomplete {...autocompleteCommonProps(campaigns, "Campaña")}

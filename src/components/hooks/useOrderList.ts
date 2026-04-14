@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 
 export const useOrderList = (orderListFunction: (
     orderBy: number | string | null,
@@ -21,5 +21,7 @@ export const useOrderList = (orderListFunction: (
         orderList(null, true)
     }, [orderBy, ascending, orderList])
 
-    return ({ orderBy, ascending, handleOrderList })
+    const orderProps = useMemo(() => ({ orderBy, ascending, handleOrderList }), [orderBy, ascending, handleOrderList])
+
+    return ({ orderBy, ascending, handleOrderList, orderProps })
 }

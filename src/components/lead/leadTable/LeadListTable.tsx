@@ -1,18 +1,21 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect, useMemo, useState } from "react"
+import { memo, useCallback, useEffect, useMemo, useState } from "react"
 import { GenericModal } from "../../common/layout/GenericContainer"
 import LeadColumnSelector from "./LeadColumnSelector"
 import type { LeadField } from "../../../types/leadFields"
 import type { Lead } from "../../../types/leads"
 import { useDragAndDrop } from "../../hooks/useDragAndDrop"
 import { getLeadFields } from "../../leadFields/leadFieldServices"
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate, type NavigateFunction } from "react-router-dom"
 import { Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, useTheme, ButtonGroup, Badge, IconButton } from "@mui/material"
 import { alpha, lighten } from "@mui/material/styles"
 import { CommonButton } from "../../common/details/DetailsCommonButton"
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { LeadListCellValue } from "./LeadListCellValue"
+import type { Palette } from "@mui/material/styles"
+
+const TABLE_ROW_SX = { '&:last-child td, &:last-child th': { border: 0 } } as const
 
 interface LeadListTableProps {
     leads: Lead[],
@@ -30,7 +33,7 @@ interface LeadListTableProps {
     }
 }
 
-export const LeadListTable = ({ leads, campaignId, activeFilters = 0, modalProps, orderProps }: LeadListTableProps) => {
+export const LeadListTable = memo(({ leads, campaignId, activeFilters = 0, modalProps, orderProps }: LeadListTableProps) => {
 
     const DEFAULT_N_OF_FIELDS = 6
     const nav = useNavigate()
@@ -78,12 +81,13 @@ export const LeadListTable = ({ leads, campaignId, activeFilters = 0, modalProps
     }, [selectedIds])
 
 
-    const handleSelectedIds = (ids: number[]) => {
+    const handleSelectedIds = useCallback((ids: number[]) => {
         setSelectedIds(ids)
         modalProps.handleClose()
-    }
+    }, [modalProps])
 
     const { dragStyles, dragEvents } = useDragAndDrop(selectedIds, (items) => setSelectedIds(items))
+
     //Si hay leads, pero no hay columnas seleccionadas
     if (selectedColumns?.length === 0 && leads.length > 0) return (
         <Stack gap={3} my={3} alignItems="center">
@@ -134,58 +138,16 @@ export const LeadListTable = ({ leads, campaignId, activeFilters = 0, modalProps
                         <TableHead>
                             <TableRow>
                                 {selectedColumns.map((column, idx) =>
-                                    <TableCell align="left" key={column.id}
-                                        {...dragEvents(idx, false)}
-                                        sx={{
-                                            fontWeight: 600,
-                                            ...dragStyles(idx, "row")
-                                        }}
-                                    >
-                                        <Stack gap={1} direction="row" alignItems="center">
-                                            {column.name}
-                                            <IconButton size="small" onClick={() => orderProps.handleOrderList(column.id)}
-                                                sx={{
-                                                    backgroundColor: orderProps.orderBy === column.id ? alpha(palette.secondary.light, .7) : "none",
-                                                    color: orderProps.orderBy === column.id ? palette.secondary.contrastText : palette.text.primary,
-                                                    "&:hover": {
-                                                        backgroundColor: palette.secondary.main,
-                                                        color: palette.secondary.contrastText
-                                                    }
-                                                }}
-                                            >
-                                                {orderProps.orderBy !== column.id &&
-                                                    <ArrowUpwardIcon fontSize="small" />
-                                                }
-                                                {orderProps.orderBy === column.id &&
-                                                    (orderProps.ascending ?
-                                                        <ArrowUpwardIcon fontSize="small" />
-                                                        :
-                                                        <ArrowDownwardIcon fontSize="small" />
-                                                    )
-                                                }
-                                            </IconButton>
-                                        </Stack>
-                                    </TableCell>
+                                    <LeadTableHeaderRow key={column.id} column={column} idx={idx} orderProps={orderProps}
+                                        dragStyles={dragStyles} dragEvents={dragEvents} palette={palette} />
                                 )
                                 }
                             </TableRow>
                         </TableHead>
                         <TableBody>
                             {leads.map(lead => (
-                                <TableRow onClick={() => nav(`/leads/${lead.id}`)}
-                                    key={lead.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                                >
-                                    {selectedColumns.map((column) => {
-                                        const leadValue = lead.field_values.find(lv => lv.field_id === column.id)
-                                        return (
-                                            <TableCell component="td" scope="row" align="left" key={`${lead.id}-${column.id}`}>
-                                                <LeadListCellValue leadId={lead.id} fieldValue={leadValue} modalProps={modalProps}
-                                                    type={column.field_type_code} subtype={column.field_subtype_code} />
-                                            </TableCell>
-                                        )
-                                    })
-                                    }
-                                </TableRow>
+                                <LeadTableBodyRow key={lead.id}
+                                    lead={lead} modalProps={modalProps} nav={nav} selectedColumns={selectedColumns} />
                             ))}
                         </TableBody>
                     </Table>
@@ -193,5 +155,88 @@ export const LeadListTable = ({ leads, campaignId, activeFilters = 0, modalProps
             }
         </>
     )
-}
+})
 
+interface LeadTableHeaderRowProps {
+    column: LeadField,
+    idx: number,
+    orderProps: {
+        orderBy: string | number | null;
+        ascending: boolean;
+        handleOrderList: (field: string | number | null) => void;
+    },
+    palette: Palette,
+    dragStyles: (idx: number, palette: Palette, direction?: "column" | "row") => object,
+    dragEvents: (idx: number, dropLast?: boolean) => {
+        draggable: boolean;
+        onDragEnter: () => void;
+        onDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
+        onDragStart: () => void;
+        onDrop: () => void;
+    }
+}
+export const LeadTableHeaderRow = memo(({ column, idx, orderProps, dragStyles, dragEvents, palette }: LeadTableHeaderRowProps) => {
+    return (
+        <TableCell align="left"
+            {...dragEvents(idx, false)}
+            sx={{
+                fontWeight: 600,
+                ...dragStyles(idx, palette, "row")
+            }}
+        >
+            <Stack gap={1} direction="row" alignItems="center">
+                {column.name}
+                <IconButton size="small" onClick={() => orderProps.handleOrderList(column.id)}
+                    sx={{
+                        backgroundColor: orderProps.orderBy === column.id ? alpha(palette.secondary.light, .7) : "none",
+                        color: orderProps.orderBy === column.id ? palette.secondary.contrastText : palette.text.primary,
+                        "&:hover": {
+                            backgroundColor: palette.secondary.main,
+                            color: palette.secondary.contrastText
+                        }
+                    }}
+                >
+                    {orderProps.orderBy !== column.id &&
+                        <ArrowUpwardIcon fontSize="small" />
+                    }
+                    {orderProps.orderBy === column.id &&
+                        (orderProps.ascending ?
+                            <ArrowUpwardIcon fontSize="small" />
+                            :
+                            <ArrowDownwardIcon fontSize="small" />
+                        )
+                    }
+                </IconButton>
+            </Stack>
+        </TableCell>
+    )
+})
+
+interface LeadTableBodyRowProps {
+    lead: Lead,
+    nav: NavigateFunction,
+    selectedColumns: LeadField[],
+    modalProps: {
+        open: string | number | boolean;
+        handleOpen: (idModal: string | number) => void;
+        handleClose: () => void;
+    },
+}
+export const LeadTableBodyRow = memo(({ nav, lead, selectedColumns, modalProps }: LeadTableBodyRowProps) => {
+    return (
+        <TableRow onClick={() => nav(`/leads/${lead.id}`)}
+            key={lead.id} sx={TABLE_ROW_SX}
+        >
+            {selectedColumns.map((column) => {
+                const leadValue = lead.field_values.find(lv => lv.field_id === column.id)
+                return (
+                    <TableCell component="td" scope="row" align="left" key={`${lead.id}-${column.id}`}>
+                        <LeadListCellValue leadId={lead.id} fieldValue={leadValue} modalProps={modalProps}
+                            type={column.field_type_code} subtype={column.field_subtype_code} />
+                    </TableCell>
+                )
+            })
+            }
+        </TableRow>
+    )
+})

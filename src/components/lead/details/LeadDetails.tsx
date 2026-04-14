@@ -7,7 +7,7 @@ import type { LeadDetailed } from "../../../types/leads"
 import type { LeadFieldValue } from "../../../types/leadFields"
 import { formatMoney } from "../../../generalService.ts"
 import { disableLead, enableLead, getLead } from "../leadService.ts"
-import { useModal } from "../../hooks/useModal.tsx"
+import { useModal } from "../../hooks/useModal.ts"
 import { Link as RouterLink, useNavigate, useParams } from "react-router-dom"
 import { Accordion, AccordionDetails, AccordionSummary, Box, Container, Divider, Grid, Paper, Typography, Link, ButtonGroup, Stack } from "@mui/material"
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';

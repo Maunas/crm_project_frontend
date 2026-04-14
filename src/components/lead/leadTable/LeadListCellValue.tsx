@@ -1,3 +1,4 @@
+import { memo, useCallback, useMemo } from "react";
 import { formatMoney } from "../../../generalService"
 import type { LeadFieldValue } from "../../../types/leadFields"
 import { AddressValue, BoolValue, DateValue, ListValues, ModalValue, NewTabLink, PasswordValue, RatingValue } from "../LeadCommonComponents"
@@ -13,9 +14,9 @@ interface CellValueProps {
         handleClose: () => void;
     }
 }
-export const LeadListCellValue = ({ fieldValue, type, subtype, modalProps }: CellValueProps) => {
+export const LeadListCellValue = memo(({ fieldValue, type, subtype, modalProps }: CellValueProps) => {
 
-    const getValue = (field_value: LeadFieldValue | undefined) => {
+    const getValue = useCallback((field_value: LeadFieldValue | undefined) => {
         if (!field_value) return null
         if (field_value.value && field_value.value !== "") return `${field_value.value}`
         else if (field_value?.nomenclator_items?.length > 0) {
@@ -25,9 +26,9 @@ export const LeadListCellValue = ({ fieldValue, type, subtype, modalProps }: Cel
             return field_value.related_leads
         }
         else return null
-    }
+    }, [])
 
-    const value = getValue(fieldValue)
+    const value = useMemo(() => getValue(fieldValue), [getValue, fieldValue])
 
     if (!fieldValue || !value) {
         return "---"
@@ -50,4 +51,4 @@ export const LeadListCellValue = ({ fieldValue, type, subtype, modalProps }: Cel
         case "LEAD": return <ListValues value={value} idFieldValue={fieldValue.id} type="Lead" maxItems={3} isNav />
         default: return `${value}`
     }
-}
+})

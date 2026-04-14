@@ -21,7 +21,7 @@ interface LeadListFilters {
 interface LeadFiltersProps {
     campaignId: number,
     filters: LeadListParams & LeadListFilters,
-    applyFilters: (data: LeadListParams & LeadListFilters) => Promise<void>,
+    applyFilters: (data: LeadListParams & LeadListFilters) => Promise<void> | null,
     onClose: () => void
 }
 
@@ -57,7 +57,7 @@ export const LeadFilters = ({ campaignId, filters, applyFilters, onClose }: Lead
                 return { ...item, value: newValue }
             }) as LeadFilter[]
         }
-        applyFilters(formattedData).catch(e => setFormErrors(e, setError,
+        applyFilters(formattedData)?.catch(e => setFormErrors(e, setError,
             (e) => e.map(error => setError(`root`, { message: error.message }))
         ))
     }
@@ -118,7 +118,7 @@ export const LeadFilters = ({ campaignId, filters, applyFilters, onClose }: Lead
 interface LeadFiltersItemProps {
     idx: number,
     leadFields: LeadField[],
-    control: Control<LeadListParams & LeadListFilters, unknown, LeadListParams & LeadListFilters>,
+    control: Control<LeadListFilters, unknown, LeadListFilters>,
     register: UseFormRegister<LeadListFilters>,
     errors: FieldErrors<LeadListParams & LeadListFilters>,
     remove: UseFieldArrayRemove

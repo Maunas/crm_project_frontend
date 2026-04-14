@@ -4,13 +4,12 @@ import type { Paginable } from "../../types/common"
 export const useListPagination = <T,>(list: Paginable<T> | null, pageSize: number = 24) => {
   //Es la última página usada para buscar. Puede estar desincronizado de lo mostrado en el paginationComponent.
   const [fetchPage, setFetchPage] = useState<number>(1)
-  //Cuando la página es la misma, refresh fuerza el cambio
+  //Cuando la página es la misma (goToPageOne), refresh fuerza el cambio
   const [refresh, setRefresh] = useState<number>(0)
 
   const handlePage = useCallback((_: React.ChangeEvent<unknown>, value: number) => {
-    if (fetchPage === value) return setRefresh((value) => value + 1)
     setFetchPage(value)
-  }, [fetchPage, setRefresh])
+  }, [])
 
   const goToPageOne = useCallback(() => {
     if (fetchPage !== 1) return setFetchPage(1)
