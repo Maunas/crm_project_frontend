@@ -16,7 +16,7 @@ export const CustomChip = styled(Chip)(({ theme, color = "primary", size = "md" 
     const sizeObject = CHIP_SIZES[size as keyof typeof CHIP_SIZES]
 
     return [{
-        fontWeight: 600,
+        fontWeight: "600",
         height: "auto",
         border: "1px solid",
         borderRadius: ".75rem",

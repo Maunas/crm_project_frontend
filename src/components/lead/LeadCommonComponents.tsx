@@ -1,5 +1,5 @@
-import { Box, Grid, IconButton, Link, Rating, Stack, Typography } from '@mui/material'
-import { useState } from 'react'
+import { Box, IconButton, Link, Rating, Stack, Typography } from '@mui/material'
+import { memo, useCallback, useMemo, useState } from 'react'
 import { CustomBar, CustomChip } from '../common/details/StyledDisplayComponents'
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
@@ -28,47 +28,43 @@ export const AddressValue = ({ value, subtype }: { value: string, subtype: strin
         url={`https://www.google.com/maps/search/${value.replaceAll(" ", "+")}`} />
 }
 
+const CAPITALIZE_STYLE = { textTransform: "capitalize" }
+
 export const DateValue = ({ date, isDatetime = false, short = false }:
     { date: string, isDatetime?: boolean, short?: boolean }) => {
     const dayOfWeek = !short ? "dddd " : ""
     const time = isDatetime ? " HH:mm" : ""
     const dateFormat = `${dayOfWeek}DD/MM/YYYY${time}`
     return (
-        <Box textTransform="capitalize">
+        <div style={CAPITALIZE_STYLE}>
             {dayjs(date).format(dateFormat)}
-        </Box>
+        </div>
     )
 }
 
 
-export const PasswordValue = ({ value, allowShow = false }: { value: string, allowShow?: boolean }) => {
+export const HiddenValue = ({ value, hiddenValue = "●●●●●●●●", allowShow = false }: { value: string, hiddenValue?: string, allowShow?: boolean }) => {
     const [showPassword, setShowPassword] = useState<boolean>(false);
     return (
-        <Grid container spacing={2} alignItems="center">
-            {showPassword ? value : "●●●●●●●●"}
+        <Stack direction="row" gap={2} alignItems="center">
+            <div style={CAPITALIZE_STYLE}>{showPassword ? value : hiddenValue}</div>
             {allowShow &&
-                <IconButton color="primary" size="small" onClick={() => setShowPassword(!showPassword)}>
+                <IconButton color="primary" size="small" onClick={() => setShowPassword(prev => !prev)}>
                     {showPassword ?
                         <VisibilityOffIcon /> : <VisibilityIcon />
                     }
                 </IconButton>}
-        </Grid>
+        </Stack>
     )
 }
-export const CardValue = ({ value }: { value: string }) => {
-    const [showPassword, setShowPassword] = useState<boolean>(false);
-    return (
-        <Grid container spacing={2} alignItems="center">
-            {showPassword
-                ? `${value.substring(0, 4)}-${value.substring(4, 8)}-${value.substring(8, 12)}-${value.slice(-4)}`
-                : `●●●●-●●●●-●●●●-${value?.slice(-4)}`}
-            <IconButton color="primary" size="small" onClick={() => setShowPassword(!showPassword)}>
-                {showPassword ?
-                    <VisibilityOffIcon /> : <VisibilityIcon />
-                }
-            </IconButton>
-        </Grid>
-    )
+export const PasswordValue = ({ value, allowShow = false }: { value: string, allowShow?: boolean }) => {
+    return <HiddenValue value={value} allowShow={allowShow} />
+}
+
+export const CardValue = ({ value, allowShow = false }: { value: string, allowShow?: boolean }) => {
+    return <HiddenValue
+        value={`${value.substring(0, 4)}-${value.substring(4, 8)}-${value.substring(8, 12)}-${value.slice(-4)}`}
+        hiddenValue={`●●●●-●●●●-●●●●-${value?.slice(-4)}`} allowShow={allowShow} />
 }
 
 interface RatingProps {
@@ -126,11 +122,9 @@ export const ModalValue = ({ modalProps, idModal, type, subtype, value, size = "
         <GenericModal idModal={idModal} modalProps={modalProps!} size={size} actionType='DETAILS'
             buttonText={getBtnText()} containerSx={{ minWidth: "80vw" }} >
             <ModalValueContent type={type} subtype={subtype} value={value} />
-            <Grid container justifyContent="end">
-                <CommonButton actionType='CLOSE' variant="outlined" onClick={() => modalProps!.handleClose()}>
-                    Cerrar Modal
-                </CommonButton>
-            </Grid>
+            <CommonButton actionType='CLOSE' variant="outlined" sx={{ marginLeft: "auto" }} onClick={() => modalProps!.handleClose()}>
+                Cerrar Modal
+            </CommonButton>
         </GenericModal>
     )
 }
@@ -162,15 +156,12 @@ const ModalValueContent = ({ type, subtype, value }: ModalContentProps) => {
 }
 
 export const BoolValue = ({ value, size = "medium" }: { value: string, size?: "medium" | "small" }) => {
-    const boolValue = getFieldType("BOOL", value)
+    const boolValue = useMemo(() => getFieldType("BOOL", value), [value])
     return (
         <CustomChip color={boolValue ? "success" : "error"} size={size}
-            label={
-                <Stack direction="row" alignItems="center" justifyContent="space-between">
-                    {boolValue ?
-                        <><CheckIcon fontSize={size} /> Si </>
-                        : <><CloseIcon fontSize={size} /> No</>}
-                </Stack>
+            label={boolValue ?
+                <div><CheckIcon fontSize={size} /> Si </div>
+                : <div><CloseIcon fontSize={size} /> No</div>
             } sx={{ fontWeight: "bold" }} />
     )
 }
@@ -181,42 +172,64 @@ interface ListValuesProps {
     type: "Lead" | "Selector";
     maxItems?: number | false;
     isNav?: boolean;
+    renderAs?: "chips" | "text";
 }
-export const ListValues = ({ value, idFieldValue, type, isNav = false, maxItems = false }: ListValuesProps) => {
+const STOP_PROPAGATION = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => e.stopPropagation()
 
-    if (!value || typeof value === "string") return null
+export const ListValues = memo(({ value, idFieldValue, type, isNav = false, maxItems = false, renderAs = "chips" }: ListValuesProps) => {
 
-    const getLabel = (val: Lead | NomenclatorItem) => {
+    const typedValue = useMemo(() => value as Lead[] | NomenclatorItem[]
+        , [value])
+
+    const visibleItems = useMemo(() => {
+        const limit = typeof maxItems === "number" ? maxItems : undefined
+        return typedValue.slice(0, limit)
+    }, [typedValue, maxItems])
+
+    const getLabel = useCallback((val: Lead | NomenclatorItem) => {
         if (type === "Lead") return `${(val as Lead).field_values[0].value}`
         else return `${(val as NomenclatorItem).value}`
-    }
-    const getLink = (val: Lead | NomenclatorItem) => {
+    }, [type])
+
+    const getLink = useCallback((val: Lead | NomenclatorItem) => {
         if (type === "Lead") return `/leads/${val.id}`
         else return `/nomenclators/${(val as NomenclatorItem).nomenclator_id}?selected=${val.id}`
+    }, [type])
+
+    const overflowCount = useMemo(() => {
+        if (!maxItems) return 0
+        return typedValue.length > maxItems ? typedValue.length - maxItems : 0
+    }, [typedValue.length, maxItems])
+
+    if (!typedValue || typeof typedValue === "string") return null
+
+    if (renderAs === "text") {
+        const text = visibleItems.map(getLabel).join(", ")
+        return (
+            <div>
+                {text}
+                {overflowCount > 0 ? ` (+${overflowCount})` : ""}
+            </div>
+        )
     }
 
     return (
         <Stack direction="row" gap={.5} flexWrap="wrap">
-            <>
-                {value
-                    .slice(0, (typeof maxItems === "number" ? maxItems : undefined))
-                    .map(val =>
-                        <CustomChip
-                            onClick={e => e.stopPropagation()}
-                            key={`${idFieldValue}-${val.id}`}
-                            label={getLabel(val)}
-                            color="secondary" size="sm" sx={{ fontWeight: "bold" }}
-                            {...(isNav && { component: RouterLink, to: getLink(val) })}
-                        />
-                    )}
-                {maxItems && value.length > maxItems &&
-                    <CustomChip color="secondary" size="sm"
-                        onClick={e => e.stopPropagation()}
-                        label={`${value.length - maxItems} más`}
-                        sx={{ fontWeight: "bold" }} />
-                }
-            </>
-
+            {visibleItems.map(val =>
+                <CustomChip
+                    key={`${idFieldValue}-${val.id}`}
+                    label={getLabel(val)}
+                    color="secondary" size="sm"
+                    {...(isNav && {
+                        component: RouterLink, to: getLink(val),
+                        onClick: STOP_PROPAGATION
+                    })}
+                />
+            )}
+            {overflowCount > 0 &&
+                <CustomChip color="secondary" size="sm"
+                    label={`${overflowCount} más`} />
+            }
         </Stack>
     )
-}
+})

@@ -14,8 +14,11 @@ import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { LeadListCellValue } from "./LeadListCellValue"
 import type { Palette } from "@mui/material/styles"
+import type { LeadFieldValue } from "../../../types/leadFields"
 
 const TABLE_ROW_SX = { '&:last-child td, &:last-child th': { border: 0 } } as const
+const TABLE_SX = { minWidth: 650 } as const
+const DEFAULT_N_OF_FIELDS = 6
 
 interface LeadListTableProps {
     leads: Lead[],
@@ -35,7 +38,6 @@ interface LeadListTableProps {
 
 export const LeadListTable = memo(({ leads, campaignId, activeFilters = 0, modalProps, orderProps }: LeadListTableProps) => {
 
-    const DEFAULT_N_OF_FIELDS = 6
     const nav = useNavigate()
     const { palette } = useTheme()
 
@@ -134,7 +136,7 @@ export const LeadListTable = memo(({ leads, campaignId, activeFilters = 0, modal
             </GenericModal>
             {selectedColumns && selectedColumns.length > 0 &&
                 <TableContainer component={Paper}>
-                    <Table sx={{ minWidth: 650, backgroundColor: lighten(palette.background.paper, .1) }} aria-label="simple table">
+                    <Table sx={{ ...TABLE_SX, backgroundColor: lighten(palette.background.paper, .1) }} aria-label="simple table">
                         <TableHead>
                             <TableRow>
                                 {selectedColumns.map((column, idx) =>
@@ -176,26 +178,29 @@ interface LeadTableHeaderRowProps {
     }
 }
 export const LeadTableHeaderRow = memo(({ column, idx, orderProps, dragStyles, dragEvents, palette }: LeadTableHeaderRowProps) => {
+    const handleOrder = useCallback(() => orderProps.handleOrderList(column.id), [orderProps, column.id])
+    const headerSx = useMemo(() => ({
+        fontWeight: 600,
+        ...dragStyles(idx, palette, "row")
+    }), [dragStyles, idx, palette])
+
+    const iconButtonSx = useMemo(() => ({
+        backgroundColor: orderProps.orderBy === column.id ? alpha(palette.secondary.light, .7) : "none",
+        color: orderProps.orderBy === column.id ? palette.secondary.contrastText : palette.text.primary,
+        "&:hover": {
+            backgroundColor: palette.secondary.main,
+            color: palette.secondary.contrastText
+        }
+    }), [orderProps.orderBy, column.id, palette.secondary.contrastText, palette.secondary.light, palette.secondary.main, palette.text.primary])
+
     return (
         <TableCell align="left"
             {...dragEvents(idx, false)}
-            sx={{
-                fontWeight: 600,
-                ...dragStyles(idx, palette, "row")
-            }}
+            sx={headerSx}
         >
             <Stack gap={1} direction="row" alignItems="center">
                 {column.name}
-                <IconButton size="small" onClick={() => orderProps.handleOrderList(column.id)}
-                    sx={{
-                        backgroundColor: orderProps.orderBy === column.id ? alpha(palette.secondary.light, .7) : "none",
-                        color: orderProps.orderBy === column.id ? palette.secondary.contrastText : palette.text.primary,
-                        "&:hover": {
-                            backgroundColor: palette.secondary.main,
-                            color: palette.secondary.contrastText
-                        }
-                    }}
-                >
+                <IconButton size="small" onClick={handleOrder} sx={iconButtonSx}>
                     {orderProps.orderBy !== column.id &&
                         <ArrowUpwardIcon fontSize="small" />
                     }
@@ -223,12 +228,22 @@ interface LeadTableBodyRowProps {
     },
 }
 export const LeadTableBodyRow = memo(({ nav, lead, selectedColumns, modalProps }: LeadTableBodyRowProps) => {
+    const onRowClick = useCallback(() => nav(`/leads/${lead.id}`), [nav, lead.id])
+
+    // Evita O(leads*columnas*field_values.find) en cada render:
+    // lookup por columna para esta fila.
+    const fieldValueByFieldId = useMemo(() => {
+        const map = new Map<number, LeadFieldValue>()
+        for (const fv of lead.field_values) map.set(fv.field_id, fv)
+        return map
+    }, [lead.field_values])
+
     return (
-        <TableRow onClick={() => nav(`/leads/${lead.id}`)}
+        <TableRow onClick={onRowClick}
             key={lead.id} sx={TABLE_ROW_SX}
         >
             {selectedColumns.map((column) => {
-                const leadValue = lead.field_values.find(lv => lv.field_id === column.id)
+                const leadValue = fieldValueByFieldId.get(column.id)
                 return (
                     <TableCell component="td" scope="row" align="left" key={`${lead.id}-${column.id}`}>
                         <LeadListCellValue leadId={lead.id} fieldValue={leadValue} modalProps={modalProps}

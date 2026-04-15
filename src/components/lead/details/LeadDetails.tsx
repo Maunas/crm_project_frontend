@@ -9,7 +9,7 @@ import { formatMoney } from "../../../generalService.ts"
 import { disableLead, enableLead, getLead } from "../leadService.ts"
 import { useModal } from "../../hooks/useModal.ts"
 import { Link as RouterLink, useNavigate, useParams } from "react-router-dom"
-import { Accordion, AccordionDetails, AccordionSummary, Box, Container, Divider, Grid, Paper, Typography, Link, ButtonGroup, Stack } from "@mui/material"
+import { Accordion, AccordionDetails, AccordionSummary, Box, Container, Divider, Grid, Paper, Typography, ButtonGroup, Stack } from "@mui/material"
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { AddressValue, BoolValue, CardValue, DateValue, ListValues, ModalValue, NewTabLink, PasswordValue, RatingValue } from "../LeadCommonComponents.tsx"
 
@@ -182,15 +182,11 @@ export const LeadFieldByType = ({ fieldValue, value, type, modalProps, template 
     if (template) {
         switch (template) {
             case "INSTAGRAM_USER":
-                return <Link href={`https://instagram.com/${value?.substring(1)}`} target="_blank" rel="noopener">
-                    {value}
-                </Link>
+                return <NewTabLink url={`https://instagram.com/${value?.substring(1)}`} value={value} />
             case "POSTAL_CODE":
-                return <Link href={`https://www.google.com/maps/search/${value.replaceAll(" ", "+")}`} target="_blank" rel="noopener">
-                    {value}
-                </Link>
+                return <NewTabLink url={`https://www.google.com/maps/search/${value.replaceAll(" ", "+")}`} value={value} />
             case "CREDIT_CARD_SIMPLE":
-                return <CardValue value={value} />
+                return <CardValue value={value} allowShow />
         }
     }
 

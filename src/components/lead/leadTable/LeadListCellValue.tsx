@@ -47,8 +47,11 @@ export const LeadListCellValue = memo(({ fieldValue, type, subtype, modalProps }
             idModal={`file-${fieldValue?.id}`} modalProps={modalProps}
             type={type} subtype={subtype!} />
         case "BOOL": return <BoolValue value={`${value}`} size="small" />
-        case "SELECTOR": case "CHECKBOX": return <ListValues value={value} idFieldValue={fieldValue.id} type="Selector" maxItems={3} />
-        case "LEAD": return <ListValues value={value} idFieldValue={fieldValue.id} type="Lead" maxItems={3} isNav />
+        // En tabla priorizamos performance: texto compacto en vez de Chips
+        case "SELECTOR": case "CHECKBOX":
+            return <ListValues value={value} idFieldValue={fieldValue.id} type="Selector" maxItems={2} renderAs="text" />
+        case "LEAD":
+            return <ListValues value={value} idFieldValue={fieldValue.id} type="Lead" maxItems={2} renderAs="text" />
         default: return `${value}`
     }
 })
