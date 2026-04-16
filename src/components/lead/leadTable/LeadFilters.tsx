@@ -21,7 +21,7 @@ interface LeadListFilters {
 interface LeadFiltersProps {
     campaignId: number,
     filters: LeadListParams & LeadListFilters,
-    applyFilters: (data: LeadListParams & LeadListFilters) => Promise<void> | null,
+    applyFilters: (data: LeadListParams & LeadListFilters) => Promise<void> | null | undefined,
     onClose: () => void
 }
 

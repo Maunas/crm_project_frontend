@@ -1,6 +1,6 @@
 import { Tooltip } from "@mui/material"
 import { CustomChip } from "./StyledDisplayComponents"
-import type { ReactElement } from "react"
+import { memo, type ReactElement } from "react"
 import { useTheme } from "@mui/material/styles"
 import type { ColorTypes } from "../../../types/mui-theme.d"
 
@@ -12,7 +12,7 @@ interface ChipTooltip {
     children: ReactElement
 }
 
-export const ChipTooltip = ({ size, counter, value, color = "secondary", children }: ChipTooltip) => {
+export const ChipTooltip = memo(({ size, counter, value, color = "secondary", children }: ChipTooltip) => {
 
     const { palette } = useTheme()
 
@@ -37,4 +37,4 @@ export const ChipTooltip = ({ size, counter, value, color = "secondary", childre
         }} >
         {children}
     </Tooltip >)
-}
+})

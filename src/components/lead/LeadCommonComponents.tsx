@@ -74,7 +74,7 @@ interface RatingProps {
     size?: "small" | "medium"
 }
 
-export const RatingValue = ({ value, subtype, counter = false, size = "medium" }: RatingProps) => {
+export const RatingValue = memo(({ value, subtype, counter = false, size = "medium" }: RatingProps) => {
     const normaliseNPS = (value: number) => ((value - 1) * 100) / (10 - 1);
 
     return (
@@ -95,7 +95,7 @@ export const RatingValue = ({ value, subtype, counter = false, size = "medium" }
             </Stack >
         </ChipTooltip>
     )
-}
+})
 
 interface ModalProps {
     modalProps?: {
@@ -155,7 +155,7 @@ const ModalValueContent = ({ type, subtype, value }: ModalContentProps) => {
     return <Box>Tipo de contenido no soportado: {type}/{subtype}</Box>
 }
 
-export const BoolValue = ({ value, size = "medium" }: { value: string, size?: "medium" | "small" }) => {
+export const BoolValue = memo(({ value, size = "medium" }: { value: string, size?: "medium" | "small" }) => {
     const boolValue = useMemo(() => getFieldType("BOOL", value), [value])
     return (
         <CustomChip color={boolValue ? "success" : "error"} size={size}
@@ -164,7 +164,7 @@ export const BoolValue = ({ value, size = "medium" }: { value: string, size?: "m
                 : <div><CloseIcon fontSize={size} /> No</div>
             } sx={{ fontWeight: "bold" }} />
     )
-}
+})
 
 interface ListValuesProps {
     idFieldValue: number,
@@ -176,7 +176,7 @@ interface ListValuesProps {
 }
 const STOP_PROPAGATION = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => e.stopPropagation()
 
-export const ListValues = memo(({ value, idFieldValue, type, isNav = false, maxItems = false, renderAs = "chips" }: ListValuesProps) => {
+export const ListValues = memo(({ value, idFieldValue, type, isNav = false, maxItems = false }: ListValuesProps) => {
 
     const typedValue = useMemo(() => value as Lead[] | NomenclatorItem[]
         , [value])
@@ -202,16 +202,6 @@ export const ListValues = memo(({ value, idFieldValue, type, isNav = false, maxI
     }, [typedValue.length, maxItems])
 
     if (!typedValue || typeof typedValue === "string") return null
-
-    if (renderAs === "text") {
-        const text = visibleItems.map(getLabel).join(", ")
-        return (
-            <div>
-                {text}
-                {overflowCount > 0 ? ` (+${overflowCount})` : ""}
-            </div>
-        )
-    }
 
     return (
         <Stack direction="row" gap={.5} flexWrap="wrap">

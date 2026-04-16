@@ -1,6 +1,7 @@
 import { Chip, LinearProgress, type ChipTypeMap } from "@mui/material";
 import type { OverridableComponent } from "@mui/material/OverridableComponent";
 import { alpha, styled } from "@mui/material/styles";
+import { memo } from "react";
 
 const CHIP_OPACITY = 0.2
 const CHIP_SIZES = {
@@ -10,7 +11,7 @@ const CHIP_SIZES = {
     "xl": { padding: "10px 8px", gap: "6px", fontSize: "1rem" }
 }
 
-export const CustomChip = styled(Chip)(({ theme, color = "primary", size = "md" }) => {
+export const CustomChip = memo(styled(Chip)(({ theme, color = "primary", size = "md" }) => {
     const chipColor = color === "default" ? "contrast" : color //Soluciona una incompatibilidad con el valor "default"
     const paletteColor = theme.palette[chipColor] ?? theme.palette.primary
     const sizeObject = CHIP_SIZES[size as keyof typeof CHIP_SIZES]
@@ -31,9 +32,9 @@ export const CustomChip = styled(Chip)(({ theme, color = "primary", size = "md" 
         color: paletteColor.lighter,
     })
     ]
-}) as unknown as OverridableComponent<ChipTypeMap> & { defaultComponent: "div" };
+})) as unknown as OverridableComponent<ChipTypeMap> & { defaultComponent: "div" };
 
-export const CustomBar = styled(LinearProgress)(({ theme, color = "primary" }) => {
+export const CustomBar = memo(styled(LinearProgress)(({ theme, color = "primary" }) => {
     const paletteColor = color === "inherit" ? "primary" : color
     return [{
         width: "100%",
@@ -49,4 +50,4 @@ export const CustomBar = styled(LinearProgress)(({ theme, color = "primary" }) =
         },
     })
     ]
-})
+}))
