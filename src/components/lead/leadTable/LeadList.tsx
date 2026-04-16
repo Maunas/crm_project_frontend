@@ -18,7 +18,7 @@ export const LeadList = () => {
 
     const [leads, setLeads] = useState<Paginable<Lead> | null>(null)
 
-    const [headers, setHeaders] = useState<LeadListParams>({ only_active: true, page_size: 20 })
+    const [headers, setHeaders] = useState<LeadListParams>({ only_active: true, page_size: 15 })
     const [filters, setFilters] = useState<LeadFilter[]>([])
     const [workspaceId, setWorkspaceId] = useState<string | number | null>(params?.get("workspace_id") ?? null)
     const [campaignId, setCampaignId] = useState<string | number | null>(params?.get("campaign_id") ?? null)

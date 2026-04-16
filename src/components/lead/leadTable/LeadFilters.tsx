@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { memo, useEffect, useMemo, useState } from 'react'
 import type { LeadField } from '../../../types/leadFields'
 import { ControlledCheckbox, ControlledNumber } from '../../common/forms/CustomInputs'
 import { ControlledAutocomplete } from '../../common/forms/CustomMultipleInputs'
@@ -9,7 +9,7 @@ import { getLeadFields } from '../../leadFields/leadFieldServices'
 import { setFormErrors } from '../../../generalService'
 import { dictOperatorsMock } from '../../../mocks/operators'
 import { useFieldArray, useForm, useWatch, type Control, type FieldErrors, type Path, type UseFieldArrayRemove, type UseFormRegister } from 'react-hook-form'
-import { alpha, Button, Divider, Grid, Typography, Stack, ButtonGroup, useColorScheme, useTheme } from '@mui/material'
+import { alpha, Button, Divider, Grid, Typography, Stack, ButtonGroup, useColorScheme, useTheme, Fade } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close';
 import { CommonButton } from '../../common/details/DetailsCommonButton'
 
@@ -25,7 +25,7 @@ interface LeadFiltersProps {
     onClose: () => void
 }
 
-export const LeadFilters = ({ campaignId, filters, applyFilters, onClose }: LeadFiltersProps) => {
+export const LeadFilters = memo(({ campaignId, filters, applyFilters, onClose }: LeadFiltersProps) => {
 
     const [leadFields, setLeadFields] = useState<LeadField[]>([])
 
@@ -62,20 +62,30 @@ export const LeadFilters = ({ campaignId, filters, applyFilters, onClose }: Lead
         ))
     }
 
+    const pageSize = useWatch({ control, name: "headers.page_size" })
+
     return (
         <Stack gap={3}>
             <Typography variant="h2">Filtros de Búsqueda</Typography>
             <form onSubmit={handleSubmit(onSubmit)} >
                 <Grid container direction="column" gap={2}>
-                    <Grid container size="grow" alignItems="center" gap={1}>
-                        <Grid size="grow" minWidth="10rem">
-                            <ControlledNumber control={control} size="small" name="headers.page_size" label="Items por página" min={5} step={5}
-                                errorMessage={errors.headers?.page_size?.message} />
+                    <Grid container direction="column" gap={.5}>
+                        <Grid container size="grow" alignItems="center" gap={1}>
+                            <Grid container direction="column" gap={.5} size="grow" minWidth="10rem">
+                                <ControlledNumber control={control} size="small" name="headers.page_size" label="Items por página" min={5} step={5}
+                                    errorMessage={errors.headers?.page_size?.message} />
+
+                            </Grid>
+                            <Grid size="grow" minWidth="18rem">
+                                <ControlledCheckbox control={control} name="headers.only_active" label="Mostrar sólo Leads habilitados"
+                                    errorMessage={errors.headers?.only_active?.message} />
+                            </Grid>
                         </Grid>
-                        <Grid size="grow" minWidth="18rem">
-                            <ControlledCheckbox control={control} name="headers.only_active" label="Mostrar sólo Leads habilitados"
-                                errorMessage={errors.headers?.only_active?.message} />
-                        </Grid>
+                        <Fade in={(pageSize ?? 0) >= 20} >
+                            <Typography variant="subtitle2" color="warning" fontWeight={600}>
+                                Advertencia: Muchas filas pueden ralentizar la carga.
+                            </Typography>
+                        </Fade>
                     </Grid>
                     {!!campaignId &&
                         <>
@@ -113,7 +123,7 @@ export const LeadFilters = ({ campaignId, filters, applyFilters, onClose }: Lead
             </form >
         </Stack>
     )
-}
+})
 
 interface LeadFiltersItemProps {
     idx: number,
@@ -124,7 +134,7 @@ interface LeadFiltersItemProps {
     remove: UseFieldArrayRemove
 }
 
-export const LeadFiltersItem = ({ idx, leadFields, control, register, errors, remove }: LeadFiltersItemProps) => {
+export const LeadFiltersItem = memo(({ idx, leadFields, control, register, errors, remove }: LeadFiltersItemProps) => {
 
     const { systemMode } = useColorScheme()
     const theme = useTheme()
@@ -196,7 +206,8 @@ export const LeadFiltersItem = ({ idx, leadFields, control, register, errors, re
             </Button>
         </Grid >
     )
-}
+})
+
 interface LeadFormFieldTypeProps {
     register: UseFormRegister<LeadListFilters>,
     control: Control<LeadListFilters>,
@@ -206,7 +217,7 @@ interface LeadFormFieldTypeProps {
     errorMessage?: string
 }
 
-const LeadFormFieldType = ({ register, control, name, label, leadField, errorMessage }: LeadFormFieldTypeProps) => {
+const LeadFormFieldType = memo(({ register, control, name, label, leadField, errorMessage }: LeadFormFieldTypeProps) => {
     if (!leadField) return
     switch (leadField.field_type_code) {
         case "DATE":
@@ -230,4 +241,4 @@ const LeadFormFieldType = ({ register, control, name, label, leadField, errorMes
             return <LeadFormText label={label} name={name} register={register} size="small"
                 errorMessage={errorMessage} />
     }
-}
+})

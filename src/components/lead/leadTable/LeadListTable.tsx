@@ -94,7 +94,7 @@ export const LeadListTable = memo(({ leads, campaignId, activeFilters = 0, modal
     if (selectedColumns?.length === 0 && leads.length > 0) return (
         <Stack gap={3} my={3} alignItems="center">
             <GenericModal idModal="columns_selector" modalProps={modalProps} buttonText="Modificar Columnas" maxWidth="md" showButton={false}>
-                <LeadColumnSelector itemsList={leadFields} selectedIds={selectedIds!} handleSelectedIds={handleSelectedIds} handleClose={modalProps.handleClose} showField="name" />
+                <LeadColumnSelector originalList={leadFields} selectedIds={selectedIds!} handleSelectedIds={handleSelectedIds} handleClose={modalProps.handleClose} showField="name" />
             </GenericModal>
             <Stack gap={2} alignItems="center">
                 <Typography variant="h3">No hay leads para presentar.</Typography>
@@ -132,7 +132,7 @@ export const LeadListTable = memo(({ leads, campaignId, activeFilters = 0, modal
     if (leads.length > 0) return (
         <>
             <GenericModal idModal="columns_selector" modalProps={modalProps} buttonText="Modificar Columnas" maxWidth="md" showButton={false}>
-                <LeadColumnSelector itemsList={leadFields} selectedIds={selectedIds!} handleSelectedIds={handleSelectedIds} handleClose={modalProps.handleClose} showField="name" />
+                <LeadColumnSelector originalList={leadFields} selectedIds={selectedIds!} handleSelectedIds={handleSelectedIds} handleClose={modalProps.handleClose} showField="name" />
             </GenericModal>
             {selectedColumns && selectedColumns.length > 0 &&
                 <TableContainer component={Paper}>
