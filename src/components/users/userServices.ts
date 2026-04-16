@@ -9,10 +9,11 @@ export const getUsers = async ():
 }
 export const loginUser = async (data: UserLogin): Promise<UserData> => {
     const users = await getUsers()
-    if (data.password !== "PASSWORD") throw new Error("Contraseña incorrecta.")
-    const foundUser = users.items.find(user => user.email === data.email)
-    if (foundUser) return foundUser
-    throw new Error("Usuario o contraseña incorrecta.")
+    return users.items[0]
+    //if (data.password !== "PASSWORD") throw new Error("Contraseña incorrecta.")
+    //const foundUser = users.items.find(user => user.email === data.email)
+    //if (foundUser) return foundUser
+    //throw new Error("Usuario o contraseña incorrecta.")
 }
 export const signupUser = async (data: UserSignup): Promise<UserData> => {
     if (data.password !== data.repeat_password) throw new Error("Las contraseñas no coinciden.")

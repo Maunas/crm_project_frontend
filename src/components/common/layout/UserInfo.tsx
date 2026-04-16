@@ -1,6 +1,6 @@
 import { Avatar, Box, Button, Divider, FormControlLabel, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Stack, Typography } from '@mui/material'
 import MoreIcon from '@mui/icons-material/More';
-import React from 'react'
+import React, { memo } from 'react'
 import { AccountCircle, Check } from '@mui/icons-material';
 import type { UserContextItems } from '../../users/UserProvider';
 import { UserContext } from '../contexts';
@@ -9,7 +9,7 @@ import theme from '../../../theme/theme';
 import { MaterialUISwitch } from './ThemeSlider';
 import { useColorScheme, useTheme } from '@mui/material/styles';
 
-export const UserInfo = () => {
+export const UserInfo = memo(() => {
 
     const { user, logout, activeOrganizations, selectedOrg, setSelectedOrg } = React.useContext<UserContextItems>(UserContext)
 
@@ -78,9 +78,9 @@ export const UserInfo = () => {
             }
             <Divider />
             <MenuItem >
-                <FormControlLabel sx={{width:"9rem"}}
+                <FormControlLabel sx={{ width: "9rem" }}
                     control={<MaterialUISwitch checked={palette.mode === "dark"}
-                    onChange={(_, checked) => handleMode(checked)} />}
+                        onChange={(_, checked) => handleMode(checked)} />}
                     label={palette.mode === "dark" ? "Modo Oscuro" : "Modo Claro"}
                 />
             </MenuItem>
@@ -177,6 +177,5 @@ export const UserInfo = () => {
             </IconButton>
         </Box>
     </>)
-
-
 }
+)

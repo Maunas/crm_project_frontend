@@ -1,16 +1,16 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useMemo, useState } from "react"
-import { FormErrorMessage } from "../../theme/styledMUIFormComponents"
+import { FormErrorMessage } from "../../common/forms/StyledFormComponents"
 import { LeadFormAddress, LeadFormBool, LeadFormCheckbox, LeadFormFile, LeadFormMoney, LeadFormNumber, LeadFormPassword, LeadFormRating, LeadFormRelatedLead, LeadFormSelector, LeadFormText } from "./LeadFormFieldTypes"
-import type { Lead, LeadPost, LeadPostValue } from "../../types/leads"
-import type { LeadField, LeadFieldValue } from "../../types/leadFields"
-import type { NomenclatorItem } from "../../types/nomenclators"
-import { createFormDataFromLead, getLeads, getSelectorField, setLeadFormErrors, updateSelectorOptions } from "./leadService"
-import { getLeadFields } from "../leadFields/leadFieldServices"
-import { getNomenclatorItems } from "../nomenclators/nomenclatorService"
+import type { Lead, LeadPost, LeadPostValue } from "../../../types/leads"
+import type { LeadField, LeadFieldValue } from "../../../types/leadFields"
+import type { NomenclatorItem } from "../../../types/nomenclators"
+import { createFormDataFromLead, getLeads, getSelectorField, setLeadFormErrors, updateSelectorOptions } from "../leadService"
+import { getLeadFields } from "../../leadFields/leadFieldServices"
+import { getNomenclatorItems } from "../../nomenclators/nomenclatorService"
 import { useFieldArray, useForm, type Control, type Path, type UseFormRegister } from "react-hook-form"
 import { Grid, ButtonGroup, Stack } from "@mui/material"
-import { CommonButton } from "../common/details/DetailsCommonButton"
+import { CommonButton } from "../../common/details/DetailsCommonButton"
 
 //Para permitir mantener los datos de cada campo
 export interface LeadPostFormValues extends LeadPostValue {

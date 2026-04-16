@@ -1,12 +1,12 @@
 import { createBrowserRouter } from "react-router-dom";
 import MainLayout from "./components/common/mainLayout";
 import { NotFound } from "./pages/NotFound";
-import { LeadDetails } from "./components/lead/LeadDetails";
+import { LeadDetails } from "./components/lead/details/LeadDetails";
 import { CampaignDetails } from "./components/campaigns/CampaignDetails";
 import { WorkspaceList } from "./components/workspaces/WorkspaceList";
 import { GenericContainer } from "./components/common/layout/GenericContainer";
-import { CreateLeadFormPage, UpdateLeadFormPage } from "./components/lead/LeadFormWraper";
-import { LeadList } from "./components/lead/LeadList";
+import { CreateLeadFormPage, UpdateLeadFormPage } from "./components/lead/leadForm/LeadFormWraper";
+import { LeadList } from "./components/lead/leadTable/LeadList";
 import { OrganizationList } from "./components/organizations/OrganizationList";
 import { NomenclatorList } from "./components/nomenclators/NomenclatorList";
 import { NomenclatorItemList } from "./components/nomenclators/NomenclatorItemList";

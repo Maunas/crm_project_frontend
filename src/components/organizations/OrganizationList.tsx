@@ -2,7 +2,7 @@ import { useContext } from 'react'
 import { ContainerWithSidebar } from '../common/layout/GenericContainer'
 import { CommonButton, DisableButton } from '../common/details/DetailsCommonButton'
 import { EnabledIcon } from '../common/lists/Badges'
-import { CustomChip } from '../../theme/styledMUIDisplayComponents'
+import { CustomChip } from '../common/details/StyledDisplayComponents'
 import { OrganizationFormSidebar } from './OrganizationForm'
 import { useSidebar } from '../hooks/useSidebar'
 import type { OrganizationDetailed } from '../../types/campaigns'
@@ -25,7 +25,7 @@ export const OrganizationList = () => {
 
     const { userOrganizations, selectedOrg, fetchOrganizations, updateOrganizations } = useContext<UserContextItems>(UserContext)
 
-    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<OrganizationDetailed>(params, setParams, getOrganization, "DETAILS_ORG", 'id')
+    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<OrganizationDetailed>("id", params, setParams, getOrganization, "DETAILS_ORG")
 
     const updateEntityOnList = (newOrg: OrganizationDetailed, mode: string) => {
         switch (mode) {

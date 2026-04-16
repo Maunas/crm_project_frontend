@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { Grid, List, Stack, ListItemButton, ListItemIcon, ListItemText, Checkbox, Button, Paper, ButtonGroup, Typography, Box } from '@mui/material';
+import { Grid, List, Stack, ListItemButton, ListItemIcon, ListItemText, Checkbox, Button, Paper, ButtonGroup, Typography, Box, Fade } from '@mui/material';
 import { alpha, lighten, useTheme } from '@mui/material/styles';
-import { CommonButton } from '../common/details/DetailsCommonButton';
+import { CommonButton } from '../../common/details/DetailsCommonButton';
 
 function not(a: readonly number[], b: readonly number[]) {
   return a.filter((value) => !b.includes(value));
@@ -12,7 +12,7 @@ function intersection(a: readonly number[], b: readonly number[]) {
 }
 
 interface LeadColumnSelectorProps<T> {
-  itemsList: T[],
+  originalList: T[],
   selectedIds: number[],
   handleSelectedIds: (ids: number[]) => void,
   handleClose: () => void,
@@ -20,11 +20,11 @@ interface LeadColumnSelectorProps<T> {
 }
 
 export default function LeadColumnSelector<T extends { id: number }>
-  ({ itemsList, selectedIds, handleSelectedIds, handleClose, showField }: LeadColumnSelectorProps<T>) {
+  ({ originalList, selectedIds, handleSelectedIds, handleClose, showField }: LeadColumnSelectorProps<T>) {
 
   const [checked, setChecked] = React.useState<readonly number[]>([]);
-  const [left, setLeft] = React.useState<number[]>(not(itemsList.map(f => f.id), selectedIds) ?? []);
-  const [right, setRight] = React.useState<number[]>(intersection(itemsList.map(f => f.id), selectedIds));
+  const [left, setLeft] = React.useState<number[]>(not(originalList.map(f => f.id), selectedIds) ?? []);
+  const [right, setRight] = React.useState<number[]>(intersection(originalList.map(f => f.id), selectedIds));
 
   const leftChecked = intersection(checked, left);
   const rightChecked = intersection(checked, right);
@@ -132,7 +132,7 @@ export default function LeadColumnSelector<T extends { id: number }>
           >
             {items.map((value: number, idx) => {
               const labelId = `transfer-list-item-${value}-label`;
-              const fieldData = itemsList.find(field => field.id === value)
+              const fieldData = originalList.find(field => field.id === value)
               if (!fieldData) return
               return (
                 <ListItemButton
@@ -174,7 +174,7 @@ export default function LeadColumnSelector<T extends { id: number }>
     )
   };
 
-  return ( 
+  return (
     <Stack alignItems="start" spacing="1rem">
       <Typography variant="h2" >Seleccionar Columnas</Typography>
       <Grid
@@ -229,7 +229,13 @@ export default function LeadColumnSelector<T extends { id: number }>
         <Grid size="grow" minWidth="13rem">
           <CustomList isLeftList={false} title={"Columnas a Mostrar"} />
         </Grid>
+
       </Grid>
+      <Fade in={(right?.length ?? 0) >= 8} >
+        <Typography variant="subtitle2" color="warning" fontWeight={600}>
+          Advertencia: Muchas columnas pueden ralentizar la carga.
+        </Typography>
+      </Fade>
       <Stack width="100%" alignItems="end">
         <ButtonGroup >
           <CommonButton actionType='CLOSE' variant="outlined" onClick={() => handleClose()}>

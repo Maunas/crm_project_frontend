@@ -5,7 +5,7 @@ import { UpdateCampaignFormSidebar } from './CampaignForms'
 import { LeadFieldTable } from '../leadFields/LeadFieldTable'
 import { LeadFieldDetail } from '../leadFields/LeadFieldDetail'
 import { LeadFieldFormSidebar } from '../leadFields/LeadFieldForm'
-import { CustomChip } from '../../theme/styledMUIDisplayComponents'
+import { CustomChip } from '../common/details/StyledDisplayComponents'
 import type { CampaignDetailed } from '../../types/campaigns'
 import type { LeadFieldDetailed } from '../../types/leadFields'
 import { disableCampaign, enableCampaign, getCampaign } from './campaignServices'
@@ -22,7 +22,7 @@ export const CampaignDetails = () => {
 
     const [params, setParams] = useSearchParams()
 
-    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<LeadFieldDetailed>(params, setParams, getLeadField, "DETAILS_FIELD", 'id')
+    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<LeadFieldDetailed>("id", params, setParams, getLeadField, "DETAILS_FIELD")
 
     const nav = useNavigate()
 
@@ -147,10 +147,10 @@ export const CampaignDetails = () => {
                             <Grid size="grow" minWidth="16rem" >
                                 <Typography variant="h2">Acciones</Typography>
                             </Grid >
-                                <ButtonGroup sx={{ marginLeft: "auto" }}>
-                                    <CommonButton handleClick={() => handleSidebar("UPDATE_CMP", null)} actionType="MODIFY">Modificar</CommonButton>
-                                    <DisableButton active={campaign.active} handleActive={() => handleActiveCampaign(campaign)} />
-                                </ButtonGroup>
+                            <ButtonGroup sx={{ marginLeft: "auto" }}>
+                                <CommonButton handleClick={() => handleSidebar("UPDATE_CMP", null)} actionType="MODIFY">Modificar</CommonButton>
+                                <DisableButton active={campaign.active} handleActive={() => handleActiveCampaign(campaign)} />
+                            </ButtonGroup>
                         </Grid>
                         <Divider />
                         <LeadFieldTable campaign={campaign} leadFields={leadFields} updateLeadFields={updateLeadFields}

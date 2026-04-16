@@ -26,7 +26,7 @@ export const WorkspaceList = () => {
 
     const [workspaces, setWorkspaces] = useState<Paginable<WorkspaceDetailed> | null>(null)
 
-    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<WorkspaceDetailed | CampaignDetailed>(params, setParams, getWorkspace, "DETAILS_WSP", "id")
+    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<WorkspaceDetailed | CampaignDetailed>("id", params, setParams, getWorkspace, "DETAILS_WSP")
 
     const { fetchPage, pageSize, refresh, pageComponentProps } = useListPagination(workspaces)
 

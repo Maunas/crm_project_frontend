@@ -1,5 +1,5 @@
 import { CommonButton, DisableButton } from "../common/details/DetailsCommonButton"
-import { CustomChip } from "../../theme/styledMUIDisplayComponents"
+import { CustomChip } from "../common/details/StyledDisplayComponents"
 import type { NomenclatorDetailed } from "../../types/nomenclators"
 import { ButtonGroup, Divider, Grid, Link, Stack, Typography } from "@mui/material"
 import { Link as RouterLink } from "react-router-dom"

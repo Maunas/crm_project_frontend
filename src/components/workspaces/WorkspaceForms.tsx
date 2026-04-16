@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react"
 import { RegisteredTextInput } from "../common/forms/CustomInputs"
-import { FormErrorMessage } from "../../theme/styledMUIFormComponents"
+import { FormErrorMessage } from "../common/forms/StyledFormComponents"
 import { CommonButton } from "../common/details/DetailsCommonButton"
 import type { Workspace, WorkspaceDetailed, WorkspacePost } from "../../types/campaigns"
 import { setFormErrors } from "../../generalService"
@@ -78,7 +78,7 @@ export const WorkspaceForm = ({ existingWsp, submit, onCancel }: WorkspaceProps)
                 {errors?.root &&
                     <FormErrorMessage >{errors?.root?.message}</FormErrorMessage>
                 }
-                <ButtonGroup sx={{marginLeft:"auto"}}>
+                <ButtonGroup sx={{ marginLeft: "auto" }}>
                     <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel}>
                         Cancelar
                     </CommonButton>

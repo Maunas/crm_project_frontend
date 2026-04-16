@@ -6,7 +6,7 @@ import { Button, ButtonGroup, Grid, Paper, Stack, Typography } from "@mui/materi
 import { useForm } from "react-hook-form"
 import { setFormErrors } from "../../generalService"
 import { PasswordField, RegisteredTextInput } from "../common/forms/CustomInputs"
-import { FormErrorMessage } from "../../theme/styledMUIFormComponents"
+import { FormErrorMessage } from "../common/forms/StyledFormComponents"
 import { CommonButton } from "../common/details/DetailsCommonButton"
 
 export const SignupFormPage = () => {

@@ -56,3 +56,8 @@ declare module '@mui/material/Chip' {
     xl: true;
   }
 }
+declare module '@mui/material/LinearProgress' {
+  interface LinearProgressProps {
+    size?: "small" | "medium";
+  }
+}

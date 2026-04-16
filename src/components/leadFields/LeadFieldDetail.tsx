@@ -7,7 +7,7 @@ import dayjs from 'dayjs'
 import { Grid, Stack, Typography, Divider, Link, ButtonGroup, Box } from '@mui/material'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { ValidationList } from '../validations/ValidationList';
-import { CustomChip } from '../../theme/styledMUIDisplayComponents';
+import { CustomChip } from '../common/details/StyledDisplayComponents';
 import { alpha, useTheme } from '@mui/material/styles';
 
 interface LeadFieldDetailProps {

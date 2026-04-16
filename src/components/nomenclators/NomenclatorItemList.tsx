@@ -29,7 +29,7 @@ export const NomenclatorItemList = () => {
 
     const [params, setParams] = useSearchParams()
 
-    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<NomenclatorItemDetailed>(params, setParams, getNomenclatorItem, "DETAILS_NOM", 'id')
+    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<NomenclatorItemDetailed>("id", params, setParams, getNomenclatorItem, "DETAILS_NOM")
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(nomenclatorItems)
 
@@ -112,49 +112,49 @@ export const NomenclatorItemList = () => {
                         }
                     </ButtonGroup>
                 </Grid>
-            <Stack gap={2}>
-                {
-                    nomenclatorItems && nomenclatorItems.items?.length > 0 ?
-                        <List>
-                            {nomenclatorItems.items.map(nom =>
-                                <ListItem key={nom.id} disablePadding secondaryAction={
-                                    <Grid container gap={1} alignItems="center">
-                                        <IconButton edge="end" aria-label="details" onClick={() => handleSidebar("DETAILS_NOM", nom)}>
-                                            <SearchIcon />
-                                        </IconButton>
-                                        {nom.organization_id && <>
-                                            <IconButton edge="end" aria-label="modify" onClick={() => handleSidebar("UPDATE_NOM", nom)}>
-                                                <EditIcon />
+                <Stack gap={2}>
+                    {
+                        nomenclatorItems && nomenclatorItems.items?.length > 0 ?
+                            <List>
+                                {nomenclatorItems.items.map(nom =>
+                                    <ListItem key={nom.id} disablePadding secondaryAction={
+                                        <Grid container gap={1} alignItems="center">
+                                            <IconButton edge="end" aria-label="details" onClick={() => handleSidebar("DETAILS_NOM", nom)}>
+                                                <SearchIcon />
                                             </IconButton>
-                                            <IconButton edge="end" aria-label={nom.active ? "delete" : "restore"}
-                                                onClick={() => handleActive(nom)}>
-                                                {nom.active ?
-                                                    <DeleteIcon color="error" /> :
-                                                    <RestoreFromTrashIcon color="success" />
-                                                }
-                                            </IconButton>
-                                        </>}
-                                    </Grid>
-                                }>
-                                    <ListItemButton onClick={() => handleSidebar("DETAILS_NOM", nom)} >
-                                        <ListItemText primary={
-                                            <Stack gap={1} direction="row">
-                                                <Typography fontWeight="bold">{nom.value}</Typography>
-                                            </Stack>
-                                        }
-                                            secondary={!nom.organization_id && "(Opción del Sistema)"} />
-                                    </ListItemButton>
-                                </ListItem>
-                            )}
-                        </List>
-                        : <Grid container gap={2} justifyContent="center" alignItems="center" direction="column">
-                            <Typography variant="h4">No se han encontrado opciones en este nomenclador...</Typography>
-                            <CommonButton actionType='CREATE' onClick={() => { handleSidebar("CREATE_NOM", null) }} variant="contained">Crear Opción</CommonButton>
-                        </Grid>
-                }
-            <PaginationComponent {...pageComponentProps} />
-            </Stack> 
-            </Stack> 
+                                            {nom.organization_id && <>
+                                                <IconButton edge="end" aria-label="modify" onClick={() => handleSidebar("UPDATE_NOM", nom)}>
+                                                    <EditIcon />
+                                                </IconButton>
+                                                <IconButton edge="end" aria-label={nom.active ? "delete" : "restore"}
+                                                    onClick={() => handleActive(nom)}>
+                                                    {nom.active ?
+                                                        <DeleteIcon color="error" /> :
+                                                        <RestoreFromTrashIcon color="success" />
+                                                    }
+                                                </IconButton>
+                                            </>}
+                                        </Grid>
+                                    }>
+                                        <ListItemButton onClick={() => handleSidebar("DETAILS_NOM", nom)} >
+                                            <ListItemText primary={
+                                                <Stack gap={1} direction="row">
+                                                    <Typography fontWeight="bold">{nom.value}</Typography>
+                                                </Stack>
+                                            }
+                                                secondary={!nom.organization_id && "(Opción del Sistema)"} />
+                                        </ListItemButton>
+                                    </ListItem>
+                                )}
+                            </List>
+                            : <Grid container gap={2} justifyContent="center" alignItems="center" direction="column">
+                                <Typography variant="h4">No se han encontrado opciones en este nomenclador...</Typography>
+                                <CommonButton actionType='CREATE' onClick={() => { handleSidebar("CREATE_NOM", null) }} variant="contained">Crear Opción</CommonButton>
+                            </Grid>
+                    }
+                    <PaginationComponent {...pageComponentProps} />
+                </Stack>
+            </Stack>
         </ContainerWithSidebar >
     )
 }

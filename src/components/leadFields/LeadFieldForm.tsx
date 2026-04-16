@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ControlledCheckbox, ControlledTextInput } from "../common/forms/CustomInputs";
 import { ControlledAutocomplete, ControlledRadio } from "../common/forms/CustomMultipleInputs";
-import { FormErrorMessage } from "../../theme/styledMUIFormComponents";
+import { FormErrorMessage } from "../common/forms/StyledFormComponents";
 import type {
   InputMaskTemplate,
   LeadFieldDetailed, LeadFieldPost, LeadFieldSection, LeadFieldTemplate, LeadFieldTypeDetailed,
