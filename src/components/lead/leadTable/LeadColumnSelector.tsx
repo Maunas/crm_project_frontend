@@ -22,7 +22,7 @@ interface LeadColumnSelectorProps<T> {
 export default function LeadColumnSelector<T extends { id: number }>
   ({ originalList, selectedIds, handleSelectedIds, handleClose, showField }: LeadColumnSelectorProps<T>) {
 
-  const [checked, setChecked] = React.useState<readonly number[]>([]);
+  const [checked, setChecked] = React.useState<number[]>([]);
   const [left, setLeft] = React.useState<number[]>(not(originalList.map(f => f.id), selectedIds) ?? []);
   const [right, setRight] = React.useState<number[]>(intersection(originalList.map(f => f.id), selectedIds));
 
@@ -63,116 +63,21 @@ export default function LeadColumnSelector<T extends { id: number }>
     setChecked(not(checked, rightChecked));
   };
 
-  const { palette } = useTheme()
-
   //Permite identificar el objeto cuando paso de una lista a otra
-  const globalDraggedIndex = React.useRef<number | null>(null)
+  const [globalDraggedIndex, setGlobalDraggedIndex] = React.useState<{ idx: number, source: "left" | "right" } | null>(null)
 
-  interface props {
-    isLeftList: boolean, title?: string
-  }
 
-  const CustomList = ({ isLeftList = true, title }: props) => {
-    const [dragIndex, setDragIndex] = React.useState<number | null>(null)
-    const [dragOver, setDragOver] = React.useState<number | null>(null)
 
-    const items = isLeftList ? [...left] : [...right]
-    const setter = isLeftList ? setLeft : setRight
+  const originalListLookup = React.useMemo(() => {
+    const lookup = new Map<number, T>()
+    originalList.forEach((item) => lookup.set(item.id, item))
+    return lookup
+  }, [originalList])
 
-    const contraryItems = isLeftList ? [...right] : [...left]
-    const contrarySetter = isLeftList ? setRight : setLeft
-
-    const handleDragStart = (index: number) => {
-      setDragIndex(index)
-      globalDraggedIndex.current = index
-    }
-    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-      e.preventDefault()
-    }
-
-    const handleDrop = (index: number, last: boolean = false) => {
-      if (globalDraggedIndex.current == null) return
-      let draggedItem
-      //Si dragIndex es nulo, es transferencia entre listas
-      if (dragIndex != null) {
-        draggedItem = items[globalDraggedIndex.current]
-        items.splice(dragIndex, 1)
-      } else {
-        draggedItem = contraryItems[globalDraggedIndex.current]
-        contraryItems.splice(globalDraggedIndex.current, 1)
-        contrarySetter(contraryItems)
-      }
-      if (last) {
-        items.push(draggedItem)
-      } else {
-        items.splice(index, 0, draggedItem)
-      }
-      setter(items)
-      setDragIndex(null)
-      setDragOver(null)
-      globalDraggedIndex.current = null
-    }
-
-    const handleDragEnter = (index: number) => {
-      setDragOver(index)
-    }
-
-    return (
-      <Paper sx={{ backgroundColor: lighten(palette.background.paper, .15), overflow: "hidden" }} >
-        {title &&
-          <Box p={1} sx={{
-            backgroundColor: palette.primary.light,
-            color: palette.primary.contrastText
-          }}>
-            <Typography variant="body2" fontWeight={600}>{title}</Typography>
-          </Box>}
-        <Stack height="25rem">
-          <List dense component="div" role="list"
-            sx={{ overflow: 'auto', padding: 0, marginTop: ".5rem", }}
-          >
-            {items.map((value: number, idx) => {
-              const labelId = `transfer-list-item-${value}-label`;
-              const fieldData = originalList.find(field => field.id === value)
-              if (!fieldData) return
-              return (
-                <ListItemButton
-                  draggable
-                  onDragStart={() => handleDragStart(idx)}
-                  onDragOver={handleDragOver}
-                  onDragEnter={() => handleDragEnter(idx)}
-                  onDrop={() => handleDrop(idx)}
-                  key={value}
-                  role="listitem"
-                  onClick={handleToggle(value)}
-                  className='column-list-item'
-                  sx={{
-                    cursor: dragIndex !== null ? "grabbing" : "grab",
-                    backgroundColor: dragIndex === idx ? `${alpha(palette.background.default, .5)}` : "",
-                    border: dragIndex === idx ? `2px solid ${alpha(palette.contrast.light, .5)}` : "",
-                    borderTop: (dragOver === idx && dragIndex !== null && dragOver < dragIndex) ? `4px solid ${alpha(palette.secondary.main, .6)}` : "",
-                    borderBottom: (dragOver === idx && dragIndex !== null && dragOver > dragIndex) ? `4px solid ${alpha(palette.secondary.main, .6)}` : "",
-                  }}
-                >
-                  <ListItemIcon sx={{ pointerEvents: "none" }}>
-                    <Checkbox
-                      checked={checked.includes(value)}
-                      tabIndex={-1}
-                      disableRipple
-                    />
-                  </ListItemIcon>
-                  <ListItemText id={labelId} primary={`${fieldData?.[showField]}`} sx={{ pointerEvents: "none" }} />
-                </ListItemButton>
-              );
-            })}
-          </List>
-          <Box flexGrow={1}
-            onDragOver={handleDragOver}
-            onDrop={() => handleDrop(0, true)}
-          />
-        </Stack>
-      </Paper>
-    )
-  };
+  const handleSetLeft = React.useCallback((list: number[]) => setLeft(list), [])
+  const handleSetRight = React.useCallback((list: number[]) => setRight(list), [])
+  const handleSetDrag = React.useCallback((newDrag: { idx: number, source: "left" | "right" } | null) =>
+    setGlobalDraggedIndex(newDrag), [])
 
   return (
     <Stack alignItems="start" spacing="1rem">
@@ -184,7 +89,9 @@ export default function LeadColumnSelector<T extends { id: number }>
         sx={{ justifyContent: 'center', alignItems: 'center' }}
       >
         <Grid size="grow" minWidth="13rem">
-          <CustomList isLeftList={true} title={"Columnas Disponibles"} />
+          <CustomList title={"Columnas Disponibles"} listLookup={originalListLookup} showField={showField}
+            checked={checked} globalDraggedIndex={globalDraggedIndex} handleSetDrag={handleSetDrag} handleToggle={handleToggle} isLeft={true}
+            list={left} setter={handleSetLeft} contraryList={right} contrarySetter={handleSetRight} />
         </Grid>
         <Grid>
           <Grid container gap={1} direction="column" sx={{ alignItems: 'center' }}>
@@ -227,7 +134,10 @@ export default function LeadColumnSelector<T extends { id: number }>
           </Grid>
         </Grid>
         <Grid size="grow" minWidth="13rem">
-          <CustomList isLeftList={false} title={"Columnas a Mostrar"} />
+          <CustomList title={"Columnas a Mostrar"} listLookup={originalListLookup} showField={showField}
+            checked={checked} globalDraggedIndex={globalDraggedIndex} handleSetDrag={handleSetDrag} handleToggle={handleToggle}
+            isLeft={false}
+            contraryList={left} contrarySetter={handleSetLeft} list={right} setter={handleSetRight} />
         </Grid>
 
       </Grid>
@@ -249,3 +159,126 @@ export default function LeadColumnSelector<T extends { id: number }>
     </Stack>
   );
 }
+
+interface props<T> {
+  title?: string,
+  showField: keyof T,
+  listLookup: Map<number, T>
+  checked: number[],
+  handleToggle: (value: number) => () => void,
+  list: number[],
+  setter: (id: number[]) => void,
+  contraryList: number[],
+  contrarySetter: (id: number[]) => void,
+  globalDraggedIndex: { idx: number, source: "left" | "right" } | null
+  handleSetDrag: (newDrag: {
+    idx: number;
+    source: "left" | "right";
+  } | null) => void,
+  isLeft: boolean
+}
+
+
+const CustomList = <T extends { id: number }>({ title, listLookup, handleToggle, showField, checked, isLeft, list, setter, contraryList, contrarySetter, globalDraggedIndex, handleSetDrag }: props<T>) => {
+
+  const { palette } = useTheme()
+
+  const [dragOver, setDragOver] = React.useState<number | null>(null)
+
+  const isOriginalList = React.useMemo(() => (isLeft && globalDraggedIndex?.source === "left") ||
+    (!isLeft && globalDraggedIndex?.source === "right"), [globalDraggedIndex, isLeft])
+
+  const handleDragStart = (index: number) => {
+    handleSetDrag({ idx: index, source: isLeft ? "left" : "right" })
+  }
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+  }
+
+  const handleDrop = (index: number, last: boolean = false) => {
+    if (globalDraggedIndex == null) return
+    const listCopy = [...list]
+    let draggedItem
+
+    if (isOriginalList) {
+      draggedItem = listCopy[globalDraggedIndex.idx]
+      listCopy.splice(globalDraggedIndex.idx, 1)
+    } else {
+      const contraryListCopy = [...contraryList]
+      draggedItem = contraryListCopy[globalDraggedIndex.idx]
+      contraryListCopy.splice(globalDraggedIndex.idx, 1)
+      contrarySetter(contraryListCopy)
+    }
+    if (last) {
+      listCopy.push(draggedItem)
+    } else {
+      listCopy.splice(index, 0, draggedItem)
+    }
+    setter(listCopy)
+    setDragOver(null)
+    handleSetDrag(null)
+  }
+
+  const handleDragEnter = (index: number) => {
+    setDragOver(index)
+  }
+
+  return (
+    <Paper sx={{ backgroundColor: lighten(palette.background.paper, .15), overflow: "hidden" }} >
+      {title &&
+        <Box p={1} sx={{
+          backgroundColor: palette.primary.light,
+          color: palette.primary.contrastText
+        }}>
+          <Typography variant="body2" fontWeight={600}>{title}</Typography>
+        </Box>}
+      <Stack height="25rem">
+        <List dense component="div" role="list"
+          sx={{ overflow: 'auto', padding: 0, marginTop: ".5rem", }}
+        >
+          {list.map((value: number, idx) => {
+            const labelId = `transfer-list-item-${value}-label`;
+            const fieldData = listLookup.get(value)
+            const isSelected = globalDraggedIndex?.idx === idx
+            if (!fieldData) return
+            return (
+              <ListItemButton
+                draggable
+                onDragStart={() => handleDragStart(idx)}
+                onDragOver={handleDragOver}
+                onDragEnter={() => handleDragEnter(idx)}
+                onDrop={() => handleDrop(idx)}
+                key={value}
+                role="listitem"
+                onClick={handleToggle(value)}
+                className='column-list-item'
+                sx={{
+                  cursor: globalDraggedIndex !== null ? "grabbing" : "grab",
+                  backgroundColor: isSelected ? `${alpha(palette.background.default, .5)}` : "",
+                  border: isSelected ? `2px solid ${alpha(palette.contrast.light, .5)}` : "",
+                  borderTop: (dragOver === idx && globalDraggedIndex !== null && dragOver < globalDraggedIndex?.idx)
+                    ? `4px solid ${alpha(palette.secondary.main, .6)}` : "",
+                  borderBottom: (dragOver === idx && globalDraggedIndex !== null && dragOver > globalDraggedIndex?.idx)
+                    ? `4px solid ${alpha(palette.secondary.main, .6)}` : "",
+                }}
+              >
+                <ListItemIcon sx={{ pointerEvents: "none" }}>
+                  <Checkbox
+                    checked={checked.includes(value)}
+                    tabIndex={-1}
+                    disableRipple
+                  />
+                </ListItemIcon>
+                <ListItemText id={labelId} primary={`${fieldData?.[showField]}`} sx={{ pointerEvents: "none" }} />
+              </ListItemButton>
+            );
+          })}
+        </List>
+        <Box flexGrow={1}
+          onDragOver={handleDragOver}
+          onDrop={() => handleDrop(0, true)}
+        />
+      </Stack>
+    </Paper>
+  )
+};
