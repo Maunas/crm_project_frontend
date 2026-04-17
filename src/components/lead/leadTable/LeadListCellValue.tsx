@@ -36,7 +36,7 @@ export const LeadListCellValue = memo(({ fieldValue, type, subtype, modalProps }
 
     switch (type) {
         case "MONEY": return formatMoney(Number(value))
-        case "RATING": return <RatingValue value={`${value}`} subtype={subtype!} size="small" counter />
+        case "RATING": return <RatingValue value={`${value}`} subtype={subtype!} size="small" tooltip />
         case "URL": return <NewTabLink url={`${value}`} />
         case "EMAIL": return <NewTabLink url={`mailto:${value}`} value={`${value}`} />
         case "ADDRESS": return <AddressValue value={`${value}`} subtype={subtype!} />

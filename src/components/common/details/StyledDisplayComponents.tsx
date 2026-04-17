@@ -3,7 +3,7 @@ import type { OverridableComponent } from "@mui/material/OverridableComponent";
 import { alpha, styled } from "@mui/material/styles";
 import { memo } from "react";
 
-const CHIP_OPACITY = 0.2
+const CHIP_OPACITY = .5
 const CHIP_SIZES = {
     "sm": { padding: "0px", gap: "0px", fontSize: ".8rem" },
     "md": { padding: "4px", gap: "2px", fontSize: ".8rem" },
@@ -17,19 +17,20 @@ export const CustomChip = memo(styled(Chip)(({ theme, color = "primary", size = 
     const sizeObject = CHIP_SIZES[size as keyof typeof CHIP_SIZES]
 
     return [{
+        backdropFilter: "blur(8px)",
         fontWeight: "600",
         height: "auto",
         border: "1px solid",
         borderRadius: ".75rem",
-        backgroundColor: alpha(paletteColor.light, CHIP_OPACITY),
+        backgroundColor: alpha(paletteColor.lighter, CHIP_OPACITY),
         borderColor: paletteColor.main,
-        color: paletteColor.darker,
+        color: paletteColor[900],
         ...sizeObject
     },
     //Invierte los tonos en darkmode
     theme.applyStyles('dark', {
-        backgroundColor: alpha(paletteColor.darker, CHIP_OPACITY),
-        color: paletteColor.lighter,
+        backgroundColor: alpha(paletteColor[700], CHIP_OPACITY),
+        color: theme.palette.common.white,
     })
     ]
 })) as unknown as OverridableComponent<ChipTypeMap> & { defaultComponent: "div" };
