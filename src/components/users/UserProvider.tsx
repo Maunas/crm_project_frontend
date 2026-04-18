@@ -11,7 +11,7 @@ export interface UserContextItems {
     activeOrganizations: OrganizationDetailed[],
     selectedOrg: OrganizationDetailed | null,
     setSelectedOrg: React.Dispatch<React.SetStateAction<OrganizationDetailed | null>>,
-    updateOrganizations: (newOrganizationList: OrganizationDetailed[]) => void,
+    setOrganizations: React.Dispatch<React.SetStateAction<OrganizationDetailed[]>>,
     fetchOrganizations: () => void,
     user: UserData | null,
     login: (data: UserLogin) => Promise<void>,
@@ -83,15 +83,12 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         else window.localStorage.removeItem("selected_org")
     }, [selectedOrg])
 
-    const updateOrganizations = (newOrganizationList: OrganizationDetailed[]) => {
-        setOrganizations(newOrganizationList)
-    }
 
     return (
         <UserContext.Provider value={{
             user, login, logout, signup,
             //To Do: Cuando se realice la seguridad en backend, quitar organizations.
-            userOrganizations: organizations, activeOrganizations: organizations, selectedOrg, setSelectedOrg, updateOrganizations, fetchOrganizations
+            userOrganizations: organizations, activeOrganizations: organizations, selectedOrg, setSelectedOrg, setOrganizations, fetchOrganizations
         }} >
             {children}
         </UserContext.Provider>
