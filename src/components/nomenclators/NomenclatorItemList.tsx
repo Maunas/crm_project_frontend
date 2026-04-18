@@ -1,22 +1,20 @@
-import { useContext, useEffect, useState } from 'react'
+import { memo, useCallback, useContext, useEffect, useState } from 'react'
 import type { UserContextItems } from '../users/UserProvider'
 import { UserContext } from '../common/contexts'
 import { useSidebar } from '../hooks/useSidebar'
 import { useListPagination } from '../hooks/useListPagination'
 import type { Paginable } from '../../types/common'
 import { ContainerWithSidebar } from '../common/layout/GenericContainer'
-import { ButtonGroup, Grid, IconButton, List, ListItem, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
+import { ButtonGroup, Grid, List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
 import { CommonButton } from '../common/details/DetailsCommonButton'
 import { PaginationComponent } from '../common/lists/PaginationComponent'
 import { disableNomenclatorItem, enableNomenclatorItem, getNomenclator, getNomenclatorItem, getNomenclatorItems } from './nomenclatorService'
-import SearchIcon from '@mui/icons-material/Search';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import { Link as RouterLink, useParams, useSearchParams } from 'react-router-dom'
 import { NomenclatorItemDetails } from './NomenclatorItemDetails'
 import type { NomenclatorDetailed, NomenclatorItemDetailed } from '../../types/nomenclators'
 import { NomenclatorItemFormSidebar } from './NomenclatorItemForm'
+import { CustomListItem } from '../common/lists/CustomListItem'
+import { ListAction } from '../common/lists/Icons'
 
 export const NomenclatorItemList = () => {
 
@@ -44,23 +42,22 @@ export const NomenclatorItemList = () => {
     }, [fetchPage, pageSize, selectedOrg, nomenclatorId])
 
 
-    const updateEntityOnList = (
-        entity: NomenclatorItemDetailed | null,
-        mode: string) => {
+    const updateEntityOnList = useCallback((entity: NomenclatorItemDetailed | null, mode: string) => {
         switch (mode) {
             case "CREATE_NOM": {
                 getNomenclatorItems({ detailed: true, page_size: pageSize, only_active: false, page: nomenclatorItems?.page, nomenclator_id: Number(nomenclatorId) }).then(setNomenclatorItems)
                 break;
             }
             case "UPDATE_NOM": {
-                if (!nomenclatorItems) break
                 const newNom = entity as NomenclatorItemDetailed
-                const nomenclatorItemsList = [...nomenclatorItems.items]
-                const nomIdx = nomenclatorItemsList.findIndex(nom => nom.id === newNom.id)
-                if (nomIdx === -1) break
-                nomenclatorItemsList[nomIdx] = newNom
-                setNomenclatorItems({ ...nomenclatorItems, items: [...nomenclatorItemsList] })
-                break;
+                return setNomenclatorItems(prevList => {
+                    if (!prevList || prevList.items.length === 0) return prevList
+                    const nomenclatorItemsList = [...prevList.items]
+                    const nomIdx = nomenclatorItemsList.findIndex(nom => nom.id === newNom.id)
+                    if (nomIdx === -1) return prevList
+                    nomenclatorItemsList[nomIdx] = newNom
+                    return { ...prevList, items: [...nomenclatorItemsList] }
+                })
             }
             case "DELETE_NOM": {
                 if (selectedEntity && entity?.id === selectedEntity.id) closeSidebar()
@@ -68,9 +65,9 @@ export const NomenclatorItemList = () => {
                 break;
             }
         }
-    }
+    }, [closeSidebar, nomenclatorId, nomenclatorItems?.page, pageSize, selectedEntity])
 
-    const handleActive = (nom: NomenclatorItemDetailed) => {
+    const handleActive = useCallback((nom: NomenclatorItemDetailed) => {
         if (!nom) return
         const updateActive = (nom: NomenclatorItemDetailed) => {
             updateEntityOnList({ ...nom, active: !nom.active }, "UPDATE_NOM")
@@ -92,7 +89,7 @@ export const NomenclatorItemList = () => {
         } else {
             enableNomenclatorItem(nom.id).then(() => updateActive(nom))
         }
-    }
+    }, [closeSidebar, handleSidebar, selectedEntity, updateEntityOnList])
 
     return (
         <ContainerWithSidebar isSidebarOpen={!!sidebarMode} sidebarComponent={
@@ -117,23 +114,16 @@ export const NomenclatorItemList = () => {
                         nomenclatorItems && nomenclatorItems.items?.length > 0 ?
                             <List>
                                 {nomenclatorItems.items.map(nom =>
-                                    <ListItem key={nom.id} disablePadding secondaryAction={
+                                    <CustomListItem key={nom.id} disablePadding secondaryAction={
                                         <Grid container gap={1} alignItems="center">
-                                            <IconButton edge="end" aria-label="details" onClick={() => handleSidebar("DETAILS_NOM", nom)}>
-                                                <SearchIcon />
-                                            </IconButton>
-                                            {nom.organization_id && <>
-                                                <IconButton edge="end" aria-label="modify" onClick={() => handleSidebar("UPDATE_NOM", nom)}>
-                                                    <EditIcon />
-                                                </IconButton>
-                                                <IconButton edge="end" aria-label={nom.active ? "delete" : "restore"}
-                                                    onClick={() => handleActive(nom)}>
-                                                    {nom.active ?
-                                                        <DeleteIcon color="error" /> :
-                                                        <RestoreFromTrashIcon color="success" />
-                                                    }
-                                                </IconButton>
-                                            </>}
+                                            <ListAction actionType='DETAILS' title='Detalle' onClick={() => handleSidebar("DETAILS_NOM", nom)} tooltipSize='small' />
+                                            {nom.organization_id &&
+                                                <>
+                                                    <ListAction actionType='MODIFY' title='Modificar' onClick={() => handleSidebar("UPDATE_NOM", nom)} tooltipSize='small' />
+                                                    <ListAction actionType={nom.active ? "DISABLE" : "ENABLE"} tooltipSize="small"
+                                                        title={nom.active ? "Deshabilitar" : "Habilitar"}
+                                                        onClick={() => handleActive(nom)} color={nom.active ? "error" : "success"} />
+                                                </>}
                                         </Grid>
                                     }>
                                         <ListItemButton onClick={() => handleSidebar("DETAILS_NOM", nom)} >
@@ -144,7 +134,7 @@ export const NomenclatorItemList = () => {
                                             }
                                                 secondary={!nom.organization_id && "(Opción del Sistema)"} />
                                         </ListItemButton>
-                                    </ListItem>
+                                    </CustomListItem>
                                 )}
                             </List>
                             : <Grid container gap={2} justifyContent="center" alignItems="center" direction="column">
@@ -171,7 +161,7 @@ interface SidebarProps {
     handleSidebar: (mode: string, entity: NomenclatorItemDetailed | null) => void,
     handleActive: (entity: NomenclatorItemDetailed) => void
 }
-export const NomenclatorItemSidebar = ({ mode, entity, nomenclator, closeSidebar, updateEntityOnList, handleSidebar, handleActive }: SidebarProps) => {
+export const NomenclatorItemSidebar = memo(({ mode, entity, nomenclator, closeSidebar, updateEntityOnList, handleSidebar, handleActive }: SidebarProps) => {
 
     const [parentItem, setParentItem] = useState<NomenclatorItemDetailed | null>(null)
 
@@ -196,4 +186,4 @@ export const NomenclatorItemSidebar = ({ mode, entity, nomenclator, closeSidebar
             return <NomenclatorItemDetails entity={entity as NomenclatorItemDetailed} parentEntity={parentItem} closeSidebar={closeSidebar}
                 handleSidebar={handleSidebar} handleActive={handleActive} />
     }
-}
+})

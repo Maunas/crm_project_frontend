@@ -10,16 +10,18 @@ import { disableOrganization, enableOrganization, getOrganization } from '../wor
 import { UserContext } from '../common/contexts'
 import type { UserContextItems } from '../users/UserProvider'
 import { Link, useSearchParams } from 'react-router-dom'
-import { ButtonGroup, Divider, Grid, List, ListItem, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
+import { ButtonGroup, Divider, Grid, List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
 import dayjs from 'dayjs'
 import 'dayjs/locale/es'
+import { CustomListItem } from '../common/lists/CustomListItem'
 dayjs.locale('es')
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 export const OrganizationList = () => {
 
     const [params, setParams] = useSearchParams()
 
-    const { userOrganizations, selectedOrg, fetchOrganizations, setOrganizations } = useContext<UserContextItems>(UserContext)
+    const { userOrganizations, selectedOrg, setSelectedOrg, fetchOrganizations, setOrganizations } = useContext<UserContextItems>(UserContext)
 
     const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<OrganizationDetailed>("id", params, setParams, getOrganization, "DETAILS_ORG")
 
@@ -93,14 +95,17 @@ export const OrganizationList = () => {
                     {userOrganizations && userOrganizations?.length > 0 ?
                         <List>
                             {userOrganizations.map(org =>
-                                <ListItem key={org.id} disablePadding secondaryAction={
+                                <CustomListItem key={org.id} disablePadding secondaryAction={
                                     <Grid container gap={1} alignItems="center">
                                         <ListAction actionType='DETAILS' title='Detalle' onClick={() => handleSidebar("DETAILS_ORG", org)} tooltipSize="small" />
                                         <ListAction actionType='MODIFY' title='Modificar' onClick={() => handleSidebar("UPDATE_ORG", org)} tooltipSize="small" />
                                         {selectedOrg?.id !== org.id &&
-                                            <ListAction actionType={org.active ? "DISABLE" : "ENABLE"} tooltipSize="small"
-                                                title={org.active ? "Deshabilitar" : "Habilitar"}
-                                                onClick={() => handleActive(org)} color={org.active ? "error" : "success"} />
+                                            <>
+                                                <ListAction actionType='CHECK' title='Seleccionar Activa' color="info" onClick={() => setSelectedOrg(org)} tooltipSize="small" />
+                                                <ListAction actionType={org.active ? "DISABLE" : "ENABLE"} tooltipSize="small"
+                                                    title={org.active ? "Deshabilitar" : "Habilitar"}
+                                                    onClick={() => handleActive(org)} color={org.active ? "error" : "success"} />
+                                            </>
                                         }
                                     </Grid>
                                 }>
@@ -108,12 +113,13 @@ export const OrganizationList = () => {
                                         <ListItemText primary={
                                             <Stack gap={1} direction="row">
                                                 <EnabledIcon active={org.active} />
+                                                <CheckCircleOutlineIcon color="info" sx={{ opacity: selectedOrg?.id === org.id ? 1 : 0 }} />
                                                 <Typography fontWeight="bold">{org.name}</Typography>
                                             </Stack>
                                         }
                                             secondary={org.description} />
                                     </ListItemButton>
-                                </ListItem>
+                                </CustomListItem>
                             )}
                         </List>
                         : <Grid container gap={2} justifyContent="center" alignItems="center" direction="column">
@@ -182,7 +188,8 @@ const OrganizationDetails = ({ entity, closeSidebar, handleSidebar, handleActive
                 }
                 <Divider />
                 <ButtonGroup fullWidth>
-                    <CommonButton actionType="SAVE" variant='outlined' onClick={() => setSelectedOrg(entity)} >Seleccionar como Activa</CommonButton>
+                    {selectedOrg?.id !== entity.id &&
+                        <CommonButton actionType="CHECK" variant='outlined' onClick={() => setSelectedOrg(entity)} >Seleccionar como Activa</CommonButton>}
                     <CommonButton actionType="LIST" component={Link} to={`/campaigns`} >Ver Workspaces</CommonButton>
 
                 </ButtonGroup>

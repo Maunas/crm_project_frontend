@@ -11,6 +11,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PersonIcon from '@mui/icons-material/Person';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
+import TaskAltIcon from '@mui/icons-material/TaskAlt';
 
 export const ACTION_ICONS = {
     NONE: <></>,
@@ -27,8 +28,9 @@ export const ACTION_ICONS = {
     LOGIN: <PersonIcon />,
     SIGNUP: <PersonAddIcon />,
     LIST: <FormatListBulletedIcon />,
+    CHECK: <TaskAltIcon />,
 }
 
 export type ActionType = "MODIFY" | "CLOSE" | "CREATE" | "DISABLE" | "ENABLE" |
     "DETAILS" | "FILTER" | "OPTIONS" | "SAVE" | "RETURN" |
-    "LOGIN" | "SIGNUP" | "NONE" | "LIST" 
+    "LOGIN" | "SIGNUP" | "NONE" | "LIST" | "CHECK"
