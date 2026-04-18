@@ -79,7 +79,7 @@ export const RatingValue = memo(({ value, subtype, counter = false, tooltip = fa
     const normaliseNPS = (value: number) => ((value - 1) * 100) / (10 - 1);
 
     return (
-        <ChipTooltip counter={tooltip} value={value} >
+        <ChipTooltip show={tooltip} title={value} >
             <Stack direction="row" alignItems="center" spacing={1} lineHeight={0} width="min-content">
                 {subtype === "STAR_RATING" &&
                     <Rating value={Number(value)} size={size} name="read-only" readOnly />
@@ -210,7 +210,7 @@ export const ListValues = memo(({ value, idFieldValue, type, isNav = false, maxI
                 <CustomChip
                     key={`${idFieldValue}-${val.id}`}
                     label={getLabel(val)}
-                    color="secondary" size="sm"
+                    color="secondary" size="small"
                     {...(isNav && {
                         component: RouterLink, to: getLink(val),
                         onClick: STOP_PROPAGATION
@@ -218,7 +218,7 @@ export const ListValues = memo(({ value, idFieldValue, type, isNav = false, maxI
                 />
             )}
             {overflowCount > 0 &&
-                <CustomChip color="secondary" size="sm"
+                <CustomChip color="secondary" size="small"
                     label={`${overflowCount} más`} />
             }
         </Stack>

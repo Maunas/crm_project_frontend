@@ -47,13 +47,10 @@ export const useSidebar = <T>(entityIdField: keyof T, params?: URLSearchParams, 
     const [selectedEntity, setSelectedEntity] = useState<T | null>(null)
 
     const handleSidebar = useCallback((mode: string, entity: T | null) => {
-        setSelectedEntity(prev => {
-            if (entity?.[entityIdField] === prev?.[entityIdField]) return prev
-            updateParams(mode === "KEEP" ? sidebarMode : mode, entity)
-            return entity
-        })
+        updateParams(mode === "KEEP" ? sidebarMode : mode, entity)
+        setSelectedEntity(entity)
         if (mode !== "KEEP") setSidebarMode(mode)
-    }, [entityIdField, updateParams, sidebarMode])
+    }, [updateParams, sidebarMode])
 
     const closeSidebar = useCallback(() => {
         setSelectedEntity(null)

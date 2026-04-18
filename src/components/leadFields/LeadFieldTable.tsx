@@ -1,18 +1,15 @@
-import { useEffect } from "react"
+import { useEffect, useMemo } from "react"
 import { GenericModal } from "../common/layout/GenericContainer"
 import { SimulateLeadFormModal } from "../lead/leadForm/LeadFormWraper"
-import { EnabledIcon } from "../common/lists/Badges"
+import { EnabledIcon, ListAction } from "../common/lists/Icons"
 import { CommonButton } from "../common/details/DetailsCommonButton"
 import type { LeadFieldDetailed } from "../../types/leadFields"
 import type { CampaignDetailed } from "../../types/campaigns"
 import { disableLeadField, enableLeadField } from "./leadFieldServices"
 import { useModal } from "../hooks/useModal"
-import { ButtonGroup, Grid, IconButton, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material"
-import SearchIcon from '@mui/icons-material/Search';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
+import { Box, ButtonGroup, Grid, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material"
 import { lighten, useTheme } from "@mui/material/styles"
+import { SelectableTableRow } from "../common/lists/CustomTableRow"
 
 interface LeadFieldTableProps {
     campaign: CampaignDetailed,
@@ -20,6 +17,11 @@ interface LeadFieldTableProps {
     updateLeadFields: () => void,
     updateEntity: (mode: string, entity: CampaignDetailed | LeadFieldDetailed) => void,
     handleSidebar: (mode: string, entity: LeadFieldDetailed | null) => void,
+}
+
+const stopPropagationEvent = (e: React.SyntheticEvent, callback: () => void) => {
+    e.stopPropagation()
+    return callback()
 }
 
 export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateEntity, handleSidebar }: LeadFieldTableProps) => {
@@ -31,6 +33,7 @@ export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateE
     const handleActive = (field: LeadFieldDetailed) => {
         const updateActive = () => {
             updateEntity("UPDATE_FIELD", { ...field, active: !field.active })
+            handleSidebar("KEEP", { ...field, active: !field.active })
         }
         if (field.active) {
             disableLeadField(field.id)
@@ -43,8 +46,12 @@ export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateE
     }
 
     const { modalProps } = useModal()
-
     const { palette } = useTheme()
+
+    const sortedFields = useMemo(() => {
+        if (!leadFields || leadFields?.length === 0) return []
+        return [...leadFields].sort((a, b) => a.order - b.order)
+    }, [leadFields])
 
     return (
         <>
@@ -52,14 +59,14 @@ export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateE
                 <Grid size="grow" minWidth="16rem" >
                     <Typography variant="h2">Lista de Campos de Lead</Typography>
                 </Grid >
-                {leadFields && leadFields.length > 0 &&
+                {sortedFields.length > 0 &&
                     <>
                         <ButtonGroup sx={{ marginLeft: "auto" }}>
                             <CommonButton onClick={() => handleSidebar("CREATE_FIELD", null)} actionType="CREATE">Agregar Campo</CommonButton>
                             <GenericModal modalProps={modalProps} idModal="simulateLead" buttonText='Vista previa de formulario'
                                 actionType="DETAILS" variant="outlined" containerSx={{ minWidth: "80vw" }} >
                                 {campaign &&
-                                    <SimulateLeadFormModal campaign={campaign} leadFields={leadFields} onCancel={modalProps.handleClose} />
+                                    <SimulateLeadFormModal campaign={campaign} leadFields={sortedFields} onCancel={modalProps.handleClose} />
                                 }
                             </GenericModal>
                         </ButtonGroup>
@@ -68,11 +75,11 @@ export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateE
             </Grid>
 
 
-            {leadFields && leadFields.length > 0 ?
+            {sortedFields.length > 0 ?
                 <TableContainer component={Paper}  >
                     <Table aria-label="simple table" size='small' sx={{ backgroundColor: lighten(palette.background.paper, .1) }}>
-                        <TableHead>
-                            <TableRow>
+                        <TableHead >
+                            <TableRow sx={{ "& .MuiTableCell-root": { fontWeight: 600 } }}>
                                 <TableCell></TableCell>
                                 <TableCell>Nombre</TableCell>
                                 <TableCell align="right">Tipo</TableCell>
@@ -84,51 +91,44 @@ export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateE
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {leadFields?.sort((a, b) => a.order - b.order)
+                            {sortedFields
                                 .map((row) => (
-                                    <TableRow
-                                        key={row.id}
-                                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                                    >
+                                    <SelectableTableRow key={row.id} onClick={() => handleSidebar("DETAILS_FIELD", row)}>
                                         <TableCell component="th">{row.order}</TableCell>
-                                        <TableCell component="th" onClick={() => handleSidebar("DETAILS_FIELD", row)}>
+                                        <TableCell component="th">
                                             <Stack spacing={1} direction="row">
-                                                <EnabledIcon active={row.active} />
-                                                <Typography fontWeight="bold">{row.name} </Typography>
+                                                <EnabledIcon active={row.active} size="small" />
+                                                <Box fontWeight="bold">{row.name} </Box>
                                             </Stack>
                                         </TableCell>
                                         <TableCell align="right">{row.field_type.description}</TableCell>
                                         <TableCell align="right">{row.field_subtype?.description ?? "---"}</TableCell>
 
                                         <TableCell align="right">
-                                            <EnabledIcon active={row.required} trueTooltip='Obligatorio' falseTooltip='Opcional' />
+                                            <EnabledIcon active={row.required} trueTooltip='Obligatorio' falseTooltip='Opcional' size="small" />
                                         </TableCell>
                                         <TableCell align="right">
-                                            <EnabledIcon active={row.is_primary} trueTooltip='Único' falseTooltip='Repetible' />
+                                            <EnabledIcon active={row.is_primary} trueTooltip='Único' falseTooltip='Repetible' size="small" />
                                         </TableCell>
                                         <TableCell align="right">
-                                            <EnabledIcon active={row.is_visible} trueTooltip='Visible' falseTooltip='Oculto' />
+                                            <EnabledIcon active={row.is_visible} trueTooltip='Visible' falseTooltip='Oculto' size="small" />
                                         </TableCell>
                                         <TableCell align="right">
                                             <Stack direction="row" justifyContent="end">
-                                                <IconButton size='small' edge="end" onClick={() => handleSidebar("DETAILS_FIELD", row)}>
-                                                    <SearchIcon />
-                                                </IconButton>
+                                                <ListAction actionType="DETAILS" title="Detalle" tooltipSize="small" size="small"
+                                                    onClick={(e) => stopPropagationEvent(e, () => handleSidebar("DETAILS_FIELD", row))} />
                                                 {row.order > 1 &&
                                                     <>
-                                                        <IconButton size='small' edge="end" onClick={() => handleSidebar("UPDATE_FIELD", row)}>
-                                                            <EditIcon />
-                                                        </IconButton>
-                                                        <IconButton size='small' edge="end" onClick={() => handleActive(row)}>
-                                                            {row.active ?
-                                                                <DeleteIcon color="error" /> :
-                                                                <RestoreFromTrashIcon color="success" />
-                                                            }
-                                                        </IconButton>
+                                                        <ListAction actionType="MODIFY" title="Modificar" tooltipSize="small" size="small"
+                                                            onClick={(e) => stopPropagationEvent(e, () => handleSidebar("UPDATE_FIELD", row))} />
+                                                        <ListAction actionType={row.active ? "DISABLE" : "ENABLE"} tooltipSize="small" size="small"
+                                                            title={row.active ? "Deshabilitar" : "Habilitar"}
+                                                            onClick={(e) => stopPropagationEvent(e, () => handleActive(row))} color={row.active ? "error" : "success"} />
+
                                                     </>}
                                             </Stack>
                                         </TableCell>
-                                    </TableRow>
+                                    </SelectableTableRow>
                                 ))}
                         </TableBody>
                     </Table>

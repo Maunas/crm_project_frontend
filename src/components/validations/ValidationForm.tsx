@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ControlledTextInput, RegisteredTextInput } from "../common/forms/CustomInputs";
 import { ControlledAutocomplete, ControlledRadio } from "../common/forms/CustomMultipleInputs";
-import { EnabledIcon } from "../common/lists/Badges";
+import { EnabledIcon } from "../common/lists/Icons";
 import { CommonButton } from "../common/details/DetailsCommonButton";
 import { FormErrorMessage } from "../common/forms/StyledFormComponents";
 import type { FieldValidationRule, FieldValidationRulePost, FieldValidationRuleTemplate, LeadFieldDetailed } from "../../types/leadFields";

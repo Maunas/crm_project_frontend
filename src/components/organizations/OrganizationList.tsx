@@ -1,7 +1,7 @@
 import { useContext } from 'react'
 import { ContainerWithSidebar } from '../common/layout/GenericContainer'
 import { CommonButton, DisableButton } from '../common/details/DetailsCommonButton'
-import { EnabledIcon } from '../common/lists/Badges'
+import { EnabledIcon } from '../common/lists/Icons'
 import { CustomChip } from '../common/details/StyledDisplayComponents'
 import { OrganizationFormSidebar } from './OrganizationForm'
 import { useSidebar } from '../hooks/useSidebar'

@@ -5,13 +5,13 @@ import { memo } from "react";
 
 const CHIP_OPACITY = .5
 const CHIP_SIZES = {
-    "sm": { padding: "0px", gap: "0px", fontSize: ".8rem" },
-    "md": { padding: "4px", gap: "2px", fontSize: ".8rem" },
-    "lg": { padding: "6px", gap: "4px", fontSize: "1rem" },
-    "xl": { padding: "10px 8px", gap: "6px", fontSize: "1rem" }
+    "small": { padding: "0px", gap: "0px", fontSize: ".8rem" },
+    "medium": { padding: "4px", gap: "2px", fontSize: ".8rem" },
+    "large": { padding: "6px", gap: "4px", fontSize: "1rem" },
+    "xlarge": { padding: "10px 8px", gap: "6px", fontSize: "1rem" }
 }
 
-export const CustomChip = memo(styled(Chip)(({ theme, color = "primary", size = "md" }) => {
+export const CustomChip = memo(styled(Chip)(({ theme, color = "primary", size = "medium" }) => {
     const chipColor = color === "default" ? "contrast" : color //Soluciona una incompatibilidad con el valor "default"
     const paletteColor = theme.palette[chipColor] ?? theme.palette.primary
     const sizeObject = CHIP_SIZES[size as keyof typeof CHIP_SIZES]

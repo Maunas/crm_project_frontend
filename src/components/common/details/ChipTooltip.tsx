@@ -4,29 +4,32 @@ import { memo, type ReactElement } from "react"
 import { useTheme } from "@mui/material/styles"
 import type { ColorTypes } from "../../../types/mui-theme.d"
 
-interface ChipTooltip {
-    counter: boolean,
-    value: string,
+interface ChipTooltipProps {
+    show?: boolean,
+    title: string,
     color?: ColorTypes,
     children: ReactElement,
-    placement?: PopperPlacementType
+    placement?: PopperPlacementType,
+    size?: "small" | "medium" | "large" | "xlarge"
 }
 
-export const ChipTooltip = memo(({ counter, placement = "top", value, color = "primary", children }: ChipTooltip) => {
+export const ChipTooltip = memo(({ show = true, placement = "top", title, color = "primary", size = "medium", children }: ChipTooltipProps) => {
 
     const { palette } = useTheme()
 
-    return (<Tooltip arrow placement={placement} title={counter ? value : ""}
+    if (!show) return children
+
+    return (<Tooltip arrow placement={placement} title={title}
         slots={{
             tooltip: (props) =>
-                <CustomChip label={props.children} color={color} {...props} />
+                <CustomChip label={props.children} color={color} size={size} {...props} />
         }}
         slotProps={{
             popper: {
                 modifiers: [
                     {
                         name: 'offset',
-                        options: { offset: [0, 8] }
+                        options: { offset: [0, size === "medium" ? 8 : 4] }
                     }
                 ],
             },

@@ -15,8 +15,8 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { LeadListCellValue } from "./LeadListCellValue"
 import type { Palette } from "@mui/material/styles"
 import type { LeadFieldValue } from "../../../types/leadFields"
+import { SelectableTableRow } from "../../common/lists/CustomTableRow"
 
-const TABLE_ROW_SX = { '&:last-child td, &:last-child th': { border: 0 } } as const
 const TABLE_SX = { minWidth: 650 } as const
 const DEFAULT_N_OF_FIELDS = 6
 
@@ -148,8 +148,8 @@ export const LeadListTable = memo(({ leads, campaignId, activeFilters = 0, modal
                         </TableHead>
                         <TableBody>
                             {leads.map(lead => (
-                                <LeadTableBodyRow key={lead.id}
-                                    lead={lead} modalProps={modalProps} nav={nav} selectedColumns={selectedColumns} />
+                                <LeadTableBodyRow key={lead.id} lead={lead}
+                                    modalProps={modalProps} nav={nav} selectedColumns={selectedColumns} />
                             ))}
                         </TableBody>
                     </Table>
@@ -217,6 +217,7 @@ export const LeadTableHeaderRow = memo(({ column, idx, orderProps, dragStyles, d
     )
 })
 
+
 interface LeadTableBodyRowProps {
     lead: Lead,
     nav: NavigateFunction,
@@ -239,9 +240,7 @@ export const LeadTableBodyRow = memo(({ nav, lead, selectedColumns, modalProps }
     }, [lead.field_values])
 
     return (
-        <TableRow onClick={onRowClick}
-            key={lead.id} sx={TABLE_ROW_SX}
-        >
+        <SelectableTableRow onClick={onRowClick} key={lead.id} >
             {selectedColumns.map((column) => {
                 const leadValue = fieldValueByFieldId.get(column.id)
                 return (
@@ -252,6 +251,6 @@ export const LeadTableBodyRow = memo(({ nav, lead, selectedColumns, modalProps }
                 )
             })
             }
-        </TableRow>
+        </SelectableTableRow>
     )
 })

@@ -50,10 +50,10 @@ declare module '@mui/material/Chip' {
 }
 declare module '@mui/material/Chip' {
   interface ChipPropsSizeOverrides {
-    sm: true;
-    md: true;
-    lg: true;
-    xl: true;
+    small: true;
+    medium: true;
+    large: true;
+    xlarge: true;
   }
 }
 declare module '@mui/material/LinearProgress' {

@@ -57,7 +57,7 @@ export const Navbar = memo(({ open }: NavbarProps) => {
   return (
     <List>
       {options?.map((item, idx) => (
-        <ChipTooltip key={item.name} placement='right' counter value={open ? "" : item.name}>
+        <ChipTooltip key={item.name} placement='right' title={open ? "" : item.name}>
           <ListItem disablePadding sx={LIST_ITEM_STYLES[idx]}>
             <ListItemButton
               component={Link} to={item.link} title={item.name}
