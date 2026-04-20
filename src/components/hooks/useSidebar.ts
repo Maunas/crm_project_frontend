@@ -1,8 +1,31 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { SetURLSearchParams } from 'react-router-dom'
 
-export const useSidebar = <T>(params?: URLSearchParams, setParams?: SetURLSearchParams,
-    callback?: (id: number) => Promise<T>, detailsModeName?: string, paramIdField?: keyof T
+// Manejo de Search Params
+const addParam = <T>(entity: T, idField: keyof T, setParam: SetURLSearchParams) => {
+    setParam(prev => {
+        const selectedValue = entity?.[idField]
+        if (prev.get("selected") === String(selectedValue)) return prev
+        const next = new URLSearchParams(prev)
+        if (selectedValue != null) {
+            next.set("selected", String(selectedValue))
+        }
+        return next
+    }, { replace: true })
+}
+
+const deleteParam = (setParam: SetURLSearchParams) => {
+    setParam(prev => {
+        if (!prev.has("selected")) return prev
+        const next = new URLSearchParams(prev)
+        next.delete("selected")
+        return next
+    }, { replace: true })
+}
+
+//Se recibe el setParams para que el padre pueda manejar parámetros no relacionados a sidebar.
+export const useSidebar = <T>(entityIdField: keyof T, params?: URLSearchParams, setParams?: SetURLSearchParams,
+    callback?: (id: number) => Promise<T>, detailsModeName?: string
 ) => {
 
     //setParams, al ser recibido como prop, es inestable y causa re-renders innecesarios.
@@ -12,54 +35,32 @@ export const useSidebar = <T>(params?: URLSearchParams, setParams?: SetURLSearch
         setParamsRef.current = setParams
     }, [setParams])
 
-    // Manejo de Search Params
-    const addParam = useCallback((entity: T, idField: keyof T, setParam: SetURLSearchParams) => {
-        setParam(prev => {
-            const next = new URLSearchParams(prev)
-            const selectedValue = entity?.[idField]
-            if (selectedValue != null) {
-                next.set("selected", String(selectedValue))
-            }
-            return next
-        }, { replace: true })
-    }, [])
-
-    const deleteParam = useCallback((setParam: SetURLSearchParams) => {
-        setParam(prev => {
-            const next = new URLSearchParams(prev)
-            next.delete("selected")
-            return next
-        }, { replace: true })
-    }, [])
-
     const updateParams = useCallback((mode: string | null, entity: T | null) => {
-        if (!setParamsRef.current || !detailsModeName || !paramIdField) return
+        if (!setParamsRef.current || !detailsModeName) return
 
-        if (entity && mode === detailsModeName) addParam(entity, paramIdField, setParamsRef.current)
+        if (entity && mode === detailsModeName) addParam(entity, entityIdField, setParamsRef.current)
         else deleteParam(setParamsRef.current)
-    }, [addParam, deleteParam, detailsModeName, paramIdField])
-
+    }, [detailsModeName, entityIdField])
 
     //Manejo del sidebar
     const [sidebarMode, setSidebarMode] = useState<string | null>(null)
     const [selectedEntity, setSelectedEntity] = useState<T | null>(null)
 
     const handleSidebar = useCallback((mode: string, entity: T | null) => {
+        updateParams(mode === "KEEP" ? sidebarMode : mode, entity)
         setSelectedEntity(entity)
-        if (mode === "KEEP") return
-        setSidebarMode(mode)
-        updateParams(mode, entity)
-    }, [updateParams])
+        if (mode !== "KEEP") setSidebarMode(mode)
+    }, [updateParams, sidebarMode])
 
     const closeSidebar = useCallback(() => {
         setSelectedEntity(null)
         setSidebarMode(null)
         if (setParamsRef.current) deleteParam(setParamsRef.current)
-    }, [deleteParam])
+    }, [])
 
     //Inicialización cuando hay un searchparam.
     const initFlag = useRef<boolean>(false)
-
+    //Abre el detalle del elemento del param "selected"
     useEffect(() => {
         if (initFlag.current || !params) return
         const selectedId = params?.get("selected")

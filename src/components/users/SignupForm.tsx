@@ -6,7 +6,7 @@ import { Button, ButtonGroup, Grid, Paper, Stack, Typography } from "@mui/materi
 import { useForm } from "react-hook-form"
 import { setFormErrors } from "../../generalService"
 import { PasswordField, RegisteredTextInput } from "../common/forms/CustomInputs"
-import { FormErrorMessage } from "../../theme/styledMUIFormComponents"
+import { FormErrorMessage } from "../common/forms/StyledFormComponents"
 import { CommonButton } from "../common/details/DetailsCommonButton"
 
 export const SignupFormPage = () => {
@@ -42,7 +42,7 @@ const SignupForm = ({ submit, onCancel }: SignupFormProps) => {
   }
 
   return (
-    <form>
+    <form onSubmit={handleSubmit(onSubmit)}>
       <Stack gap={3}>
         <Typography variant="h1" textAlign="center">
           CRM
@@ -71,7 +71,7 @@ const SignupForm = ({ submit, onCancel }: SignupFormProps) => {
               <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel} fullWidth>
                 Cancelar
               </CommonButton>
-              <CommonButton actionType="SIGNUP" variant="contained" onClick={handleSubmit(onSubmit)} fullWidth>
+              <CommonButton actionType="SIGNUP" variant="contained" type="submit" fullWidth>
                 Crear Cuenta
               </CommonButton>
             </ButtonGroup>

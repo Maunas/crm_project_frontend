@@ -3,7 +3,7 @@ import NumberField, { NumberSpinner } from "./NumberField";
 import { Controller, type Control, type FieldValues, type Path, type PathValue, type UseFormRegister, } from "react-hook-form";
 import { Box, Checkbox, FormControl, FormControlLabel, FormLabel, Grid, IconButton, InputAdornment, InputLabel, OutlinedInput, Rating, Slider, Switch, TextField, Typography, } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { FormErrorMessage } from "../../../theme/styledMUIFormComponents";
+import { FormErrorMessage } from "./StyledFormComponents";
 
 interface BasicFormInput<T extends FieldValues> {
   label?: string;
@@ -197,7 +197,7 @@ export const PasswordField = <T extends FieldValues>
           <InputAdornment position="end">
             <IconButton
               aria-label={showPassword ? "Ocultar contraseña." : "Ver contraseña."}
-              onClick={handleClickShowPassword} edge="end"
+              onClick={handleClickShowPassword} edge="end" color="primary"
             >
               {showPassword ? <VisibilityOff /> : <Visibility />}
             </IconButton>

@@ -7,7 +7,7 @@ import dayjs from 'dayjs'
 import { Grid, Stack, Typography, Divider, Link, ButtonGroup, Box } from '@mui/material'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { ValidationList } from '../validations/ValidationList';
-import { CustomChip } from '../../theme/styledMUIDisplayComponents';
+import { CustomChip } from '../common/details/StyledDisplayComponents';
 import { alpha, useTheme } from '@mui/material/styles';
 
 interface LeadFieldDetailProps {
@@ -45,8 +45,8 @@ export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeS
                 <Typography variant="h2">
                     {leadField.order} - {leadField.name}
                 </Typography>
-                {leadField.active ? <CustomChip color='success' label="Habilitado" size="md" /> :
-                    <CustomChip color='error' label="Deshabilitado" size="md" />}
+                {leadField.active ? <CustomChip color='success' label="Habilitado" /> :
+                    <CustomChip color='error' label="Deshabilitado" />}
             </Grid>
             <Stack gap={2} >
                 <Grid container gap={1} size="grow" minWidth="20rem">
@@ -65,22 +65,22 @@ export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeS
                     </Grid>
                 </Grid>
                 <Grid container gap={1} size="grow" justifyContent="center">
-                    {leadField.required ? <CustomChip color='success' label="Obligatorio" size="sm" sx={{ fontWeight: "bold" }} /> :
-                        <CustomChip color='error' label="Opcional" size="sm" sx={{ fontWeight: "bold" }} />}
-                    {leadField.is_primary ? <CustomChip color='success' label="Único" size="sm" sx={{ fontWeight: "bold" }} /> :
-                        <CustomChip color='error' label="Repetible" size="sm" sx={{ fontWeight: "bold" }} />}
-                    {leadField.is_visible ? <CustomChip color='success' label="Visible" size="sm" sx={{ fontWeight: "bold" }} /> :
-                        <CustomChip color='error' label="Oculto" size="sm" sx={{ fontWeight: "bold" }} />}
+                    {leadField.required ? <CustomChip color='success' label="Obligatorio" size="small" sx={{ fontWeight: "bold" }} /> :
+                        <CustomChip color='error' label="Opcional" size="small" sx={{ fontWeight: "bold" }} />}
+                    {leadField.is_primary ? <CustomChip color='success' label="Único" size="small" sx={{ fontWeight: "bold" }} /> :
+                        <CustomChip color='error' label="Repetible" size="small" sx={{ fontWeight: "bold" }} />}
+                    {leadField.is_visible ? <CustomChip color='success' label="Visible" size="small" sx={{ fontWeight: "bold" }} /> :
+                        <CustomChip color='error' label="Oculto" size="small" sx={{ fontWeight: "bold" }} />}
                 </Grid>
                 <Divider />
                 <Stack gap={2}>
                     <Typography variant="h3" fontWeight="bold">Tipo {leadField.field_subtype?.description ? `/ Subtipo` : ""} de dato</Typography>
                     <Grid container gap={1} alignItems="center" justifyContent="center">
-                        <CustomChip color='primary' label={leadField.field_type.description} size="xl" sx={{ fontWeight: "bold" }} />
+                        <CustomChip color='primary' label={leadField.field_type.description} size="xlarge" sx={{ fontWeight: "bold" }} />
                         {leadField.field_subtype?.description &&
                             <>
                                 <ArrowForwardIcon />
-                                <CustomChip color='info' label={leadField.field_subtype?.description} size="lg" sx={{ fontWeight: "bold" }} />
+                                <CustomChip color='info' label={leadField.field_subtype?.description} size="large" sx={{ fontWeight: "bold" }} />
                             </>
                         }
                     </Grid>

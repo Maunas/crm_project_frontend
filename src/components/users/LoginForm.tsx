@@ -6,7 +6,7 @@ import type { UserLogin } from "../../types/users"
 import { useForm } from "react-hook-form"
 import { setFormErrors } from "../../generalService"
 import { PasswordField, RegisteredTextInput } from "../common/forms/CustomInputs"
-import { FormErrorMessage } from "../../theme/styledMUIFormComponents"
+import { FormErrorMessage } from "../common/forms/StyledFormComponents"
 import { CommonButton } from "../common/details/DetailsCommonButton"
 
 
@@ -44,7 +44,7 @@ const LoginForm = ({ submit, onCancel }: LoginFormProps) => {
   }
 
   return (
-    <form>
+    <form onSubmit={handleSubmit(onSubmit)}>
       <Stack gap={3}>
         <Typography variant="h1" textAlign="center">
           CRM
@@ -73,7 +73,7 @@ const LoginForm = ({ submit, onCancel }: LoginFormProps) => {
               <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel} fullWidth>
                 Cancelar
               </CommonButton>
-              <CommonButton actionType="LOGIN" variant="contained" onClick={handleSubmit(onSubmit)} fullWidth>
+              <CommonButton actionType="LOGIN" variant="contained" type="submit" fullWidth>
                 Iniciar Sesión
               </CommonButton>
             </ButtonGroup>

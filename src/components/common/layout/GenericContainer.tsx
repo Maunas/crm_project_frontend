@@ -1,5 +1,5 @@
 import { Container, Grid, Modal, Paper, type Breakpoint } from '@mui/material'
-import { type ComponentProps, type ReactNode } from 'react'
+import { memo, type ComponentProps, type ReactNode } from 'react'
 import { CommonButton } from '../details/DetailsCommonButton'
 
 
@@ -42,21 +42,29 @@ interface GenericModalProps extends GenericContainerProps, ComponentProps<typeof
     showButton?: boolean,
 }
 
-export const GenericModal = ({ idModal, modalProps: { open, handleOpen, handleClose }, showButton = true,
+export const GenericModal = memo(({ idModal, modalProps: { open, handleOpen, handleClose }, showButton = true,
     buttonText, maxWidth = "lg", containerSx = {}, paperSx = {}, children, actionType, ...btnProps
 }: GenericModalProps) => {
     return (
         <>
             {showButton &&
-                <CommonButton handleClick={() => handleOpen(idModal)} actionType={actionType} {...btnProps}>
+                <CommonButton actionType={actionType}
+                    onClick={(e) => {
+                        e.stopPropagation()
+                        handleOpen(idModal)
+                    }} {...btnProps}>
                     {buttonText}
                 </CommonButton>
             }
             <Modal
+                onClick={(e) => e.stopPropagation()}
                 open={open === idModal}
                 onClose={handleClose}
                 aria-labelledby="modal-modal-title"
                 aria-describedby="modal-modal-description"
+                slotProps={{
+                    backdrop: { onClick: (e) => e.stopPropagation() }
+                }}
             >
                 <GenericContainer maxWidth={maxWidth} paperSx={{ overflowY: "auto", maxHeight: "95vh", ...paperSx }}
                     containerSx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", ...containerSx }}
@@ -66,7 +74,7 @@ export const GenericModal = ({ idModal, modalProps: { open, handleOpen, handleCl
             </Modal>
         </>
     )
-}
+})
 
 interface ContainerWithSidebarProps {
     isSidebarOpen: boolean,

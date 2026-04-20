@@ -32,7 +32,9 @@ export interface ListParams {
   only_active?: boolean,
   detailed?: boolean,
   page?: number,
-  page_size?: number
+  page_size?: number,
+  order_by?: number | string | null,
+  ascending?: boolean
 }
 export interface WorkspaceParams extends ListParams {
   organization_id?: number

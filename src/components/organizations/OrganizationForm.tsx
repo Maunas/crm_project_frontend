@@ -5,7 +5,7 @@ import { setFormErrors } from '../../generalService'
 import { createOrganization, updateOrganization } from '../workspaces/workspaceServices'
 import { Grid, Typography, ButtonGroup, Stack } from '@mui/material'
 import { useEffect, useMemo } from 'react'
-import { FormErrorMessage } from '../../theme/styledMUIFormComponents'
+import { FormErrorMessage } from '../common/forms/StyledFormComponents'
 import { CommonButton } from '../common/details/DetailsCommonButton'
 
 interface OrganizationSidebarProps {
@@ -78,12 +78,12 @@ const OrganizationForm = ({ existingOrg, submit, onCancel }: OrganizationProps) 
                 </Grid>
                 {errors?.root &&
                     <FormErrorMessage>{errors?.root?.message}</FormErrorMessage>}
-                <ButtonGroup sx={{marginLeft:"auto"}}>
+                <ButtonGroup sx={{ marginLeft: "auto" }}>
                     <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel}>
                         Cancelar
                     </CommonButton>
-                    <CommonButton actionType={existingOrg ? "MODIFY" : "CREATE"} variant="contained" 
-                    onClick={handleSubmit(onSubmit)}>
+                    <CommonButton actionType={existingOrg ? "MODIFY" : "CREATE"} variant="contained"
+                        onClick={handleSubmit(onSubmit)}>
                         Guardar Organización
                     </CommonButton>
                 </ButtonGroup>

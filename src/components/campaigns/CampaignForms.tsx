@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { RegisteredTextInput } from "../common/forms/CustomInputs"
 import { ControlledAutocomplete } from "../common/forms/CustomMultipleInputs"
-import { FormErrorMessage } from "../../theme/styledMUIFormComponents"
+import { FormErrorMessage } from "../common/forms/StyledFormComponents"
 import type { CampaignDetailed, CampaignPost, Workspace, WorkspaceDetailed } from "../../types/campaigns"
 import type { LeadFieldPost } from "../../types/leadFields"
 import { setFormErrors } from "../../generalService"
@@ -124,11 +124,11 @@ export const CampaignForm = ({ existingCmp, submit, onCancel }: CampaignProps) =
                     </Grid>
                     {errors?.root &&
                         <FormErrorMessage>{errors?.root?.message}</FormErrorMessage>}
-                    <ButtonGroup sx={{marginLeft:"auto"}}>
+                    <ButtonGroup sx={{ marginLeft: "auto" }}>
                         <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel}>
                             Cancelar
                         </CommonButton>
-                        <CommonButton actionType={existingCmp? "MODIFY" : "CREATE"} variant="contained" type="submit">
+                        <CommonButton actionType={existingCmp ? "MODIFY" : "CREATE"} variant="contained" type="submit">
                             Guardar Campaña
                         </CommonButton>
                     </ButtonGroup>
