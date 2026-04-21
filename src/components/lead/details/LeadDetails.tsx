@@ -9,18 +9,25 @@ import { formatMoney } from "../../../generalService.ts"
 import { disableLead, enableLead, getLead, getLeadTitleArray } from "../leadService.ts"
 import { useModal } from "../../hooks/useModal.ts"
 import { Link as RouterLink, useNavigate, useParams } from "react-router-dom"
-import { Accordion, AccordionDetails, AccordionSummary, Box, Container, Divider, Grid, Paper, Typography, ButtonGroup, Stack } from "@mui/material"
+import { Accordion, AccordionDetails, AccordionSummary, Box, Container, Divider, Grid, Paper, Typography, ButtonGroup, Stack, Breadcrumbs, Link } from "@mui/material"
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { AddressValue, BoolValue, CardValue, DateValue, ListValues, ModalValue, NewTabLink, PasswordValue, RatingValue } from "../LeadCommonComponents.tsx"
+import { getCampaign } from "../../campaigns/campaignServices.ts"
+import type { Campaign } from "../../../types/campaigns.ts"
 
 export const LeadDetails = () => {
 
     const { id } = useParams()
     const [lead, setLead] = useState<LeadDetailed | null>(null)
+    const [campaign, setCampaign] = useState<Campaign | null>(null)
     const nav = useNavigate()
 
     useEffect(() => {
-        if (id) getLead(parseInt(id)).then(setLead)
+        if (id) getLead(parseInt(id)).then((lead) => {
+            setLead(lead)
+            if (!lead.campaign_id) return
+            getCampaign(lead.campaign_id).then(setCampaign)
+        })
     }, [id])
 
     const fieldValues = useMemo(() => {
@@ -39,65 +46,79 @@ export const LeadDetails = () => {
         })
     }
 
+    const leadTitle = useMemo(() => {
+        if (!lead) return ""
+        return getLeadTitleArray(lead).join(" ")
+    }, [lead])
+
     return (
         <Container maxWidth={false}>
-            <Grid container gap={3}>
-                <Grid size={{ xs: 12, md: 4, lg: 4 }} minWidth="20rem" >
-                    {lead && fieldValues &&
-                        <Stack gap={2}>
-                            <GenericPaper>
-                                <Grid container gap={3} alignItems="center">
-                                    <Grid container size="grow" gap={2} alignItems="center" justifyContent="space-between">
-                                        <Typography variant="h1">
-                                            {getLeadTitleArray(lead).join(" ") ?? "Lead no encontrado"}
-                                        </Typography>
-                                        <CustomChip label={lead?.active ? "Habilitado" : "Deshabilitado"}
-                                            color={lead?.active ? "success" : "error"} sx={{ marginLeft: "auto" }} />
+            <Stack gap={3}>
+                {campaign &&
+                    <Breadcrumbs aria-label="breadcrumb">
+                        <Link component={RouterLink} to={`/leads?workspace=${campaign?.workspace_id}&campaign=${campaign?.id}`} underline="hover" color="inherit">
+                            {campaign?.name}
+                        </Link>
+                        <Typography sx={{ color: 'text.primary' }}>{leadTitle}</Typography>
+                    </Breadcrumbs>}
+                <Grid container gap={3}>
+                    <Grid size={{ xs: 12, md: 4, lg: 4 }} minWidth="20rem" >
+                        {lead && fieldValues &&
+                            <Stack gap={2}>
+                                <GenericPaper>
+                                    <Grid container gap={3} alignItems="center">
+                                        <Grid container size="grow" gap={2} alignItems="center" justifyContent="space-between">
+                                            <Typography variant="h1">
+                                                {leadTitle ?? "Lead no encontrado"}
+                                            </Typography>
+                                            <CustomChip label={lead?.active ? "Habilitado" : "Deshabilitado"}
+                                                color={lead?.active ? "success" : "error"} sx={{ marginLeft: "auto" }} />
+                                        </Grid>
+                                        <ButtonGroup fullWidth>
+                                            <CommonButton actionType={lead.active ? "DISABLE" : "ENABLE"} variant="outlined"
+                                                color={lead.active ? "error" : "success"} onClick={() => handleActive(lead)}>
+                                                {lead.active ? "Eliminar" : "Habilitar"}
+                                            </CommonButton>
+                                            <CommonButton actionType="MODIFY" variant="contained" color="primary"
+                                                component={RouterLink} to={`/leads/modify/${lead?.id}`}>
+                                                Modificar
+                                            </CommonButton>
+                                        </ButtonGroup>
                                     </Grid>
-                                    <ButtonGroup fullWidth>
-                                        <CommonButton actionType={lead.active ? "DISABLE" : "ENABLE"} variant="outlined"
-                                            color={lead.active ? "error" : "success"} onClick={() => handleActive(lead)}>
-                                            {lead.active ? "Eliminar" : "Habilitar"}
-                                        </CommonButton>
-                                        <CommonButton actionType="MODIFY" variant="contained" color="primary"
-                                            component={RouterLink} to={`/leads/modify/${lead?.id}`}>
-                                            Modificar
-                                        </CommonButton>
-                                    </ButtonGroup>
-                                </Grid>
-                            </GenericPaper>
-                            <Paper sx={{ borderRadius: 1 }}>
-                                <LeadFieldSections fieldValues={fieldValues} />
-                                <Accordion disableGutters sx={{ boxShadow: "none" }}>
-                                    <AccordionSummary sx={{ height: "4rem" }}
-                                        expandIcon={<ArrowDropDownIcon />}
-                                        aria-controls="panel0-content" id="panel0-header"
-                                    >
-                                        <Typography variant="h2">Creación de Lead</Typography>
-                                    </AccordionSummary>
-                                    <AccordionDetails sx={{ paddingTop: 0 }}>
-                                        <Divider sx={{ marginBottom: 2 }} />
-                                        <Box px={2}>
-                                            <Typography sx={{ fontWeight: 600 }} variant="body1">Fecha de Creación:</Typography>
-                                            <LeadFieldByType value={lead?.created_at} type="DATE" />
-                                            <Typography sx={{ fontWeight: 600 }} variant="body1">Fecha de Última Modificación:</Typography>
-                                            <LeadFieldByType value={lead?.updated_at} type="DATE" />
-                                        </Box>
-                                    </AccordionDetails>
-                                </Accordion>
-                            </Paper>
+                                </GenericPaper>
+                                <Paper sx={{ borderRadius: 1 }}>
+                                    <LeadFieldSections fieldValues={fieldValues} />
+                                    <Accordion disableGutters sx={{ boxShadow: "none" }}>
+                                        <AccordionSummary sx={{ height: "4rem" }}
+                                            expandIcon={<ArrowDropDownIcon />}
+                                            aria-controls="panel0-content" id="panel0-header"
+                                        >
+                                            <Typography variant="h2">Creación de Lead</Typography>
+                                        </AccordionSummary>
+                                        <AccordionDetails sx={{ paddingTop: 0 }}>
+                                            <Divider sx={{ marginBottom: 2 }} />
+                                            <Box px={2}>
+                                                <Typography sx={{ fontWeight: 600 }} variant="body1">Fecha de Creación:</Typography>
+                                                <LeadFieldByType value={lead?.created_at} type="DATE" />
+                                                <Typography sx={{ fontWeight: 600 }} variant="body1">Fecha de Última Modificación:</Typography>
+                                                <LeadFieldByType value={lead?.updated_at} type="DATE" />
+                                            </Box>
+                                        </AccordionDetails>
+                                    </Accordion>
+                                </Paper>
+                            </Stack>
+                        }
+                    </Grid>
+                    <Grid size="grow" minWidth="20rem" component={GenericPaper} >
+                        <Stack height="100%" gap={3}>
+                            <Typography variant="h2">Actividades</Typography>
+                            <Stack height="100%" gap={2}>
+                                <LeadActivities leadId={Number(id)} />
+                            </Stack>
                         </Stack>
-                    }
-                </Grid>
-                <Grid size="grow" minWidth="20rem" component={GenericPaper} >
-                    <Stack height="100%" gap={3}>
-                        <Typography variant="h2">Actividades</Typography>
-                        <Stack height="100%" gap={2}>
-                            <LeadActivities leadId={Number(id)} />
-                        </Stack>
-                    </Stack>
-                </Grid>
-            </Grid >
+                    </Grid>
+                </Grid >
+            </Stack>
         </Container >
     )
 }
