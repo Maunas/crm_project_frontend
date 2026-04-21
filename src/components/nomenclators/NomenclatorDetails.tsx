@@ -41,7 +41,7 @@ export const NomenclatorDetails = ({ entity, closeSidebar, handleSidebar, handle
                     }
                 </Stack>
                 <Divider />
-                <CommonButton actionType="DETAILS" variant="contained" component={RouterLink} to={`/nomenclators/${entity.id}`} >Ver Items de Nomenclador</CommonButton>
+                <CommonButton actionType="LIST" variant="contained" component={RouterLink} to={`/nomenclators/${entity.id}`} >Ver Items de Nomenclador</CommonButton>
                 <Divider />
                 <Grid container gap={1} >
                     <Grid size="grow" minWidth="18rem">

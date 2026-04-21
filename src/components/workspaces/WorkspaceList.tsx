@@ -3,7 +3,7 @@ import { ContainerWithSidebar } from '../common/layout/GenericContainer'
 import { WorkspaceFormSidebar } from './WorkspaceForms';
 import { CreateCampaignFormSidebar } from '../campaigns/CampaignForms';
 import { CommonButton } from '../common/details/DetailsCommonButton';
-import { EnabledIcon } from '../common/lists/Badges';
+import { EnabledIcon, ListAction } from '../common/lists/Icons';
 import { PaginationComponent } from '../common/lists/PaginationComponent'
 import { WorkspaceDetails } from './WorkspaceDetails'
 import type { Paginable } from '../../types/common'
@@ -14,11 +14,8 @@ import { useSidebar } from '../hooks/useSidebar'
 import { UserContext } from '../common/contexts';
 import type { UserContextItems } from '../users/UserProvider';
 import { useSearchParams } from 'react-router-dom';
-import { ButtonGroup, Grid, IconButton, List, ListItem, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
-import SearchIcon from '@mui/icons-material/Search';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
+import { ButtonGroup, Grid, List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
+import { CustomListItem } from '../common/lists/CustomListItem';
 
 export const WorkspaceList = () => {
 
@@ -115,21 +112,15 @@ export const WorkspaceList = () => {
                     {workspaces?.items && workspaces?.items?.length > 0 ?
                         <List>
                             {workspaces?.items.map(wsp =>
-                                <ListItem key={`wsp-${wsp.id}`} disablePadding secondaryAction={
+                                <CustomListItem key={`wsp-${wsp.id}`} disablePadding secondaryAction={
                                     <Grid container gap={1} alignItems="center">
-                                        <IconButton edge="end" aria-label="details" onClick={() => { handleSidebar("DETAILS_WSP", wsp) }}>
-                                            <SearchIcon />
-                                        </IconButton>
-                                        <IconButton edge="end" aria-label="modify" onClick={() => handleSidebar("UPDATE_WSP", wsp)}>
-                                            <EditIcon />
-                                        </IconButton>
-                                        <IconButton edge="end" aria-label={wsp.active ? "delete" : "restore"}
-                                            onClick={() => handleActive(wsp)}>
-                                            {wsp.active ?
-                                                <DeleteIcon color="error" /> :
-                                                <RestoreFromTrashIcon color="success" />
-                                            }
-                                        </IconButton>
+                                        <ListAction actionType='DETAILS' title="Detalles" tooltipSize="small"
+                                            onClick={() => { handleSidebar("DETAILS_WSP", wsp) }} />
+                                        <ListAction actionType='MODIFY' title="Modificar" tooltipSize="small"
+                                            onClick={() => { handleSidebar("UPDATE_WSP", wsp) }} />
+                                        <ListAction actionType={wsp.active ? "DISABLE" : "ENABLE"} tooltipSize="small"
+                                            title={wsp.active ? "Deshabilitar" : "Habilitar"}
+                                            onClick={() => handleActive(wsp)} color={wsp.active ? "error" : "success"} />
                                     </Grid>
                                 }>
                                     <ListItemButton onClick={() => { handleSidebar("DETAILS_WSP", wsp) }} >
@@ -141,7 +132,7 @@ export const WorkspaceList = () => {
                                         }
                                             secondary={wsp.description} />
                                     </ListItemButton>
-                                </ListItem>
+                                </CustomListItem>
                             )}
                         </List>
                         : <Grid container gap={2} justifyContent="center" alignItems="center" direction="column">

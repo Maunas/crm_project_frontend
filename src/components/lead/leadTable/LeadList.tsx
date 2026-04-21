@@ -20,17 +20,17 @@ export const LeadList = () => {
 
     const [headers, setHeaders] = useState<LeadListParams>({ only_active: true, page_size: 15 })
     const [filters, setFilters] = useState<LeadFilter[]>([])
-    const [workspaceId, setWorkspaceId] = useState<string | number | null>(params?.get("workspace_id") ?? null)
-    const [campaignId, setCampaignId] = useState<string | number | null>(params?.get("campaign_id") ?? null)
+    const [workspaceId, setWorkspaceId] = useState<string | number | null>(params?.get("workspace") ?? null)
+    const [campaignId, setCampaignId] = useState<string | number | null>(params?.get("campaign") ?? null)
 
     //Actualización de los campaign y workspace elegidos como searchParams
     useEffect(() => {
         setParams(prev => {
             if (prev.get("workspace_id") === workspaceId && prev.get("campaign_id") === campaignId) return prev
             const next = new URLSearchParams(prev)
-            if (workspaceId) next.set("workspace_id", `${workspaceId}`)
+            if (workspaceId) next.set("workspace", `${workspaceId}`)
             else next.delete("workspace_id")
-            if (campaignId) next.set("campaign_id", `${campaignId}`)
+            if (campaignId) next.set("campaign", `${campaignId}`)
             else next.delete("campaign_id")
             return next
         }, { replace: true })

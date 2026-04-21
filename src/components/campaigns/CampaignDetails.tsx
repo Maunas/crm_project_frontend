@@ -46,7 +46,7 @@ export const CampaignDetails = () => {
 
     //Define como actualizar la lista dependiendo de la acción realizada. 
     // Para CREATE se vuelve a hacer fetch de la página para no arruinar la paginación
-    const updateEntity = (mode: string, entity: CampaignDetailed | LeadFieldDetailed) => {
+    const updateEntity = useCallback((mode: string, entity: CampaignDetailed | LeadFieldDetailed) => {
         switch (mode) {
             case "UPDATE_CMP": {
                 if (!campaign) break
@@ -54,29 +54,33 @@ export const CampaignDetails = () => {
             }
             case "UPDATE_FIELD": {
                 const newLeadField = entity as LeadFieldDetailed
-                if (!leadFields || !(leadFields?.length > 0)) return
-                const newLeadFields = [...leadFields]
-                const fieldIdx = leadFields.findIndex(field => field.id === newLeadField.id)
-                if (fieldIdx === -1) return
-                newLeadFields[fieldIdx] = newLeadField
-                return setLeadFields(newLeadFields)
+                return setLeadFields(prevList => {
+                    if (!prevList || !(prevList?.length > 0)) return prevList
+                    const newLeadFields = [...prevList]
+                    const fieldIdx = prevList.findIndex(field => field.id === newLeadField.id)
+                    if (fieldIdx === -1) return prevList
+                    newLeadFields[fieldIdx] = newLeadField
+                    return newLeadFields
+                })
             }
             case "CREATE_FIELD": {
-                if (!leadFields) break
                 return updateLeadFields()
             }
             case "DELETE_FIELD": {
-                if (!leadFields || !(leadFields?.length > 0)) return
-                const newLeadFields = [...leadFields]
-                const fieldIdx = leadFields.findIndex(field => field.id === entity.id)
-                newLeadFields.splice(fieldIdx, 1)
-                if (selectedEntity && entity.id === selectedEntity.id) closeSidebar()
-                return setLeadFields(newLeadFields)
+                return setLeadFields(prevList => {
+                    if (!prevList || !(prevList?.length > 0)) return prevList
+                    const newLeadFields = [...prevList]
+                    const fieldIdx = prevList.findIndex(field => field.id === entity.id)
+                    if (fieldIdx === -1) return prevList
+                    newLeadFields.splice(fieldIdx, 1)
+                    if (selectedEntity && entity.id === selectedEntity.id) closeSidebar()
+                    return newLeadFields
+                })
             }
         }
-    }
+    }, [campaign, closeSidebar, selectedEntity, updateLeadFields])
 
-    const handleActiveCampaign = (campaign: CampaignDetailed) => {
+    const handleActiveCampaign = useCallback((campaign: CampaignDetailed) => {
         const updateActive = () => {
             updateEntity("UPDATE_CMP", { ...campaign, active: !campaign.active })
         }
@@ -93,7 +97,7 @@ export const CampaignDetails = () => {
             enableCampaign(campaign.id!)
                 .then(updateActive)
         }
-    }
+    }, [nav, updateEntity])
 
     return (
         <ContainerWithSidebar isSidebarOpen={!!sidebarMode} containerSize="xl"
@@ -148,8 +152,10 @@ export const CampaignDetails = () => {
                                 <Typography variant="h2">Acciones</Typography>
                             </Grid >
                             <ButtonGroup sx={{ marginLeft: "auto" }}>
-                                <CommonButton handleClick={() => handleSidebar("UPDATE_CMP", null)} actionType="MODIFY">Modificar</CommonButton>
                                 <DisableButton active={campaign.active} handleActive={() => handleActiveCampaign(campaign)} />
+                                <CommonButton handleClick={() => handleSidebar("UPDATE_CMP", null)} actionType="MODIFY">Modificar</CommonButton>
+                                <CommonButton component={RouterLink} variant='outlined' to={`/leads?workspace=${campaign.workspace_id}&campaign=${campaign.id}`}
+                                    actionType="LIST">Ver Lista de Leads</CommonButton>
                             </ButtonGroup>
                         </Grid>
                         <Divider />

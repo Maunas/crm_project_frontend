@@ -132,3 +132,11 @@ export const getSelectorField = <T>(selector: T[], field: keyof T, isMultiple: b
   if (!isMultiple) return selector[0][field]
   return selector.map(item => item[field])
 }
+
+//Obtener el título de un lead
+export const getLeadTitleArray = (lead: LeadDetailed) => {
+  return lead.field_values
+    .filter(fv => fv.field.title_order != null)
+    .sort((a, b) => (a.field.title_order ?? 0) - (b.field.title_order ?? 0))
+    .map(fv => fv.value)
+}
