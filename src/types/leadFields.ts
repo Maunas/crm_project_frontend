@@ -57,6 +57,7 @@ export interface LeadFieldDetailed extends LeadField, Metadata {
   nomenclator: Nomenclator;
   lead_field_section: LeadFieldSectionDetailed;
   related_campaign: Campaign;
+  title_order: number | null
 }
 
 export interface LeadFieldTemplate {
@@ -90,7 +91,7 @@ export interface FieldValidationRulePost {
   expression?: string;
   error_message: string;
   template_code?: string | null;
-  template_params?: {[param_name: string]:string};
+  template_params?: { [param_name: string]: string };
   field_id: number;
 }
 
@@ -100,7 +101,7 @@ export interface FieldValidationRule extends FieldValidationRulePost {
   id: number;
 }
 
-export interface FieldValidationRuleDetailed extends FieldValidationRule, Metadata {}
+export interface FieldValidationRuleDetailed extends FieldValidationRule, Metadata { }
 
 export interface FieldValidationRuleTemplate {
   name: string;
@@ -119,4 +120,4 @@ export interface LeadFieldSection extends LeadFieldSectionPost {
   id: number;
 }
 
-export interface LeadFieldSectionDetailed extends LeadFieldSection, Metadata {}
+export interface LeadFieldSectionDetailed extends LeadFieldSection, Metadata { }

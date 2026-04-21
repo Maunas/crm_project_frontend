@@ -6,7 +6,7 @@ import { CustomChip } from "../../common/details/StyledDisplayComponents.tsx"
 import type { LeadDetailed } from "../../../types/leads"
 import type { LeadFieldValue } from "../../../types/leadFields"
 import { formatMoney } from "../../../generalService.ts"
-import { disableLead, enableLead, getLead } from "../leadService.ts"
+import { disableLead, enableLead, getLead, getLeadTitleArray } from "../leadService.ts"
 import { useModal } from "../../hooks/useModal.ts"
 import { Link as RouterLink, useNavigate, useParams } from "react-router-dom"
 import { Accordion, AccordionDetails, AccordionSummary, Box, Container, Divider, Grid, Paper, Typography, ButtonGroup, Stack } from "@mui/material"
@@ -49,7 +49,7 @@ export const LeadDetails = () => {
                                 <Grid container gap={3} alignItems="center">
                                     <Grid container size="grow" gap={2} alignItems="center" justifyContent="space-between">
                                         <Typography variant="h1">
-                                            {fieldValues[0]?.value ?? "Lead no encontrado"}
+                                            {getLeadTitleArray(lead).join(" ") ?? "Lead no encontrado"}
                                         </Typography>
                                         <CustomChip label={lead?.active ? "Habilitado" : "Deshabilitado"}
                                             color={lead?.active ? "success" : "error"} sx={{ marginLeft: "auto" }} />
