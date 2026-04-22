@@ -229,4 +229,3 @@ export const LeadFieldByType = ({ fieldValue, value, type, modalProps, template 
         default: return `${value}`
     }
 }
-
