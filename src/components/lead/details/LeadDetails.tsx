@@ -45,7 +45,7 @@ export const LeadDetails = () => {
             else return setLead({ ...lead, active: false })
         })
     }
-
+    console.log(lead)
     const leadTitle = useMemo(() => {
         if (!lead) return ""
         return getLeadTitleArray(lead).join(" ")
@@ -69,7 +69,7 @@ export const LeadDetails = () => {
                                     <Grid container gap={3} alignItems="center">
                                         <Grid container size="grow" gap={2} alignItems="center" justifyContent="space-between">
                                             <Typography variant="h1">
-                                                {leadTitle ?? "Lead no encontrado"}
+                                                {leadTitle.length > 0 ? leadTitle : "Lead no encontrado"}
                                             </Typography>
                                             <CustomChip label={lead?.active ? "Habilitado" : "Deshabilitado"}
                                                 color={lead?.active ? "success" : "error"} sx={{ marginLeft: "auto" }} />
@@ -229,4 +229,3 @@ export const LeadFieldByType = ({ fieldValue, value, type, modalProps, template 
         default: return `${value}`
     }
 }
-

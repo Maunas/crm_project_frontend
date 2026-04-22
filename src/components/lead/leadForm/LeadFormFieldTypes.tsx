@@ -7,6 +7,8 @@ import type { NomenclatorItem } from "../../../types/nomenclators";
 import { type Control, type FieldValues, type Path, type UseFormRegister } from "react-hook-form";
 import dayjs from "dayjs";
 import { FormControl, InputAdornment, InputLabel, OutlinedInput, TextField } from "@mui/material"
+import { useMemo } from "react";
+import { getLeadTitleArray } from "../leadService";
 
 interface BasicFormInput<T extends FieldValues> {
     label?: string,
@@ -163,12 +165,24 @@ interface LeadFormLeadProps<T extends FieldValues> extends Omit<LeadFormSelector
 export const LeadFormRelatedLead = <T extends FieldValues>
     ({ control, name, label, optionMap, leadField, required = false, size = "medium", errorMessage, autoComplete = "one-time-code" }: LeadFormLeadProps<T>) => {
 
-    const optionMapId = leadField.fieldData.related_campaign_id
+    const options = useMemo(() => {
+        const optionMapId = leadField.fieldData.related_campaign_id
+        if (!optionMap || !optionMapId) return []
+        return optionMap.get(optionMapId) ?? []
+    }, [optionMap, leadField.fieldData.related_campaign_id])
 
-    if (optionMap && optionMapId && optionMap.has(optionMapId)) {
+    const optionLabel = useMemo(() => {
+        const labelMap = new Map<number, string>()
+        options.forEach(op => {
+            labelMap.set(op.id, getLeadTitleArray(op).join(" "))
+        })
+        return labelMap
+    }, [options])
+
+    if (options.length > 0 && optionLabel.size > 0) {
         return (
-            <ControlledAutocomplete control={control} name={name} label={label} options={optionMap.get(optionMapId)!} returnField="id"
-                getOptionLabel={option => `${option?.field_values?.[0].value} ${option?.field_values?.[1].value}`} size={size}
+            <ControlledAutocomplete control={control} name={name} label={label} options={options} returnField="id"
+                getOptionLabel={op => optionLabel.get(op?.id) ?? "Nombre no disponible"} size={size}
                 getOptionKey={option => `${option?.id}`} required={required} errorMessage={errorMessage} autocomplete={autoComplete} multiple />
         )
     }
