@@ -45,13 +45,11 @@ export const LeadDetails = () => {
             else return setLead({ ...lead, active: false })
         })
     }
-
+    console.log(lead)
     const leadTitle = useMemo(() => {
         if (!lead) return ""
         return getLeadTitleArray(lead).join(" ")
     }, [lead])
-
-    console.log(lead, leadTitle)
 
     return (
         <Container maxWidth={false}>

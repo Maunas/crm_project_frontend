@@ -51,7 +51,7 @@ export const LeadListCellValue = memo(({ fieldValue, type, subtype, modalProps }
         case "SELECTOR": case "CHECKBOX":
             return <ListValues value={value} idFieldValue={fieldValue.id} type="Selector" maxItems={2} />
         case "LEAD":
-            return <ListValues value={value} idFieldValue={fieldValue.id} type="Lead" maxItems={2} />
+            return <ListValues value={value} idFieldValue={fieldValue.id} type="Lead" maxItems={2} isNav />
         default: return `${value}`
     }
 })

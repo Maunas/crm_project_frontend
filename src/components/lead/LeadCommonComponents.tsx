@@ -15,6 +15,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import type { NomenclatorItem } from '../../types/nomenclators';
 import type { Lead } from '../../types/leads';
 import { Link as RouterLink } from 'react-router-dom';
+import { getLeadTitleArray } from './leadService';
 
 export const NewTabLink = ({ url, value }: { url: string, value?: string }) =>
     <Link href={`${url}`} target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()}>
@@ -188,7 +189,8 @@ export const ListValues = memo(({ value, idFieldValue, type, isNav = false, maxI
     }, [typedValue, maxItems])
 
     const getLabel = useCallback((val: Lead | NomenclatorItem) => {
-        if (type === "Lead") return `${(val as Lead).field_values[0].value}`
+        if (type === "Lead") return getLeadTitleArray(val as Lead, true).join(" ")
+
         else return `${(val as NomenclatorItem).value}`
     }, [type])
 
