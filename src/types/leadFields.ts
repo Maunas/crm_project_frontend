@@ -39,6 +39,7 @@ export interface LeadFieldPost {
   related_campaign_id?: number | null;
   //Calculated
   calculation_expression?: string | null;
+  title_order: number | null
 }
 
 export interface LeadField extends LeadFieldPost {
@@ -57,7 +58,6 @@ export interface LeadFieldDetailed extends LeadField, Metadata {
   nomenclator: Nomenclator;
   lead_field_section: LeadFieldSectionDetailed;
   related_campaign: Campaign;
-  title_order: number | null
 }
 
 export interface LeadFieldTemplate {

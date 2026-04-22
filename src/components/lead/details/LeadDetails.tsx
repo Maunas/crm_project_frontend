@@ -51,6 +51,8 @@ export const LeadDetails = () => {
         return getLeadTitleArray(lead).join(" ")
     }, [lead])
 
+    console.log(lead, leadTitle)
+
     return (
         <Container maxWidth={false}>
             <Stack gap={3}>
@@ -69,7 +71,7 @@ export const LeadDetails = () => {
                                     <Grid container gap={3} alignItems="center">
                                         <Grid container size="grow" gap={2} alignItems="center" justifyContent="space-between">
                                             <Typography variant="h1">
-                                                {leadTitle ?? "Lead no encontrado"}
+                                                {leadTitle.length > 0 ? leadTitle : "Lead no encontrado"}
                                             </Typography>
                                             <CustomChip label={lead?.active ? "Habilitado" : "Deshabilitado"}
                                                 color={lead?.active ? "success" : "error"} sx={{ marginLeft: "auto" }} />
