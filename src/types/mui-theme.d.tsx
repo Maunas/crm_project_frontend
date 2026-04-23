@@ -61,3 +61,8 @@ declare module '@mui/material/LinearProgress' {
     size?: "small" | "medium";
   }
 }
+declare module '@mui/material/ListItemAvatar' {
+  interface ListItemAvatarProps {
+    color?: ColorTypes;
+  }
+}
