@@ -51,7 +51,7 @@ export const disableLead = async (id: number): Promise<DeleteResponse> => {
 /*************  FormData  ****************/
 
 /** Crea un objeto FormData a partir de los datos de un formulario. Debe ser en formato { fieldName: string, data: object } */
-export const createFormData = <T extends { fieldName: string, data: object | File }>(fields: T[]) => {
+export const createFormData = <T extends { fieldName: string, data: object | number | File }>(fields: T[]) => {
   const formData = new FormData()
   fields.forEach(item => {
     if (item.fieldName === "data") formData.set(item.fieldName, JSON.stringify(item.data))
@@ -62,7 +62,7 @@ export const createFormData = <T extends { fieldName: string, data: object | Fil
 
 //Organiza los datos de Lead para acomodar los archivos File en un FormData
 export const createFormDataFromLead = (data: LeadPostForm) => {
-  const fields: { fieldName: string, data: object }[] = []
+  const fields: { fieldName: string, data: number | object }[] = []
   const dataValues: LeadPostValue[] = []
 
   for (const fieldValue of data.values) {
@@ -71,13 +71,13 @@ export const createFormDataFromLead = (data: LeadPostForm) => {
       continue
     }
     //Si es un string, no se ha modificado el file, se envia solo en el cuerpo principal
-    if (typeof fieldValue?.value === "string") {
+    if (typeof fieldValue?.value === "string" || typeof fieldValue?.value === "number") {
       dataValues.push({ field_id: fieldValue.field_id, value: fieldValue.value })
       continue
     }
     //Si es un arreglo, es porque se modifico el archivo. Se envia el nuevo archivo en un campo aparte. Toma solo el primer archivo.
     if (fieldValue?.value?.length > 0) {
-      fields.push({ fieldName: `file-${fieldValue.field_id}`, data: fieldValue?.value?.[0] })
+      fields.push({ fieldName: `file-${fieldValue.field_id}`, data: (fieldValue?.value as FileList)?.[0] })
       dataValues.push({ field_id: fieldValue?.field_id, value: (fieldValue?.value as FileList)?.[0].name })
       continue
     }

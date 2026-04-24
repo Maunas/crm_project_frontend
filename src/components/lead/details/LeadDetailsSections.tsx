@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react"
 import type { LeadDetailed } from "../../../types/leads.ts"
-import type { LeadFieldValue } from "../../../types/leadFields.ts"
+import type { LeadFieldValueDetailed } from "../../../types/leadFields.ts"
 import { formatMoney } from "../../../generalService.ts"
 import { useModal } from "../../hooks/useModal.ts"
 import { Accordion, AccordionDetails, AccordionSummary, Divider, Paper, Typography, Stack, IconButton, List, ListItemText } from "@mui/material"
@@ -13,10 +13,10 @@ import { LeadPartialUpdate } from "./LeadPartialUpdate.tsx"
 
 interface LeadDetailsSection {
     name: string,
-    fields: LeadFieldValue[]
+    fields: LeadFieldValueDetailed[]
 }
 
-export const LeadFieldSections = ({ lead }: { lead: LeadDetailed }) => {
+export const LeadFieldSections = ({ lead, updateLeadInfo }: { lead: LeadDetailed, updateLeadInfo: (lead: LeadDetailed) => void }) => {
 
     const { modalProps } = useModal()
 
@@ -62,8 +62,8 @@ export const LeadFieldSections = ({ lead }: { lead: LeadDetailed }) => {
                                 updatingFieldId !== fieldValue.field.id ?
                                     <LeadFieldByType key={`field-${idx}`} fieldValue={fieldValue} modalProps={modalProps}
                                         onToggleEdit={() => setUpdatingFieldId(fieldValue.field.id)} />
-                                    : <LeadPartialUpdate key={`field-${idx}`} fieldValue={fieldValue}
-                                        onClose={() => setUpdatingFieldId(null)} />
+                                    : <LeadPartialUpdate key={`field-${idx}`} fieldValue={fieldValue} updateLeadInfo={updateLeadInfo}
+                                        onClose={() => setUpdatingFieldId(null)} lead={lead} />
                             )}
                         </List >
                     </AccordionDetails>
@@ -92,7 +92,7 @@ type LeadFieldProps = {
     type: string,
     fieldName: string | null
 } | {
-    fieldValue: LeadFieldValue,
+    fieldValue: LeadFieldValueDetailed,
     onToggleEdit: () => void,
     modalProps: {
         open: string | number | boolean;
@@ -144,7 +144,7 @@ export const LeadFieldByType = (props: LeadFieldProps) => {
     }
 
     return (
-        <CustomListItem disablePadding secondaryAction={onToggleEdit &&
+        <CustomListItem disablePadding secondaryAction={onToggleEdit && typeCode !== "CALCULATED" &&
             <IconButton size="small" edge="end" color="primary" title="Modificar" onClick={onToggleEdit}>
                 <EditIcon fontSize="small" />
             </IconButton>} >

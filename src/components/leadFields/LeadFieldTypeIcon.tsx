@@ -71,8 +71,8 @@ export const LeadFieldTypeIcon = ({ typeCode, subtypeCode }: { typeCode?: string
                 return { color: "warning", component: <CheckBoxOutlinedIcon /> }
             }
             case "SELECTOR": {
-                if (subtypeCode === "CHECKBOX_MULTIPLE") return { color: "warning", component: <LocalOfferOutlinedIcon /> }
-                return { color: "warning", component: <DiscountOutlinedIcon /> }
+                if (subtypeCode === "SELECTOR_MULTIPLE") return { color: "warning", component: <DiscountOutlinedIcon /> }
+                return { color: "warning", component: <LocalOfferOutlinedIcon /> }
             }
 
             case "CREDIT_CARD_SIMPLE": return { color: "error", component: <CreditCardOutlinedIcon /> }

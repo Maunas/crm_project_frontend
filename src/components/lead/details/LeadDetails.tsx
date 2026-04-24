@@ -34,10 +34,15 @@ export const LeadDetailsLayout = () => {
         })
     }
 
+    const updateLeadInfo = (newLead: LeadDetailed) => {
+        setLead(newLead)
+    }
+
     const leadTitle = useMemo(() => {
         if (!lead) return ""
         return getLeadTitleArray(lead).join(" ")
     }, [lead])
+
 
 
     return (
@@ -54,7 +59,7 @@ export const LeadDetailsLayout = () => {
                 {lead &&
                     <Grid container gap={3}>
                         <Grid size={{ xs: 12, md: 4, lg: 4 }} minWidth="20rem" >
-                            <LeadInfo lead={lead} handleActive={handleActive} leadTitle={leadTitle} />
+                            <LeadInfo lead={lead} handleActive={handleActive} leadTitle={leadTitle} updateLeadInfo={updateLeadInfo} />
                         </Grid>
                         <Grid size="grow" minWidth="20rem" component={GenericPaper} >
                             <LeadActivities leadId={lead.id} />
@@ -71,9 +76,10 @@ interface LeadInfoProps {
     lead: LeadDetailed,
     handleActive: (lead: LeadDetailed) => void,
     leadTitle: string,
+    updateLeadInfo: (lead: LeadDetailed) => void
 }
 
-export const LeadInfo = ({ lead, leadTitle, handleActive }: LeadInfoProps) => {
+export const LeadInfo = ({ lead, leadTitle, handleActive, updateLeadInfo }: LeadInfoProps) => {
 
     return (
         <Stack gap={2}>
@@ -98,7 +104,7 @@ export const LeadInfo = ({ lead, leadTitle, handleActive }: LeadInfoProps) => {
                     </ButtonGroup>
                 </Grid>
             </GenericPaper>
-            <LeadFieldSections lead={lead} />
+            <LeadFieldSections lead={lead} updateLeadInfo={updateLeadInfo} />
         </Stack>
     )
 }
