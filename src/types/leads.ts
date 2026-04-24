@@ -4,10 +4,10 @@ import type { ColorTypes } from "./mui-theme.d";
 
 export interface LeadPostValue {
   field_id: number;
-  value: string | object[] | FileList;
+  value: string | number[] | number | FileList;
 }
 export interface LeadPost {
-  campaign_id: number;
+  campaign_id?: number;
   values: LeadPostValue[];
 }
 

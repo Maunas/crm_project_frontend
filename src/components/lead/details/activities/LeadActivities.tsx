@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { LeadComments } from './LeadComments';
-import { Box, Tab, Tabs } from '@mui/material'
+import { Box, Stack, Tab, Tabs, Typography } from '@mui/material'
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -30,16 +30,19 @@ export const LeadActivities = ({ leadId }: { leadId: number }) => {
   const [openTab, setOpenTab] = useState<number>(0)
 
   return (
-    <>
-      <Tabs value={openTab} onChange={(_, val) => { setOpenTab(val) }} aria-label="activities tabs">
-        <Tab label="Comentarios" id="tab-comments" />
-        <Tab label="Auditoría" id="tab-audit" />
-      </Tabs>
-      <Box sx={{ height: "100%" }}>
-        <CustomTabPanel value={openTab} index={0}>
-          <LeadComments leadId={leadId} />
-        </CustomTabPanel>
-      </Box>
-    </>
+    <Stack height="100%" gap={3}>
+      <Typography variant="h2">Actividades</Typography>
+      <Stack height="100%" gap={2}>
+        <Tabs value={openTab} onChange={(_, val) => { setOpenTab(val) }} aria-label="activities tabs">
+          <Tab label="Comentarios" id="tab-comments" />
+          <Tab label="Auditoría" id="tab-audit" />
+        </Tabs>
+        <Box sx={{ height: "100%" }}>
+          <CustomTabPanel value={openTab} index={0}>
+            <LeadComments leadId={leadId} />
+          </CustomTabPanel>
+        </Box>
+      </Stack>
+    </Stack>
   )
 }

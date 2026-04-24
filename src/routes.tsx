@@ -1,7 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import MainLayout from "./components/common/mainLayout";
 import { NotFound } from "./pages/NotFound";
-import { LeadDetails } from "./components/lead/details/LeadDetails";
+import { LeadDetailsLayout } from "./components/lead/details/LeadDetails";
 import { CampaignDetails } from "./components/campaigns/CampaignDetails";
 import { WorkspaceList } from "./components/workspaces/WorkspaceList";
 import { GenericContainer } from "./components/common/layout/GenericContainer";
@@ -54,7 +54,7 @@ export const router = createBrowserRouter([
             },
             {
                 path: "/leads/:id",
-                Component: LeadDetails
+                Component: LeadDetailsLayout
             },
             {
                 path: "/campaigns/",

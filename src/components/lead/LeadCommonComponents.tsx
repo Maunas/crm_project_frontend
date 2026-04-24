@@ -23,7 +23,7 @@ export const NewTabLink = ({ url, value }: { url: string, value?: string }) =>
     </Link>
 
 
-export const AddressValue = ({ value, subtype }: { value: string, subtype: string }) => {
+export const AddressValue = ({ value, subtype }: { value: string, subtype?: string | null }) => {
     if (subtype === "MAPS_URL") return <NewTabLink url={`${value}`} />
     else return <NewTabLink value={value}
         url={`https://www.google.com/maps/search/${value.replaceAll(" ", "+")}`} />
@@ -70,7 +70,7 @@ export const CardValue = ({ value, allowShow = false }: { value: string, allowSh
 
 interface RatingProps {
     value: string,
-    subtype: string,
+    subtype?: string | null,
     counter?: boolean,
     tooltip?: boolean,
     size?: "small" | "medium"
@@ -107,7 +107,7 @@ interface ModalProps {
     }
     idModal: string,
     type: string,
-    subtype?: string,
+    subtype?: string | null,
     value: string,
     size?: "small" | "medium"
 }
@@ -132,7 +132,7 @@ export const ModalValue = ({ modalProps, idModal, type, subtype, value, size = "
 }
 interface ModalContentProps {
     type: string;
-    subtype?: string;
+    subtype?: string | null;
     value: string;
 }
 const ModalValueContent = ({ type, subtype, value }: ModalContentProps) => {
@@ -190,7 +190,6 @@ export const ListValues = memo(({ value, idFieldValue, type, isNav = false, maxI
 
     const getLabel = useCallback((val: Lead | NomenclatorItem) => {
         if (type === "Lead") return getLeadTitleArray(val as Lead, true).join(" ")
-
         else return `${(val as NomenclatorItem).value}`
     }, [type])
 

@@ -1,6 +1,5 @@
 import { ControlledNumber, ControlledSlider, ControlledSwitch, PasswordField, SingleFileField } from "../../common/forms/CustomInputs";
 import { AutocompleteLoader, ControlledAutocomplete, ControlledGroupedCheckbox, ControlledRadio } from "../../common/forms/CustomMultipleInputs";
-import type { LeadPostFormValues } from "./LeadForm";
 import { FormErrorMessage } from "../../common/forms/StyledFormComponents";
 import type { Lead } from "../../../types/leads";
 import type { NomenclatorItem } from "../../../types/nomenclators";
@@ -9,6 +8,7 @@ import dayjs from "dayjs";
 import { FormControl, InputAdornment, InputLabel, OutlinedInput, TextField } from "@mui/material"
 import { useMemo } from "react";
 import { getLeadTitleArray } from "../leadService";
+import type { LeadField } from "../../../types/leadFields";
 
 interface BasicFormInput<T extends FieldValues> {
     label?: string,
@@ -76,11 +76,11 @@ export const LeadFormFile = <T extends FieldValues>
 }
 
 interface RegPropWithLeadField<T extends FieldValues> extends RegisterFormInput<T> {
-    leadField: LeadPostFormValues
+    leadField: LeadField
 }
 export const LeadFormAddress = <T extends FieldValues>
     ({ register, name, label, leadField, required = false, size = "medium", errorMessage, autoComplete = "one-time-code" }: RegPropWithLeadField<T>) => {
-    switch (leadField.fieldData.field_subtype_code) {
+    switch (leadField.field_subtype_code) {
         case "MAPS_URL":
             return (<LeadFormText register={register} name={name} label={label} size={size}
                 required={required} errorMessage={errorMessage} autoComplete={autoComplete}
@@ -138,48 +138,40 @@ export const LeadFormNumber = <T extends FieldValues>
 }
 
 interface LeadFormSelectorProps<T extends FieldValues> extends ControlFormInput<T> {
-    leadField: LeadPostFormValues,
-    optionMap: Map<number, NomenclatorItem[]>,
+    leadField: LeadField,
+    options?: NomenclatorItem[],
     autoComplete?: string
 }
 
 export const LeadFormSelector = <T extends FieldValues>
-    ({ label, name, control, required = false, size = "medium", errorMessage, leadField, optionMap, autoComplete = "one-time-code" }: LeadFormSelectorProps<T>) => {
+    ({ label, name, control, required = false, size = "medium", errorMessage, leadField, options, autoComplete = "one-time-code" }: LeadFormSelectorProps<T>) => {
 
-    const optionMapId = leadField?.fieldData?.nomenclator_id
-
-    if (optionMap && optionMapId && optionMap.has(optionMapId)) {
+    if (options && options.length > 0) {
         return (
-            <ControlledAutocomplete control={control} name={name} label={label} options={optionMap.get(optionMapId)!} returnField="id"
+            <ControlledAutocomplete control={control} name={name} label={label} options={options} returnField="id"
                 getOptionLabel={option => option.value!} getOptionKey={option => `${option.id}`}
                 required={required} errorMessage={errorMessage} autocomplete={autoComplete} size={size}
-                multiple={leadField.fieldData.field_subtype_code === "SELECTOR_MULTIPLE"} />
+                multiple={leadField.field_subtype_code === "SELECTOR_MULTIPLE"} />
         )
     }
     else return <AutocompleteLoader label={label} />
 }
 
-interface LeadFormLeadProps<T extends FieldValues> extends Omit<LeadFormSelectorProps<T>, "optionMap"> {
-    optionMap: Map<number, Lead[]>,
+interface LeadFormLeadProps<T extends FieldValues> extends Omit<LeadFormSelectorProps<T>, "options"> {
+    options?: Lead[],
 }
 export const LeadFormRelatedLead = <T extends FieldValues>
-    ({ control, name, label, optionMap, leadField, required = false, size = "medium", errorMessage, autoComplete = "one-time-code" }: LeadFormLeadProps<T>) => {
-
-    const options = useMemo(() => {
-        const optionMapId = leadField.fieldData.related_campaign_id
-        if (!optionMap || !optionMapId) return []
-        return optionMap.get(optionMapId) ?? []
-    }, [optionMap, leadField.fieldData.related_campaign_id])
+    ({ control, name, label, options, required = false, size = "medium", errorMessage, autoComplete = "one-time-code" }: LeadFormLeadProps<T>) => {
 
     const optionLabel = useMemo(() => {
         const labelMap = new Map<number, string>()
-        options.forEach(op => {
+        options?.forEach(op => {
             labelMap.set(op.id, getLeadTitleArray(op).join(" "))
         })
         return labelMap
     }, [options])
 
-    if (options.length > 0 && optionLabel.size > 0) {
+    if (options && options.length > 0) {
         return (
             <ControlledAutocomplete control={control} name={name} label={label} options={options} returnField="id"
                 getOptionLabel={op => optionLabel.get(op?.id) ?? "Nombre no disponible"} size={size}
@@ -190,40 +182,36 @@ export const LeadFormRelatedLead = <T extends FieldValues>
 }
 
 interface LeadFormCheckboxProps<T extends FieldValues> extends ControlFormInput<T> {
-    leadField: LeadPostFormValues,
-    optionMap: Map<number, NomenclatorItem[]>,
+    leadField: LeadField,
+    options?: NomenclatorItem[],
     autoComplete?: string,
     returnField: keyof NomenclatorItem
 }
 export const LeadFormCheckbox = <T extends FieldValues>
-    ({ control, label, name, required = false, size = "medium", errorMessage, leadField, optionMap, returnField }: LeadFormCheckboxProps<T>) => {
+    ({ control, label, name, required = false, size = "medium", errorMessage, leadField, options, returnField }: LeadFormCheckboxProps<T>) => {
 
-    const optionMapId = leadField?.fieldData?.nomenclator_id
+    if (!options || options.length === 0) return null
 
-    if (!optionMap || !optionMapId || !optionMap.has(optionMapId)) return null
-
-    if (leadField.fieldData.field_subtype_code === "CHECKBOX_SIMPLE") return (
-
+    if (leadField.field_subtype_code === "CHECKBOX_SIMPLE") return (
         <FormControl variant="outlined" fullWidth>
             <InputLabel shrink>{label}</InputLabel>
             <OutlinedInput fullWidth sx={{ p: size === "medium" ? ".5rem 1rem" : "0 .5rem", cursor: "default" }}
                 notched label={label}
                 inputComponent={() => (
-                    <ControlledRadio control={control} name={name} options={optionMap.get(optionMapId)!}
+                    <ControlledRadio control={control} name={name} options={options}
                         keyField="id" returnField={returnField} isReturnInt getRadioLabel={option => option.value!}
                         required={required} errorMessage={errorMessage} />
                 )}
             />
         </FormControl>
-
     )
 
-    if (leadField.fieldData.field_subtype_code === "CHECKBOX_MULTIPLE") return (
+    if (leadField.field_subtype_code === "CHECKBOX_MULTIPLE") return (
         <FormControl variant="outlined" fullWidth>
             <InputLabel shrink>{label}</InputLabel>
             <OutlinedInput fullWidth sx={{ p: size === "medium" ? ".5rem 1rem" : "0 .5rem", cursor: "default" }}
                 notched label={label}
-                inputComponent={() => <ControlledGroupedCheckbox control={control} name={name} options={optionMap.get(optionMapId)!}
+                inputComponent={() => <ControlledGroupedCheckbox control={control} name={name} options={options}
                     returnField="id" keyField={returnField} getCheckboxLabel={option => option.value!}
                     required={required} errorMessage={errorMessage} row />}
             />

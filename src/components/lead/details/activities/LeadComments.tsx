@@ -1,10 +1,10 @@
 import { useEffect, useState, type ReactNode } from "react"
 import { CreateCommentWrapper, UpdateCommentFromNote } from "./LeadCommentForm"
-import { PaginationComponent } from "../../common/lists/PaginationComponent"
-import type { Paginable } from "../../../types/common"
-import type { LeadComment } from "../../../types/leads"
-import type { ColorTypes } from "../../../types/mui-theme.d"
-import { useListPagination } from "../../hooks/useListPagination"
+import { PaginationComponent } from "../../../common/lists/PaginationComponent"
+import type { Paginable } from "../../../../types/common"
+import type { LeadComment } from "../../../../types/leads"
+import type { ColorTypes } from "../../../../types/mui-theme.d"
+import { useListPagination } from "../../../hooks/useListPagination"
 import { deleteComment, getComments } from "./leadActivitiesService"
 import dayjs from "dayjs"
 import { Box, Divider, Grid, IconButton, Paper, Stack, Typography } from "@mui/material"
@@ -48,7 +48,7 @@ export const LeadComments = ({ leadId }: { leadId: number }) => {
     return (
         <Stack gap={2} height="100%">
             <Stack flexGrow={1} gap={2} borderRadius={3} px={3} py={2}
-                bgcolor={alpha(palette.background.default, .5)} alignItems="center">
+                bgcolor={alpha(palette.background.default, .5)} alignItems="end">
                 <Grid container justifyContent="space-around" alignItems="start" alignContent="start"
                     flexGrow={1} gap={2} minWidth="20rem">
                     {comments?.items.map(com =>

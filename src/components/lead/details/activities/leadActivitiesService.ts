@@ -1,6 +1,6 @@
-import { axiosCRM } from "../../../generalService";
-import type { DeleteResponse, ListParams, Paginable } from "../../../types/common";
-import type { LeadComment, LeadCommentPost } from "../../../types/leads";
+import { axiosCRM } from "../../../../generalService";
+import type { DeleteResponse, ListParams, Paginable } from "../../../../types/common";
+import type { LeadComment, LeadCommentPost } from "../../../../types/leads";
 
 interface CommentParams extends ListParams {
     lead_id: number
