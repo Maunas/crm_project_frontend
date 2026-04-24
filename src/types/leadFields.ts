@@ -10,7 +10,7 @@ export interface LeadFieldValue {
   lead_id: number;
   field: LeadField;
   nomenclator_items: NomenclatorItem[];
-  related_leads: Lead[]
+  related_leads: Lead[],
 }
 
 export interface LeadFieldValueDetailed extends LeadFieldValue, Metadata {
@@ -48,9 +48,10 @@ export interface LeadField extends LeadFieldPost {
   lead_field_section: LeadFieldSection;
   organization_id: number;
   order: number;
+  field_type_code: string;
   field_type: LeadFieldType,
   field_subtype: LeadFieldType | null,
-  field_template_name: string
+  field_template_name: string | null,
 }
 
 export interface LeadFieldDetailed extends LeadField, Metadata {

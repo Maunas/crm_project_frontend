@@ -65,7 +65,7 @@ export const LeadFieldTypeIcon = ({ typeCode, subtypeCode }: { typeCode?: string
             case "DATE": return { color: "success", component: <CalendarTodayOutlinedIcon /> }
 
             case "RATING": return { color: "warning", component: <StarBorderOutlinedIcon /> }
-            case "LEAD": return { color: "warning", component: <PersonOutlinedIcon /> }
+            case "LEAD": case "USER": return { color: "warning", component: <PersonOutlinedIcon /> }
             case "CHECKBOX": {
                 if (subtypeCode === "CHECKBOX_MULTIPLE") return { color: "warning", component: <LibraryAddCheckOutlinedIcon /> }
                 return { color: "warning", component: <CheckBoxOutlinedIcon /> }
