@@ -53,10 +53,11 @@ export const LeadComments = ({ leadId }: { leadId: number }) => {
                 <Grid container justifyContent="end" alignItems="start" alignContent="start" width="100%"
                     flexGrow={1} gap={2} minWidth="20rem">
                     {comments?.items.map(com =>
-                        <Grid key={com.id} size="grow" minWidth="20rem" maxWidth="40rem">
+                        <Grid key={com.id} size="grow" minWidth="20rem" >
                             {com.id !== selectedCommentId ? (
                                 <CommentInstance comment={com} onEdit={() => setSelectedCommentId(com.id)}
-                                    onDelete={() => onDeleteComment(com.id)} title={<MetadataShort comment={com} />} >
+                                    onDelete={() => onDeleteComment(com.id)} title={<MetadataShort comment={com} isUser />}
+                                    footerContent={<MetadataShort comment={com} />} >
                                     {com.content}
                                 </CommentInstance>
                             )
@@ -141,7 +142,7 @@ export const CommentInstance = ({ comment, title, color, footerContent, onEdit, 
                 {children}
             </Box>
             {footerContent &&
-                <Box className="comment-footer" width="100%" gap={1} px={2}>
+                <Box className="comment-footer" width="100%" gap={1} px={1} py={.25}>
                     {footerContent}
                 </Box>
             }
@@ -171,15 +172,20 @@ export const Metadata = ({ comment }: { comment: LeadComment }) => {
         </>)
 }
 
-const MetadataShort = ({ comment }: { comment: LeadComment }) => {
+const MetadataShort = ({ comment, isUser = false }: { comment: LeadComment, isUser?: boolean }) => {
+    if (isUser) return (
+        <Grid container gap={.5} alignItems="end">
+            <PersonIcon fontSize="small" />
+            <Typography variant="body2" fontWeight="bold">Por</Typography>
+            <Typography variant="body2">{comment?.created_by ?? comment?.updated_by}</Typography>
+        </Grid>
+    )
     return (
-        <Grid container justifyContent="center" alignItems="center" direction="row" gap={1}>
-            <Grid container gap={.5} alignItems="center">
-                <PersonIcon fontSize="small" />
-                <Typography variant="body2" fontWeight="bold">Por</Typography>
-                <Typography variant="body2">{comment?.created_by ?? comment?.updated_by} - </Typography>
-            </Grid>
-            <Typography variant="body2" textTransform="capitalize"> {dayjs(comment?.updated_at ?? comment?.created_at).format("dddd DD/MM/YYYY HH:mm")}</Typography>
+        <Grid container gap={.5} alignItems="end" justifyContent="end" width="100%">
+            <WatchLaterIcon fontSize="small" />
+            <Typography variant="body2" textTransform="capitalize">
+                {dayjs(comment?.updated_at ?? comment?.created_at).format("dddd DD/MM/YYYY HH:mm")}
+            </Typography>
         </Grid>
     )
 }
