@@ -12,6 +12,7 @@ import { alpha, styled, useTheme } from "@mui/material/styles"
 import EditIcon from '@mui/icons-material/Edit';
 import CloseIcon from '@mui/icons-material/Close';
 import WatchLaterIcon from '@mui/icons-material/WatchLater';
+import PersonIcon from '@mui/icons-material/Person';
 
 export const LeadComments = ({ leadId }: { leadId: number }) => {
 
@@ -49,7 +50,7 @@ export const LeadComments = ({ leadId }: { leadId: number }) => {
         <Stack gap={2} height="100%">
             <Stack flexGrow={1} gap={2} borderRadius={3} px={3} py={2}
                 bgcolor={alpha(palette.background.default, .5)} alignItems="end">
-                <Grid container justifyContent="space-around" alignItems="start" alignContent="start"
+                <Grid container justifyContent="end" alignItems="start" alignContent="start" width="100%"
                     flexGrow={1} gap={2} minWidth="20rem">
                     {comments?.items.map(com =>
                         <Grid key={com.id} size="grow" minWidth="20rem" maxWidth="40rem">
@@ -172,9 +173,13 @@ export const Metadata = ({ comment }: { comment: LeadComment }) => {
 
 const MetadataShort = ({ comment }: { comment: LeadComment }) => {
     return (
-        <Stack justifyContent="center" direction="row" gap={1}>
-            <Typography variant="body2"><span style={{ fontWeight: "bold" }}>Por</span> {comment?.created_by ?? comment?.updated_by} - </Typography>
+        <Grid container justifyContent="center" alignItems="center" direction="row" gap={1}>
+            <Grid container gap={.5} alignItems="center">
+                <PersonIcon fontSize="small" />
+                <Typography variant="body2" fontWeight="bold">Por</Typography>
+                <Typography variant="body2">{comment?.created_by ?? comment?.updated_by} - </Typography>
+            </Grid>
             <Typography variant="body2" textTransform="capitalize"> {dayjs(comment?.updated_at ?? comment?.created_at).format("dddd DD/MM/YYYY HH:mm")}</Typography>
-        </Stack>
+        </Grid>
     )
 }
