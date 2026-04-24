@@ -135,8 +135,7 @@ export const getSelectorField = <T>(selector: T[], field: keyof T, isMultiple: b
 
 //Obtener el título de un lead
 export const getLeadTitleArray = (lead: Lead, short: boolean = false) => {
-  if (short) return [lead.field_values
-    .sort((a, b) => a.field_id - b.field_id)[0].value]
+  if (short) return [lead.field_values.sort((a, b) => a.field_id - b.field_id)[0].value]
   return lead.field_values
     .filter(fv => fv.field.title_order != null)
     .sort((a, b) => (a.field.title_order ?? 0) - (b.field.title_order ?? 0))

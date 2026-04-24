@@ -22,7 +22,7 @@ interface LeadPartialUpdateProps {
 
 const getUpdatedLead = (oldLead: LeadDetailed, fieldId: number, newLead: Lead) => {
     const newValueIdx = newLead.field_values.findIndex(fv => fv.field.id === fieldId)
-    if (!newValueIdx) return null
+    if (newValueIdx === -1) return null
     const fieldValuesCopy = [...oldLead.field_values]
     fieldValuesCopy[newValueIdx].value = newLead.field_values[newValueIdx].value
     fieldValuesCopy[newValueIdx].nomenclator_items = newLead.field_values[newValueIdx].nomenclator_items
@@ -61,6 +61,7 @@ export const LeadPartialUpdate = ({ fieldValue, onClose, lead, updateLeadInfo }:
             const newLead = getUpdatedLead(lead, fieldValue.field.id, res)
             if (!newLead) return
             updateLeadInfo(newLead)
+            console.log("updated")
             onClose()
         }).catch((e) => {
             setFormErrors(e, setError)
@@ -104,11 +105,11 @@ const LeadFormFieldType = ({ register, control, leadField, errorMessage }: LeadF
     const [relatedLeads, setRelatedLeads] = useState<Lead[] | undefined>(undefined)
 
     useEffect(() => {
-        if (leadField.nomenclator.id) {
+        if (leadField?.nomenclator?.id) {
             getNomenclatorItems({ detailed: false, page_size: 0, nomenclator_id: leadField.nomenclator.id, only_active: true })
                 .then(res => setSelectors(res.items))
         }
-        else if (leadField.related_campaign.id) {
+        else if (leadField?.related_campaign?.id) {
             getLeads({ detailed: false, page_size: 0, campaign_id: leadField.related_campaign.id, only_active: true })
                 .then(res => setRelatedLeads(res.items))
         }

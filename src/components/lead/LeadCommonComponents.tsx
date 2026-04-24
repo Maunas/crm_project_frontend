@@ -190,7 +190,6 @@ export const ListValues = memo(({ value, idFieldValue, type, isNav = false, maxI
 
     const getLabel = useCallback((val: Lead | NomenclatorItem) => {
         if (type === "Lead") return getLeadTitleArray(val as Lead, true).join(" ")
-
         else return `${(val as NomenclatorItem).value}`
     }, [type])
 
