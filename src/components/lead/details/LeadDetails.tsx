@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
-import { LeadActivities } from "./LeadActivities.tsx"
+import { LeadActivities } from "./activities/LeadActivities.tsx"
 import { GenericPaper } from "../../common/layout/GenericContainer.tsx"
 import { CommonButton } from "../../common/details/DetailsCommonButton.tsx"
 import { CustomChip } from "../../common/details/StyledDisplayComponents.tsx"

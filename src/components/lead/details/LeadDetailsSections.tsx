@@ -1,16 +1,15 @@
-import React, { useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import type { LeadDetailed } from "../../../types/leads.ts"
 import type { LeadFieldValue } from "../../../types/leadFields.ts"
 import { formatMoney } from "../../../generalService.ts"
 import { useModal } from "../../hooks/useModal.ts"
-import { Accordion, AccordionDetails, AccordionSummary, Divider, Grid, Paper, Typography, Stack, IconButton, List, ListItemText, ListItem, TextField } from "@mui/material"
+import { Accordion, AccordionDetails, AccordionSummary, Divider, Paper, Typography, Stack, IconButton, List, ListItemText } from "@mui/material"
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { AddressValue, BoolValue, CardValue, DateValue, ListValues, ModalValue, NewTabLink, PasswordValue, RatingValue } from "../LeadCommonComponents.tsx"
 import EditIcon from "@mui/icons-material/Edit"
-import CloseIcon from "@mui/icons-material/Close"
-import SaveIcon from "@mui/icons-material/Save"
 import { CustomListItem } from "../../common/lists/CustomListItem.tsx"
 import { LeadFieldTypeIcon } from "../../leadFields/LeadFieldTypeIcon.tsx"
+import { LeadPartialUpdate } from "./LeadPartialUpdate.tsx"
 
 interface LeadDetailsSection {
     name: string,
@@ -60,38 +59,16 @@ export const LeadFieldSections = ({ lead }: { lead: LeadDetailed }) => {
                         <Divider sx={{ marginBottom: 1 }} />
                         <List>
                             {section?.fields.map((fieldValue, idx) =>
-                                updatingFieldId !== fieldValue.id ?
-                                    (
-                                        <LeadFieldByType key={`field-${idx}`} fieldValue={fieldValue} modalProps={modalProps}
-                                            secondaryAction={
-                                                <IconButton size="small" edge="end" color="primary" title="Modificar"
-                                                    onClick={() => setUpdatingFieldId(fieldValue.id)}>
-                                                    <EditIcon fontSize="small" />
-                                                </IconButton>
-                                            } />
-                                    )
-                                    : (<ListItem key={`field-${idx}`} >
-                                        <Grid container gap={1} alignItems="center" width="100%">
-                                            <Grid size="grow">
-                                                <TextField fullWidth size="small" label={fieldValue.field.name!} variant="outlined"
-                                                    value={fieldValue.value} />
-                                            </Grid>
-                                            <IconButton size="small" edge="end" color="primary" title="Guardar"
-                                                onClick={() => setUpdatingFieldId(null)}>
-                                                <SaveIcon fontSize="small" />
-                                            </IconButton>
-                                            <IconButton size="small" edge="end" color="error" title="Cancelar"
-                                                onClick={() => setUpdatingFieldId(null)}>
-                                                <CloseIcon fontSize="small" />
-                                            </IconButton>
-                                        </Grid>
-                                    </ListItem>)
+                                updatingFieldId !== fieldValue.field.id ?
+                                    <LeadFieldByType key={`field-${idx}`} fieldValue={fieldValue} modalProps={modalProps}
+                                        onToggleEdit={() => setUpdatingFieldId(fieldValue.field.id)} />
+                                    : <LeadPartialUpdate key={`field-${idx}`} fieldValue={fieldValue}
+                                        onClose={() => setUpdatingFieldId(null)} />
                             )}
                         </List >
                     </AccordionDetails>
                 </Accordion >
-            )
-            }
+            )}
             <Accordion disableGutters>
                 <AccordionSummary sx={{ height: "4rem" }} expandIcon={<ArrowDropDownIcon />}
                     aria-controls="panel0-content" id="panel0-header"
@@ -116,7 +93,7 @@ type LeadFieldProps = {
     fieldName: string | null
 } | {
     fieldValue: LeadFieldValue,
-    secondaryAction: React.ReactNode,
+    onToggleEdit: () => void,
     modalProps: {
         open: string | number | boolean;
         handleOpen: (idModal: string | number) => void;
@@ -133,7 +110,7 @@ export const LeadFieldByType = (props: LeadFieldProps) => {
     const isSectionInfo = "fieldValue" in props
 
     const fieldValue = isSectionInfo ? props.fieldValue : undefined
-    const editButton = isSectionInfo ? props.secondaryAction : undefined
+    const onToggleEdit = isSectionInfo ? props.onToggleEdit : undefined
     const subtypeCode = isSectionInfo ? props.fieldValue.field.field_subtype_code : undefined
     const templateCode = isSectionInfo ? props.fieldValue.field.field_template_code : undefined
 
@@ -167,7 +144,10 @@ export const LeadFieldByType = (props: LeadFieldProps) => {
     }
 
     return (
-        <CustomListItem disablePadding secondaryAction={editButton}>
+        <CustomListItem disablePadding secondaryAction={onToggleEdit &&
+            <IconButton size="small" edge="end" color="primary" title="Modificar" onClick={onToggleEdit}>
+                <EditIcon fontSize="small" />
+            </IconButton>} >
             <LeadFieldTypeIcon typeCode={valueCode} subtypeCode={subtypeCode} />
             <ListItemText>
                 <Stack gap={.5}>
