@@ -43,8 +43,9 @@ export const LeadAuditList = ({ leadId, reloadAudit }: { leadId: number, reloadA
   const [showItem, setShowItem] = useState<number>(0)
 
   if (audit) return (
-    <Stack spacing={2}>
+    <Stack spacing={2} sx={{ height: "100%" }}>
       <Timeline sx={{
+        flexGrow: 1,
         [`& .${timelineItemClasses.root}:before`]: {
           flex: 0,
           padding: 0,
@@ -52,8 +53,8 @@ export const LeadAuditList = ({ leadId, reloadAudit }: { leadId: number, reloadA
       }}>
         {audit.items.map((item, idx) => {
           return (
-            <CustomTimelineItem selected={idx === showItem}>
-              <Card key={item.id} raised>
+            <CustomTimelineItem selected={idx === showItem} last={idx === audit.items.length - 1} key={item.id}>
+              <Card raised>
                 <CardActionArea onClick={() => setShowItem(idx)} title="Ver detalle">
                   <LeadAuditHeader activityType={item.activity_type}
                     message={item.details.message ?? `${item.details?.changes?.length ?? 0} cambios`} />

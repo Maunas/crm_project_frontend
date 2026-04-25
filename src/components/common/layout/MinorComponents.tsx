@@ -25,12 +25,12 @@ import TimelineConnector from '@mui/lab/TimelineConnector'
 import TimelineSeparator from '@mui/lab/TimelineSeparator'
 import TimelineContent from '@mui/lab/TimelineContent'
 
-export const CustomTimelineItem = ({ selected = false, children }: { selected?: boolean, children?: React.ReactNode }) => {
+export const CustomTimelineItem = ({ selected = false, last = false, children }: { selected?: boolean, last?: boolean, children?: React.ReactNode }) => {
     return (
         <TimelineItem>
             <TimelineSeparator>
                 <TimelineDot color={selected ? "primary" : "grey"} />
-                <TimelineConnector />
+                {!last && <TimelineConnector />}
             </TimelineSeparator>
             <TimelineContent>{children}</TimelineContent>
         </TimelineItem>
