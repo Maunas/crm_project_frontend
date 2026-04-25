@@ -52,9 +52,9 @@ export const LeadAuditList = ({ leadId, reloadAudit }: { leadId: number, reloadA
                     <Grid size="grow" key={`${item.id}-${change.field_id}`} minWidth="15rem">
                       <Stack direction="row" gap={1} alignItems="center" sx={{ px: "1rem" }}>
                         <Typography variant="body2">{change.field_name}:</Typography>
-                        <LeadAuditValue value={change.old_value} color="error" size="small" />
+                        <LeadAuditValue value={change.old_value} color="error" size="small" fieldName={change.field_name} />
                         <ArrowForwardIcon />
-                        <LeadAuditValue value={change.new_value} color="success" />
+                        <LeadAuditValue value={change.new_value} color="success" fieldName={change.field_name} />
                       </Stack>
                     </Grid>
                   )}
@@ -117,18 +117,24 @@ const LeadAuditHeader = ({ activityType, message }: { activityType?: string, mes
 
 interface LeadAuditValueProps {
   value: string | number[] | null,
+  fieldName: string,
   size?: "small" | "medium" | "large" | "xlarge",
   color?: ColorTypes
 }
 
-const LeadAuditValue = ({ value, size = "medium", color = "primary" }: LeadAuditValueProps) => {
+const showValue = (val: string | number[] | null, name: string) => {
+  if (!val) return name
+  return val.length > 50 ? name : val
+}
+
+const LeadAuditValue = ({ value, fieldName, size = "medium", color = "primary" }: LeadAuditValueProps) => {
+
   if (typeof value === "string") {
-    return <CustomChip size={size} color={color} label={value} />
+    return <CustomChip size={size} color={color} label={showValue(value, fieldName)} />
   }
   return <Stack gap={.5} flexWrap="wrap" direction="row" justifyContent="center">
     {value?.map(item =>
-      <CustomChip size={size} color={color} label={item} />
+      <CustomChip size={size} color={color} label={showValue(`${item}`, fieldName)} />
     )}
   </Stack>
-
 }
