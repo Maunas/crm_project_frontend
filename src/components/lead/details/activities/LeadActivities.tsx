@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { LeadComments } from './LeadComments';
 import { Box, Stack, Tab, Tabs, Typography } from '@mui/material'
+import { LeadAuditList } from './LeadAudit';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -25,7 +26,7 @@ function CustomTabPanel(props: TabPanelProps) {
   );
 }
 
-export const LeadActivities = ({ leadId }: { leadId: number }) => {
+export const LeadActivities = ({ leadId, reloadAudit }: { leadId: number, reloadAudit: number }) => {
 
   const [openTab, setOpenTab] = useState<number>(0)
 
@@ -40,6 +41,9 @@ export const LeadActivities = ({ leadId }: { leadId: number }) => {
         <Box sx={{ height: "100%" }}>
           <CustomTabPanel value={openTab} index={0}>
             <LeadComments leadId={leadId} />
+          </CustomTabPanel>
+          <CustomTabPanel value={openTab} index={1}>
+            <LeadAuditList leadId={leadId} reloadAudit={reloadAudit} />
           </CustomTabPanel>
         </Box>
       </Stack>
