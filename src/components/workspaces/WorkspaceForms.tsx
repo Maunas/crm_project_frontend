@@ -59,18 +59,18 @@ export const WorkspaceForm = ({ existingWsp, submit, onCancel }: WorkspaceProps)
 
     return (
         <form>
-            <Stack gap={2}>
+            <Stack spacing={2}>
                 <Typography variant="h1">
                     {!existingWsp ? "Crear Espacio de Trabajo"
                         : `Modificar Espacio de Trabajo: ${existingWsp.name}`}
                 </Typography>
 
-                <Grid container gap={1} justifyContent="center" alignItems="center">
-                    <Grid size="grow" minWidth={"20rem"}>
+                <Grid container spacing={1} sx={{ justifyContent: "center", alignItems: "center" }}>
+                    <Grid size="grow" sx={{ minWidth: "20rem" }}>
                         <RegisteredTextInput name="name" register={register} label="Nombre"
                             required errorMessage={errors.name?.message} />
                     </Grid>
-                    <Grid size="grow" minWidth={"20rem"}>
+                    <Grid size="grow" sx={{ minWidth: "20rem" }}>
                         <RegisteredTextInput name="description" register={register} label="Descripción"
                             errorMessage={errors.description?.message} />
                     </Grid>

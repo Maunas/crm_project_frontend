@@ -120,7 +120,7 @@ export const UserInfo = memo(() => {
                     <Avatar sx={{ color: theme.palette.secondary.dark, backgroundColor: theme.palette.secondary.light }} />
                 </IconButton>
                 <Stack>
-                    <Typography variant="body2" fontWeight={600}>{user?.email}</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{user?.email}</Typography>
                     <Typography variant="body2">{selectedOrg?.name}</Typography>
                 </Stack>
             </MenuItem>
@@ -129,10 +129,10 @@ export const UserInfo = memo(() => {
 
     if (user) return (
         <>
-            <Box sx={{ display: { xs: 'none', md: 'flex' } }} alignItems="center">
+            <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: "center" }}>
                 <Stack>
-                    <Typography variant="body2" textAlign="end" fontWeight={600}>{user.email}</Typography>
-                    <Typography variant="body2" textAlign="end">{selectedOrg?.name}</Typography>
+                    <Typography variant="body2" sx={{ textAlign: "end", fontWeight: 600 }}>{user.email}</Typography>
+                    <Typography variant="body2" sx={{ textAlign: "end" }}>{selectedOrg?.name}</Typography>
                 </Stack>
                 <IconButton
                     size="large"

@@ -7,7 +7,7 @@ import type { LeadFieldDetailed } from "../../types/leadFields"
 import type { CampaignDetailed } from "../../types/campaigns"
 import { disableLeadField, enableLeadField } from "./leadFieldServices"
 import { useModal } from "../hooks/useModal"
-import { Box, ButtonGroup, Grid, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material"
+import { Box, ButtonGroup, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material"
 import { lighten, useTheme } from "@mui/material/styles"
 import { SelectableTableRow } from "../common/lists/CustomTableRow"
 
@@ -54,25 +54,22 @@ export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateE
     }, [leadFields])
 
     return (
-        <>
-            <Grid size="grow" container justifyContent="center" alignItems="center" gap={2}>
-                <Grid size="grow" minWidth="16rem" >
-                    <Typography variant="h2">Lista de Campos de Lead</Typography>
-                </Grid >
+        <Stack spacing={2}>
+            <Stack useFlexGap direction="row" spacing={2}
+                sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
+                <Typography variant="h2">Lista de Campos de Lead</Typography>
                 {sortedFields.length > 0 &&
-                    <>
-                        <ButtonGroup sx={{ marginLeft: "auto" }}>
-                            <CommonButton onClick={() => handleSidebar("CREATE_FIELD", null)} actionType="CREATE">Agregar Campo</CommonButton>
-                            <GenericModal modalProps={modalProps} idModal="simulateLead" buttonText='Vista previa de formulario'
-                                actionType="DETAILS" variant="outlined" containerSx={{ minWidth: "80vw" }} >
-                                {campaign &&
-                                    <SimulateLeadFormModal campaign={campaign} leadFields={sortedFields} onCancel={modalProps.handleClose} />
-                                }
-                            </GenericModal>
-                        </ButtonGroup>
-                    </>
+                    <ButtonGroup sx={{ marginLeft: "auto" }}>
+                        <CommonButton onClick={() => handleSidebar("CREATE_FIELD", null)} actionType="CREATE">Agregar Campo</CommonButton>
+                        <GenericModal modalProps={modalProps} idModal="simulateLead" buttonText='Vista previa de formulario'
+                            actionType="DETAILS" variant="outlined" containerSx={{ minWidth: "80vw" }} >
+                            {campaign &&
+                                <SimulateLeadFormModal campaign={campaign} leadFields={sortedFields} onCancel={modalProps.handleClose} />
+                            }
+                        </GenericModal>
+                    </ButtonGroup>
                 }
-            </Grid>
+            </Stack>
 
 
             {sortedFields.length > 0 ?
@@ -98,7 +95,7 @@ export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateE
                                         <TableCell component="th">
                                             <Stack spacing={1} direction="row">
                                                 <EnabledIcon active={row.active} size="small" />
-                                                <Box fontWeight="bold">{row.name} </Box>
+                                                <Box sx={{ fontWeight: "bold" }}>{row.name} </Box>
                                             </Stack>
                                         </TableCell>
                                         <TableCell align="right">{row.field_type.description}</TableCell>
@@ -114,7 +111,7 @@ export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateE
                                             <EnabledIcon active={row.is_visible} trueTooltip='Visible' falseTooltip='Oculto' size="small" />
                                         </TableCell>
                                         <TableCell align="right">
-                                            <Stack direction="row" justifyContent="end">
+                                            <Stack direction="row" sx={{ justifyContent: "end" }}>
                                                 <ListAction actionType="DETAILS" title="Detalle" tooltipSize="small" size="small"
                                                     onClick={(e) => stopPropagationEvent(e, () => handleSidebar("DETAILS_FIELD", row))} />
                                                 {row.order > 1 &&
@@ -124,7 +121,6 @@ export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateE
                                                         <ListAction actionType={row.active ? "DISABLE" : "ENABLE"} tooltipSize="small" size="small"
                                                             title={row.active ? "Deshabilitar" : "Habilitar"}
                                                             onClick={(e) => stopPropagationEvent(e, () => handleActive(row))} color={row.active ? "error" : "success"} />
-
                                                     </>}
                                             </Stack>
                                         </TableCell>
@@ -134,11 +130,11 @@ export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateE
                     </Table>
                 </TableContainer>
                 :
-                <Grid container spacing={2} justifyContent="center" alignItems="center" direction="column">
+                <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
                     <Typography variant="h4">No se han encontrado campos para esta campaña...</Typography>
                     <CommonButton onClick={() => handleSidebar("CREATE_FIELD", null)} actionType="CREATE">Agregar Campo</CommonButton>
-                </Grid>
+                </Stack>
             }
-        </>
+        </Stack>
     )
 }

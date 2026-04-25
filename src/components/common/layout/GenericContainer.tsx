@@ -2,14 +2,12 @@ import { Container, Grid, Modal, Paper, type Breakpoint } from '@mui/material'
 import { memo, type ComponentProps, type ReactNode } from 'react'
 import { CommonButton } from '../details/DetailsCommonButton'
 
-
 interface GenericContainerProps {
     children: ReactNode,
     maxWidth?: false | Breakpoint | undefined,
     containerSx?: object,
     paperSx?: object
 }
-
 
 export const GenericPaper = ({ children, paperSx = {}, ...props }: GenericContainerProps) => {
 
@@ -90,13 +88,13 @@ export const ContainerWithSidebar = ({ isSidebarOpen, rootGridProps, mainGridPro
     return (
         <Container maxWidth={isSidebarOpen ? false : containerSize ?? "lg"}>
             <Grid container spacing={2} {...rootGridProps}>
-                <Grid size="grow" minWidth="30rem" {...mainGridProps}>
+                <Grid size="grow" sx={{ minWidth: "30rem" }} {...mainGridProps}>
                     <GenericPaper>
                         {children}
                     </GenericPaper>
                 </Grid>
                 {isSidebarOpen &&
-                    <Grid size={5} minWidth="30rem" {...sidebarGridProps}>
+                    <Grid size={5} sx={{ minWidth: "30rem" }} {...sidebarGridProps}>
                         <GenericPaper>
                             {sidebarComponent}
                         </GenericPaper>

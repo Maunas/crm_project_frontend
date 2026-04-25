@@ -1,4 +1,4 @@
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import { ChipTooltip } from '../details/ChipTooltip';
 import { cloneElement, memo } from 'react';
@@ -18,7 +18,7 @@ export const EnabledIcon = memo(({ active = false, trueTooltip = "Habilitado", f
         <ChipTooltip title={active ? trueTooltip : falseTooltip}
             color={active ? "success" : "error"} size="small">
             {active
-                ? <CheckCircleOutlineIcon color="success" fontSize={size} />
+                ? <CheckCircleOutlinedIcon color="success" fontSize={size} />
                 : <HighlightOffIcon color="error" fontSize={size} />}
         </ChipTooltip>
     )

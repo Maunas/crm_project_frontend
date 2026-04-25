@@ -26,7 +26,7 @@ function CustomTabPanel(props: TabPanelProps) {
             aria-labelledby={`simple-tab-${index}`}
             {...other}
         >
-            {value === index && <Box paddingBlock={1}>{children}</Box>}
+            {value === index && <Box sx={{ py: 1 }}>{children}</Box>}
         </div>
     );
 }
@@ -113,7 +113,7 @@ export const SearchResultsList = () => {
 
     return (
         <GenericContainer maxWidth="xl">
-            <Stack gap={3}>
+            <Stack spacing={3}>
                 <Typography variant="h1">Resultado de la Búsqueda: "{query}"</Typography>
                 {totalResults > 0 ?
                     <Box sx={{ width: '100%' }}>
@@ -125,8 +125,8 @@ export const SearchResultsList = () => {
                                         disabled={tab.length === 0}
                                         label={
                                             <>
-                                                <Typography variant="body1" fontWeight={600}>{tab.label}</Typography>
-                                                <Typography variant="body2" fontStyle="italic">{getLengthText(tab.length)}</Typography>
+                                                <Typography variant="body1" sx={{ fontWeight: 600 }}>{tab.label}</Typography>
+                                                <Typography variant="body2" sx={{ fontStyle: "italic" }}>{getLengthText(tab.length)}</Typography>
                                             </>
                                         }
                                     />)
@@ -144,7 +144,7 @@ export const SearchResultsList = () => {
                         }
                     </Box>
                     :
-                    <Typography variant="h3" textAlign="center">No se han encontrado resultados para la búsqueda.</Typography>
+                    <Typography variant="h3" sx={{ textAlign: "center" }}>No se han encontrado resultados para la búsqueda.</Typography>
                 }
 
             </Stack>
@@ -163,7 +163,7 @@ interface SearchListProps<Item> {
 const SearchList = <Item,>({ list, listId, getPrimaryText, getSecondaryText, getDetailsLink }: SearchListProps<Item>) => {
 
     if (list.length === 0) return (
-        <Typography variant="h3" textAlign="center">No se han encontrado resultados para la búsqueda.</Typography>
+        <Typography variant="h3" sx={{ textAlign: "center" }}>No se han encontrado resultados para la búsqueda.</Typography>
     )
 
     return (
@@ -172,7 +172,7 @@ const SearchList = <Item,>({ list, listId, getPrimaryText, getSecondaryText, get
                 <ListItem key={`${listId}-${idx}`} disablePadding secondaryAction={
                     <Button aria-label="goto" variant='outlined' size='small' fullWidth endIcon={<OpenInNewIcon />}
                         component={Link} to={getDetailsLink(item)}>
-                        <Typography noWrap variant="body2" fontWeight="600">Ir al Detalle</Typography>
+                        <Typography noWrap variant="body2" sx={{ fontWeight: 600 }}>Ir al Detalle</Typography>
                     </Button>
                 }
                     sx={{
@@ -189,13 +189,14 @@ const SearchList = <Item,>({ list, listId, getPrimaryText, getSecondaryText, get
                 >
                     <ListItemButton component={Link} to={getDetailsLink(item)}>
                         <ListItemText primary={
-                            <Typography variant="body1" fontWeight="600">{getPrimaryText(item)}</Typography>
+                            <Typography variant="body1" sx={{ fontWeight: 600 }}>{getPrimaryText(item)}</Typography>
                         }
                             secondary={getSecondaryText ? getSecondaryText(item) : ""}
                         />
                     </ListItemButton>
                 </ListItem>
-            )}
-        </List>
+            )
+            }
+        </List >
     )
 }

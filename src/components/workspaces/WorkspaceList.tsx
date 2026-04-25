@@ -94,9 +94,9 @@ export const WorkspaceList = () => {
                     closeSidebar={closeSidebar} updateEntityOnList={updateEntityOnList}
                     handleActive={handleActive} />
             }>
-            <Stack gap={3}>
-                <Grid container gap={2} justifyContent="space-between" alignItems="center">
-                    <Grid size="grow" minWidth="15rem">
+            <Stack spacing={3}>
+                <Grid container spacing={2} sx={{ justifyContent: "space-between", alignItems: "center" }}>
+                    <Grid size="grow" sx={{ minWidth: "15rem" }}>
                         <Typography variant="h1">Lista de Espacios de Trabajo</Typography>
                     </Grid>
                     <ButtonGroup variant="contained" color="primary" sx={{ marginLeft: "auto" }}>
@@ -108,26 +108,26 @@ export const WorkspaceList = () => {
                         </CommonButton>
                     </ButtonGroup>
                 </Grid>
-                <Stack gap={2}>
+                <Stack spacing={2}>
                     {workspaces?.items && workspaces?.items?.length > 0 ?
                         <List>
                             {workspaces?.items.map(wsp =>
                                 <CustomListItem key={`wsp-${wsp.id}`} disablePadding secondaryAction={
-                                    <Grid container gap={1} alignItems="center">
-                                        <ListAction actionType='DETAILS' title="Detalles" tooltipSize="small"
+                                    <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                                        <ListAction actionType='DETAILS' title="Detalles" tooltipSize="small" size="small"
                                             onClick={() => { handleSidebar("DETAILS_WSP", wsp) }} />
-                                        <ListAction actionType='MODIFY' title="Modificar" tooltipSize="small"
+                                        <ListAction actionType='MODIFY' title="Modificar" tooltipSize="small" size="small"
                                             onClick={() => { handleSidebar("UPDATE_WSP", wsp) }} />
-                                        <ListAction actionType={wsp.active ? "DISABLE" : "ENABLE"} tooltipSize="small"
+                                        <ListAction actionType={wsp.active ? "DISABLE" : "ENABLE"} tooltipSize="small" size="small"
                                             title={wsp.active ? "Deshabilitar" : "Habilitar"}
                                             onClick={() => handleActive(wsp)} color={wsp.active ? "error" : "success"} />
-                                    </Grid>
+                                    </Stack>
                                 }>
                                     <ListItemButton onClick={() => { handleSidebar("DETAILS_WSP", wsp) }} >
                                         <ListItemText primary={
-                                            <Stack gap={1} direction="row">
+                                            <Stack spacing={1} direction="row">
                                                 <EnabledIcon active={wsp.active} />
-                                                <Typography fontWeight="bold">{wsp.name}</Typography>
+                                                <Typography sx={{ fontWeight: "bold" }}>{wsp.name}</Typography>
                                             </Stack>
                                         }
                                             secondary={wsp.description} />
@@ -135,12 +135,12 @@ export const WorkspaceList = () => {
                                 </CustomListItem>
                             )}
                         </List>
-                        : <Grid container gap={2} justifyContent="center" alignItems="center" direction="column">
+                        : <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
                             <Typography variant="h4">No se han encontrado espacios de trabajo...</Typography>
                             <CommonButton actionType='CREATE' onClick={() => handleSidebar("CREATE_WSP", null)} variant="contained">
                                 Crear Espacio
                             </CommonButton>
-                        </Grid>
+                        </Stack>
                     }
                     <PaginationComponent {...pageComponentProps} />
                 </Stack>

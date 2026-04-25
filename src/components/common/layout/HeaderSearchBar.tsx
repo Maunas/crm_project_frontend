@@ -126,7 +126,7 @@ export const HeaderSearchBar = () => {
                                 <ListItem disablePadding >
                                     <ListItemButton>
                                         <ListItemText primary={
-                                            <Stack direction="row" gap={1} alignItems="center">
+                                            <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
                                                 <CircularProgress size="1.5rem" />
                                                 <Typography variant="body1">Cargando...</Typography>
                                             </Stack>
@@ -139,9 +139,9 @@ export const HeaderSearchBar = () => {
                                     return <ListItem disablePadding key={option.id} sx={{ display: option.length > 0 ? "block" : "none" }}>
                                         <ListItemButton component={Link} to={`/search?query=${query}&tab=${idx}`}>
                                             <ListItemText primary={
-                                                <Stack direction="row" gap={1} alignItems="baseline">
-                                                    <Typography variant="body1" fontWeight={600}>{option.label}</Typography>
-                                                    <Typography variant="body2" fontStyle="italic">{`- ${lengthText(option.length)}`}</Typography>
+                                                <Stack direction="row" spacing={1} sx={{ alignItems: "baseline" }}>
+                                                    <Typography variant="body1" sx={{ fontWeight: 600 }}>{option.label}</Typography>
+                                                    <Typography variant="body2" sx={{ fontStyle: "italic" }}>{`- ${lengthText(option.length)}`}</Typography>
                                                 </Stack>
                                             }
                                             />

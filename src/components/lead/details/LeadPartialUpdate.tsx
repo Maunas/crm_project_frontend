@@ -1,4 +1,4 @@
-import { Grid, IconButton, ListItem } from "@mui/material"
+import { Grid, IconButton, ListItem, Stack } from "@mui/material"
 import SaveIcon from "@mui/icons-material/Save"
 import CloseIcon from "@mui/icons-material/Close"
 import type { LeadFieldDetailed, LeadFieldValueDetailed } from "../../../types/leadFields"
@@ -6,7 +6,6 @@ import { useForm, type Control, type UseFormRegister } from "react-hook-form"
 import { FormErrorMessage } from "../../common/forms/StyledFormComponents"
 import type { LeadPostForm } from "../leadForm/LeadForm"
 import { createFormDataFromLead, getLeads, getSelectorField, updateLead } from "../leadService"
-import { setFormErrors } from "../../../generalService"
 import type { Lead, LeadDetailed } from "../../../types/leads"
 import { LeadFormAddress, LeadFormBool, LeadFormCheckbox, LeadFormFile, LeadFormMoney, LeadFormNumber, LeadFormPassword, LeadFormRating, LeadFormRelatedLead, LeadFormSelector, LeadFormText } from "../leadForm/LeadFormFieldTypes"
 import { useEffect, useState } from "react"
@@ -64,18 +63,18 @@ export const LeadPartialUpdate = ({ fieldValue, onClose, lead, updateLeadInfo }:
             console.log("updated")
             onClose()
         }).catch((e) => {
-            setFormErrors(e, setError)
+            setError("root", e?.response?.data?.detail?.message)
         })
     }
 
     return (
         <form onSubmit={handleSubmit(onSubmit)}>
             <ListItem >
-                <Grid container gap={1} alignItems="center" width="100%">
-                    <Grid container gap={.5} direction="column" size="grow">
+                <Grid container spacing={1} sx={{ alignItems: "center", width: "100%" }}>
+                    <Stack spacing={.5} direction="column" sx={{ flexGrow: 1 }}>
                         <LeadFormFieldType register={register} control={control} leadField={fieldValue.field} errorMessage={errors?.value?.message} />
                         <FormErrorMessage>{errors?.value?.message}</FormErrorMessage>
-                    </Grid>
+                    </Stack>
                     <IconButton size="small" edge="end" color="primary" title="Guardar" type="submit">
                         <SaveIcon fontSize="small" />
                     </IconButton>

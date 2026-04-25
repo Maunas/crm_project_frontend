@@ -59,7 +59,7 @@ const OrganizationForm = ({ existingOrg, submit, onCancel }: OrganizationProps) 
 
     return (
         <form>
-            <Stack gap={2}>
+            <Stack spacing={2}>
                 <Typography variant="h2">
                     {!existingOrg ? "Crear Organización" : `Modificar Organización: ${existingOrg.name}`}
                 </Typography>
@@ -67,11 +67,11 @@ const OrganizationForm = ({ existingOrg, submit, onCancel }: OrganizationProps) 
                     justifyContent: "center",
                     alignItems: "center",
                 }}>
-                    <Grid size="grow" minWidth={"20rem"}>
+                    <Grid size="grow" sx={{ minWidth: "20rem" }}>
                         <RegisteredTextInput name="name" register={register} label="Nombre"
                             required errorMessage={errors.name?.message} />
                     </Grid>
-                    <Grid size="grow" minWidth={"20rem"}>
+                    <Grid size="grow" sx={{ minWidth: "20rem" }}>
                         <RegisteredTextInput name="description" register={register} label="Descripción"
                             errorMessage={errors.description?.message} />
                     </Grid>

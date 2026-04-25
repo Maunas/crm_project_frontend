@@ -120,11 +120,11 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
     return (
         <form onSubmit={handleSubmit(submit)}>
             <input type="text" {...register("campaign_id", { setValueAs: value => (value === "" || !value) ? null : Number(value) })} hidden />
-            <Stack gap={2}>
-                <Grid container gap={1}>
+            <Stack spacing={2}>
+                <Grid container spacing={1}>
                     {campaignId &&
                         fields.map((field, idx) =>
-                            <Grid size="grow" alignItems="center" minWidth="20rem" key={field.id}>
+                            <Grid size="grow" sx={{ alignItems: "center", minWidth: "20rem" }} key={field.id}>
                                 <LeadFormFieldType register={register} name={`values.${idx}.value`} control={control}
                                     leadField={field.fieldData} relatedLeads={relatedLeads.get(field?.fieldData?.related_campaign_id ?? -1)}
                                     selectors={selectors.get(field?.fieldData?.nomenclator_id ?? -1)}
@@ -135,7 +135,7 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
                 </Grid>
                 {errors.root &&
                     <FormErrorMessage>{errors.root.message}</FormErrorMessage>}
-                <ButtonGroup sx={{ marginLeft: "auto", }}>
+                <ButtonGroup sx={{ marginLeft: "auto" }}>
                     {onCancel && <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel} >Cancelar</CommonButton>}
                     {campaignId &&
                         <CommonButton actionType={existingValues ? "MODIFY" : "CREATE"}
@@ -197,7 +197,7 @@ const LeadFormFieldType = ({ register, control, name, leadField, relatedLeads, s
                 required={leadField.required} errorMessage={errorMessage} multiline />)
         case "RATING":
             return (<LeadFormRating label={label} field_subtype_code={leadField.field_subtype_code!} name={name} control={control}
-                required={leadField.required} errorMessage={errorMessage} />)
+                required={leadField.required} errorMessage={errorMessage} size="small" />)
         case "MONEY":
             return (<LeadFormMoney label={label} name={name} register={register}
                 required={leadField.required} errorMessage={errorMessage} />)

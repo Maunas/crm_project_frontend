@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react"
 import { LeadActivities } from "./activities/LeadActivities.tsx"
 import { GenericPaper } from "../../common/layout/GenericContainer.tsx"
 import { CommonButton } from "../../common/details/DetailsCommonButton.tsx"
-import { CustomChip } from "../../common/details/StyledDisplayComponents.tsx"
 import type { LeadDetailed } from "../../../types/leads.ts"
 import { disableLead, enableLead, getLead, getLeadTitleArray } from "../leadService.ts"
 import { Link as RouterLink, useNavigate, useParams } from "react-router-dom"
@@ -10,6 +9,7 @@ import { Container, Grid, Typography, ButtonGroup, Stack, Breadcrumbs, Link } fr
 import { getCampaign } from "../../campaigns/campaignServices.ts"
 import type { Campaign } from "../../../types/campaigns.ts"
 import { LeadFieldSections } from "./LeadDetailsSections.tsx"
+import { TitleAndActive } from "../../common/layout/MinorComponents.tsx"
 
 export const LeadDetailsLayout = () => {
 
@@ -50,21 +50,21 @@ export const LeadDetailsLayout = () => {
 
     return (
         <Container maxWidth={false}>
-            <Stack gap={3}>
+            <Stack spacing={3}>
                 {campaign &&
                     <Breadcrumbs aria-label="breadcrumb">
                         <Link component={RouterLink} to={`/leads?workspace=${campaign?.workspace_id}&campaign=${campaign?.id}`}
-                            underline="hover" fontWeight={600} >
+                            sx={{ underline: "hover", fontWeight: 600 }} >
                             {campaign?.name}
                         </Link>
                         <Typography sx={{ color: 'text.primary' }}>{leadTitle}</Typography>
                     </Breadcrumbs>}
                 {lead &&
-                    <Grid container gap={3}>
-                        <Grid size={{ xs: 12, md: 4, lg: 4 }} minWidth="20rem" >
+                    <Grid container spacing={3}>
+                        <Grid size={{ xs: 12, md: 4, lg: 4 }} sx={{ minWidth: "20rem" }} >
                             <LeadInfo lead={lead} handleActive={handleActive} leadTitle={leadTitle} updateLeadInfo={updateLeadInfo} />
                         </Grid>
-                        <Grid size="grow" minWidth="20rem" component={GenericPaper} >
+                        <Grid size="grow" sx={{ minWidth: "20rem" }} component={GenericPaper} >
                             <LeadActivities leadId={lead.id} reloadAudit={reloadAudit} />
                         </Grid>
                     </Grid >
@@ -85,16 +85,12 @@ interface LeadInfoProps {
 export const LeadInfo = ({ lead, leadTitle, handleActive, updateLeadInfo }: LeadInfoProps) => {
 
     return (
-        <Stack gap={2}>
+        <Stack spacing={2}>
             <GenericPaper>
-                <Grid container gap={3} alignItems="center">
-                    <Grid container size="grow" gap={2} alignItems="center" justifyContent="space-between">
-                        <Typography variant="h1">
-                            {leadTitle.length > 0 ? leadTitle : "Título no encontrado"}
-                        </Typography>
-                        <CustomChip label={lead?.active ? "Habilitado" : "Deshabilitado"}
-                            color={lead?.active ? "success" : "error"} sx={{ marginLeft: "auto" }} />
-                    </Grid>
+                <Stack spacing={3} sx={{ alignItems: "center" }}>
+                    <TitleAndActive active={lead?.active} >
+                        <Typography variant="h1">{leadTitle.length > 0 ? leadTitle : "Título no encontrado"}</Typography>
+                    </TitleAndActive>
                     <ButtonGroup fullWidth>
                         <CommonButton actionType={lead.active ? "DISABLE" : "ENABLE"} variant="outlined"
                             color={lead.active ? "error" : "success"} onClick={() => handleActive(lead)}>
@@ -105,7 +101,7 @@ export const LeadInfo = ({ lead, leadTitle, handleActive, updateLeadInfo }: Lead
                             Modificar
                         </CommonButton>
                     </ButtonGroup>
-                </Grid>
+                </Stack>
             </GenericPaper>
             <LeadFieldSections lead={lead} updateLeadInfo={updateLeadInfo} />
         </Stack>

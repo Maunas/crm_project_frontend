@@ -5,7 +5,6 @@ import { UpdateCampaignFormSidebar } from './CampaignForms'
 import { LeadFieldTable } from '../leadFields/LeadFieldTable'
 import { LeadFieldDetail } from '../leadFields/LeadFieldDetail'
 import { LeadFieldFormSidebar } from '../leadFields/LeadFieldForm'
-import { CustomChip } from '../common/details/StyledDisplayComponents'
 import type { CampaignDetailed } from '../../types/campaigns'
 import type { LeadFieldDetailed } from '../../types/leadFields'
 import { disableCampaign, enableCampaign, getCampaign } from './campaignServices'
@@ -15,6 +14,7 @@ import { Link as RouterLink, useNavigate, useParams, useSearchParams } from 'rea
 import dayjs from 'dayjs'
 import { Typography, ButtonGroup, Link, Breadcrumbs, Stack, Grid, Divider } from '@mui/material'
 import { ValidationFormSidebar } from '../validations/ValidationForm'
+import { TitleAndActive } from '../common/layout/MinorComponents'
 
 export const CampaignDetails = () => {
     const { id } = useParams()
@@ -105,8 +105,8 @@ export const CampaignDetails = () => {
                 <CampaignDetailSidebar mode={sidebarMode} entity={selectedEntity} campaign={campaign}
                     handleSidebar={handleSidebar} closeSidebar={closeSidebar} updateEntity={updateEntity} />}
         >
-            <Stack gap={3}>
-                <Stack gap={2}>
+            <Stack spacing={3}>
+                <Stack spacing={2}>
                     <Breadcrumbs aria-label="breadcrumb">
                         <Link component={RouterLink} to="/campaigns" underline="hover" color="inherit">
                             Espacios de Trabajo
@@ -115,40 +115,38 @@ export const CampaignDetails = () => {
                             <Typography sx={{ color: 'text.primary' }}>{campaign.name}</Typography>}
                     </Breadcrumbs>
                     {campaign &&
-                        <Grid size="grow" container gap={3} justifyContent="space-between" alignItems="center">
+                        <TitleAndActive active={campaign.active} >
                             <Typography variant="h1">{campaign.name}</Typography>
-                            {campaign.active ? <CustomChip sx={{ marginLeft: "auto" }} color='success' label="Habilitado" /> :
-                                <CustomChip sx={{ marginLeft: "auto" }} color='error' label="Deshabilitado" />}
-                        </Grid>
+                        </TitleAndActive>
                     }
                 </Stack>
                 {campaign &&
                     <Stack spacing={2} >
                         <Grid container spacing={2}>
-                            <Grid size="grow" minWidth="30rem">
+                            <Grid size="grow" sx={{ minWidth: "20rem" }}>
                                 {campaign.description
                                     ? <Typography variant="body1">{campaign.description}</Typography>
-                                    : <Typography variant="body1" fontStyle="italic">No tiene descripción.</Typography>
+                                    : <Typography variant="body1" sx={{ fontStyle: "italic" }}>No tiene descripción.</Typography>
                                 }
                             </Grid>
-                            <Grid container spacing=".5rem" size={{ sm: 12, md: 12, lg: 3 }} minWidth="20rem">
-                                <Grid size="grow" minWidth="18rem">
-                                    <Typography variant="body1" fontWeight="bold">Fecha de creación:</Typography>
-                                    <Typography variant="body1" paddingInlineStart={2} sx={{ textTransform: "capitalize" }}>
+                            <Grid container spacing={1} size={{ sm: 12, md: 12, lg: 3 }} sx={{ minWidth: "20rem" }}>
+                                <Grid size="grow" sx={{ minWidth: "18rem" }}>
+                                    <Typography variant="body1" sx={{ fontWeight: "bold" }}>Fecha de creación:</Typography>
+                                    <Typography variant="body1" sx={{ textTransform: "capitalize", pl: 2 }}>
                                         {dayjs(campaign?.created_at).format('dddd DD/MM/YYYY HH:mm:ss')}
                                     </Typography>
                                 </Grid>
-                                <Grid size="grow" minWidth="18rem">
-                                    <Typography variant="body1" fontWeight="bold">Fecha de última modificación:</Typography>
-                                    <Typography variant="body1" paddingInlineStart={2} sx={{ textTransform: "capitalize" }}>
+                                <Grid size="grow" sx={{ minWidth: "18rem" }}>
+                                    <Typography variant="body1" sx={{ fontWeight: "bold" }}>Fecha de última modificación:</Typography>
+                                    <Typography variant="body1" sx={{ textTransform: "capitalize", pl: 2 }}>
                                         {dayjs(campaign?.updated_at).format('dddd DD/MM/YYYY HH:mm:ss')}
                                     </Typography>
                                 </Grid>
                             </Grid>
                         </Grid>
                         <Divider />
-                        <Grid size="grow" container justifyContent="center" alignItems="center" gap={2}>
-                            <Grid size="grow" minWidth="16rem" >
+                        <Grid size="grow" spacing={2} container sx={{ justifyContent: "center", alignItems: "center" }} >
+                            <Grid size="grow" sx={{ minWidth: "16rem" }} >
                                 <Typography variant="h2">Acciones</Typography>
                             </Grid >
                             <ButtonGroup sx={{ marginLeft: "auto" }}>

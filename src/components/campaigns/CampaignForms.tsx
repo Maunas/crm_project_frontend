@@ -98,25 +98,22 @@ export const CampaignForm = ({ existingCmp, submit, onCancel }: CampaignProps) =
 
     return (
         <form onSubmit={handleSubmit(onSubmit)}>
-            <Stack direction="column" gap={3}>
+            <Stack spacing={3}>
                 <Typography variant="h2">
                     {!existingCmp ? "Crear Campaña" : `Modificar Campaña ${existingCmp.name}`}
                 </Typography>
-                <Stack direction="column" gap={2}>
-                    <Grid container gap={1} sx={{
-                        justifyContent: "center",
-                        alignItems: "center"
-                    }}>
-                        <Grid size="grow" minWidth={"20rem"}>
+                <Stack spacing={2}>
+                    <Grid container spacing={1} sx={{ justifyContent: "center", alignItems: "center" }}>
+                        <Grid size="grow" sx={{ minWidth: "20rem" }}>
                             <RegisteredTextInput name="name" register={register} label="Nombre"
                                 required errorMessage={errors.name?.message} />
                         </Grid>
-                        <Grid size="grow" minWidth={"20rem"}>
+                        <Grid size="grow" sx={{ minWidth: "20rem" }}>
                             <RegisteredTextInput name="description" register={register} label="Descripción"
                                 errorMessage={errors.description?.message} multiline />
                         </Grid>
                         {!existingCmp &&
-                            <Grid size="grow" minWidth={"20rem"}>
+                            <Grid size="grow" sx={{ minWidth: "20rem" }}>
                                 <ControlledAutocomplete control={control} label="Espacio de Trabajo" name="workspace_id" options={workspaces}
                                     getOptionLabel={option => option.name!} getOptionKey={option => `${option.id}`} returnField="id"
                                     errorMessage={errors?.workspace_id?.message} required />

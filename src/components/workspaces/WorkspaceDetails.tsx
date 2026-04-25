@@ -1,9 +1,9 @@
 import { CampaignList } from "../campaigns/CampaignList"
 import { CommonButton, DisableButton } from "../common/details/DetailsCommonButton"
-import { CustomChip } from "../common/details/StyledDisplayComponents"
 import type { CampaignDetailed, WorkspaceDetailed } from "../../types/campaigns"
 import dayjs from "dayjs"
 import { Stack, Typography, ButtonGroup, Divider, Grid } from "@mui/material"
+import { TitleAndActive } from "../common/layout/MinorComponents"
 
 interface WorkspaceDetailsProps {
     entity: WorkspaceDetailed | null,
@@ -15,31 +15,29 @@ interface WorkspaceDetailsProps {
 export const WorkspaceDetails = ({ entity, closeSidebar, handleSidebar, handleActive }: WorkspaceDetailsProps) => {
 
     if (entity) return (
-        <Stack gap={3} >
-            <Grid container gap={2} justifyContent="space-between" alignItems="center">
+        <Stack spacing={3} >
+            <TitleAndActive active={entity.active}>
                 <Typography variant="h2">{entity.name}</Typography>
-                {entity.active ? <CustomChip sx={{ marginLeft: "auto" }} color='success' label="Habilitado" /> :
-                    <CustomChip sx={{ marginLeft: "auto" }} color='error' label="Deshabilitado" />}
-            </Grid>
-            <Stack gap={2} >
+            </TitleAndActive>
+            <Stack spacing={2} >
                 {entity.description ? <Typography variant="body1">{entity.description}</Typography>
-                    : <Typography variant="body1" fontStyle="italic">No tiene descripción.</Typography>
+                    : <Typography variant="body1" sx={{ fontStyle: "italic" }}>No tiene descripción.</Typography>
                 }
                 <Divider />
                 {entity.campaigns &&
                     <CampaignList selectedWorkspaceId={entity.id} handleSidebar={handleSidebar} />
                 }
                 <Divider />
-                <Grid container gap={1} >
-                    <Grid size="grow" minWidth="18rem">
-                        <Typography variant="body1" fontWeight="bold">Fecha de creación:</Typography>
-                        <Typography variant="body1" paddingInlineStart={2} sx={{ textTransform: "capitalize" }}>
+                <Grid container spacing={1} >
+                    <Grid size="grow" sx={{ minWidth: "18rem" }}>
+                        <Typography variant="body1" sx={{ fontWeight: "bold" }}>Fecha de creación:</Typography>
+                        <Typography variant="body1" sx={{ textTransform: "capitalize", pl: 2 }}>
                             {dayjs(entity?.created_at).format('dddd DD/MM/YYYY HH:mm:ss')}
                         </Typography>
                     </Grid>
-                    <Grid size="grow" minWidth="18rem">
-                        <Typography variant="body1" fontWeight="bold">Fecha de última modificación:</Typography>
-                        <Typography variant="body1" paddingInlineStart={2} sx={{ textTransform: "capitalize" }}>
+                    <Grid size="grow" sx={{ minWidth: "18rem" }}>
+                        <Typography variant="body1" sx={{ fontWeight: "bold" }}>Fecha de última modificación:</Typography>
+                        <Typography variant="body1" sx={{ textTransform: "capitalize", pl: 2 }}>
                             {dayjs(entity?.updated_at).format('dddd DD/MM/YYYY HH:mm:ss')}
                         </Typography>
                     </Grid>

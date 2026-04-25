@@ -12,7 +12,7 @@ import { disableNomenclator, enableNomenclator, getNomenclator, getNomenclators 
 import type { UserContextItems } from '../users/UserProvider'
 import { UserContext } from '../common/contexts'
 import { Link as RouterLink, useSearchParams } from 'react-router-dom'
-import { Grid, Link, List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
+import { Link, List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
 import { ListAction } from '../common/lists/Icons'
 import { CustomListItem } from '../common/lists/CustomListItem'
 
@@ -89,8 +89,8 @@ export const NomenclatorList = () => {
                 closeSidebar={closeSidebar} updateEntityOnList={updateEntityOnList}
                 handleActive={handleActive} />
         }>
-            <Stack gap={3}>
-                <Grid container gap={2} justifyContent="space-between" alignItems="center">
+            <Stack spacing={3}>
+                <Stack direction="row" useFlexGap spacing={2} sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
                     <Typography variant="h1">Lista de Nomencladores</Typography>
                     {nomenclators && nomenclators.items?.length > 0 &&
                         <CommonButton actionType="CREATE" handleClick={() => { handleSidebar("CREATE_NOM", null) }}
@@ -98,14 +98,14 @@ export const NomenclatorList = () => {
                             Crear Nomenclador
                         </CommonButton>
                     }
-                </Grid>
-                <Stack gap={2}>
+                </Stack>
+                <Stack spacing={2}>
                     {
                         nomenclators && nomenclators.items?.length > 0 ?
                             <List>
                                 {nomenclators.items.map(nom =>
                                     <CustomListItem key={nom.id} disablePadding secondaryAction={
-                                        <Grid container gap={1} alignItems="center">
+                                        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
                                             <ListAction actionType='DETAILS' title='Detalle' onClick={() => handleSidebar("DETAILS_NOM", nom)} tooltipSize='small' />
                                             <ListAction actionType='LIST' title='Ver Items' component={RouterLink} to={`/nomenclators/${nom.id}`} tooltipSize='small' />
                                             {nom.organization_id &&
@@ -115,13 +115,13 @@ export const NomenclatorList = () => {
                                                         title={nom.active ? "Deshabilitar" : "Habilitar"}
                                                         onClick={() => handleActive(nom)} color={nom.active ? "error" : "success"} />
                                                 </>}
-                                        </Grid>
+                                        </Stack>
                                     }>
                                         <ListItemButton onClick={() => handleSidebar("DETAILS_NOM", nom)} >
                                             <ListItemText primary={
-                                                <Stack gap={1} direction="row">
-                                                    <Typography fontWeight="bold">{nom.name}</Typography>
-                                                    {!nom.organization_id && <Typography fontStyle="italic" >
+                                                <Stack spacing={1} direction="row">
+                                                    <Typography sx={{ fontWeight: "bold" }}>{nom.name}</Typography>
+                                                    {!nom.organization_id && <Typography sx={{ fontStyle: "italic" }} >
                                                         (Nomenclador del Sistema)
                                                     </Typography>}
                                                 </Stack>
@@ -137,12 +137,12 @@ export const NomenclatorList = () => {
                                     </CustomListItem>
                                 )}
                             </List>
-                            : <Grid container gap={2} justifyContent="center" alignItems="center" direction="column">
+                            : <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
                                 <Typography variant="h4">No se han encontrado nomencladores...</Typography>
                                 <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_NOM", null) }} variant="contained">
                                     Crear Nomenclador
                                 </CommonButton>
-                            </Grid>
+                            </Stack>
                     }
                     <PaginationComponent {...pageComponentProps} />
                 </Stack>

@@ -85,14 +85,6 @@ export const ControlledAutocomplete = <T extends FieldValues, Option>
                             <TextField {...params} label={label} required={required}
                                 error={!!errorMessage} autoComplete={autocomplete}
                                 placeholder={placeholder} size={size} fullWidth
-                                slotProps={{
-                                    input: {
-                                        ...params.InputProps,
-                                        endAdornment: (
-                                            params.InputProps.endAdornment
-                                        ),
-                                    },
-                                }}
                                 {...props}
                             />
                             {helper &&

@@ -78,21 +78,21 @@ export const NomenclatorItemForm = ({ existingNom, nomenclator, submit, onCancel
 
     return (
         <form>
-            <Stack gap={2}>
+            <Stack spacing={2}>
                 <Typography variant="h2">
                     {!existingNom ? "Crear Opciones de Nomenclador"
                         : `Modificar Opción: ${existingNom.value}`}
                 </Typography>
-                <Grid container gap={2} sx={{
+                <Grid container spacing={2} sx={{
                     justifyContent: "center",
                     alignItems: "center",
                 }}>
-                    <Grid size="grow" minWidth={"20rem"}>
+                    <Grid size="grow" sx={{ minWidth: "20rem" }}>
                         <ControlledTextInput name="value" control={control} label="Valor"
                             required errorMessage={errors.value?.message} />
                     </Grid>
                     {nomenclator?.parent_nomenclator_id &&
-                        <Grid size="grow" minWidth={"20rem"}>
+                        <Grid size="grow" sx={{ minWidth: "20rem" }}>
                             <ControlledAutocomplete control={control} label="Item del que depende" name="parent_item_id" options={nomenclatorItems}
                                 getOptionLabel={option => `${option.value!}`} getOptionKey={option => `${option.id}`} returnField="id"
                                 errorMessage={errors?.parent_item_id?.message} />
@@ -101,7 +101,7 @@ export const NomenclatorItemForm = ({ existingNom, nomenclator, submit, onCancel
                 {errors?.root &&
                     <FormErrorMessage >{errors?.root?.message}</FormErrorMessage>
                 }
-                <Stack gap={.5}>
+                <Stack spacing={.5}>
                     <ButtonGroup sx={{ marginLeft: "auto" }} fullWidth >
                         <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel} fullWidth>
                             Cancelar

@@ -54,7 +54,7 @@ export const ControlledSlider = <T extends FieldValues>
   return (
     <Controller name={name} control={control} render={({ field }) => (
       <FormControl error={!!errorMessage} fullWidth size={size}>
-        <Grid container spacing=".25rem" alignItems="start" paddingInline=".5rem">
+        <Grid container spacing={.5} sx={{ alignItems: "start", pl: 1 }}>
           <Grid size={12}>
             {label && (
               <Typography variant={size === "medium" ? "body1" : "subtitle2"}>
@@ -62,8 +62,8 @@ export const ControlledSlider = <T extends FieldValues>
               </Typography>
             )}
           </Grid>
-          <Grid container size="grow" alignItems="center" justifyContent="space-between">
-            <Grid size="grow" alignItems="center">
+          <Grid container size="grow" sx={{ alignItems: "center", justifyContent: "space-between" }}>
+            <Grid size="grow" sx={{ alignItems: "center" }}>
               {type === "slider" && (
                 <Box sx={{ pl: 2 }}>
                   <Slider {...field}
@@ -79,7 +79,7 @@ export const ControlledSlider = <T extends FieldValues>
                 />
               )}
             </Grid>
-            <Grid size="grow" alignItems="center" maxWidth="13rem">
+            <Grid size="grow" sx={{ alignItems: "center", maxWidth: "13rem" }}>
               <NumberSpinner {...field}
                 value={field.value || defaultValue}
                 onValueChange={(value) => field.onChange(value)}

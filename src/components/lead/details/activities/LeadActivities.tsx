@@ -31,9 +31,9 @@ export const LeadActivities = ({ leadId, reloadAudit }: { leadId: number, reload
   const [openTab, setOpenTab] = useState<number>(0)
 
   return (
-    <Stack height="100%" gap={3}>
+    <Stack sx={{ height: "100%" }} spacing={3}>
       <Typography variant="h2">Actividades</Typography>
-      <Stack height="100%" gap={2}>
+      <Stack sx={{ height: "100%" }} spacing={2}>
         <Tabs value={openTab} onChange={(_, val) => { setOpenTab(val) }} aria-label="activities tabs">
           <Tab label="Comentarios" id="tab-comments" />
           <Tab label="Auditoría" id="tab-audit" />

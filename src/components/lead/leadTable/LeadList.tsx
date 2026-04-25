@@ -84,8 +84,8 @@ export const LeadList = () => {
     const areThereLeads = useMemo(() => leads?.items ? leads.items.length > 0 : false, [leads])
 
     return (
-        <Stack gap={3}>
-            <Grid container justifyContent="space-between" alignItems="center" spacing="1rem">
+        <Stack spacing={3}>
+            <Grid container sx={{ justifyContent: "space-between", alignItems: "center" }} spacing="1rem">
                 <Typography variant="h1">Lista de Leads</Typography>
                 {areThereLeads &&
                     <CommonButton actionType='CREATE' variant="contained" color="primary" sx={{ marginLeft: "auto" }}
@@ -93,19 +93,19 @@ export const LeadList = () => {
                         Agregar Lead
                     </CommonButton>}
             </Grid>
-            <Stack gap={2}>
-                <Grid container alignItems="center" justifyContent="space-between" gap={2}>
+            <Stack spacing={2}>
+                <Stack direction="row" sx={{ flexWrap: "wrap", alignItems: "center", justifyContent: "space-between" }} spacing={2} useFlexGap>
                     <LeadCampaignSelector workspaceId={workspaceId} setWorkspaceId={handleWorkspaceChange}
                         campaignId={campaignId} setCampaignId={handleCampaignChange} />
                     <LeadTableOptions areThereLeads={areThereLeads} campaignId={campaignId} modalProps={modalProps}
                         filters={filters} headers={headers} setFiltersAndHeaders={setFiltersAndHeaders} />
-                </Grid>
+                </Stack>
                 {
                     leads && !!campaignId && !!workspaceId ?
                         <LeadListTable leads={leads.items} campaignId={Number(campaignId)} modalProps={modalProps}
                             activeFilters={filters.length} orderProps={orderProps} />
                         :
-                        <Stack gap={3} alignItems="center" my={3}>
+                        <Stack spacing={3} sx={{ alignItems: "center", my: 3 }}>
                             <Typography variant="h3">No hay leads para presentar</Typography>
                             <Typography variant="h4">Revisa que haya una campaña seleccionada</Typography>
                         </Stack>

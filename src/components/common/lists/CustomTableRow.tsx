@@ -10,10 +10,7 @@ export const SelectableTableRow = memo(styled(TableRow)(
             [TABLE_ROW_SX,
                 {
                     "&:hover":
-                    {
-                        backgroundColor: lighten(theme.palette.background.paper, .15)
-
-                    }
+                        { backgroundColor: lighten(theme.palette.background.paper, .15) }
                 }
             ])
     }))

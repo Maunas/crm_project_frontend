@@ -80,21 +80,18 @@ export default function LeadColumnSelector<T extends { id: number }>
     setGlobalDraggedIndex(newDrag), [])
 
   return (
-    <Stack alignItems="start" spacing="1rem">
+    <Stack spacing={2}>
       <Typography variant="h2" >Seleccionar Columnas</Typography>
-      <Grid
-        width="100%"
-        container
-        spacing={2}
-        sx={{ justifyContent: 'center', alignItems: 'center' }}
+      <Grid container spacing={2}
+        sx={{ justifyContent: 'center', alignItems: 'center', width: "100%" }}
       >
-        <Grid size="grow" minWidth="13rem">
+        <Grid size="grow" sx={{ minWidth: "13rem" }}>
           <CustomList title={"Columnas Disponibles"} listLookup={originalListLookup} showField={showField}
             checked={checked} globalDraggedIndex={globalDraggedIndex} handleSetDrag={handleSetDrag} handleToggle={handleToggle} isLeft={true}
             list={left} setter={handleSetLeft} contraryList={right} contrarySetter={handleSetRight} />
         </Grid>
         <Grid>
-          <Grid container gap={1} direction="column" sx={{ alignItems: 'center' }}>
+          <Stack spacing={1} sx={{ alignItems: 'center' }}>
             <Button
               variant="contained"
               size="small"
@@ -131,9 +128,9 @@ export default function LeadColumnSelector<T extends { id: number }>
             >
               ≪
             </Button>
-          </Grid>
+          </Stack>
         </Grid>
-        <Grid size="grow" minWidth="13rem">
+        <Grid size="grow" sx={{ minWidth: "13rem" }}>
           <CustomList title={"Columnas a Mostrar"} listLookup={originalListLookup} showField={showField}
             checked={checked} globalDraggedIndex={globalDraggedIndex} handleSetDrag={handleSetDrag} handleToggle={handleToggle}
             isLeft={false}
@@ -142,11 +139,11 @@ export default function LeadColumnSelector<T extends { id: number }>
 
       </Grid>
       <Fade in={(right?.length ?? 0) >= 8} >
-        <Typography variant="subtitle2" color="warning" fontWeight={600}>
+        <Typography variant="subtitle2" color="warning" sx={{ fontWeight: 600 }}>
           Advertencia: Muchas columnas pueden ralentizar la carga.
         </Typography>
       </Fade>
-      <Stack width="100%" alignItems="end">
+      <Stack sx={{ alignItems: "end", width: "100%" }}>
         <ButtonGroup >
           <CommonButton actionType='CLOSE' variant="outlined" onClick={() => handleClose()}>
             Cancelar
@@ -226,13 +223,13 @@ const CustomList = <T extends { id: number }>({ title, listLookup, handleToggle,
   return (
     <Paper sx={{ backgroundColor: lighten(palette.background.paper, .15), overflow: "hidden" }} >
       {title &&
-        <Box p={1} sx={{
+        <Box sx={{
           backgroundColor: palette.primary.light,
-          color: palette.primary.contrastText
+          color: palette.primary.contrastText, p: 1
         }}>
-          <Typography variant="body2" fontWeight={600}>{title}</Typography>
+          <Typography variant="body2" sx={{ fontWeight: 600 }}>{title}</Typography>
         </Box>}
-      <Stack height="25rem">
+      <Stack sx={{ height: "25rem" }}>
         <List dense component="div" role="list"
           sx={{ overflow: 'auto', padding: 0, marginTop: ".5rem", }}
         >
@@ -274,7 +271,7 @@ const CustomList = <T extends { id: number }>({ title, listLookup, handleToggle,
             );
           })}
         </List>
-        <Box flexGrow={1}
+        <Box sx={{ flexGrow: 1 }}
           onDragOver={handleDragOver}
           onDrop={() => handleDrop(0, true)}
         />

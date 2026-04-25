@@ -82,7 +82,7 @@ export const NomenclatorForm = ({ existingNom, submit, onCancel }: NomenclatorPr
 
     return (
         <form>
-            <Stack gap={2}>
+            <Stack spacing={2}>
                 <Typography variant="h2">
                     {!existingNom ? "Crear Nomenclador"
                         : `Modificar Nomenclador: ${existingNom.name}`}
@@ -91,21 +91,21 @@ export const NomenclatorForm = ({ existingNom, submit, onCancel }: NomenclatorPr
                     justifyContent: "center",
                     alignItems: "center",
                 }}>
-                    <Grid size="grow" minWidth={"20rem"}>
+                    <Grid size="grow" sx={{ minWidth: "20rem" }}>
                         <ControlledTextInput name="name" control={control} label="Nombre"
                             required errorMessage={errors.name?.message} />
                     </Grid>
-                    <Grid size="grow" minWidth={"20rem"}>
+                    <Grid size="grow" sx={{ minWidth: "20rem" }}>
                         <ControlledAutocomplete control={control} label="Espacio de Trabajo" name="workspace_id" options={workspaces}
                             getOptionLabel={option => option.name!} getOptionKey={option => `${option.id}`} returnField="id"
                             errorMessage={errors?.workspace_id?.message} placeholder="Global" />
                     </Grid>
-                    <Grid size="grow" minWidth={"20rem"}>
+                    <Grid size="grow" sx={{ minWidth: "20rem" }}>
                         <ControlledAutocomplete control={control} label="Campaña" name="campaign_id" options={campaigns}
                             getOptionLabel={option => option.name!} getOptionKey={option => `${option.id}`} returnField="id"
                             errorMessage={errors?.campaign_id?.message} disabled={!selectedWorkspace} placeholder="Global" />
                     </Grid>
-                    <Grid size="grow" minWidth={"20rem"}>
+                    <Grid size="grow" sx={{ minWidth: "20rem" }}>
                         <ControlledAutocomplete control={control} label="Nomenclador Padre" name="parent_nomenclator_id" options={nomenclators.filter(nom => nom.id !== existingNom?.id)}
                             getOptionLabel={option => option.name!} getOptionKey={option => `${option.id}`} returnField="id"
                             errorMessage={errors?.parent_nomenclator_id?.message} />
