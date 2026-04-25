@@ -14,6 +14,9 @@ import type { ColorTypes } from "../../../../types/mui-theme.d"
 import { MetadataShort } from "./LeadComments"
 import { useListPagination } from "../../../hooks/useListPagination"
 import { PaginationComponent } from "../../../common/lists/PaginationComponent"
+import Timeline from '@mui/lab/Timeline';
+import { CustomTimelineItem } from "../../../common/layout/MinorComponents"
+import { timelineItemClasses } from "@mui/lab/TimelineItem"
 
 export const LeadAuditList = ({ leadId, reloadAudit }: { leadId: number, reloadAudit: number }) => {
 
@@ -41,42 +44,51 @@ export const LeadAuditList = ({ leadId, reloadAudit }: { leadId: number, reloadA
 
   if (audit) return (
     <Stack spacing={2}>
-      {audit.items.map((item, idx) => {
-        return (
-          <Card key={item.id} raised>
-            <CardActionArea onClick={() => setShowItem(idx)} title="Ver detalle">
-              <LeadAuditHeader activityType={item.activity_type}
-                message={item.details.message ?? `${item.details?.changes?.length ?? 0} cambios`} />
-            </CardActionArea>
-            <Collapse in={idx === showItem} timeout="auto" unmountOnExit>
-              <Divider />
-              {item.details.changes &&
-                <CardContent sx={{ py: 1 }}>
-                  <Grid container rowSpacing={1} columnSpacing={.5}>
-                    {item.details.changes.map(change =>
-                      <Grid size="grow" key={`${item.id}-${change.field_id}`} sx={{ minWidth: "15rem" }}>
-                        <Stack direction="row" spacing={1} sx={{ px: 2, alignItems: "center" }}>
-                          <Typography variant="body2">{change.field_name}:</Typography>
-                          <LeadAuditValue value={change.old_value} color="error" size="small" fieldName={change.field_name} />
-                          <ArrowForwardIcon />
-                          <LeadAuditValue value={change.new_value} color="success" fieldName={change.field_name} />
-                        </Stack>
+      <Timeline sx={{
+        [`& .${timelineItemClasses.root}:before`]: {
+          flex: 0,
+          padding: 0,
+        },
+      }}>
+        {audit.items.map((item, idx) => {
+          return (
+            <CustomTimelineItem selected={idx === showItem}>
+              <Card key={item.id} raised>
+                <CardActionArea onClick={() => setShowItem(idx)} title="Ver detalle">
+                  <LeadAuditHeader activityType={item.activity_type}
+                    message={item.details.message ?? `${item.details?.changes?.length ?? 0} cambios`} />
+                </CardActionArea>
+                <Collapse in={idx === showItem} timeout="auto" unmountOnExit>
+                  <Divider />
+                  {item.details.changes &&
+                    <CardContent sx={{ py: 1 }}>
+                      <Grid container rowSpacing={1} columnSpacing={.5} sx={{ alignItems: "center" }}>
+                        {item.details.changes.map(change =>
+                          <Grid size="grow" key={`${item.id}-${change.field_id}`} sx={{ minWidth: "15rem", alignItems: "center" }}>
+                            <Stack direction="row" spacing={1} sx={{ px: 2, alignItems: "center" }}>
+                              <Typography variant="body2">{change.field_name}:</Typography>
+                              <LeadAuditValue value={change.old_value} color="error" size="small" fieldName={change.field_name} />
+                              <ArrowForwardIcon />
+                              <LeadAuditValue value={change.new_value} color="success" fieldName={change.field_name} />
+                            </Stack>
+                          </Grid>
+                        )}
                       </Grid>
-                    )}
-                  </Grid>
-                </CardContent>
-              }
-              <Divider />
-              <CardActions sx={{ py: .5 }}>
-                <Stack direction="row" spacing={.5} sx={{ alignItems: "center", justifyContent: "end", ml: "auto" }}>
-                  <WatchLaterIcon fontSize="small" />
-                  <MetadataShort metadata={item} noIcon containerProps={{ sx: { marginRight: ".5rem" } }} />
-                </Stack>
-              </CardActions>
-            </Collapse>
-          </Card>
-        )
-      })}
+                    </CardContent>
+                  }
+                  <Divider />
+                  <CardActions sx={{ py: .5 }}>
+                    <Stack direction="row" spacing={.5} sx={{ alignItems: "center", justifyContent: "end", ml: "auto" }}>
+                      <WatchLaterIcon fontSize="small" />
+                      <MetadataShort metadata={item} noIcon containerProps={{ sx: { marginRight: ".5rem" } }} />
+                    </Stack>
+                  </CardActions>
+                </Collapse>
+              </Card>
+            </CustomTimelineItem>
+          )
+        })}
+      </Timeline>
       <PaginationComponent {...pageComponentProps} />
     </Stack >
   )
