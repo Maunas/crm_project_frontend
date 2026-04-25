@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react"
 import type { LeadAudit } from "../../../../types/leads"
 import { getAudit } from "./leadActivitiesService"
 import type { Paginable } from "../../../../types/common"
-import { Avatar, Card, CardActions, CardContent, CardHeader, Divider, Grid, Stack, Typography } from "@mui/material"
+import { Avatar, Card, CardActionArea, CardActions, CardContent, CardHeader, Collapse, Divider, Grid, Stack, Typography } from "@mui/material"
 import { CustomChip } from "../../../common/details/StyledDisplayComponents"
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward"
 import EditIcon from "@mui/icons-material/Edit"
@@ -19,7 +19,7 @@ export const LeadAuditList = ({ leadId, reloadAudit }: { leadId: number, reloadA
 
   const [audit, setAudit] = useState<Paginable<LeadAudit> | null>(null)
 
-  const { fetchPage, pageSize, pageComponentProps } = useListPagination(audit, 5)
+  const { fetchPage, pageSize, pageComponentProps } = useListPagination(audit, 8)
 
   const fetchAuditList = (leadId: number, fetchPage: number, pageSize: number) => {
     if (!leadId) return
@@ -37,13 +37,17 @@ export const LeadAuditList = ({ leadId, reloadAudit }: { leadId: number, reloadA
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reloadAudit])
 
+  const [showItem, setShowItem] = useState<number>(0)
+
   if (audit) return (
     <Stack gap={2}>
-      {
-        audit.items.map(item => {
-          return <Card key={item.id} raised>
+      {audit.items.map((item, idx) => {
+        return <Card key={item.id} raised>
+          <CardActionArea onClick={() => setShowItem(idx)} title="Ver detalle">
             <LeadAuditHeader activityType={item.activity_type}
               message={item.details.message ?? `${item.details?.changes?.length ?? 0} cambios`} />
+          </CardActionArea>
+          <Collapse in={idx === showItem} timeout="auto" unmountOnExit>
             <Divider />
             {item.details.changes &&
               <CardContent sx={{ py: 1 }}>
@@ -68,10 +72,9 @@ export const LeadAuditList = ({ leadId, reloadAudit }: { leadId: number, reloadA
                 <MetadataShort metadata={item} noIcon containerProps={{ sx: { marginRight: ".5rem" } }} />
               </Stack>
             </CardActions>
-          </Card>
-        }
-        )
-      }
+          </Collapse>
+        </Card>
+      })}
       <PaginationComponent {...pageComponentProps} />
     </Stack >
   )
@@ -101,7 +104,7 @@ const LeadAuditHeader = ({ activityType, message }: { activityType?: string, mes
     }
   }, [activityType])
   return (
-    <CardHeader sx={{ py: .5, pt: 1 }}
+    <CardHeader sx={{ py: 1 }}
       avatar={<CustomListItemAvatar color={activityInfo?.color} >
         <Avatar variant="rounded" sx={{ height: "2rem", width: "2rem", mx: "auto" }}>
           {activityInfo?.icon}
@@ -112,6 +115,16 @@ const LeadAuditHeader = ({ activityType, message }: { activityType?: string, mes
       </Typography>}
       subheader={message}
     />
+  )
+}
+
+
+const LeadAuditContent = ({ item, show }: { item: LeadAudit, show: boolean }) => {
+
+  if (show) return (
+    <>
+
+    </>
   )
 }
 
