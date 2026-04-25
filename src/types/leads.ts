@@ -31,3 +31,20 @@ export interface LeadCommentPost {
 export interface LeadComment extends LeadCommentPost, Metadata {
   id: number,
 }
+
+export interface LeadAudit extends Metadata {
+  id: number,
+  lead_id: number,
+  activity_type: "LEAD_CREATED" | "FIELDS_UPDATED",
+  details: {
+    message?: string,
+    changes?: LeadAuditChange[]
+  }
+}
+
+export interface LeadAuditChange {
+  field_id: number,
+  field_name: string,
+  new_value: string | number[],
+  old_value: string | number[] | null,
+}

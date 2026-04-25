@@ -19,10 +19,10 @@ export interface Paginable<T> {
  */
 export interface Metadata {
   created_at: string;
-  updated_at: string;
+  updated_at?: string;
   active: boolean;
   created_by: number;
-  updated_by: number;
+  updated_by?: number;
 }
 
 /**

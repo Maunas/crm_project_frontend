@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react"
 import { CreateCommentWrapper, UpdateCommentFromNote } from "./LeadCommentForm"
 import { PaginationComponent } from "../../../common/lists/PaginationComponent"
-import type { Paginable } from "../../../../types/common"
+import type { Metadata, Paginable } from "../../../../types/common"
 import type { LeadComment } from "../../../../types/leads"
 import type { ColorTypes } from "../../../../types/mui-theme.d"
 import { useListPagination } from "../../../hooks/useListPagination"
@@ -56,8 +56,8 @@ export const LeadComments = ({ leadId }: { leadId: number }) => {
                         <Grid key={com.id} size="grow" minWidth="20rem" >
                             {com.id !== selectedCommentId ? (
                                 <CommentInstance comment={com} onEdit={() => setSelectedCommentId(com.id)}
-                                    onDelete={() => onDeleteComment(com.id)} title={<MetadataShort comment={com} isUser />}
-                                    footerContent={<MetadataShort comment={com} />} >
+                                    onDelete={() => onDeleteComment(com.id)} title={<MetadataShort metadata={com} onlyUser />}
+                                    footerContent={<MetadataShort metadata={com} onlyDate containerProps={{ sx: { marginLeft: "auto" } }} />} >
                                     {com.content}
                                 </CommentInstance>
                             )
@@ -142,7 +142,7 @@ export const CommentInstance = ({ comment, title, color, footerContent, onEdit, 
                 {children}
             </Box>
             {footerContent &&
-                <Box className="comment-footer" width="100%" gap={1} px={1} py={.25}>
+                <Box className="comment-footer" width="100%" gap={1} px={1} py={.5}>
                     {footerContent}
                 </Box>
             }
@@ -151,41 +151,61 @@ export const CommentInstance = ({ comment, title, color, footerContent, onEdit, 
 }
 
 
-
-export const Metadata = ({ comment }: { comment: LeadComment }) => {
-    return (
-        <>
-            <Grid container gap={1} minWidth="15rem" size="grow" alignItems="center">
-                <WatchLaterIcon />
-                <Stack justifyContent="center">
-                    <Typography variant="body2"><span style={{ fontWeight: "bold" }}>Creado:</span> {dayjs(comment?.created_at).format("DD/MM/YYYY")}</Typography>
-                    <Typography variant="body2"><span style={{ fontWeight: "bold" }}>Por:</span> {comment?.created_by}</Typography>
-                </Stack>
-            </Grid>
-            <Grid container gap={1} minWidth="15rem" size="grow" alignItems="center">
-                <WatchLaterIcon />
-                <Stack justifyContent="center">
-                    <Typography variant="body2"><span style={{ fontWeight: "bold" }}>Modificado:</span> {dayjs(comment?.created_at).format("DD/MM/YYYY")}</Typography>
-                    {comment?.updated_by && <Typography variant="body2"><span style={{ fontWeight: "bold" }}>Por:</span> {comment?.updated_by}</Typography>}
-                </Stack>
-            </Grid>
-        </>)
+interface MetadataShortProps {
+    metadata: Metadata,
+    onlyCreation?: boolean,
+    onlyUpdate?: boolean,
+    noIcon?: boolean,
+    containerProps?: object
 }
 
-const MetadataShort = ({ comment, isUser = false }: { comment: LeadComment, isUser?: boolean }) => {
-    if (isUser) return (
-        <Grid container gap={.5} alignItems="end">
-            <PersonIcon fontSize="small" />
-            <Typography variant="body2" fontWeight="bold">Por</Typography>
-            <Typography variant="body2">{comment?.created_by ?? comment?.updated_by}</Typography>
-        </Grid>
-    )
+export const MetadataInfo = ({ metadata, onlyCreation = false, onlyUpdate = false, noIcon = false, containerProps }: MetadataShortProps) => {
     return (
-        <Grid container gap={.5} alignItems="end" justifyContent="end" width="100%">
-            <WatchLaterIcon fontSize="small" />
-            <Typography variant="body2" textTransform="capitalize">
-                {dayjs(comment?.updated_at ?? comment?.created_at).format("dddd DD/MM/YYYY HH:mm")}
-            </Typography>
-        </Grid>
-    )
+        <Grid {...containerProps}>
+            {!onlyUpdate &&
+                <Grid container gap={1} minWidth="15rem" size="grow" alignItems="center">
+                    {!noIcon && <WatchLaterIcon />}
+                    <Stack justifyContent="center">
+                        <Typography variant="body2"><span style={{ fontWeight: "bold" }}>Creado:</span> {dayjs(metadata?.created_at).format("DD/MM/YYYY")}</Typography>
+                        <Typography variant="body2"><span style={{ fontWeight: "bold" }}>Por:</span> {metadata?.created_by}</Typography>
+                    </Stack>
+                </Grid>}
+            {!onlyCreation &&
+                <Grid container gap={1} minWidth="15rem" size="grow" alignItems="center">
+                    {!noIcon && <WatchLaterIcon />}
+                    <Stack justifyContent="center">
+                        <Typography variant="body2"><span style={{ fontWeight: "bold" }}>Modificado:</span> {dayjs(metadata?.updated_at).format("DD/MM/YYYY")}</Typography>
+                        {metadata?.updated_by && <Typography variant="body2"><span style={{ fontWeight: "bold" }}>Por:</span> {metadata?.updated_by}</Typography>}
+                    </Stack>
+                </Grid>}
+        </Grid>)
+}
+
+interface MetadataShortProps {
+    metadata: Metadata,
+    onlyUser?: boolean,
+    onlyDate?: boolean,
+    noIcon?: boolean,
+    containerProps?: object
+}
+
+export const MetadataShort = ({ metadata, onlyUser = false, onlyDate = false, noIcon = false, containerProps }: MetadataShortProps) => {
+    return <Grid gap={.5} container alignItems="center" {...containerProps}>
+        {!onlyDate &&
+            <Stack direction="row" gap={.5}>
+                {!noIcon && <PersonIcon fontSize="small" />}
+                <Typography variant="body2" fontWeight="bold">Por</Typography>
+                <Typography variant="body2">{metadata?.created_by ?? metadata?.updated_by}</Typography>
+            </Stack>
+        }
+        {!onlyDate && !onlyUser && "-"}
+        {!onlyUser &&
+            <Stack direction="row" gap={.5}>
+                {!noIcon && <WatchLaterIcon fontSize="small" />}
+                <Typography variant="body2" textTransform="capitalize">
+                    {dayjs(metadata?.updated_at ?? metadata?.created_at).format("dddd DD/MM/YYYY HH:mm")}
+                </Typography>
+            </Stack>
+        }
+    </Grid>
 }

@@ -36,6 +36,7 @@ export const LeadDetailsLayout = () => {
 
     const updateLeadInfo = (newLead: LeadDetailed) => {
         setLead(newLead)
+        setReloadAudit(prev => prev + 1)
     }
 
     const leadTitle = useMemo(() => {
@@ -43,6 +44,8 @@ export const LeadDetailsLayout = () => {
         return getLeadTitleArray(lead).join(" ")
     }, [lead])
 
+    //reconoce cambios para actualizar la lista de audit
+    const [reloadAudit, setReloadAudit] = useState<number>(0)
 
 
     return (
@@ -62,7 +65,7 @@ export const LeadDetailsLayout = () => {
                             <LeadInfo lead={lead} handleActive={handleActive} leadTitle={leadTitle} updateLeadInfo={updateLeadInfo} />
                         </Grid>
                         <Grid size="grow" minWidth="20rem" component={GenericPaper} >
-                            <LeadActivities leadId={lead.id} />
+                            <LeadActivities leadId={lead.id} reloadAudit={reloadAudit} />
                         </Grid>
                     </Grid >
                 }
