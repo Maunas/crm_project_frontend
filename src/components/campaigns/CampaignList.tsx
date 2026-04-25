@@ -28,38 +28,38 @@ export const CampaignList = ({ selectedWorkspaceId, handleSidebar }: CampaignLis
     }, [selectedWorkspaceId, refresh, fetchPage, pageSize])
 
     if (campaigns?.items && campaigns.items.length > 0) return (
-        <Stack gap="1rem">
+        <Stack spacing={2}>
             <Typography variant="h3">Lista de Campañas</Typography>
             <CampaignListData campaigns={campaigns.items} />
             <PaginationComponent {...pageComponentProps} />
         </Stack>
     )
     else return (
-        <Grid container spacing="1rem" justifyContent="center" alignItems="center" direction="column">
+        <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
             <Typography variant="h4">No se han encontrado campañas para este espacio de trabajo...</Typography>
             <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_CMP", null)} variant="contained">Agregar Campaña</CommonButton>
-        </Grid>
+        </Stack>
     )
 }
 
 export const CampaignListData = ({ campaigns }: { campaigns: CampaignDetailed[] }) => {
 
     return (
-        <Grid container gap={1} sx={{ marginInline: 1 }}>
+        <Grid container spacing={1} sx={{ marginInline: 1 }}>
             {campaigns.map((cmp, idx) =>
-                <Grid container key={`cmp-${idx}`} size="grow" minWidth="15rem">
+                <Grid container key={`cmp-${idx}`} size="grow" sx={{ minWidth: "15rem" }}>
                     <CustomListItem disablePadding secondaryAction={
-                        <Grid container gap={1} alignItems="center">
-                            <ListAction actionType='DETAILS' title="Detalles" tooltipSize="small"
+                        <Stack direction="row" spacing={.5} sx={{ alignItems: "center" }}>
+                            <ListAction actionType='DETAILS' title="Detalles" tooltipSize="small" size="small"
                                 component={Link} to={`/campaigns/${cmp.id}`} />
-                            <ListAction actionType='LIST' title="Ver Leads" tooltipSize="small"
+                            <ListAction actionType='LIST' title="Ver Leads" tooltipSize="small" size="small"
                                 component={Link} to={`/leads?workspace=${cmp.workspace_id}&campaign=${cmp.id}`} />
-                        </Grid>}>
+                        </Stack>}>
                         <ListItemButton component={Link} to={`/campaigns/${cmp.id}`} >
                             <ListItemText primary={
-                                <Stack spacing={1} direction="row" width="100%" color="inherit" alignItems="center">
+                                <Stack spacing={1} direction="row" color="inherit" sx={{ width: "100%", alignItems: "center" }}>
                                     <EnabledIcon active={cmp.active} />
-                                    <Typography fontWeight="bold" color="inherit">{cmp.name}</Typography>
+                                    <Typography sx={{ fontWeight: "bold" }} color="inherit">{cmp.name}</Typography>
                                 </Stack>
                             }
                                 secondary={cmp.description} />

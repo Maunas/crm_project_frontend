@@ -39,7 +39,7 @@ export interface LeadFieldPost {
   related_campaign_id?: number | null;
   //Calculated
   calculation_expression?: string | null;
-  title_order: number | null
+  title_order?: number | null
 }
 
 export interface LeadField extends LeadFieldPost {

@@ -9,7 +9,7 @@ import { getLeadFields } from '../../leadFields/leadFieldServices'
 import { setFormErrors } from '../../../generalService'
 import { dictOperatorsMock } from '../../../mocks/operators'
 import { useFieldArray, useForm, useWatch, type Control, type FieldErrors, type Path, type UseFieldArrayRemove, type UseFormRegister } from 'react-hook-form'
-import { alpha, Button, Divider, Grid, Typography, Stack, ButtonGroup, useColorScheme, useTheme, Fade } from '@mui/material'
+import { alpha, Button, Divider, Grid, Typography, Stack, ButtonGroup, useColorScheme, useTheme, Fade, Box } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close';
 import { CommonButton } from '../../common/details/DetailsCommonButton'
 
@@ -65,33 +65,32 @@ export const LeadFilters = memo(({ campaignId, filters, applyFilters, onClose }:
     const pageSize = useWatch({ control, name: "headers.page_size" })
 
     return (
-        <Stack gap={3}>
+        <Stack spacing={3}>
             <Typography variant="h2">Filtros de Búsqueda</Typography>
             <form onSubmit={handleSubmit(onSubmit)} >
-                <Grid container direction="column" gap={2}>
-                    <Grid container direction="column" gap={.5}>
-                        <Grid container size="grow" alignItems="center" gap={1}>
-                            <Grid container direction="column" gap={.5} size="grow" minWidth="10rem">
+                <Stack spacing={2}>
+                    <Stack spacing={.5}>
+                        <Grid container sx={{ alignItems: "center", flexWrap: "wrap" }} spacing={1}>
+                            <Grid size="grow" spacing={.5} sx={{ minWidth: "10rem" }}>
                                 <ControlledNumber control={control} size="small" name="headers.page_size" label="Items por página" min={5} step={5}
                                     errorMessage={errors.headers?.page_size?.message} />
-
                             </Grid>
-                            <Grid size="grow" minWidth="18rem">
+                            <Grid size="grow" sx={{ minWidth: "18rem" }}>
                                 <ControlledCheckbox control={control} name="headers.only_active" label="Mostrar sólo Leads habilitados"
                                     errorMessage={errors.headers?.only_active?.message} />
                             </Grid>
                         </Grid>
                         <Fade in={(pageSize ?? 0) >= 20} >
-                            <Typography variant="subtitle2" color="warning" fontWeight={600}>
+                            <Typography variant="subtitle2" color="warning" sx={{ fontWeight: 600 }}>
                                 Advertencia: Muchas filas pueden ralentizar la carga.
                             </Typography>
                         </Fade>
-                    </Grid>
+                    </Stack>
                     {!!campaignId &&
                         <>
                             <Divider />
                             <Typography variant="h3">Filtros por Campo</Typography>
-                            <Stack gap={1} direction="column">
+                            <Stack spacing={1} direction="column">
                                 {fields.map((filter, idx) => (
                                     <LeadFiltersItem key={filter.id} idx={idx} control={control} register={register} leadFields={leadFields}
                                         errors={errors} remove={remove} />
@@ -102,7 +101,7 @@ export const LeadFilters = memo(({ campaignId, filters, applyFilters, onClose }:
                     {errors.root && (
                         <FormErrorMessage>{errors.root.message}</FormErrorMessage>
                     )}
-                    <Grid alignSelf="end">
+                    <Grid sx={{ alignSelf: "end" }}>
                         <ButtonGroup >
                             {!!campaignId &&
                                 <CommonButton actionType='CLOSE' variant="outlined" color="primary" onClick={onClose}>
@@ -119,7 +118,7 @@ export const LeadFilters = memo(({ campaignId, filters, applyFilters, onClose }:
                             </CommonButton>
                         </ButtonGroup>
                     </Grid>
-                </Grid>
+                </Stack>
             </form >
         </Stack>
     )
@@ -165,46 +164,46 @@ export const LeadFiltersItem = memo(({ idx, leadFields, control, register, error
     }, [selectedField, operators])
 
     return (
-        <Grid container direction="row" gap={2} overflow="hidden"
-            border={`1px solid ${alpha(theme.palette.contrast.light, .5)}`} borderRadius={1}>
-            <Grid container size="grow" gap={2} direction="column" paddingBlock={1} paddingInlineStart={2}>
-                <Typography variant="body1" fontWeight={600}>Filtro N° {idx + 1}</Typography>
-                <Grid container direction="row" gap={1} alignItems="center">
-                    <Grid size="grow" minWidth="12rem">
+        <Stack direction="row" spacing={2} sx={{
+            overflow: "hidden", borderRadius: 1,
+            border: `1px solid ${alpha(theme.palette.contrast.light, .5)}`
+        }}>
+            <Stack spacing={2} sx={{ py: 1, pl: 2, flexGrow: 1 }}>
+                <Typography variant="body1" sx={{ fontWeight: 600 }}>Filtro N° {idx + 1}</Typography>
+                <Stack direction="row" spacing={.5} useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
+                    <Box sx={{ flexGrow: 2, minWidth: "12rem" }}>
                         <ControlledAutocomplete control={control} name={`filters.${idx}.field_id`} options={leadFields}
                             getOptionKey={option => `${option.id}`} getOptionLabel={option => `${option.name}`} returnField="id"
                             label="Campo a Filtrar" size="small"
                             errorMessage={errors.filters?.[idx]?.field_id?.message} />
-                    </Grid>
+                    </Box>
                     {selectedFieldId &&
                         <>
-                            <Grid size={3} minWidth="10rem">
+                            <Box sx={{ flexGrow: 1, minWidth: "10rem" }}>
                                 <ControlledAutocomplete control={control} name={`filters.${idx}.operator`} options={filteredOperators}
                                     getOptionKey={option => option.code} getOptionLabel={option => option.label} returnField="code"
                                     label="Operación" size="small"
                                     errorMessage={errors.filters?.[idx]?.operator?.message} />
-                            </Grid>
-                            <Grid size="grow" minWidth="12rem">
+                            </Box>
+                            <Box sx={{ flexGrow: 2, minWidth: "12rem" }}>
                                 <LeadFormFieldType register={register} control={control} name={`filters.${idx}.value`} label="Valor de Comparación"
                                     errorMessage={errors.filters?.[idx]?.value?.message} leadField={selectedField} />
-                            </Grid>
+                            </Box>
                         </>
                     }
-                </Grid>
-            </Grid>
+                </Stack>
+            </Stack>
             <Button onClick={() => remove(idx)} sx={{
                 backgroundColor: systemMode === "light" ? alpha(theme.palette.error.light, .3) : alpha(theme.palette.error.darker, .2),
                 color: systemMode === "light" ? theme.palette.error.darker : theme.palette.error.light,
-                borderRadius: 0,
-                minWidth: 0,
-                padding: 2,
+                borderRadius: 0, minWidth: 0, padding: 2,
                 "&:hover": {
                     backgroundColor: systemMode === "light" ? alpha(theme.palette.error.light, .4) : alpha(theme.palette.error.darker, .3)
                 }
             }}>
                 <CloseIcon />
             </Button>
-        </Grid >
+        </Stack >
     )
 })
 

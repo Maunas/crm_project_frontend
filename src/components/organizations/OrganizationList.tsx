@@ -15,7 +15,6 @@ import dayjs from 'dayjs'
 import 'dayjs/locale/es'
 import { CustomListItem } from '../common/lists/CustomListItem'
 dayjs.locale('es')
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 export const OrganizationList = () => {
 
@@ -82,39 +81,41 @@ export const OrganizationList = () => {
             <OrganizationSidebar mode={sidebarMode} entity={selectedEntity} handleSidebar={handleSidebar}
                 closeSidebar={closeSidebar} updateEntityOnList={updateEntityOnList} handleActive={handleActive} />
         }>
-            <Stack gap={3}>
-                <Grid container gap={2} justifyContent="space-between" alignItems="center">
+            <Stack spacing={3}>
+                <Stack spacing={2} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
                     <Typography variant="h1">Lista de Organizaciones</Typography>
-                    <Grid size="auto" sx={{ marginLeft: "auto" }}>
-                        {userOrganizations && userOrganizations?.length > 0 &&
-                            <CommonButton actionType="CREATE" handleClick={() => handleSidebar("CREATE_ORG", null)}>Crear Organización</CommonButton>
-                        }
-                    </Grid>
-                </Grid>
-                <Stack gap={2}>
+                    {userOrganizations && userOrganizations?.length > 0 &&
+                        <CommonButton actionType="CREATE" handleClick={() => handleSidebar("CREATE_ORG", null)} sx={{ marginLeft: "auto" }}>
+                            Crear Organización
+                        </CommonButton>
+                    }
+                </Stack>
+                <Stack spacing={2}>
                     {userOrganizations && userOrganizations?.length > 0 ?
                         <List>
                             {userOrganizations.map(org =>
                                 <CustomListItem key={org.id} disablePadding secondaryAction={
-                                    <Grid container gap={1} alignItems="center">
-                                        <ListAction actionType='DETAILS' title='Detalle' onClick={() => handleSidebar("DETAILS_ORG", org)} tooltipSize="small" />
-                                        <ListAction actionType='MODIFY' title='Modificar' onClick={() => handleSidebar("UPDATE_ORG", org)} tooltipSize="small" />
+                                    <Stack direction="row" spacing={.5} sx={{ alignItems: "center" }}>
+                                        <ListAction actionType='DETAILS' title='Detalle' onClick={() => handleSidebar("DETAILS_ORG", org)} tooltipSize="small" size="small" />
+                                        <ListAction actionType='MODIFY' title='Modificar' onClick={() => handleSidebar("UPDATE_ORG", org)} tooltipSize="small" size="small" />
                                         {selectedOrg?.id !== org.id &&
                                             <>
-                                                <ListAction actionType='CHECK' title='Seleccionar Activa' color="info" onClick={() => setSelectedOrg(org)} tooltipSize="small" />
-                                                <ListAction actionType={org.active ? "DISABLE" : "ENABLE"} tooltipSize="small"
+                                                <ListAction actionType='CHECK' title='Seleccionar Activa' color="info" onClick={() => setSelectedOrg(org)} tooltipSize="small" size="small" />
+                                                <ListAction actionType={org.active ? "DISABLE" : "ENABLE"} tooltipSize="small" size="small"
                                                     title={org.active ? "Deshabilitar" : "Habilitar"}
                                                     onClick={() => handleActive(org)} color={org.active ? "error" : "success"} />
                                             </>
                                         }
-                                    </Grid>
+                                    </Stack>
                                 }>
                                     <ListItemButton onClick={() => handleSidebar("DETAILS_ORG", org)}>
                                         <ListItemText primary={
-                                            <Stack gap={1} direction="row">
+                                            <Stack spacing={1} direction="row">
                                                 <EnabledIcon active={org.active} />
-                                                <CheckCircleOutlineIcon color="info" sx={{ opacity: selectedOrg?.id === org.id ? 1 : 0 }} />
-                                                <Typography fontWeight="bold">{org.name}</Typography>
+                                                <Typography color={selectedOrg?.id === org.id ? "info" : "textPrimary"}
+                                                    sx={{ fontWeight: "bold", textDecoration: selectedOrg?.id === org.id ? "underline" : "none" }}>
+                                                    {org.name}
+                                                </Typography>
                                             </Stack>
                                         }
                                             secondary={org.description} />
@@ -122,12 +123,12 @@ export const OrganizationList = () => {
                                 </CustomListItem>
                             )}
                         </List>
-                        : <Grid container gap={2} justifyContent="center" alignItems="center" direction="column">
+                        : <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
                             <Typography variant="h4">No se han encontrado organizaciones...</Typography>
                             <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_ORG", null)} variant="contained">
                                 Crear Organización
                             </CommonButton>
-                        </Grid>
+                        </Stack>
                     }
                 </Stack>
             </Stack>
@@ -171,39 +172,39 @@ const OrganizationDetails = ({ entity, closeSidebar, handleSidebar, handleActive
     if (!entity) return
 
     return (
-        <Stack gap={3} >
-            <Grid container gap={2} justifyContent="space-between" alignItems="center">
+        <Stack spacing={3} >
+            <Stack direction="row" useFlexGap spacing={2} sx={{ flexWrap: "wrap", justifyContent: "space-between", alignItems: "center" }}>
                 <Typography variant="h2">{entity.name}</Typography>
-                <Stack direction="row" gap={1} sx={{ marginLeft: "auto" }} >
+                <Stack direction="row" spacing={1} sx={{ marginLeft: "auto" }} >
                     {entity.active ? <CustomChip color='success' label="Habilitado" /> :
                         <CustomChip color='error' label="Deshabilitado" />}
                     {selectedOrg?.id === entity.id &&
                         <CustomChip color='info' label="Activa" />}
                 </Stack>
-            </Grid>
-            <Stack gap={2} >
+            </Stack>
+            <Stack spacing={2} >
                 {entity.description
                     ? <Typography variant="body1">{entity.description}</Typography>
-                    : <Typography variant="body1" fontStyle="italic">No tiene descripción.</Typography>
+                    : <Typography variant="body1" sx={{ fontStyle: "italic" }}>No tiene descripción.</Typography>
                 }
                 <Divider />
                 <ButtonGroup fullWidth>
                     {selectedOrg?.id !== entity.id &&
                         <CommonButton actionType="CHECK" variant='outlined' onClick={() => setSelectedOrg(entity)} >Seleccionar como Activa</CommonButton>}
-                    <CommonButton actionType="LIST" component={Link} to={`/campaigns`} >Ver Workspaces</CommonButton>
+                    <CommonButton actionType="LIST" component={Link} to={`/campaigns`} >Ver Espacios de Trabajo</CommonButton>
 
                 </ButtonGroup>
                 <Divider />
-                <Grid container gap={1} size="grow" minWidth="50 rem">
-                    <Grid size="grow" minWidth="18rem">
-                        <Typography variant="body1" fontWeight="bold">Fecha de creación:</Typography>
-                        <Typography variant="body1" paddingInlineStart={2} sx={{ textTransform: "capitalize" }}>
+                <Grid container spacing={1} size="grow" sx={{ minWidth: "20rem" }}>
+                    <Grid size="grow" sx={{ minWidth: "18rem" }}>
+                        <Typography variant="body1" sx={{ fontWeight: "bold" }}>Fecha de creación:</Typography>
+                        <Typography variant="body1" sx={{ textTransform: "capitalize", pl: 2 }}>
                             {dayjs(entity?.created_at).format('dddd DD/MM/YYYY HH:mm:ss')}
                         </Typography>
                     </Grid>
-                    <Grid size="grow" minWidth="18rem">
-                        <Typography variant="body1" fontWeight="bold">Fecha de última modificación:</Typography>
-                        <Typography variant="body1" paddingInlineStart={2} sx={{ textTransform: "capitalize" }}>
+                    <Grid size="grow" sx={{ minWidth: "18rem" }}>
+                        <Typography variant="body1" sx={{ fontWeight: "bold" }}>Fecha de última modificación:</Typography>
+                        <Typography variant="body1" sx={{ textTransform: "capitalize", pl: 2 }}>
                             {dayjs(entity?.updated_at).format('dddd DD/MM/YYYY HH:mm:ss')}
                         </Typography>
                     </Grid>

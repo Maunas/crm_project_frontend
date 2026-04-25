@@ -47,17 +47,22 @@ export const LeadComments = ({ leadId }: { leadId: number }) => {
     const { palette } = useTheme()
 
     return (
-        <Stack gap={2} height="100%">
-            <Stack flexGrow={1} gap={2} borderRadius={3} px={3} py={2}
-                bgcolor={alpha(palette.background.default, .5)} alignItems="end">
-                <Grid container justifyContent="end" alignItems="start" alignContent="start" width="100%"
-                    flexGrow={1} gap={2} minWidth="20rem">
+        <Stack spacing={2} sx={{ height: "100%" }}>
+            <Stack spacing={2} sx={{
+                borderRadius: 3, px: 3, py: 2,
+                bgcolor: alpha(palette.background.default, .5), alignItems: "end"
+            }}
+            >
+                <Grid container spacing={2} sx={{
+                    justifyContent: "end", alignItems: "start", alignContent: "start",
+                    width: "100%", minWidth: "20rem"
+                }}>
                     {comments?.items.map(com =>
-                        <Grid key={com.id} size="grow" minWidth="20rem" >
+                        <Grid key={com.id} size="grow" sx={{ minWidth: "20rem" }} >
                             {com.id !== selectedCommentId ? (
                                 <CommentInstance comment={com} onEdit={() => setSelectedCommentId(com.id)}
                                     onDelete={() => onDeleteComment(com.id)} title={<MetadataShort metadata={com} onlyUser />}
-                                    footerContent={<MetadataShort metadata={com} onlyDate containerProps={{ sx: { marginLeft: "auto" } }} />} >
+                                    footerContent={<MetadataShort metadata={com} onlyDate containerProps={{ sx: { ml: "auto" } }} />} >
                                     {com.content}
                                 </CommentInstance>
                             )
@@ -127,8 +132,8 @@ export const CommentInstance = ({ comment, title, color, footerContent, onEdit, 
 
     return (
         <CommentNote color={comment?.color ?? color ?? "secondary"}>
-            <Box className="comment-header" px={2}>
-                <Typography variant="subtitle2" fontWeight={600}>{title}</Typography>
+            <Box className="comment-header" sx={{ px: 2 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{title}</Typography>
                 <Stack direction="row">
                     {onEdit && <IconButton aria-label="edit" size="small" onClick={() => onEdit()} color="inherit">
                         <EditIcon fontSize="small" />
@@ -138,11 +143,11 @@ export const CommentInstance = ({ comment, title, color, footerContent, onEdit, 
                     </IconButton>}
                 </Stack>
             </Box>
-            <Box className="comment-main" px={2} py={1.5}>
+            <Box className="comment-main" sx={{ px: 2, py: 1.5 }}>
                 {children}
             </Box>
             {footerContent &&
-                <Box className="comment-footer" width="100%" gap={1} px={1} py={.5}>
+                <Box className="comment-footer" sx={{ px: 1, py: .5 }}>
                     {footerContent}
                 </Box>
             }
@@ -163,17 +168,17 @@ export const MetadataInfo = ({ metadata, onlyCreation = false, onlyUpdate = fals
     return (
         <Grid {...containerProps}>
             {!onlyUpdate &&
-                <Grid container gap={1} minWidth="15rem" size="grow" alignItems="center">
+                <Grid container spacing={1} sx={{ minWidth: "15rem", alignItems: "center" }} size="grow">
                     {!noIcon && <WatchLaterIcon />}
-                    <Stack justifyContent="center">
+                    <Stack sx={{ justifyContent: "center" }}>
                         <Typography variant="body2"><span style={{ fontWeight: "bold" }}>Creado:</span> {dayjs(metadata?.created_at).format("DD/MM/YYYY")}</Typography>
                         <Typography variant="body2"><span style={{ fontWeight: "bold" }}>Por:</span> {metadata?.created_by}</Typography>
                     </Stack>
                 </Grid>}
             {!onlyCreation &&
-                <Grid container gap={1} minWidth="15rem" size="grow" alignItems="center">
+                <Grid container spacing={1} sx={{ minWidth: "15rem", alignItems: "center" }} size="grow">
                     {!noIcon && <WatchLaterIcon />}
-                    <Stack justifyContent="center">
+                    <Stack sx={{ justifyContent: "center" }}>
                         <Typography variant="body2"><span style={{ fontWeight: "bold" }}>Modificado:</span> {dayjs(metadata?.updated_at).format("DD/MM/YYYY")}</Typography>
                         {metadata?.updated_by && <Typography variant="body2"><span style={{ fontWeight: "bold" }}>Por:</span> {metadata?.updated_by}</Typography>}
                     </Stack>
@@ -190,19 +195,19 @@ interface MetadataShortProps {
 }
 
 export const MetadataShort = ({ metadata, onlyUser = false, onlyDate = false, noIcon = false, containerProps }: MetadataShortProps) => {
-    return <Grid gap={.5} container alignItems="center" {...containerProps}>
+    return <Grid spacing={.5} container sx={{ alignItems: "center" }} {...containerProps}>
         {!onlyDate &&
-            <Stack direction="row" gap={.5}>
+            <Stack direction="row" spacing={.5}>
                 {!noIcon && <PersonIcon fontSize="small" />}
-                <Typography variant="body2" fontWeight="bold">Por</Typography>
+                <Typography variant="body2" sx={{ fontWeight: "bold" }}>Por</Typography>
                 <Typography variant="body2">{metadata?.created_by ?? metadata?.updated_by}</Typography>
             </Stack>
         }
         {!onlyDate && !onlyUser && "-"}
         {!onlyUser &&
-            <Stack direction="row" gap={.5}>
+            <Stack direction="row" spacing={.5}>
                 {!noIcon && <WatchLaterIcon fontSize="small" />}
-                <Typography variant="body2" textTransform="capitalize">
+                <Typography variant="body2" sx={{ textTransform: "capitalize" }}>
                     {dayjs(metadata?.updated_at ?? metadata?.created_at).format("dddd DD/MM/YYYY HH:mm")}
                 </Typography>
             </Stack>

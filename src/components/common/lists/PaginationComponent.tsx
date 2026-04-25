@@ -8,7 +8,7 @@ interface PaginationComponentProps {
 }
 export const PaginationComponent = memo(({ totalPages, page, handlePage }: PaginationComponentProps) => {
   return (
-    <Box width="100%">
+    <Box sx={{ width: "100%" }}>
       <Pagination
         count={totalPages}
         page={page}

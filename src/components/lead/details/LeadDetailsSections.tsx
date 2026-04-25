@@ -79,7 +79,9 @@ export const LeadFieldSections = ({ lead, updateLeadInfo }: { lead: LeadDetailed
                     <Divider sx={{ marginBottom: 2 }} />
                     <List>
                         <LeadFieldByType value={lead?.created_at} fieldName="Fecha de Creación" type="DATE_TIME" />
-                        <LeadFieldByType value={lead?.updated_at} fieldName="Fecha de Última Modificación" type="DATE_TIME" />
+                        {lead?.updated_at &&
+                            <LeadFieldByType value={lead?.updated_at} fieldName="Fecha de Última Modificación" type="DATE_TIME" />
+                        }
                     </List>
                 </AccordionDetails>
             </Accordion>
@@ -150,7 +152,7 @@ export const LeadFieldByType = (props: LeadFieldProps) => {
             </IconButton>} >
             <LeadFieldTypeIcon typeCode={valueCode} subtypeCode={subtypeCode} />
             <ListItemText>
-                <Stack gap={.5}>
+                <Stack spacing={.5}>
                     <Typography variant="subtitle2" color="textSecondary">{fieldName}</Typography>
                     {component(typeCode)}
                 </Stack>

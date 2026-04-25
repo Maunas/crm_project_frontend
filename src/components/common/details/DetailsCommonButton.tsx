@@ -1,7 +1,7 @@
 import { cloneElement, type ComponentProps, type ReactNode } from 'react';
 import type { ColorTypes } from '../../../types/mui-theme.d';
 import type { LinkProps } from 'react-router-dom';
-import { Stack } from '@mui/material'
+import { Box, Stack } from '@mui/material'
 import { styled } from '@mui/material/styles';
 
 import Button from '@mui/material/Button';
@@ -55,9 +55,27 @@ export const CommonButton = ({ actionType = "NONE", handleClick, children, ...bt
 
     return (
         <LightButton variant='contained' onClick={handleClick} {...btnProps}>
-            <Stack gap={1} direction="row" alignItems="center">
+            <Stack spacing={1} direction="row" sx={{ alignItems: "center" }}>
                 {cloneElement(ACTION_ICONS[actionType], { fontSize: btnProps.size })}
                 {children}
+            </Stack>
+        </LightButton>
+    )
+}
+
+export const CommonCollapsedButton = ({ actionType = "NONE", handleClick, children, ...btnProps }: CommonBtnProps) => {
+
+    return (
+        <LightButton variant='contained' onClick={handleClick}
+            sx={{ "&:hover .button-content": { maxWidth: "30rem" } }}
+            {...btnProps}>
+            <Stack spacing={1} direction="row"
+                sx={{ alignItems: "center" }}>
+                {cloneElement(ACTION_ICONS[actionType], { fontSize: btnProps.size })}
+                <Box className="button-content"
+                    sx={{ maxWidth: 0, overflow: "hidden", whiteSpace: "nowrap", transition: 'max-width 0.3s ease-in-out' }}>
+                    {children}
+                </Box>
             </Stack>
         </LightButton>
     )

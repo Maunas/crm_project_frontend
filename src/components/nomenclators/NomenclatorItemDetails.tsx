@@ -3,7 +3,7 @@ import { Link as RouterLink } from "react-router-dom"
 import dayjs from "dayjs"
 import { CommonButton, DisableButton } from "../common/details/DetailsCommonButton"
 import type { NomenclatorItemDetailed } from "../../types/nomenclators"
-import { CustomChip } from "../common/details/StyledDisplayComponents"
+import { TitleAndActive } from "../common/layout/MinorComponents"
 
 interface NomenclatorDetailsProps {
     entity: NomenclatorItemDetailed | null,
@@ -16,33 +16,31 @@ interface NomenclatorDetailsProps {
 export const NomenclatorItemDetails = ({ entity, parentEntity, closeSidebar, handleSidebar, handleActive }: NomenclatorDetailsProps) => {
 
     if (entity) return (
-        <Stack gap={3} >
-            <Grid container gap={2} justifyContent="space-between" alignItems="center">
+        <Stack spacing={3} >
+            <TitleAndActive active={entity.active}>
                 <Typography variant="h2">{entity.value}</Typography>
-                {entity.active ? <CustomChip sx={{ marginLeft: "auto" }} color='success' label="Habilitado" /> :
-                    <CustomChip sx={{ marginLeft: "auto" }} color='error' label="Deshabilitado" />}
-            </Grid>
-            <Stack gap={2} >
-                {!entity.organization_id && <Typography variant="body1" fontStyle="italic" >(Nomenclador del Sistema)</Typography>}
+            </TitleAndActive>
+            <Stack spacing={2} >
+                {!entity.organization_id && <Typography variant="body1" sx={{ fontStyle: "italic" }} >(Nomenclador del Sistema)</Typography>}
                 <Divider />
                 {parentEntity &&
                     <>
-                        <Stack direction="row" gap={1}>
+                        <Stack direction="row" spacing={1}>
                             <Typography variant="body1">Depende del Item de Nomenclador</Typography>
                             <Link component={RouterLink} to={`/nomenclators/${parentEntity?.nomenclator_id}`}>{parentEntity?.value}</Link>
                         </Stack>
                         <Divider />
                     </>}
-                <Grid container gap={1} >
-                    <Grid size="grow" minWidth="18rem">
-                        <Typography variant="body1" fontWeight="bold">Fecha de creación:</Typography>
-                        <Typography variant="body1" paddingInlineStart={2} sx={{ textTransform: "capitalize" }}>
+                <Grid container spacing={1} >
+                    <Grid size="grow" sx={{ minWidth: "18rem" }}>
+                        <Typography variant="body1" sx={{ fontWeight: "bold" }}>Fecha de creación:</Typography>
+                        <Typography variant="body1" sx={{ textTransform: "capitalize", pl: 2 }}>
                             {dayjs(entity?.created_at).format('dddd DD/MM/YYYY HH:mm:ss')}
                         </Typography>
                     </Grid>
-                    <Grid size="grow" minWidth="18rem">
-                        <Typography variant="body1" fontWeight="bold">Fecha de última modificación:</Typography>
-                        <Typography variant="body1" paddingInlineStart={2} sx={{ textTransform: "capitalize" }}>
+                    <Grid size="grow" sx={{ minWidth: "18rem" }}>
+                        <Typography variant="body1" sx={{ fontWeight: "bold" }}>Fecha de última modificación:</Typography>
+                        <Typography variant="body1" sx={{ textTransform: "capitalize", pl: 2 }}>
                             {dayjs(entity?.updated_at).format('dddd DD/MM/YYYY HH:mm:ss')}
                         </Typography>
                     </Grid>

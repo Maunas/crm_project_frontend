@@ -1,4 +1,4 @@
-import { Autocomplete, Badge, Grid, TextField, type AutocompleteRenderInputParams } from "@mui/material"
+import { Autocomplete, Badge, Stack, TextField, type AutocompleteRenderInputParams } from "@mui/material"
 import { memo, useCallback, useContext, useEffect, useState } from "react"
 import type { Campaign, Workspace } from "../../../types/campaigns"
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
@@ -69,7 +69,7 @@ export const LeadCampaignSelector = memo(({ workspaceId, setWorkspaceId, campaig
     }), [])
 
     return (
-        <Grid container alignItems="center" gap={1}>
+        <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: "wrap", alignItems: "center" }}>
             <Autocomplete {...autocompleteCommonProps(workspaces, "Espacio de Trabajo")}
                 value={Number(workspaceId)} onChange={(_, val) => handleWorkspaceChange(val)}
             />
@@ -78,7 +78,7 @@ export const LeadCampaignSelector = memo(({ workspaceId, setWorkspaceId, campaig
                 value={Number(campaignId)} onChange={(_, val) => setCampaignId(val)}
                 disabled={!workspaceId}
             />
-        </Grid>
+        </Stack>
     )
 })
 
@@ -105,29 +105,24 @@ export const LeadTableOptions = memo(({ areThereLeads, campaignId, filters, head
     }, [setFiltersAndHeaders, headers, modalProps])
 
     return (
-        <Grid container alignItems="center" spacing={1} sx={{ marginLeft: 'auto' }}>
-
-            <Grid sx={{ marginLeft: 'auto' }}>
-                {
-                    areThereLeads && !!campaignId &&
-                    <CommonButton actionType='OPTIONS' color='secondary' onClick={() => modalProps.handleOpen("columns_selector")} >
-                        Modificar Columnas
+        <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: "wrap", ml: "auto", justifyContent: "end", alignItems: "center" }}>
+            {
+                areThereLeads && !!campaignId &&
+                <CommonButton actionType='OPTIONS' color='secondary' onClick={() => modalProps.handleOpen("columns_selector")} >
+                    Modificar Columnas
+                </CommonButton>
+            }
+            {areThereLeads &&
+                <Badge badgeContent={filters.length} color="success">
+                    <CommonButton actionType="FILTER" color="secondary" onClick={() => modalProps.handleOpen("lead_filters")}>
+                        Aplicar Filtros
                     </CommonButton>
-                }
-            </Grid>
-            <Grid sx={{ marginLeft: 'auto' }}>
-                {areThereLeads &&
-                    <Badge badgeContent={filters.length} color="success">
-                        <CommonButton actionType="FILTER" color="secondary" onClick={() => modalProps.handleOpen("lead_filters")}>
-                            Aplicar Filtros
-                        </CommonButton>
-                    </Badge>}
-                <GenericModal idModal="lead_filters" modalProps={modalProps} buttonText="Aplicar Filtros" maxWidth="lg"
-                    actionType='FILTER' color='secondary' showButton={false} >
-                    <LeadFilters applyFilters={applyFilters} filters={{ filters, headers }} campaignId={Number(campaignId)}
-                        onClose={() => modalProps.handleClose()} />
-                </GenericModal>
-            </Grid>
-        </Grid >
+                </Badge>}
+            <GenericModal idModal="lead_filters" modalProps={modalProps} buttonText="Aplicar Filtros" maxWidth="lg"
+                actionType='FILTER' color='secondary' showButton={false} >
+                <LeadFilters applyFilters={applyFilters} filters={{ filters, headers }} campaignId={Number(campaignId)}
+                    onClose={() => modalProps.handleClose()} />
+            </GenericModal>
+        </Stack >
     )
 })

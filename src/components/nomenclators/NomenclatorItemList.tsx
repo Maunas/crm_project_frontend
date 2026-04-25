@@ -5,7 +5,7 @@ import { useSidebar } from '../hooks/useSidebar'
 import { useListPagination } from '../hooks/useListPagination'
 import type { Paginable } from '../../types/common'
 import { ContainerWithSidebar } from '../common/layout/GenericContainer'
-import { ButtonGroup, Grid, List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
+import { ButtonGroup, List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
 import { CommonButton } from '../common/details/DetailsCommonButton'
 import { PaginationComponent } from '../common/lists/PaginationComponent'
 import { disableNomenclatorItem, enableNomenclatorItem, getNomenclator, getNomenclatorItem, getNomenclatorItems } from './nomenclatorService'
@@ -97,8 +97,8 @@ export const NomenclatorItemList = () => {
                 closeSidebar={closeSidebar} updateEntityOnList={updateEntityOnList} nomenclator={nomenclator}
                 handleActive={handleActive} />
         }>
-            <Stack gap={3}>
-                <Grid container gap={2} justifyContent="space-between" alignItems="center">
+            <Stack spacing={3}>
+                <Stack spacing={2} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
                     <Typography variant="h1">Opciones de {nomenclator?.name}</Typography>
                     <ButtonGroup variant="outlined" sx={{ marginLeft: "auto" }} >
                         <CommonButton actionType='RETURN' variant='outlined' component={RouterLink} to="/nomenclators">Volver</CommonButton>
@@ -108,14 +108,14 @@ export const NomenclatorItemList = () => {
                             </CommonButton>
                         }
                     </ButtonGroup>
-                </Grid>
-                <Stack gap={2}>
+                </Stack>
+                <Stack spacing={2}>
                     {
                         nomenclatorItems && nomenclatorItems.items?.length > 0 ?
                             <List>
                                 {nomenclatorItems.items.map(nom =>
                                     <CustomListItem key={nom.id} disablePadding secondaryAction={
-                                        <Grid container gap={1} alignItems="center">
+                                        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
                                             <ListAction actionType='DETAILS' title='Detalle' onClick={() => handleSidebar("DETAILS_NOM", nom)} tooltipSize='small' />
                                             {nom.organization_id &&
                                                 <>
@@ -124,12 +124,12 @@ export const NomenclatorItemList = () => {
                                                         title={nom.active ? "Deshabilitar" : "Habilitar"}
                                                         onClick={() => handleActive(nom)} color={nom.active ? "error" : "success"} />
                                                 </>}
-                                        </Grid>
+                                        </Stack>
                                     }>
                                         <ListItemButton onClick={() => handleSidebar("DETAILS_NOM", nom)} >
                                             <ListItemText primary={
-                                                <Stack gap={1} direction="row">
-                                                    <Typography fontWeight="bold">{nom.value}</Typography>
+                                                <Stack spacing={1} direction="row">
+                                                    <Typography sx={{ fontWeight: "bold" }}>{nom.value}</Typography>
                                                 </Stack>
                                             }
                                                 secondary={!nom.organization_id && "(Opción del Sistema)"} />
@@ -137,10 +137,10 @@ export const NomenclatorItemList = () => {
                                     </CustomListItem>
                                 )}
                             </List>
-                            : <Grid container gap={2} justifyContent="center" alignItems="center" direction="column">
+                            : <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
                                 <Typography variant="h4">No se han encontrado opciones en este nomenclador...</Typography>
                                 <CommonButton actionType='CREATE' onClick={() => { handleSidebar("CREATE_NOM", null) }} variant="contained">Crear Opción</CommonButton>
-                            </Grid>
+                            </Stack>
                     }
                     <PaginationComponent {...pageComponentProps} />
                 </Stack>

@@ -40,40 +40,42 @@ export const LeadAuditList = ({ leadId, reloadAudit }: { leadId: number, reloadA
   const [showItem, setShowItem] = useState<number>(0)
 
   if (audit) return (
-    <Stack gap={2}>
+    <Stack spacing={2}>
       {audit.items.map((item, idx) => {
-        return <Card key={item.id} raised>
-          <CardActionArea onClick={() => setShowItem(idx)} title="Ver detalle">
-            <LeadAuditHeader activityType={item.activity_type}
-              message={item.details.message ?? `${item.details?.changes?.length ?? 0} cambios`} />
-          </CardActionArea>
-          <Collapse in={idx === showItem} timeout="auto" unmountOnExit>
-            <Divider />
-            {item.details.changes &&
-              <CardContent sx={{ py: 1 }}>
-                <Grid container rowGap={1} columnGap={.5}>
-                  {item.details.changes.map(change =>
-                    <Grid size="grow" key={`${item.id}-${change.field_id}`} minWidth="15rem">
-                      <Stack direction="row" gap={1} alignItems="center" sx={{ px: "1rem" }}>
-                        <Typography variant="body2">{change.field_name}:</Typography>
-                        <LeadAuditValue value={change.old_value} color="error" size="small" fieldName={change.field_name} />
-                        <ArrowForwardIcon />
-                        <LeadAuditValue value={change.new_value} color="success" fieldName={change.field_name} />
-                      </Stack>
-                    </Grid>
-                  )}
-                </Grid>
-              </CardContent>
-            }
-            <Divider />
-            <CardActions sx={{ py: .5 }}>
-              <Stack direction="row" marginInlineStart="auto" gap={.5} alignItems="center" justifyContent="end">
-                <WatchLaterIcon fontSize="small" />
-                <MetadataShort metadata={item} noIcon containerProps={{ sx: { marginRight: ".5rem" } }} />
-              </Stack>
-            </CardActions>
-          </Collapse>
-        </Card>
+        return (
+          <Card key={item.id} raised>
+            <CardActionArea onClick={() => setShowItem(idx)} title="Ver detalle">
+              <LeadAuditHeader activityType={item.activity_type}
+                message={item.details.message ?? `${item.details?.changes?.length ?? 0} cambios`} />
+            </CardActionArea>
+            <Collapse in={idx === showItem} timeout="auto" unmountOnExit>
+              <Divider />
+              {item.details.changes &&
+                <CardContent sx={{ py: 1 }}>
+                  <Grid container rowSpacing={1} columnSpacing={.5}>
+                    {item.details.changes.map(change =>
+                      <Grid size="grow" key={`${item.id}-${change.field_id}`} sx={{ minWidth: "15rem" }}>
+                        <Stack direction="row" spacing={1} sx={{ px: 2, alignItems: "center" }}>
+                          <Typography variant="body2">{change.field_name}:</Typography>
+                          <LeadAuditValue value={change.old_value} color="error" size="small" fieldName={change.field_name} />
+                          <ArrowForwardIcon />
+                          <LeadAuditValue value={change.new_value} color="success" fieldName={change.field_name} />
+                        </Stack>
+                      </Grid>
+                    )}
+                  </Grid>
+                </CardContent>
+              }
+              <Divider />
+              <CardActions sx={{ py: .5 }}>
+                <Stack direction="row" spacing={.5} sx={{ alignItems: "center", justifyContent: "end", ml: "auto" }}>
+                  <WatchLaterIcon fontSize="small" />
+                  <MetadataShort metadata={item} noIcon containerProps={{ sx: { marginRight: ".5rem" } }} />
+                </Stack>
+              </CardActions>
+            </Collapse>
+          </Card>
+        )
       })}
       <PaginationComponent {...pageComponentProps} />
     </Stack >
@@ -110,7 +112,7 @@ const LeadAuditHeader = ({ activityType, message }: { activityType?: string, mes
           {activityInfo?.icon}
         </Avatar>
       </CustomListItemAvatar>}
-      title={<Typography variant="body2" fontWeight={600}>
+      title={<Typography variant="body2" sx={{ fontWeight: 600 }}>
         {activityInfo.title}
       </Typography>}
       subheader={message}
@@ -118,15 +120,6 @@ const LeadAuditHeader = ({ activityType, message }: { activityType?: string, mes
   )
 }
 
-
-const LeadAuditContent = ({ item, show }: { item: LeadAudit, show: boolean }) => {
-
-  if (show) return (
-    <>
-
-    </>
-  )
-}
 
 interface LeadAuditValueProps {
   value: string | number[] | null,
@@ -145,7 +138,7 @@ const LeadAuditValue = ({ value, fieldName, size = "medium", color = "primary" }
   if (typeof value === "string") {
     return <CustomChip size={size} color={color} label={showValue(value, fieldName)} />
   }
-  return <Stack gap={.5} flexWrap="wrap" direction="row" justifyContent="center">
+  return <Stack spacing={.5} sx={{ flexWrap: "wrap", direction: "row", justifyContent: "center" }}>
     {value?.map(item =>
       <CustomChip size={size} color={color} label={showValue(`${item}`, fieldName)} />
     )}

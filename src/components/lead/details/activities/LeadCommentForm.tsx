@@ -31,7 +31,7 @@ export const UpdateCommentFromNote = ({ existingComment, leadId, onUpdate, onClo
     })
 
     return (
-        <Grid container justifyContent="end">
+        <Grid container sx={{ justifyContent: "end" }}>
             <Grid size="grow">
                 <CommentInstance color={color} onDelete={() => onClose()}
                     title={existingComment ? "Modificar Comentario" : "Agregar Comentario"}>
@@ -81,8 +81,8 @@ export const CreateCommentWrapper = ({ leadId, onCreate }: CommentWrapperProps) 
     })
 
     return (
-        <Box width="100%" bgcolor={alpha(palette.background.default, .5)} borderRadius={3}>
-            <NewCommentBox color={color} boxShadow="inherit" borderRadius={3} py={2} px={3}>
+        <Box sx={{ width: "100%", bgcolor: alpha(palette.background.default, .5), borderRadius: 3 }} >
+            <NewCommentBox color={color} sx={{ boxShadow: "inherit", borderRadius: 3, py: 2, px: 3 }}>
                 <CommentForm leadId={leadId} submit={postComment} setColor={setColor} size="medium" />
             </NewCommentBox>
         </Box>
@@ -119,20 +119,16 @@ const CommentForm = ({ existingComment, leadId, onClose, submit, setColor, size 
 
     return (
         < form onSubmit={handleSubmit(onSubmit)} >
-            <Grid container gap={1} alignItems="center" justifyContent="end">
-                <Grid size={12}>
-                    <RegisteredTextInput register={register} name={"content"} label="Comentario"
-                        errorMessage={errors.content?.message} size={size} multiline />
-                </Grid>
-                <Grid container size="grow" gap={1} direction="row" alignItems="space-between" justifyContent="space-between">
-                    <Grid size="auto">
-                        <CommentColorSelector control={control} setColor={setColor} />
-                    </Grid>
-                    <Grid size="auto" sx={{ ml: "auto" }}>
-                        <CommonButton actionType="SAVE" variant="contained" color="primary" type="submit" size={size}>Guardar</CommonButton>
-                    </Grid>
-                </Grid>
-            </Grid >
+            <Stack spacing={1} sx={{ alignItems: "center", justifyContent: "end" }}>
+                <RegisteredTextInput register={register} name={"content"} label="Comentario"
+                    errorMessage={errors.content?.message} size={size} multiline />
+                <Stack direction="row" spacing={1} useFlexGap sx={{ justifyContent: "space-between", flexWrap: "wrap", width: "100%" }}>
+                    <CommentColorSelector control={control} setColor={setColor} />
+                    <CommonButton actionType="SAVE" variant="contained" color="primary" type="submit" size={size} sx={{ ml: "auto" }}>
+                        Guardar
+                    </CommonButton>
+                </Stack >
+            </Stack >
         </form >
     )
 }
@@ -149,7 +145,7 @@ const CommentColorSelector = ({ control, setColor }: CommentColorSelectorProps) 
     return (
         <Controller control={control} name="color"
             render={({ field, fieldState }) => (
-                <Stack direction="row" justifyContent="end" width="100%">
+                <Stack direction="row" sx={{ flexWrap: "wrap" }}>
                     {fieldState.error?.message && typeof fieldState.error?.message === "string" && (
                         <FormErrorMessage>{fieldState.error?.message}</FormErrorMessage>
                     )}

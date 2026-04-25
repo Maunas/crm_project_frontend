@@ -35,18 +35,18 @@ export const CreateLeadFormPage = () => {
     }, [nav])
 
     return (
-        <Stack gap={3}>
+        <Stack spacing={3}>
             <Typography variant="h1">Nuevo Lead</Typography>
-            <Stack gap={2}>
-                <Grid container gap={1}>
-                    <Grid size="grow" minWidth="20rem">
+            <Stack spacing={2}>
+                <Grid container spacing={1}>
+                    <Grid size="grow" sx={{ minWidth: "20rem" }}>
                         <Autocomplete options={workspaces} loading={workspaces.length === 0} disabled={workspaces.length === 0}
                             onChange={(_, value) => setSelectedWorkspace(value)} value={selectedWorkspace}
                             getOptionLabel={o => o.name!} renderInput={(props) =>
                                 <TextField label="Workspace" {...props} />
                             } />
                     </Grid>
-                    <Grid size="grow" minWidth="20rem">
+                    <Grid size="grow" sx={{ minWidth: "20rem" }}>
                         <Autocomplete options={campaigns.filter(c => c.workspace_id === selectedWorkspace?.id)}
                             loading={campaigns.length === 0} disabled={campaigns.length === 0 && !selectedWorkspace}
                             onChange={(_, value) => setSelectedCampaign(value)} value={selectedCampaign}
@@ -102,7 +102,7 @@ export const SimulateLeadFormModal = ({ campaign, leadFields, onCancel }: Simula
     }, [leadFields])
 
     return (
-        <Stack gap={3}>
+        <Stack spacing={3}>
             <Typography variant="h1">Simulación de Nuevo Lead: Campaña {campaign.name}</Typography>
             <LeadForm campaignId={campaign.id} existingLeadFields={formattedLeadFields}
                 onSubmit={onSubmit} onCancel={onCancel} submitBtnLabel="Validar Datos" />
@@ -144,7 +144,7 @@ export const UpdateLeadFormPage = () => {
     }, [nav, lead])
 
     if (lead && lead.campaign_id) return (
-        <Stack gap={3}>
+        <Stack spacing={3}>
             <Typography variant="h1">{`Modificar Lead: ${lead?.field_values[0].value} ${lead?.field_values[1].value}`}</Typography>
             <LeadForm existingValues={formattedLeadValues} existingLeadFields={formattedLeadFields}
                 campaignId={lead.campaign_id} onSubmit={onSubmit} onCancel={() => nav(`/leads/${lead.id}`)} />

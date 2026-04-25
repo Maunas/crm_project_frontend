@@ -45,30 +45,30 @@ const LoginForm = ({ submit, onCancel }: LoginFormProps) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <Stack gap={3}>
-        <Typography variant="h1" textAlign="center">
+      <Stack spacing={3}>
+        <Typography variant="h1" sx={{ textAlign: "center" }}>
           CRM
         </Typography>
-        <Typography variant="h2" textAlign="center">
+        <Typography variant="h2" sx={{ textAlign: "center" }}>
           Iniciar Sesión
         </Typography>
-        <Stack gap={2}>
-          <Grid container gap={1} sx={{
+        <Stack spacing={2}>
+          <Grid container spacing={1} sx={{
             justifyContent: "center",
             alignItems: "center",
           }}>
-            <Grid size="grow" minWidth={"20rem"}>
+            <Grid size="grow" sx={{ minWidth: "20rem" }}>
               <RegisteredTextInput name="email" register={register} label="Nombre"
                 required errorMessage={errors.email?.message} />
             </Grid>
-            <Grid size="grow" minWidth={"20rem"}>
+            <Grid size="grow" sx={{ minWidth: "20rem" }}>
               <PasswordField name="password" register={register} label="Contraseña" errorMessage={errors.password?.message} required />
             </Grid>
           </Grid>
           {errors?.root &&
             <FormErrorMessage >{errors?.root?.message}</FormErrorMessage>
           }
-          <Stack gap={1}>
+          <Stack spacing={1}>
             <ButtonGroup fullWidth>
               <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel} fullWidth>
                 Cancelar

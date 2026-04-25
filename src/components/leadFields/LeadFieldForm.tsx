@@ -125,7 +125,6 @@ export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFi
   const onSubmitAndReset = async (data: LeadFieldPostCreation) => {
     return onSaveLeadField(data, true)
       .then(() => {
-        alert("Creado");
         reset(defaultValues);
       })
   };
@@ -133,7 +132,7 @@ export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFi
 
   return (
     <form>
-      <Stack gap={3}>
+      <Stack spacing={3}>
         {!existingLF ? (
           <Typography variant="h1">
             Crear Campo para: "{campaign?.name}"
@@ -143,14 +142,14 @@ export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFi
             Modificar el Campo {existingLF?.name} para: {campaign?.name}
           </Typography>
         )}
-        <Stack gap={2}>
+        <Stack spacing={2}>
           <LeadFieldFormFields templates={fieldTemplates} sections={fieldSections}
             nomenclators={nomenclators} campaigns={campaigns} types={fieldTypes}
             errors={errors} register={register} control={control} maskTemplates={maskTemplates}
             campaignId={campaign.id} existingLFId={existingLF?.id}
           />
 
-          <Stack gap={.5}>
+          <Stack spacing={.5}>
             <ButtonGroup fullWidth>
               <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel}>
                 Cancelar
@@ -203,13 +202,13 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
   );
 
   return (
-    <Grid container spacing={1} justifyContent="center">
+    <Stack spacing={1} sx={{ justifyContent: "center" }}>
       <input
         type="hidden"
         {...register("campaign_id", { value: campaignId })}
       />
-      <Grid size={12} container minWidth="20rem">
-        <Grid size="grow" minWidth="20rem">
+      <Grid size={12} container sx={{ minWidth: "20rem" }}>
+        <Grid size="grow" sx={{ minWidth: "20rem" }}>
           <ControlledTextInput
             control={control}
             label="Nombre del Campo"
@@ -218,7 +217,7 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
             errorMessage={errors?.name?.message}
           />
         </Grid>
-        <Grid size="grow" minWidth="20rem" justifyContent="center">
+        <Grid size="grow" sx={{ minWidth: "20rem", justifyContent: "center" }} >
           <ControlledAutocomplete
             name="lead_field_section_id"
             label="Sección"
@@ -231,7 +230,7 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
             errorMessage={errors?.lead_field_section_id?.message}
           />
         </Grid>
-        <Grid size="grow" minWidth="20rem" justifyContent="center">
+        <Grid size="grow" sx={{ minWidth: "20rem", justifyContent: "center" }} >
           <FormGroup row>
             <ControlledCheckbox
               control={control}
@@ -255,15 +254,15 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
         </Grid>
       </Grid>
 
-      <Grid size={12} container minWidth="20rem">
+      <Grid size={12} container sx={{ minWidth: "20rem" }}>
         {!existingLFId &&
-          <Grid size={4} minWidth="20rem" justifyContent="center">
+          <Grid size={4} sx={{ minWidth: "20rem", justifyContent: "center" }} >
             <ControlledRadio control={control} name="creation_method" label="Método de Creación" options={creationMethodRadioOptions}
               getRadioLabel={option => option.label} keyField="value" returnField="value" row />
           </Grid>}
 
         {creationMethod === "template" && !existingLFId ? (
-          <Grid size="grow" minWidth="20rem" justifyContent="center">
+          <Grid size="grow" sx={{ minWidth: "20rem", justifyContent: "center" }} >
             <ControlledAutocomplete
               name="field_template_code"
               label="Plantillas"
@@ -280,7 +279,7 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
           <>
             {!existingLFId &&
               <>
-                <Grid size="grow" minWidth="20rem" justifyContent="center">
+                <Grid size="grow" sx={{ minWidth: "20rem", justifyContent: "center" }} >
                   <ControlledAutocomplete
                     name="field_type_code"
                     label="Tipo de Dato"
@@ -290,14 +289,12 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
                     returnField="code"
                     errorMessage={errors?.field_type_code?.message}
                     getOptionKey={(option) => option.code}
-                    getOptionLabel={(option) =>
-                      `${option.code} - ${option.description}`
-                    }
+                    getOptionLabel={(option) => option.description}
                   />
                 </Grid>
                 {fieldTypeObject?.subtypes &&
                   fieldTypeObject?.subtypes?.length > 0 && (
-                    <Grid size="grow" minWidth="20rem" justifyContent="center">
+                    <Grid size="grow" sx={{ minWidth: "20rem", justifyContent: "center" }} >
                       <ControlledAutocomplete
                         name="field_subtype_code"
                         label="Subtipo de Campo"
@@ -306,15 +303,13 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
                         control={control}
                         options={fieldTypeObject?.subtypes}
                         returnField="code"
-                        getOptionLabel={option =>
-                          `${option.code} - ${option.description}`
-                        }
+                        getOptionLabel={option => option.description}
                         getOptionKey={option => option.code}
                       />
                     </Grid>
                   )}
                 {(fieldTypeCode === "SELECTOR" || fieldTypeCode === "CHECKBOX") && (
-                  <Grid size="grow" minWidth="20rem" justifyContent="center">
+                  <Grid size="grow" sx={{ minWidth: "20rem", justifyContent: "center" }} >
                     <ControlledAutocomplete
                       name="nomenclator_id"
                       label="Lista de Opciones"
@@ -329,7 +324,7 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
                   </Grid>
                 )}
                 {fieldTypeCode === "LEAD" && (
-                  <Grid size="grow" minWidth="20rem" justifyContent="center">
+                  <Grid size="grow" sx={{ minWidth: "20rem", justifyContent: "center" }} >
                     <ControlledAutocomplete
                       name="related_campaign_id"
                       label="Campaña del Lead Relacionado"
@@ -345,7 +340,7 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
                 )}
               </>}
             {fieldTypeCode === "CALCULATED" && (
-              <Grid size="grow" minWidth="20rem" justifyContent="center">
+              <Grid size="grow" sx={{ minWidth: "20rem", justifyContent: "center" }} >
                 <ControlledTextInput
                   name="calculation_expression"
                   label="Fórmula"
@@ -356,13 +351,13 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
               </Grid>
             )}
             {fieldTypeCode === "STRING" && !existingLFId && (
-              <Grid size="grow" minWidth="20rem" justifyContent="center" gap={1}>
-                <Grid size={4} minWidth="20rem" justifyContent="center">
+              <Grid size="grow" sx={{ minWidth: "20rem", justifyContent: "center" }} spacing={1}>
+                <Grid size={4} sx={{ minWidth: "20rem", justifyContent: "center" }} >
                   <ControlledRadio control={control} name="input_mask_method" label="Método de Carga de Máscara" options={creationMethodRadioOptions}
                     getRadioLabel={option => option.label} keyField="value" returnField="value" row />
                 </Grid>
                 {inputMaskMethod === "template" ?
-                  <Grid size="grow" minWidth="20rem" justifyContent="center">
+                  <Grid size="grow" sx={{ minWidth: "20rem", justifyContent: "center" }} >
                     <ControlledAutocomplete
                       name="mask_template_code"
                       label="Máscara de Campo"
@@ -387,7 +382,7 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
         {(creationMethod === "template" ||
           (fieldTypeCode &&
             ["NUMBER", "INT", "STRING", "BOOL", "RATING"].includes(fieldTypeCode))) && (
-            <Grid size="grow" minWidth="20rem">
+            <Grid size="grow" sx={{ minWidth: "20rem" }}>
               <ControlledTextInput
                 control={control}
                 label="Valor por Defecto"
@@ -400,6 +395,6 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
       {errors.root && (
         <FormErrorMessage>{errors?.root?.message}</FormErrorMessage>
       )}
-    </Grid>
+    </Stack>
   );
 };

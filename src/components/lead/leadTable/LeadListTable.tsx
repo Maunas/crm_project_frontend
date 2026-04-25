@@ -92,11 +92,11 @@ export const LeadListTable = memo(({ leads, campaignId, activeFilters = 0, modal
 
     //Si hay leads, pero no hay columnas seleccionadas
     if (selectedColumns?.length === 0 && leads.length > 0) return (
-        <Stack gap={3} my={3} alignItems="center">
+        <Stack spacing={3} sx={{ my: 3, alignItems: "center" }}>
             <GenericModal idModal="columns_selector" modalProps={modalProps} buttonText="Modificar Columnas" maxWidth="md" showButton={false}>
                 <LeadColumnSelector originalList={leadFields} selectedIds={selectedIds!} handleSelectedIds={handleSelectedIds} handleClose={modalProps.handleClose} showField="name" />
             </GenericModal>
-            <Stack gap={2} alignItems="center">
+            <Stack spacing={2} sx={{ alignItems: "center" }}>
                 <Typography variant="h3">No hay leads para presentar.</Typography>
                 <Typography variant="h4">Revisa las columnas seleccionadas.</Typography>
             </Stack>
@@ -107,8 +107,8 @@ export const LeadListTable = memo(({ leads, campaignId, activeFilters = 0, modal
     )
 
     if (leads.length === 0) return (
-        <Stack gap={3} my={3} alignItems="center">
-            <Stack gap={2} alignItems="center">
+        <Stack spacing={3} sx={{ my: 3, alignItems: "center" }}>
+            <Stack spacing={2} sx={{ alignItems: "center" }}>
                 <Typography variant="h3">No hay leads para presentar</Typography>
                 <Typography variant="h4">Agrega un lead nuevo
                     {activeFilters > 0 && " o revisa los filtros activos"}
@@ -198,7 +198,7 @@ export const LeadTableHeaderRow = memo(({ column, idx, orderProps, dragStyles, d
             {...dragEvents(idx, false)}
             sx={headerSx}
         >
-            <Stack gap={1} direction="row" alignItems="center">
+            <Stack spacing={1} direction="row" sx={{ alignItems: "center" }}>
                 {column.name}
                 <IconButton size="small" onClick={handleOrder} sx={iconButtonSx}>
                     {orderProps.orderBy !== column.id &&

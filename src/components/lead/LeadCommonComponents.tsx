@@ -47,7 +47,7 @@ export const DateValue = ({ date, isDatetime = false, short = false }:
 export const HiddenValue = ({ value, hiddenValue = "●●●●●●●●", allowShow = false }: { value: string, hiddenValue?: string, allowShow?: boolean }) => {
     const [showPassword, setShowPassword] = useState<boolean>(false);
     return (
-        <Stack direction="row" gap={2} alignItems="center">
+        <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
             <div style={CAPITALIZE_STYLE}>{showPassword ? value : hiddenValue}</div>
             {allowShow &&
                 <IconButton color="primary" size="small" onClick={() => setShowPassword(prev => !prev)}>
@@ -81,7 +81,7 @@ export const RatingValue = memo(({ value, subtype, counter = false, tooltip = fa
 
     return (
         <ChipTooltip show={tooltip} title={value} >
-            <Stack direction="row" alignItems="center" spacing={1} lineHeight={0} width="min-content">
+            <Stack direction="row" spacing={1} sx={{ lineHeight: 0, alignItems: "center", width: "min-content" }}>
                 {subtype === "STAR_RATING" &&
                     <Rating value={Number(value)} size={size} name="read-only" readOnly />
                 }
@@ -206,7 +206,7 @@ export const ListValues = memo(({ value, idFieldValue, type, isNav = false, maxI
     if (!typedValue || typeof typedValue === "string") return null
 
     return (
-        <Stack direction="row" gap={.5} flexWrap="wrap">
+        <Stack direction="row" spacing={.5} sx={{ flexWrap: "wrap" }}>
             {visibleItems.map(val =>
                 <CustomChip
                     key={`${idFieldValue}-${val.id}`}
