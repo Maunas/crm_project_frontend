@@ -17,3 +17,22 @@ export const TitleAndActive = ({ active, children }: DetailsTitleProps) => {
         </Stack >
     )
 }
+
+import React from 'react'
+import TimelineItem from '@mui/lab/TimelineItem'
+import TimelineDot from '@mui/lab/TimelineDot'
+import TimelineConnector from '@mui/lab/TimelineConnector'
+import TimelineSeparator from '@mui/lab/TimelineSeparator'
+import TimelineContent from '@mui/lab/TimelineContent'
+
+export const CustomTimelineItem = ({ selected = false, children }: { selected?: boolean, children?: React.ReactNode }) => {
+    return (
+        <TimelineItem>
+            <TimelineSeparator>
+                <TimelineDot color={selected ? "primary" : "grey"} />
+                <TimelineConnector />
+            </TimelineSeparator>
+            <TimelineContent>{children}</TimelineContent>
+        </TimelineItem>
+    )
+}
