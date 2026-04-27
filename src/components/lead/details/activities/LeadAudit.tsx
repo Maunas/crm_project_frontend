@@ -6,7 +6,7 @@ import { Avatar, Card, CardActionArea, CardActions, CardContent, CardHeader, Col
 import { CustomChip } from "../../../common/details/StyledDisplayComponents"
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward"
 import EditIcon from "@mui/icons-material/Edit"
-import CreateIcon from "@mui/icons-material/Create"
+import AddIcon from "@mui/icons-material/Add"
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import WatchLaterIcon from '@mui/icons-material/WatchLater';
 import { CustomListItemAvatar } from "../../../common/lists/CustomListItem"
@@ -111,7 +111,7 @@ const LeadAuditHeader = ({ activityType, message }: { activityType?: string, mes
         { icon: <EditIcon />, color: "info", title: "Actualización de datos" }
       )
       case "LEAD_CREATED": return (
-        { icon: <CreateIcon />, color: "success", title: "Nuevo Lead" }
+        { icon: <AddIcon />, color: "success", title: "Nuevo Lead" }
       )
       default: return (
         { icon: <InfoOutlinedIcon />, color: "warning", title: "Otro" }
@@ -148,6 +148,9 @@ const showValue = (val: string | number[] | null, name: string) => {
 
 const LeadAuditValue = ({ value, fieldName, size = "medium", color = "primary" }: LeadAuditValueProps) => {
 
+  if (typeof value === "number") {
+    return <CustomChip size={size} color={color} label={value} />
+  }
   if (typeof value === "string") {
     return <CustomChip size={size} color={color} label={showValue(value, fieldName)} />
   }

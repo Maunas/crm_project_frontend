@@ -121,7 +121,7 @@ interface CtlPropsWithLeadField<T extends FieldValues> extends ControlFormInput<
     field_subtype_code: string
 }
 export const LeadFormRating = <T extends FieldValues>
-    ({ control, name, label, field_subtype_code, required = false, errorMessage, size = "medium" }: CtlPropsWithLeadField<T>) => {
+    ({ control, name, label, field_subtype_code, required = false, errorMessage, size = "small" }: CtlPropsWithLeadField<T>) => {
     switch (field_subtype_code) {
         case "STAR_RATING":
             return <ControlledSlider control={control} name={name} label={label} required={required} errorMessage={errorMessage} max={5} step={.5} type="rating" size={size} />
@@ -154,7 +154,7 @@ export const LeadFormSelector = <T extends FieldValues>
                 multiple={leadField.field_subtype_code === "SELECTOR_MULTIPLE"} />
         )
     }
-    else return <AutocompleteLoader label={label} />
+    else return <AutocompleteLoader label={label} size={size} />
 }
 
 interface LeadFormLeadProps<T extends FieldValues> extends Omit<LeadFormSelectorProps<T>, "options"> {
@@ -178,7 +178,7 @@ export const LeadFormRelatedLead = <T extends FieldValues>
                 getOptionKey={option => `${option?.id}`} required={required} errorMessage={errorMessage} autocomplete={autoComplete} multiple />
         )
     }
-    return <AutocompleteLoader label={label} />
+    return <AutocompleteLoader label={label} size={size} />
 }
 
 interface LeadFormCheckboxProps<T extends FieldValues> extends ControlFormInput<T> {

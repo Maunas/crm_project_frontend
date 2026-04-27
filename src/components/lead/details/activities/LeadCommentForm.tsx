@@ -145,7 +145,7 @@ const CommentColorSelector = ({ control, setColor }: CommentColorSelectorProps) 
     return (
         <Controller control={control} name="color"
             render={({ field, fieldState }) => (
-                <Stack direction="row" sx={{ flexWrap: "wrap" }}>
+                <Stack direction="row" sx={{ flexWrap: "wrap", alignItems: "center" }}>
                     {fieldState.error?.message && typeof fieldState.error?.message === "string" && (
                         <FormErrorMessage>{fieldState.error?.message}</FormErrorMessage>
                     )}
