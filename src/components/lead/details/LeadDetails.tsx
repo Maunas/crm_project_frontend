@@ -89,10 +89,12 @@ export const LeadInfo = ({ lead, leadTitle, handleActive, updateLeadInfo }: Lead
         <Stack spacing={2}>
             <GenericPaper>
                 <Stack spacing={3} sx={{ alignItems: "center" }}>
-                    <LeadTags lead={lead} />
-                    <TitleAndActive active={lead?.active} >
-                        <Typography variant="h1">{leadTitle.length > 0 ? leadTitle : "Título no encontrado"}</Typography>
-                    </TitleAndActive>
+                    <Stack spacing={1}>
+                        <LeadTags lead={lead} />
+                        <TitleAndActive active={lead?.active} >
+                            <Typography variant="h1">{leadTitle.length > 0 ? leadTitle : "Título no encontrado"}</Typography>
+                        </TitleAndActive>
+                    </Stack>
                     <ButtonGroup fullWidth>
                         <CommonButton actionType={lead.active ? "DISABLE" : "ENABLE"} variant="outlined"
                             color={lead.active ? "error" : "success"} onClick={() => handleActive(lead)}>

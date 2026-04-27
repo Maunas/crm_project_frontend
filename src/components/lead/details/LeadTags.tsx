@@ -1,4 +1,4 @@
-import { Button, Stack, Typography } from '@mui/material'
+import { Button, Stack } from '@mui/material'
 import type { LeadDetailed } from '../../../types/leads'
 import { CustomChip } from '../../common/details/StyledDisplayComponents'
 import { useState } from 'react'
@@ -8,20 +8,27 @@ export const LeadTags = ({ lead }: { lead: LeadDetailed }) => {
 
 
     return (
-        <Button fullWidth size='small' onClick={() => setOpen(prev => !prev)}>
-            <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: "wrap", alignItems: "center", justifyContent: "start", width: "100%" }}>
-                {lead.tags.map(tag =>
+        <Stack direction="row" spacing={.5} useFlexGap sx={{ flexWrap: "wrap", alignItems: "center", justifyContent: "start", width: "100%" }}>
+            {lead.tags.map(tag =>
+                <Button sx={{ p: 0, minWidth: 0 }} size="small" onClick={() => setOpen(p => !p)}>
                     <CustomChip size='small' color={tag.color} defaultColor="secondary"
-                        label={
-                            <Typography variant='body2'>{open ? tag.name : tag.name.slice(0, 1)}</Typography>
-                        } />
-                )}
-                {open &&
-                    <CustomChip color="primary" size='small'
-                        label={
-                            <Typography variant='body2'>Agregar</Typography>
-                        } />}
-            </Stack>
-        </Button>
+                        label={tag.name}
+                        sx={{
+                            maxHeight: open ? "2rem" : ".5rem", maxWidth: open ? "10rem" : "3rem",
+                            transition: `all 150ms ease-in-out ${open ? "0ms" : "100ms"}`,
+                            "& .MuiChip-label": {
+                                opacity: open ? 1 : 0,
+                                transition: `opacity 200ms ease-in-out ${open ? "150ms" : "0ms"}`,
+                            }
+                        }}
+                    />
+                </Button>
+            )}
+            <CustomChip color="primary" size='small' label="Modificar"
+                sx={{
+                    maxHeight: open ? "2rem" : "0", maxWidth: open ? "10rem" : "0", opacity: open ? 1 : 0,
+                    transition: `all 150ms ease-in-out ${open ? "150ms" : "0ms"}`,
+                }} />
+        </Stack>
     )
 }
