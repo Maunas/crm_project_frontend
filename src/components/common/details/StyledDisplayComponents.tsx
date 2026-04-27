@@ -1,6 +1,6 @@
 import { Chip, LinearProgress, type ChipTypeMap } from "@mui/material";
 import type { OverridableComponent } from "@mui/material/OverridableComponent";
-import { alpha, styled } from "@mui/material/styles";
+import { alpha, lighten, styled } from "@mui/material/styles";
 import { memo } from "react";
 
 const CHIP_OPACITY = .5
@@ -11,9 +11,9 @@ const CHIP_SIZES = {
     "xlarge": { padding: "10px 8px", gap: "6px", fontSize: "1rem" }
 }
 
-export const CustomChip = memo(styled(Chip)(({ theme, color = "primary", size = "medium" }) => {
-    const chipColor = color === "default" ? "contrast" : color //Soluciona una incompatibilidad con el valor "default"
-    const paletteColor = theme.palette[chipColor] ?? theme.palette.primary
+export const CustomChip = memo(styled(Chip)(({ theme, color, defaultColor = "primary", size = "medium" }) => {
+    const chipColor = color === "default" ? "contrast" : (color ?? defaultColor) //Soluciona una incompatibilidad con el valor "default"
+    const paletteColor = theme.palette[chipColor] ?? theme.palette[defaultColor]
     const sizeObject = CHIP_SIZES[size as keyof typeof CHIP_SIZES]
 
     return [{
@@ -30,7 +30,7 @@ export const CustomChip = memo(styled(Chip)(({ theme, color = "primary", size = 
     //Invierte los tonos en darkmode
     theme.applyStyles('dark', {
         backgroundColor: alpha(paletteColor[700], CHIP_OPACITY),
-        color: theme.palette.common.white,
+        color: lighten(paletteColor[50], .8),
     })
     ]
 })) as unknown as OverridableComponent<ChipTypeMap> & { defaultComponent: "div" };

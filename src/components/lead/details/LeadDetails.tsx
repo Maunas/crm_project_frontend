@@ -10,6 +10,7 @@ import { getCampaign } from "../../campaigns/campaignServices.ts"
 import type { Campaign } from "../../../types/campaigns.ts"
 import { LeadFieldSections } from "./LeadDetailsSections.tsx"
 import { TitleAndActive } from "../../common/layout/MinorComponents.tsx"
+import { LeadTags } from "./LeadTags.tsx"
 
 export const LeadDetailsLayout = () => {
 
@@ -88,6 +89,7 @@ export const LeadInfo = ({ lead, leadTitle, handleActive, updateLeadInfo }: Lead
         <Stack spacing={2}>
             <GenericPaper>
                 <Stack spacing={3} sx={{ alignItems: "center" }}>
+                    <LeadTags lead={lead} />
                     <TitleAndActive active={lead?.active} >
                         <Typography variant="h1">{leadTitle.length > 0 ? leadTitle : "Título no encontrado"}</Typography>
                     </TitleAndActive>

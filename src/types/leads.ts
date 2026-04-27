@@ -15,7 +15,8 @@ export interface Lead {
   id: number;
   campaign_id?: number;
   field_values: LeadFieldValue[];
-  organization_id?: number
+  organization_id?: number,
+  tags: LeadTag[]
 }
 export interface LeadDetailed extends Lead, Metadata {
   field_values: LeadFieldValueDetailed[];
@@ -48,3 +49,15 @@ export interface LeadAuditChange {
   new_value: string | number[],
   old_value: string | number[] | null,
 }
+
+export interface LeadTagPost {
+  name: string,
+  color?: string
+}
+export interface LeadTag extends LeadTagPost {
+  id: number,
+  organization_id: number
+  color: ColorTypes
+}
+
+export interface LeadTagDetailed extends LeadTag, Metadata { }
