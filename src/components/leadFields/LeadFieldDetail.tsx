@@ -62,22 +62,22 @@ export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeS
                     </Stack>
                 </Stack>
                 <Stack spacing={1} direction="row" useFlexGap sx={{ flexWrap: "wrap", justifyContent: "center" }}>
-                    {leadField.required ? <CustomChip color='success' label="Obligatorio" size="small" sx={{ fontWeight: "bold" }} /> :
-                        <CustomChip color='error' label="Opcional" size="small" sx={{ fontWeight: "bold" }} />}
-                    {leadField.is_primary ? <CustomChip color='success' label="Único" size="small" sx={{ fontWeight: "bold" }} /> :
-                        <CustomChip color='error' label="Repetible" size="small" sx={{ fontWeight: "bold" }} />}
-                    {leadField.is_visible ? <CustomChip color='success' label="Visible" size="small" sx={{ fontWeight: "bold" }} /> :
-                        <CustomChip color='error' label="Oculto" size="small" sx={{ fontWeight: "bold" }} />}
+                    {leadField.required ? <CustomChip color='success' label="Obligatorio" size="small" /> :
+                        <CustomChip color='error' label="Opcional" size="small" />}
+                    {leadField.is_primary ? <CustomChip color='success' label="Único" size="small" /> :
+                        <CustomChip color='error' label="Repetible" size="small" />}
+                    {leadField.is_visible ? <CustomChip color='success' label="Visible" size="small" /> :
+                        <CustomChip color='error' label="Oculto" size="small" />}
                 </Stack>
                 <Divider />
                 <Stack spacing={2}>
                     <Typography variant="h3" sx={{ fontWeight: "bold" }}>Tipo {leadField.field_subtype?.description ? `/ Subtipo` : ""} de dato</Typography>
                     <Stack direction="row" spacing={1} useFlexGap sx={{ alignItems: "center", justifyContent: "center" }}>
-                        <CustomChip color='primary' label={leadField.field_type.description} size="xlarge" sx={{ fontWeight: "bold" }} />
+                        <CustomChip color='primary' label={leadField.field_type.description} size="xlarge" />
                         {leadField.field_subtype?.description &&
                             <>
                                 <ArrowForwardIcon />
-                                <CustomChip color='info' label={leadField.field_subtype?.description} size="large" sx={{ fontWeight: "bold" }} />
+                                <CustomChip color='info' label={leadField.field_subtype?.description} size="large" />
                             </>
                         }
                     </Stack>

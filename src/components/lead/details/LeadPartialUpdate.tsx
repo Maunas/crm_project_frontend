@@ -17,7 +17,7 @@ interface LeadPartialUpdateProps {
     fieldValue: LeadFieldValueDetailed,
     onClose: () => void,
     lead: LeadDetailed,
-    updateLeadInfo: (lead: LeadDetailed) => void
+    updateLeadInfo: (lead: LeadDetailed, reloadAudits?: boolean) => void
 }
 
 const getUpdatedLead = (oldLead: LeadDetailed, fieldId: number, newLead: Lead) => {
@@ -60,7 +60,7 @@ export const LeadPartialUpdate = ({ fieldValue, onClose, lead, updateLeadInfo }:
         updateLead(formData, lead.id).then(res => {
             const newLead = getUpdatedLead(lead, fieldValue.field.id, res)
             if (!newLead) return
-            updateLeadInfo(newLead)
+            updateLeadInfo(newLead, true)
             console.log("updated")
             onClose()
         }).catch((e) => {

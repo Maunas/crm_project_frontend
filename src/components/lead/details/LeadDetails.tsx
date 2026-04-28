@@ -35,9 +35,9 @@ export const LeadDetailsLayout = () => {
         })
     }
 
-    const updateLeadInfo = (newLead: LeadDetailed) => {
+    const updateLeadInfo = (newLead: LeadDetailed, reloadAudits: boolean = false) => {
         setLead(newLead)
-        setReloadAudit(prev => prev + 1)
+        if (reloadAudits) setReloadAudit(prev => prev + 1)
     }
 
     const leadTitle = useMemo(() => {
@@ -90,7 +90,7 @@ export const LeadInfo = ({ lead, leadTitle, handleActive, updateLeadInfo }: Lead
             <GenericPaper>
                 <Stack spacing={3} sx={{ alignItems: "center" }}>
                     <Stack spacing={1}>
-                        <LeadTags lead={lead} />
+                        <LeadTags lead={lead} tags={lead.tags} updateLeadInfo={updateLeadInfo} />
                         <TitleAndActive active={lead?.active} >
                             <Typography variant="h1">{leadTitle.length > 0 ? leadTitle : "Título no encontrado"}</Typography>
                         </TitleAndActive>

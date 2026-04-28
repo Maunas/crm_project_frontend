@@ -16,7 +16,7 @@ interface LeadDetailsSection {
     fields: LeadFieldValueDetailed[]
 }
 
-export const LeadFieldSections = ({ lead, updateLeadInfo }: { lead: LeadDetailed, updateLeadInfo: (lead: LeadDetailed) => void }) => {
+export const LeadFieldSections = ({ lead, updateLeadInfo }: { lead: LeadDetailed, updateLeadInfo: (lead: LeadDetailed, reloadAudits?: boolean) => void }) => {
 
     const { modalProps } = useModal()
 
