@@ -1,5 +1,5 @@
 import { API_BASE_URL, axiosCRM } from "../../../generalService";
-import type { ListParams, Paginable } from "../../../types/common";
+import type { DeleteResponse, ListParams, Paginable } from "../../../types/common";
 import type { Lead, LeadTag, LeadTagDetailed, LeadTagPost } from "../../../types/leads";
 
 export const getTags = async <T extends ListParams>(params?: T)
@@ -15,6 +15,11 @@ export const createTag = async (body: LeadTagPost): Promise<LeadTagDetailed> => 
 
 export const updateTag = async (body: LeadTagPost, id: number): Promise<LeadTagDetailed> => {
     const tag = await axiosCRM.put(`${API_BASE_URL}/tags/${id}`, body);
+    return tag.data;
+};
+
+export const deleteTag = async (id: number): Promise<DeleteResponse> => {
+    const tag = await axiosCRM.delete(`${API_BASE_URL}/tags/${id}`);
     return tag.data;
 };
 

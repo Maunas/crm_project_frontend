@@ -1,14 +1,15 @@
-import { Box, Button, Checkbox, List, ListItem, ListItemButton, ListItemIcon, Popover, Stack, Typography, IconButton } from '@mui/material'
+import { Box, Button, Checkbox, List, ListItem, ListItemButton, ListItemIcon, Popover, Stack, Typography, IconButton, ListItemText } from '@mui/material'
 import type { LeadDetailed, LeadTag, LeadTagPost } from '../../../types/leads'
 import { CustomChip } from '../../common/details/StyledDisplayComponents'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import AddIcon from "@mui/icons-material/Add"
 import type { Paginable } from '../../../types/common'
-import { createTag, getTags, updateLeadTags, updateTag } from './LeadDetailsService'
+import { createTag, deleteTag, getTags, updateLeadTags, updateTag } from './LeadDetailsService'
 import { useListPagination } from '../../hooks/useListPagination'
 import { PaginationComponent } from '../../common/lists/PaginationComponent'
 import type { ColorTypes } from '../../../types/mui-theme.d'
 import EditIcon from '@mui/icons-material/Edit'
+import CloseIcon from '@mui/icons-material/Close'
 import { LeadTagForm } from './LeadTagForm'
 
 export const LeadTags = ({ lead, tags, updateLeadInfo }: { lead: LeadDetailed, tags: LeadTag[], updateLeadInfo: (lead: LeadDetailed) => void }) => {
@@ -48,6 +49,16 @@ export const LeadTags = ({ lead, tags, updateLeadInfo }: { lead: LeadDetailed, t
         fetchTags(fetchPage, pageSize)
     }
 
+    const handleDeleteTag = (deletedTag: LeadTag) => {
+        deleteTag(deletedTag.id)
+            .then(() => {
+                const oldTags = [...lead.tags]
+                const newTags = oldTags.filter(oldTag => oldTag.id !== deletedTag.id)
+                handleLeadTagUpdate(newTags)
+                fetchTags(fetchPage, pageSize)
+            })
+    }
+
     const handleLeadTagUpdate = (tags: LeadTag[]) => {
         const leadCopy = { ...lead, tags: tags }
         updateLeadInfo(leadCopy)
@@ -62,7 +73,8 @@ export const LeadTags = ({ lead, tags, updateLeadInfo }: { lead: LeadDetailed, t
             </Button>
             {tagList &&
                 <LeadTagsMenu leadId={lead.id} tags={tagList?.items} currentTags={tags} pageComponentProps={pageComponentProps}
-                    menuAnchor={menuAnchor} handleClose={closeTagMenu} handleLeadTagUpdate={handleLeadTagUpdate} handleTagsUpdate={handleTagsUpdate} />
+                    menuAnchor={menuAnchor} handleClose={closeTagMenu}
+                    handleLeadTagUpdate={handleLeadTagUpdate} handleTagsUpdate={handleTagsUpdate} handleDeleteTag={handleDeleteTag} />
             }
         </Box>
     )
@@ -93,7 +105,7 @@ export const LeadTags = ({ lead, tags, updateLeadInfo }: { lead: LeadDetailed, t
                 </Button>
             </Stack>
             {tagList &&
-                <LeadTagsMenu leadId={lead.id} tags={tagList?.items} currentTags={tags} pageComponentProps={pageComponentProps}
+                <LeadTagsMenu leadId={lead.id} tags={tagList?.items} currentTags={tags} pageComponentProps={pageComponentProps} handleDeleteTag={handleDeleteTag}
                     menuAnchor={menuAnchor} handleClose={closeTagMenu} handleLeadTagUpdate={handleLeadTagUpdate} handleTagsUpdate={handleTagsUpdate} />
             }
 
@@ -113,13 +125,14 @@ interface TagsMenuProps {
         handlePage: (_: React.ChangeEvent<unknown, Element>, value: number) => void;
     },
     handleLeadTagUpdate: (tags: LeadTag[]) => void,
-    handleTagsUpdate: (modifiedTag?: LeadTag | undefined) => void
+    handleTagsUpdate: (modifiedTag?: LeadTag) => void
+    handleDeleteTag: (deletedTag: LeadTag) => void
 }
 
 const isHex = (color: string) => color.slice(0, 1) === "#"
 const tagColor = (color: string) => isHex(color) ? "secondary" as ColorTypes : color as ColorTypes
 
-const LeadTagsMenu = ({ leadId, tags, currentTags, menuAnchor, handleClose, pageComponentProps, handleLeadTagUpdate, handleTagsUpdate }: TagsMenuProps) => {
+const LeadTagsMenu = ({ leadId, tags, currentTags, menuAnchor, handleClose, pageComponentProps, handleLeadTagUpdate, handleTagsUpdate, handleDeleteTag }: TagsMenuProps) => {
 
     const originalSelectedIds = useMemo(() => currentTags.map(tag => tag.id), [currentTags])
 
@@ -181,34 +194,43 @@ const LeadTagsMenu = ({ leadId, tags, currentTags, menuAnchor, handleClose, page
             >
                 <Stack spacing={1} sx={{ p: 2 }} ref={menuRef}>
                     <Typography variant="h4" component="h3">Asignar Tags</Typography>
-                    <List sx={{ maxHeight: "40rem", maxWidth: "30rem", overflowY: "auto" }} disablePadding>
+                    <List sx={{ maxHeight: "30rem", maxWidth: "25rem", overflowY: "auto" }} >
                         {
                             tags.map(tag => (
-                                <ListItem key={`list-${tag.id}`} sx={{ py: 0 }} disableGutters
+                                <ListItem key={`list-${tag.id}`} disablePadding
                                     secondaryAction={
-                                        <IconButton size='small' onClick={() => handleEditTag(tag)}><EditIcon fontSize='small' /></IconButton>
-                                    }>
+                                        <Stack direction="row" sx={{ mr: -1 }}>
+                                            <IconButton title="Modificar" edge="end" size='small' onClick={() => handleEditTag(tag)}><EditIcon fontSize='small' /></IconButton>
+                                            <IconButton title="Eliminar" edge="end" size='small' onClick={() => handleDeleteTag(tag)}><CloseIcon color='error' fontSize='small' /></IconButton>
+                                        </Stack>
+                                    }
+                                >
                                     <ListItemButton onClick={() => handleToggle(tag.id)} sx={{ py: .5 }}>
                                         <ListItemIcon>
-                                            <Checkbox checked={selectedIds.includes(tag.id)}
-                                                edge="start" sx={{ py: .5 }}
-                                                onChange={() => handleToggle(tag.id)} />
+                                            <Checkbox checked={selectedIds.includes(tag.id)} disableRipple
+                                                edge="start" sx={{ py: .5 }} onChange={() => handleToggle(tag.id)} />
                                         </ListItemIcon>
-                                        <CustomChip color={tagColor(tag.color)} label={tag.name} sx={{ width: "100%" }} />
+                                        <ListItemText sx={{ my: 0, mr: 3 }} primary={
+                                            <CustomChip color={tagColor(tag.color)} label={tag.name} sx={{ width: "100%" }} />
+                                        } />
                                     </ListItemButton>
                                 </ListItem>
                             ))
                         }
                     </List >
-                    {pageComponentProps.totalPages > 1 &&
-                        <PaginationComponent {...pageComponentProps} />}
-                    <Stack spacing={.5} sx={{ width: "100%" }}>
+                    {
+                        pageComponentProps.totalPages > 1 &&
+                        <PaginationComponent {...pageComponentProps} />
+                    }
+                    < Stack spacing={.5} sx={{ width: "100%" }
+                    }>
                         <Button onClick={handleCreateTag} fullWidth>Agregar Tag</Button>
-                        {isListChanged &&
+                        {
+                            isListChanged &&
                             <Button onClick={handleSaveTags} variant='contained' fullWidth>Guardar</Button>
                         }
-                    </Stack>
-                </Stack>
+                    </Stack >
+                </Stack >
             </Popover >
             <TagFormMenuWrapper formAnchor={formAnchor} handleClose={() => setFormAnchor(null)} handleTagsUpdate={handleTagsUpdate} existingTag={editTag} />
         </>
