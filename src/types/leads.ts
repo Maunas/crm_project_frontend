@@ -39,15 +39,16 @@ export interface LeadAudit extends Metadata {
   activity_type: "LEAD_CREATED" | "FIELDS_UPDATED",
   details: {
     message?: string,
-    changes?: LeadAuditChange[]
+    changes?: LeadAuditChange
   }
 }
 
 export interface LeadAuditChange {
-  field_id: number,
-  field_name: string,
-  new_value: string | number[],
-  old_value: string | number[] | null,
+  [field_id: string]: {
+    field_name: string,
+    new_value: string | number | number[] | null,
+    old_value: string | number | number[] | null,
+  }
 }
 
 export interface LeadTagPost {

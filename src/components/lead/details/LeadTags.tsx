@@ -1,4 +1,4 @@
-import { Button, Checkbox, List, ListItem, ListItemButton, ListItemIcon, ListSubheader, Menu, Stack } from '@mui/material'
+import { Box, Button, Checkbox, List, ListItem, ListItemButton, ListItemIcon, ListSubheader, Menu, Stack } from '@mui/material'
 import type { LeadDetailed, LeadTag } from '../../../types/leads'
 import { CustomChip } from '../../common/details/StyledDisplayComponents'
 import { useEffect, useMemo, useState } from 'react'
@@ -32,20 +32,24 @@ export const LeadTags = ({ lead, tags, updateLeadInfo }: { lead: LeadDetailed, t
     }, [fetchPage, pageSize])
 
 
+    const handleTagUpdate = (tags: LeadTag[]) => {
+        const leadCopy = { ...lead, tags: tags }
+        updateLeadInfo(leadCopy)
+    }
+
     if (tags.length === 0) return (
-        <>
+        <Box sx={{ width: "100%" }}>
             <Button sx={{ p: 0, minWidth: 0 }} size="small" onClick={openTagMenu}>
                 <CustomChip color="primary" size='small' label={
                     <AddIcon fontSize='inherit' />
                 } />
             </Button>
-        </>
+            {tagList &&
+                <LeadTagsMenu leadId={lead.id} tags={tagList?.items} currentTags={tags} pageComponentProps={pageComponentProps}
+                    menuAnchor={menuAnchor} handleClose={closeTagMenu} handleTagUpdate={handleTagUpdate} />
+            }
+        </Box>
     )
-
-    const handleTagUpdate = (tags: LeadTag[]) => {
-        const leadCopy = { ...lead, tags: tags }
-        updateLeadInfo(leadCopy)
-    }
 
     return (
         <>
