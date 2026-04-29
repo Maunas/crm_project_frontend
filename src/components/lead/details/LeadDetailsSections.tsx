@@ -141,7 +141,7 @@ export const LeadFieldByType = (props: LeadFieldProps) => {
             case "BOOL": return <BoolValue value={`${value}`} />
             case "SELECTOR": case "CHECKBOX": return <ListValues value={fieldValue!.nomenclator_items} idFieldValue={fieldValue!.id} type="Selector" />
             case "LEAD": return <ListValues value={fieldValue!.related_leads} idFieldValue={fieldValue!.id} type="Lead" isNav />
-            default: return `${value}`
+            default: return <span style={{ overflowWrap: "break-word" }}>{value}</span>
         }
     }
 

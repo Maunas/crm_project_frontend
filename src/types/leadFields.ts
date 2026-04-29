@@ -6,7 +6,7 @@ import type { Nomenclator, NomenclatorItem } from "./nomenclators";
 export interface LeadFieldValue {
   id: number;
   field_id: number;
-  value?: string;
+  value?: string | null;
   lead_id: number;
   field: LeadField;
   nomenclator_items: NomenclatorItem[];
@@ -24,7 +24,7 @@ export interface LeadFieldPost {
   required: boolean;
   is_primary: boolean;
   is_visible: boolean;
-  lead_field_section_id: number | null;
+  lead_field_section_id?: number | null;
   default_value?: string | null;
   input_mask?: string | null;
   mask_template_code?: string | null;
@@ -49,6 +49,7 @@ export interface LeadField extends LeadFieldPost {
   lead_field_section: LeadFieldSection;
   organization_id: number;
   order: number;
+  title_order: number;
   field_type_code: string;
   field_type: LeadFieldType,
   field_subtype: LeadFieldType | null,
