@@ -1,13 +1,17 @@
-import { Box, Button, Checkbox, List, ListItem, ListItemButton, ListItemIcon, ListSubheader, Menu, Stack } from '@mui/material'
-import type { LeadDetailed, LeadTag } from '../../../types/leads'
+import { Box, Button, Checkbox, List, ListItem, ListItemButton, ListItemIcon, Popover, Stack, Typography, TextField, type PaletteColor, useTheme, IconButton, alpha } from '@mui/material'
+import type { LeadDetailed, LeadTag, LeadTagPost } from '../../../types/leads'
 import { CustomChip } from '../../common/details/StyledDisplayComponents'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import AddIcon from "@mui/icons-material/Add"
 import type { Paginable } from '../../../types/common'
-import { getTags, updateLeadTags } from './LeadDetailsService'
+import { createTag, getTags, updateLeadTags } from './LeadDetailsService'
 import { useListPagination } from '../../hooks/useListPagination'
 import { PaginationComponent } from '../../common/lists/PaginationComponent'
 import type { ColorTypes } from '../../../types/mui-theme.d'
+import { Controller, useForm, useWatch, type Control, type FieldValues, type Path } from 'react-hook-form'
+import { FormErrorMessage } from '../../common/forms/StyledFormComponents'
+import { COLORS, setFormErrors } from '../../../generalService'
+import CircleIcon from '@mui/icons-material/Circle'
 
 export const LeadTags = ({ lead, tags, updateLeadInfo }: { lead: LeadDetailed, tags: LeadTag[], updateLeadInfo: (lead: LeadDetailed) => void }) => {
     const [open, setOpen] = useState<boolean>(false)
@@ -26,13 +30,18 @@ export const LeadTags = ({ lead, tags, updateLeadInfo }: { lead: LeadDetailed, t
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(tagList, 8)
 
-    useEffect(() => {
-        getTags({ only_active: true, page: fetchPage, page_size: pageSize })
+    const fetchTags = useCallback((fetchPage: number, pageSize: number) => {
+        return getTags({ only_active: true, page: fetchPage, page_size: pageSize })
             .then(setTagList)
-    }, [fetchPage, pageSize])
+    }, [])
 
+    useEffect(() => {
+        fetchTags(fetchPage, pageSize)
+    }, [fetchTags, fetchPage, pageSize])
 
-    const handleTagUpdate = (tags: LeadTag[]) => {
+    const fetchTagChanges = () => fetchTags(fetchPage, pageSize)
+
+    const handleLeadTagUpdate = (tags: LeadTag[]) => {
         const leadCopy = { ...lead, tags: tags }
         updateLeadInfo(leadCopy)
     }
@@ -46,7 +55,7 @@ export const LeadTags = ({ lead, tags, updateLeadInfo }: { lead: LeadDetailed, t
             </Button>
             {tagList &&
                 <LeadTagsMenu leadId={lead.id} tags={tagList?.items} currentTags={tags} pageComponentProps={pageComponentProps}
-                    menuAnchor={menuAnchor} handleClose={closeTagMenu} handleTagUpdate={handleTagUpdate} />
+                    menuAnchor={menuAnchor} handleClose={closeTagMenu} handleLeadTagUpdate={handleLeadTagUpdate} fetchTagChanges={fetchTagChanges} />
             }
         </Box>
     )
@@ -78,8 +87,9 @@ export const LeadTags = ({ lead, tags, updateLeadInfo }: { lead: LeadDetailed, t
             </Stack>
             {tagList &&
                 <LeadTagsMenu leadId={lead.id} tags={tagList?.items} currentTags={tags} pageComponentProps={pageComponentProps}
-                    menuAnchor={menuAnchor} handleClose={closeTagMenu} handleTagUpdate={handleTagUpdate} />
+                    menuAnchor={menuAnchor} handleClose={closeTagMenu} handleLeadTagUpdate={handleLeadTagUpdate} fetchTagChanges={fetchTagChanges} />
             }
+
         </>
     )
 }
@@ -95,13 +105,14 @@ interface TagsMenuProps {
         page: number;
         handlePage: (_: React.ChangeEvent<unknown, Element>, value: number) => void;
     },
-    handleTagUpdate: (tags: LeadTag[]) => void
+    handleLeadTagUpdate: (tags: LeadTag[]) => void,
+    fetchTagChanges: () => Promise<void>
 }
 
 const isHex = (color: string) => color.slice(0, 1) === "#"
 const tagColor = (color: string) => isHex(color) ? "secondary" as ColorTypes : color as ColorTypes
 
-const LeadTagsMenu = ({ leadId, tags, currentTags, menuAnchor, handleClose, pageComponentProps, handleTagUpdate }: TagsMenuProps) => {
+const LeadTagsMenu = ({ leadId, tags, currentTags, menuAnchor, handleClose, pageComponentProps, handleLeadTagUpdate, fetchTagChanges }: TagsMenuProps) => {
 
     const originalSelectedIds = useMemo(() => currentTags.map(tag => tag.id), [currentTags])
 
@@ -124,43 +135,181 @@ const LeadTagsMenu = ({ leadId, tags, currentTags, menuAnchor, handleClose, page
 
     const handleSaveTags = () => {
         updateLeadTags(selectedIds, leadId).then(res => {
-            handleTagUpdate(res.tags)
+            handleLeadTagUpdate(res.tags)
             handleClose()
         })
     }
 
+    const [formAnchor, setFormAnchor] = useState<null | HTMLElement>(null);
+
+    const menuRef = useRef(null)
+
+    const handleFormAnchor = () => {
+        setFormAnchor(menuRef.current)
+    }
+
     return (
-        <Menu
+        <>
+            <Popover
+                disableScrollLock
+                disableAutoFocus
+                id="basic-menu"
+                anchorEl={menuAnchor}
+                anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'center',
+                }}
+                transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'center',
+                }}
+                open={Boolean(menuAnchor)}
+                onClose={handleClose}
+            >
+                <Stack spacing={1} sx={{ p: 2 }} ref={menuRef}>
+                    <Typography variant="h4" component="h3">Asignar Tags</Typography>
+                    <List sx={{ maxHeight: "40rem", maxWidth: "30rem", overflowY: "auto" }} disablePadding>
+                        {
+                            tags.map(tag => (
+                                <ListItem key={`list-${tag.id}`} sx={{ py: 0 }} disableGutters>
+                                    <ListItemButton onClick={() => handleToggle(tag.id)} sx={{ py: .5 }}>
+                                        <ListItemIcon>
+                                            <Checkbox checked={selectedIds.includes(tag.id)}
+                                                edge="start" sx={{ py: .5 }}
+                                                onChange={() => handleToggle(tag.id)} />
+                                        </ListItemIcon>
+                                        <CustomChip color={tagColor(tag.color)} label={tag.name} sx={{ width: "100%" }} />
+                                    </ListItemButton>
+                                </ListItem>
+                            ))
+                        }
+                    </List >
+                    {pageComponentProps.totalPages > 1 &&
+                        <PaginationComponent {...pageComponentProps} />}
+                    <Stack spacing={.5} sx={{ width: "100%" }}>
+                        <Button onClick={handleFormAnchor} fullWidth>Agregar Tag</Button>
+                        {isListChanged &&
+                            <Button onClick={handleSaveTags} variant='contained' fullWidth>Guardar</Button>
+                        }
+                    </Stack>
+                </Stack>
+            </Popover >
+            <TagForm formAnchor={formAnchor} handleClose={() => setFormAnchor(null)} fetchTagChanges={fetchTagChanges} />
+        </>
+    )
+}
+
+
+interface TagFormProps {
+    formAnchor: null | HTMLElement,
+    handleClose: () => void,
+    fetchTagChanges: () => Promise<void>,
+}
+
+const TagForm = ({ formAnchor, handleClose, fetchTagChanges }: TagFormProps) => {
+
+    const { palette } = useTheme()
+
+    const defaultValues = useMemo(() => ({
+        name: "",
+        color: "secondary"
+    }), [])
+
+    const { register, control, formState: { errors }, reset, handleSubmit, setError } = useForm<LeadTagPost>({
+        defaultValues
+    })
+
+    const onPostTag = (data: LeadTagPost) => {
+        createTag(data).then(() => {
+            fetchTagChanges().then(() => {
+                reset(defaultValues)
+                handleClose()
+            })
+        }).catch(e => setFormErrors(e, setError))
+    }
+
+    const onCancel = () => {
+        reset(defaultValues)
+        handleClose()
+    }
+
+    const color = useWatch({ name: "color", control })
+
+    return (
+        <Popover
+            disableScrollLock
+            disableAutoFocus
             id="basic-menu"
-            anchorEl={menuAnchor}
-            open={Boolean(menuAnchor)}
+            anchorEl={formAnchor}
+            open={Boolean(formAnchor)}
             onClose={handleClose}
-        >
-            <List sx={{
-                maxHeight: "40rem", maxWidth: "30rem", overflowY: "auto"
+            anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
             }}
-                subheader={< ListSubheader sx={{ py: 0, backgroundColor: "transparent" }}>Lista de Tags</ListSubheader>}>
-                {
-                    tags.map(tag => (
-                        <ListItem key={`list-${tag.id}`} sx={{ py: 0 }}
-                        >
-                            <ListItemButton onClick={() => handleToggle(tag.id)} sx={{ py: .5 }}>
-                                <ListItemIcon>
-                                    <Checkbox checked={selectedIds.includes(tag.id)}
-                                        edge="start" sx={{ py: .5 }}
-                                        onChange={() => handleToggle(tag.id)} />
-                                </ListItemIcon>
-                                <CustomChip color={tagColor(tag.color)} label={tag.name} />
-                            </ListItemButton>
-                        </ListItem>
-                    ))
-                }
-            </List >
-            <ListItem >
-                <PaginationComponent {...pageComponentProps} />
-            </ListItem>
-            {isListChanged &&
-                <Button onClick={handleSaveTags}>Guardar</Button>}
-        </Menu >
+            transformOrigin={{
+                vertical: 'top',
+                horizontal: 'left',
+            }}
+        >
+
+            <Stack spacing={2} sx={{ p: 2 }}>
+                <Typography variant="h4" component="h3">Crear Tag</Typography>
+                <form onSubmit={handleSubmit(onPostTag)}>
+                    <Stack spacing={1}>
+                        <Stack spacing={.5}>
+                            <TextField id="tag-name" label="Nombre" size="small" {...register("name")}
+                                sx={{ backgroundColor: alpha(palette[color as ColorTypes].darker, .2) }} />
+                            {errors?.name?.message && <FormErrorMessage>errors?.name?.message</FormErrorMessage>}
+                        </Stack>
+                        <ControlledColorPicker control={control} name="color" />
+                        <Stack spacing={.5}>
+                            <Button onClick={onCancel}>Cancelar</Button>
+                            <Button variant="contained" type="submit">Crear</Button>
+                        </Stack>
+                    </Stack>
+                </form>
+            </Stack>
+        </Popover >
+    )
+}
+
+interface ColorSelectorProps<T extends FieldValues> {
+    control: Control<T>,
+    name: Path<T>
+}
+
+export const ControlledColorPicker = <T extends FieldValues>({ control, name }: ColorSelectorProps<T>) => {
+    const { palette } = useTheme()
+    return (
+        <Controller control={control} name={name}
+            render={({ field, fieldState }) => {
+                return (
+                    <Stack spacing={1}>
+                        <Stack direction="row" spacing={.5} useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
+                            {COLORS.map(colorName => {
+                                const paletteColor: PaletteColor = palette[colorName]
+                                return (
+                                    <IconButton size="small" key={colorName}
+                                        onClick={() => {
+                                            field.onChange(colorName)
+                                        }}>
+                                        <CircleIcon sx={{
+                                            color: field.value === colorName ? paletteColor.main : paletteColor.light,
+                                            borderRadius: "50%",
+                                            border: field.value === colorName ? `2px solid ${palette.text.secondary}` : ""
+                                        }} fontSize="small" />
+                                    </IconButton>
+                                )
+                            })
+                            }
+                        </Stack>
+                        {fieldState.error?.message && typeof fieldState.error?.message === "string" && (
+                            <FormErrorMessage>{fieldState.error?.message}</FormErrorMessage>
+                        )}
+                    </Stack>
+                )
+            }} />
+
     )
 }

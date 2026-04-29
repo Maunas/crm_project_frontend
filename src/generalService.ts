@@ -1,6 +1,7 @@
 import type { Dictionary, ErrorBody, ErrorMessage } from "./types/common";
 import axios from "axios"
 import type { FieldValues, UseFormSetError } from "react-hook-form";
+import type { ColorTypes } from "./types/mui-theme.d";
 export const API_BASE_URL = "http://localhost:8000";
 
 export const axiosCRM = axios.create({
@@ -82,3 +83,5 @@ export const setFormErrors = <T extends FieldValues,>(error: ErrorBody<T>, setEr
 export const formatMoney = (money: number, code: string = "es-AR", currencyCode: string = "ARS") => {
   return new Intl.NumberFormat(code, { style: "currency", currency: currencyCode }).format(money)
 }
+
+export const COLORS: ColorTypes[] = ["primary", "secondary", "contrast", "info", "success", "warning", "error"]
