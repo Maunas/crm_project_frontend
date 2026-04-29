@@ -4,7 +4,7 @@ import { FormErrorMessage } from "../../common/forms/StyledFormComponents"
 import type { LeadField, LeadFieldDetailed, LeadFieldValue } from "../../../types/leadFields"
 import type { LeadDetailed } from "../../../types/leads"
 import type { Campaign, Workspace } from "../../../types/campaigns"
-import { createLead, getLead, simulateCreateLead, updateLead } from "../leadService"
+import { createLead, getLead, getLeadTitleArray, simulateCreateLead, updateLead } from "../leadService"
 import { getWorkspaces } from "../../workspaces/workspaceServices"
 import { getCampaigns } from "../../campaigns/campaignServices"
 import { useNavigate, useParams } from "react-router-dom"
@@ -143,9 +143,14 @@ export const UpdateLeadFormPage = () => {
         return updateLead(data, lead!.id).then(lead => nav(`/leads/${lead.id}`))
     }, [nav, lead])
 
+    const leadTitle = useMemo(() => {
+        if (!lead) return "Lead no Encontrado"
+        return getLeadTitleArray(lead).join(" ")
+    }, [lead])
+
     if (lead && lead.campaign_id) return (
         <Stack spacing={3}>
-            <Typography variant="h1">{`Modificar Lead: ${lead?.field_values[0].value} ${lead?.field_values[1].value}`}</Typography>
+            <Typography variant="h1">{`Modificar Lead: ${leadTitle}`}</Typography>
             <LeadForm existingValues={formattedLeadValues} existingLeadFields={formattedLeadFields}
                 campaignId={lead.campaign_id} onSubmit={onSubmit} onCancel={() => nav(`/leads/${lead.id}`)} />
         </Stack>

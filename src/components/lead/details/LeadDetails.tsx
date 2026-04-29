@@ -89,7 +89,7 @@ export const LeadInfo = ({ lead, leadTitle, handleActive, updateLeadInfo }: Lead
         <Stack spacing={2}>
             <GenericPaper>
                 <Stack spacing={3} sx={{ alignItems: "center" }}>
-                    <Stack spacing={1}>
+                    <Stack spacing={1} sx={{ width: "100%" }}>
                         <LeadTags lead={lead} tags={lead.tags} updateLeadInfo={updateLeadInfo} />
                         <TitleAndActive active={lead?.active} >
                             <Typography sx={{ textOverflow: "ellipsis" }} variant="h1">

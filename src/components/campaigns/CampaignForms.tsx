@@ -43,7 +43,6 @@ export const CreateCampaignFormSidebar = ({ handleSidebar, closeSidebar }: Creat
             "required": true,
             "is_primary": false,
             "is_visible": true,
-            "lead_field_section_id": 1,
             "field_template_code": "FIRST_NAME",
             "title_order": 1
         },

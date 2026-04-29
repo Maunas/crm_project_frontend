@@ -37,7 +37,7 @@ const getUpdatedLead = (oldLead: LeadDetailed, newLead: Lead) => {
 }
 
 interface PartialFormProps {
-    value: string | number[] | number | FileList
+    value: string | number[] | number | FileList | null
 }
 
 const getValue = (fieldValue: LeadFieldValueDetailed) => {
