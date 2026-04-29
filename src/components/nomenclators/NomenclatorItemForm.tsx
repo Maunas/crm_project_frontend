@@ -51,7 +51,7 @@ export const NomenclatorItemForm = ({ existingNom, nomenclator, submit, onCancel
     const defaultValues = useMemo(() => ({
         value: existingNom?.value ?? null,
         nomenclator_id: existingNom?.nomenclator_id ?? nomenclator?.id ?? null,
-        parent_item_id: existingNom?.parent_item_id ?? null,
+        parent_item_id: existingNom?.parent_item.id ?? null,
     }), [existingNom, nomenclator])
 
     const { control, handleSubmit, reset, formState: { errors }, setError } = useForm<NomenclatorItemPost>({ defaultValues })
@@ -59,8 +59,8 @@ export const NomenclatorItemForm = ({ existingNom, nomenclator, submit, onCancel
     const [nomenclatorItems, setNomenclatorItems] = useState<NomenclatorItem[]>([])
 
     useEffect(() => {
-        if (!nomenclator?.parent_nomenclator_id) return
-        getNomenclatorItems({ detailed: false, only_active: true, page_size: 0, nomenclator_id: nomenclator?.parent_nomenclator_id }).then(res => setNomenclatorItems(res.items))
+        if (!nomenclator?.parent_nomenclator.id) return
+        getNomenclatorItems({ detailed: false, only_active: true, page_size: 0, nomenclator_id: nomenclator?.parent_nomenclator.id }).then(res => setNomenclatorItems(res.items))
     }, [existingNom, nomenclator])
 
     useEffect(() => { reset(defaultValues) }, [reset, defaultValues])
@@ -91,12 +91,13 @@ export const NomenclatorItemForm = ({ existingNom, nomenclator, submit, onCancel
                         <ControlledTextInput name="value" control={control} label="Valor"
                             required errorMessage={errors.value?.message} />
                     </Grid>
-                    {nomenclator?.parent_nomenclator_id &&
+                    {nomenclator?.parent_nomenclator.id && !existingNom &&
                         <Grid size="grow" sx={{ minWidth: "20rem" }}>
                             <ControlledAutocomplete control={control} label="Item del que depende" name="parent_item_id" options={nomenclatorItems}
                                 getOptionLabel={option => `${option.value!}`} getOptionKey={option => `${option.id}`} returnField="id"
                                 errorMessage={errors?.parent_item_id?.message} />
-                        </Grid>}
+                        </Grid>
+                    }
                 </Grid>
                 {errors?.root &&
                     <FormErrorMessage >{errors?.root?.message}</FormErrorMessage>

@@ -22,19 +22,10 @@ export const NomenclatorDetails = ({ entity, closeSidebar, handleSidebar, handle
             <Stack spacing={2}>
                 <Stack spacing={1}>
                     {!entity.organization_id && <Typography variant="body1" sx={{ fontStyle: "italic" }} >(Nomenclador del Sistema)</Typography>}
-                    {entity.campaign_id
-                        ? <Stack spacing={1} direction="row">
-                            <Typography>Perteneciente a la</Typography>
-                            <Link component={RouterLink} to={`/campaigns/${entity.campaign_id}`}>
-                                Campaña {entity.campaign_id}
-                            </Link>
-                        </Stack>
-                        : <Typography variant="body1" >Nomenclador Global</Typography>
-                    }
-                    {entity.parent_nomenclator_id &&
-                        <Stack spacing={1} direction="row">
-                            <Typography>Depende del nomenclador</Typography>
-                            <Link component={RouterLink} to={`/nomenclators/${entity.parent_nomenclator_id}`}>{entity.parent_nomenclator_id}</Link>
+                    {entity.parent_nomenclator &&
+                        <Stack spacing={.5} direction="row">
+                            <Typography>Depende del nomenclador:</Typography>
+                            <Link component={RouterLink} to={`/nomenclators/${entity.parent_nomenclator.id}`}>{entity.parent_nomenclator.name}</Link>
                         </Stack>
                     }
                 </Stack>
