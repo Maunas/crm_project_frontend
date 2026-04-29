@@ -1,5 +1,6 @@
 import { createTheme } from '@mui/material/styles';
 import { darkTheme, lightTheme } from './themePalette';
+import { textTheme } from './typographyTheme';
 
 const theme = createTheme({
   colorSchemes: {
@@ -20,32 +21,39 @@ const theme = createTheme({
       'sans-serif',
     ].join(','),
     h1: {
-      fontSize: '2em',
+      fontSize: '2rem',
       fontWeight: 700,
+      lineHeight: textTheme.title.lineHeight
     },
     h2: {
-      fontSize: '1.7em',
+      fontSize: '1.7rem',
       fontWeight: 700,
+      lineHeight: textTheme.title.lineHeight
     },
     h3: {
-      fontSize: '1.37em',
+      fontSize: '1.37rem',
       fontWeight: 700,
+      lineHeight: textTheme.title.lineHeight
     },
     h4: {
-      fontSize: '1.2em',
+      fontSize: '1.2rem',
       fontWeight: 700,
+      lineHeight: textTheme.title.lineHeight
     },
     h5: {
-      fontSize: '1.03em',
+      fontSize: '1.03rem',
       fontWeight: 700,
+      lineHeight: textTheme.title.lineHeight
     },
     h6: {
       fontSize: '0.87rem',
       fontWeight: 700,
+      lineHeight: textTheme.title.lineHeight
     },
     button: {
       textTransform: 'none',
       fontWeight: 600,
+      lineHeight: textTheme.root.lineHeight
     }
   },
 
@@ -67,6 +75,7 @@ const theme = createTheme({
           height: '100%',
           display: 'flex',
           flexDirection: 'column',
+          ...textTheme.root
         },
       },
     },

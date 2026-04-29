@@ -1,16 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { PaginationComponent } from '../../common/lists/PaginationComponent'
 import { LeadListTable } from './LeadListTable'
-import { CommonButton } from '../../common/details/DetailsCommonButton'
+import { CommonCollapsedButton } from '../../common/details/DetailsCommonButton'
 import type { LeadFilter, LeadListParams, Paginable } from '../../../types/common'
 import type { Lead } from '../../../types/leads'
 import { useListPagination } from '../../hooks/useListPagination'
 import { useModal } from '../../hooks/useModal'
 import { getFilteredLeads, getLeads } from '../leadService'
 import { Link as RouterLink, useSearchParams } from 'react-router-dom'
-import { Typography, Grid, Stack } from '@mui/material'
+import { Typography, Grid, Stack, IconButton } from '@mui/material'
 import { useOrderList } from '../../hooks/useOrderList'
 import { LeadCampaignSelector, LeadTableOptions } from './LeadTableOptions'
+import AddIcon from '@mui/icons-material/Add';
 
 export const LeadList = () => {
 
@@ -88,10 +89,17 @@ export const LeadList = () => {
             <Grid container sx={{ justifyContent: "space-between", alignItems: "center" }} spacing="1rem">
                 <Typography variant="h1">Lista de Leads</Typography>
                 {areThereLeads &&
-                    <CommonButton actionType='CREATE' variant="contained" color="primary" sx={{ marginLeft: "auto" }}
-                        component={RouterLink} to="/leads/new">
-                        Agregar Lead
-                    </CommonButton>}
+                    <Stack direction="row" sx={{ marginLeft: "auto" }}>
+                        <IconButton color="primary" title="Agregar Lead"
+                            component={RouterLink} to="/leads/new">
+                            <AddIcon />
+                        </IconButton>
+                        <CommonCollapsedButton actionType='CREATE' variant="contained" color="primary"
+                            component={RouterLink} to="/leads/new">
+                            Agregar Lead
+                        </CommonCollapsedButton>
+                    </Stack>
+                }
             </Grid>
             <Stack spacing={2}>
                 <Stack direction="row" sx={{ flexWrap: "wrap", alignItems: "center", justifyContent: "space-between" }} spacing={2} useFlexGap>

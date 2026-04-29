@@ -16,7 +16,7 @@ interface LeadDetailsSection {
     fields: LeadFieldValueDetailed[]
 }
 
-export const LeadFieldSections = ({ lead, updateLeadInfo }: { lead: LeadDetailed, updateLeadInfo: (lead: LeadDetailed) => void }) => {
+export const LeadFieldSections = ({ lead, updateLeadInfo }: { lead: LeadDetailed, updateLeadInfo: (lead: LeadDetailed, reloadAudits?: boolean) => void }) => {
 
     const { modalProps } = useModal()
 
@@ -146,12 +146,13 @@ export const LeadFieldByType = (props: LeadFieldProps) => {
     }
 
     return (
-        <CustomListItem disablePadding secondaryAction={onToggleEdit && typeCode !== "CALCULATED" &&
-            <IconButton size="small" edge="end" color="primary" title="Modificar" onClick={onToggleEdit}>
+        <CustomListItem disablePadding secondaryAction={onToggleEdit &&
+            <IconButton size="small" edge="end" color="primary" title="Modificar" onClick={onToggleEdit}
+                disabled={typeCode === "CALCULATED"} >
                 <EditIcon fontSize="small" />
             </IconButton>} >
             <LeadFieldTypeIcon typeCode={valueCode} subtypeCode={subtypeCode} />
-            <ListItemText>
+            <ListItemText sx={{ mr: 6 }}>
                 <Stack spacing={.5}>
                     <Typography variant="subtitle2" color="textSecondary">{fieldName}</Typography>
                     {component(typeCode)}

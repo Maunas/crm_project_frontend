@@ -5,7 +5,7 @@ import { CommonButton } from "../../../common/details/DetailsCommonButton"
 import { FormErrorMessage } from "../../../common/forms/StyledFormComponents"
 import type { LeadComment, LeadCommentPost } from "../../../../types/leads"
 import type { ColorTypes } from "../../../../types/mui-theme.d"
-import { setFormErrors } from "../../../../generalService"
+import { COLORS, setFormErrors } from "../../../../generalService"
 import { createComment, updateComment } from "./leadActivitiesService"
 import { Controller, useForm, type Control } from "react-hook-form"
 import { Box, Grid, IconButton, Stack } from "@mui/material"
@@ -140,12 +140,11 @@ interface CommentColorSelectorProps {
 
 const CommentColorSelector = ({ control, setColor }: CommentColorSelectorProps) => {
 
-    const COLORS: ColorTypes[] = ["primary", "secondary", "contrast", "info", "success", "warning", "error"]
     const { palette } = useTheme()
     return (
         <Controller control={control} name="color"
             render={({ field, fieldState }) => (
-                <Stack direction="row" sx={{ flexWrap: "wrap" }}>
+                <Stack direction="row" sx={{ flexWrap: "wrap", alignItems: "center" }}>
                     {fieldState.error?.message && typeof fieldState.error?.message === "string" && (
                         <FormErrorMessage>{fieldState.error?.message}</FormErrorMessage>
                     )}

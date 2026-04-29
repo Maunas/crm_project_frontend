@@ -47,6 +47,9 @@ declare module '@mui/material/Chip' {
   interface ChipPropsColorOverrides {
     contrast: true;
   }
+  interface ChipOwnProps {
+    defaultColor?: ColorTypes;
+  }
 }
 declare module '@mui/material/Chip' {
   interface ChipPropsSizeOverrides {

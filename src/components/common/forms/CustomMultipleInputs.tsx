@@ -1,5 +1,5 @@
 import { Autocomplete, Checkbox, CircularProgress, FormControl, FormControlLabel, FormGroup, FormHelperText, FormLabel, Radio, RadioGroup, TextField } from '@mui/material'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Controller, type Control, type ControllerRenderProps, type FieldValues, type Path } from 'react-hook-form'
 import { FormErrorMessage } from './StyledFormComponents'
 
@@ -74,7 +74,7 @@ export const ControlledAutocomplete = <T extends FieldValues, Option>
         <Controller name={name} control={control} disabled={disabled}
             render={({ field }) => (
                 <Autocomplete {...field} multiple={multiple} hidden={hidden} disableClearable={disableClearable}
-                    options={options ?? []}
+                    options={options ?? []} size={size}
                     onChange={(_, value) => handleChange(field, value)}
                     value={handleValue(field)}
                     getOptionLabel={getOptionLabel} getOptionKey={getOptionKey}
@@ -84,7 +84,7 @@ export const ControlledAutocomplete = <T extends FieldValues, Option>
                         <>
                             <TextField {...params} label={label} required={required}
                                 error={!!errorMessage} autoComplete={autocomplete}
-                                placeholder={placeholder} size={size} fullWidth
+                                placeholder={placeholder} fullWidth
                                 {...props}
                             />
                             {helper &&
@@ -103,16 +103,22 @@ export const ControlledAutocomplete = <T extends FieldValues, Option>
 
 interface LoaderProps {
     label?: string,
+    size?: "small" | "medium"
 }
-export const AutocompleteLoader = ({ label, ...props }: LoaderProps) => {
+export const AutocompleteLoader = ({ label, size = "medium", ...props }: LoaderProps) => {
     return (
-        <Autocomplete
-            options={[]} loading disabled renderInput={(params) =>
-                <TextField {...params} label={label} {...props}
+        <Autocomplete size={size} options={[]} fullWidth loading disabled
+            renderInput={(params) =>
+                <TextField {...params} label={label} fullWidth {...props}
                     slotProps={{
+                        ...params.slotProps,
                         input: {
+                            ...params.slotProps.input,
                             endAdornment: (
-                                <CircularProgress color="inherit" size={20} />
+                                <React.Fragment>
+                                    <CircularProgress color="inherit" size={size === "small" ? 15 : 20} />
+                                    {params.slotProps.input.endAdornment}
+                                </React.Fragment>
                             ),
                         },
                     }}
