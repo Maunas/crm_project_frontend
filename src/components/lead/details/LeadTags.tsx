@@ -1,17 +1,15 @@
-import { Box, Button, Checkbox, List, ListItem, ListItemButton, ListItemIcon, Popover, Stack, Typography, TextField, type PaletteColor, useTheme, IconButton, alpha } from '@mui/material'
+import { Box, Button, Checkbox, List, ListItem, ListItemButton, ListItemIcon, Popover, Stack, Typography, IconButton } from '@mui/material'
 import type { LeadDetailed, LeadTag, LeadTagPost } from '../../../types/leads'
 import { CustomChip } from '../../common/details/StyledDisplayComponents'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import AddIcon from "@mui/icons-material/Add"
 import type { Paginable } from '../../../types/common'
-import { createTag, getTags, updateLeadTags } from './LeadDetailsService'
+import { createTag, getTags, updateLeadTags, updateTag } from './LeadDetailsService'
 import { useListPagination } from '../../hooks/useListPagination'
 import { PaginationComponent } from '../../common/lists/PaginationComponent'
 import type { ColorTypes } from '../../../types/mui-theme.d'
-import { Controller, useForm, useWatch, type Control, type FieldValues, type Path } from 'react-hook-form'
-import { FormErrorMessage } from '../../common/forms/StyledFormComponents'
-import { COLORS, setFormErrors } from '../../../generalService'
-import CircleIcon from '@mui/icons-material/Circle'
+import EditIcon from '@mui/icons-material/Edit'
+import { LeadTagForm } from './LeadTagForm'
 
 export const LeadTags = ({ lead, tags, updateLeadInfo }: { lead: LeadDetailed, tags: LeadTag[], updateLeadInfo: (lead: LeadDetailed) => void }) => {
     const [open, setOpen] = useState<boolean>(false)
@@ -39,7 +37,16 @@ export const LeadTags = ({ lead, tags, updateLeadInfo }: { lead: LeadDetailed, t
         fetchTags(fetchPage, pageSize)
     }, [fetchTags, fetchPage, pageSize])
 
-    const fetchTagChanges = () => fetchTags(fetchPage, pageSize)
+    const handleTagsUpdate = (modifiedTag?: LeadTag) => {
+        if (modifiedTag) {
+            const oldTags = [...lead.tags]
+            const modTagIdx = oldTags.findIndex(oldTag => oldTag.id === modifiedTag.id)
+            if (modTagIdx === -1) return
+            oldTags[modTagIdx] = modifiedTag
+            handleLeadTagUpdate(oldTags)
+        }
+        fetchTags(fetchPage, pageSize)
+    }
 
     const handleLeadTagUpdate = (tags: LeadTag[]) => {
         const leadCopy = { ...lead, tags: tags }
@@ -55,7 +62,7 @@ export const LeadTags = ({ lead, tags, updateLeadInfo }: { lead: LeadDetailed, t
             </Button>
             {tagList &&
                 <LeadTagsMenu leadId={lead.id} tags={tagList?.items} currentTags={tags} pageComponentProps={pageComponentProps}
-                    menuAnchor={menuAnchor} handleClose={closeTagMenu} handleLeadTagUpdate={handleLeadTagUpdate} fetchTagChanges={fetchTagChanges} />
+                    menuAnchor={menuAnchor} handleClose={closeTagMenu} handleLeadTagUpdate={handleLeadTagUpdate} handleTagsUpdate={handleTagsUpdate} />
             }
         </Box>
     )
@@ -87,7 +94,7 @@ export const LeadTags = ({ lead, tags, updateLeadInfo }: { lead: LeadDetailed, t
             </Stack>
             {tagList &&
                 <LeadTagsMenu leadId={lead.id} tags={tagList?.items} currentTags={tags} pageComponentProps={pageComponentProps}
-                    menuAnchor={menuAnchor} handleClose={closeTagMenu} handleLeadTagUpdate={handleLeadTagUpdate} fetchTagChanges={fetchTagChanges} />
+                    menuAnchor={menuAnchor} handleClose={closeTagMenu} handleLeadTagUpdate={handleLeadTagUpdate} handleTagsUpdate={handleTagsUpdate} />
             }
 
         </>
@@ -106,13 +113,13 @@ interface TagsMenuProps {
         handlePage: (_: React.ChangeEvent<unknown, Element>, value: number) => void;
     },
     handleLeadTagUpdate: (tags: LeadTag[]) => void,
-    fetchTagChanges: () => Promise<void>
+    handleTagsUpdate: (modifiedTag?: LeadTag | undefined) => void
 }
 
 const isHex = (color: string) => color.slice(0, 1) === "#"
 const tagColor = (color: string) => isHex(color) ? "secondary" as ColorTypes : color as ColorTypes
 
-const LeadTagsMenu = ({ leadId, tags, currentTags, menuAnchor, handleClose, pageComponentProps, handleLeadTagUpdate, fetchTagChanges }: TagsMenuProps) => {
+const LeadTagsMenu = ({ leadId, tags, currentTags, menuAnchor, handleClose, pageComponentProps, handleLeadTagUpdate, handleTagsUpdate }: TagsMenuProps) => {
 
     const originalSelectedIds = useMemo(() => currentTags.map(tag => tag.id), [currentTags])
 
@@ -144,10 +151,16 @@ const LeadTagsMenu = ({ leadId, tags, currentTags, menuAnchor, handleClose, page
 
     const menuRef = useRef(null)
 
-    const handleFormAnchor = () => {
+    const handleCreateTag = () => {
+        setEditTag(null)
         setFormAnchor(menuRef.current)
     }
 
+    const [editTag, setEditTag] = useState<null | LeadTag>(null)
+    const handleEditTag = (tag: LeadTag) => {
+        setEditTag(tag)
+        setFormAnchor(menuRef.current)
+    }
     return (
         <>
             <Popover
@@ -171,7 +184,10 @@ const LeadTagsMenu = ({ leadId, tags, currentTags, menuAnchor, handleClose, page
                     <List sx={{ maxHeight: "40rem", maxWidth: "30rem", overflowY: "auto" }} disablePadding>
                         {
                             tags.map(tag => (
-                                <ListItem key={`list-${tag.id}`} sx={{ py: 0 }} disableGutters>
+                                <ListItem key={`list-${tag.id}`} sx={{ py: 0 }} disableGutters
+                                    secondaryAction={
+                                        <IconButton size='small' onClick={() => handleEditTag(tag)}><EditIcon fontSize='small' /></IconButton>
+                                    }>
                                     <ListItemButton onClick={() => handleToggle(tag.id)} sx={{ py: .5 }}>
                                         <ListItemIcon>
                                             <Checkbox checked={selectedIds.includes(tag.id)}
@@ -187,53 +203,42 @@ const LeadTagsMenu = ({ leadId, tags, currentTags, menuAnchor, handleClose, page
                     {pageComponentProps.totalPages > 1 &&
                         <PaginationComponent {...pageComponentProps} />}
                     <Stack spacing={.5} sx={{ width: "100%" }}>
-                        <Button onClick={handleFormAnchor} fullWidth>Agregar Tag</Button>
+                        <Button onClick={handleCreateTag} fullWidth>Agregar Tag</Button>
                         {isListChanged &&
                             <Button onClick={handleSaveTags} variant='contained' fullWidth>Guardar</Button>
                         }
                     </Stack>
                 </Stack>
             </Popover >
-            <TagForm formAnchor={formAnchor} handleClose={() => setFormAnchor(null)} fetchTagChanges={fetchTagChanges} />
+            <TagFormMenuWrapper formAnchor={formAnchor} handleClose={() => setFormAnchor(null)} handleTagsUpdate={handleTagsUpdate} existingTag={editTag} />
         </>
     )
 }
 
 
-interface TagFormProps {
+interface TagFormMenuProps {
     formAnchor: null | HTMLElement,
     handleClose: () => void,
-    fetchTagChanges: () => Promise<void>,
+    handleTagsUpdate: (modifiedTag?: LeadTag | undefined) => void,
+    existingTag: LeadTag | null
 }
 
-const TagForm = ({ formAnchor, handleClose, fetchTagChanges }: TagFormProps) => {
-
-    const { palette } = useTheme()
-
-    const defaultValues = useMemo(() => ({
-        name: "",
-        color: "secondary"
-    }), [])
-
-    const { register, control, formState: { errors }, reset, handleSubmit, setError } = useForm<LeadTagPost>({
-        defaultValues
-    })
+export const TagFormMenuWrapper = ({ existingTag, formAnchor, handleClose, handleTagsUpdate }: TagFormMenuProps) => {
 
     const onPostTag = (data: LeadTagPost) => {
-        createTag(data).then(() => {
-            fetchTagChanges().then(() => {
-                reset(defaultValues)
+        if (existingTag) {
+            return updateTag(data, existingTag.id)
+                .then(res => {
+                    handleTagsUpdate(res)
+                    handleClose()
+                })
+        }
+        return createTag(data)
+            .then(() => {
+                handleTagsUpdate()
                 handleClose()
             })
-        }).catch(e => setFormErrors(e, setError))
     }
-
-    const onCancel = () => {
-        reset(defaultValues)
-        handleClose()
-    }
-
-    const color = useWatch({ name: "color", control })
 
     return (
         <Popover
@@ -252,64 +257,10 @@ const TagForm = ({ formAnchor, handleClose, fetchTagChanges }: TagFormProps) => 
                 horizontal: 'left',
             }}
         >
-
             <Stack spacing={2} sx={{ p: 2 }}>
-                <Typography variant="h4" component="h3">Crear Tag</Typography>
-                <form onSubmit={handleSubmit(onPostTag)}>
-                    <Stack spacing={1}>
-                        <Stack spacing={.5}>
-                            <TextField id="tag-name" label="Nombre" size="small" {...register("name")}
-                                sx={{ backgroundColor: alpha(palette[color as ColorTypes].darker, .2) }} />
-                            {errors?.name?.message && <FormErrorMessage>errors?.name?.message</FormErrorMessage>}
-                        </Stack>
-                        <ControlledColorPicker control={control} name="color" />
-                        <Stack spacing={.5}>
-                            <Button onClick={onCancel}>Cancelar</Button>
-                            <Button variant="contained" type="submit">Crear</Button>
-                        </Stack>
-                    </Stack>
-                </form>
+                <Typography variant="h4" component="h3">{existingTag ? "Modificar Tag" : "Crear Tag"}</Typography>
+                <LeadTagForm existingTag={existingTag} onCancel={handleClose} onSubmit={onPostTag} />
             </Stack>
         </Popover >
-    )
-}
-
-interface ColorSelectorProps<T extends FieldValues> {
-    control: Control<T>,
-    name: Path<T>
-}
-
-export const ControlledColorPicker = <T extends FieldValues>({ control, name }: ColorSelectorProps<T>) => {
-    const { palette } = useTheme()
-    return (
-        <Controller control={control} name={name}
-            render={({ field, fieldState }) => {
-                return (
-                    <Stack spacing={1}>
-                        <Stack direction="row" spacing={.5} useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
-                            {COLORS.map(colorName => {
-                                const paletteColor: PaletteColor = palette[colorName]
-                                return (
-                                    <IconButton size="small" key={colorName}
-                                        onClick={() => {
-                                            field.onChange(colorName)
-                                        }}>
-                                        <CircleIcon sx={{
-                                            color: field.value === colorName ? paletteColor.main : paletteColor.light,
-                                            borderRadius: "50%",
-                                            border: field.value === colorName ? `2px solid ${palette.text.secondary}` : ""
-                                        }} fontSize="small" />
-                                    </IconButton>
-                                )
-                            })
-                            }
-                        </Stack>
-                        {fieldState.error?.message && typeof fieldState.error?.message === "string" && (
-                            <FormErrorMessage>{fieldState.error?.message}</FormErrorMessage>
-                        )}
-                    </Stack>
-                )
-            }} />
-
     )
 }

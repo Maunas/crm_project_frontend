@@ -13,6 +13,11 @@ export const createTag = async (body: LeadTagPost): Promise<LeadTagDetailed> => 
     return tag.data;
 };
 
+export const updateTag = async (body: LeadTagPost, id: number): Promise<LeadTagDetailed> => {
+    const tag = await axiosCRM.put(`${API_BASE_URL}/tags/${id}`, body);
+    return tag.data;
+};
+
 export const updateLeadTags = async (ids: number[], leadId: number): Promise<Lead> => {
     const lead = await axiosCRM.put(`${API_BASE_URL}/leads/${leadId}`, { tag_ids: ids });
     return lead.data;
