@@ -20,14 +20,20 @@ interface LeadPartialUpdateProps {
     updateLeadInfo: (lead: LeadDetailed, reloadAudits?: boolean) => void
 }
 
-const getUpdatedLead = (oldLead: LeadDetailed, fieldId: number, newLead: Lead) => {
-    const newValueIdx = newLead.field_values.findIndex(fv => fv.field.id === fieldId)
-    if (newValueIdx === -1) return null
-    const fieldValuesCopy = [...oldLead.field_values]
-    fieldValuesCopy[newValueIdx].value = newLead.field_values[newValueIdx].value
-    fieldValuesCopy[newValueIdx].nomenclator_items = newLead.field_values[newValueIdx].nomenclator_items
-    fieldValuesCopy[newValueIdx].related_leads = newLead.field_values[newValueIdx].related_leads
-    return { ...oldLead, fieldValues: fieldValuesCopy } as LeadDetailed
+const getUpdatedLead = (oldLead: LeadDetailed, newLead: Lead) => {
+
+    const newfieldValuesCopy = [...newLead.field_values].sort((a, b) => b.field.id - a.field.id)
+    const oldfieldValuesCopy = [...oldLead.field_values].sort((a, b) => b.field.id - a.field.id)
+
+    const newFieldValues = oldfieldValuesCopy.map((ofv, oidx) => {
+        return {
+            ...ofv,
+            value: newfieldValuesCopy[oidx].value,
+            nomenclator_items: newfieldValuesCopy[oidx].nomenclator_items,
+            related_leads: newfieldValuesCopy[oidx].related_leads,
+        }
+    })
+    return { ...oldLead, field_values: newFieldValues } as LeadDetailed
 }
 
 interface PartialFormProps {
@@ -58,10 +64,9 @@ export const LeadPartialUpdate = ({ fieldValue, onClose, lead, updateLeadInfo }:
         }
         const formData = createFormDataFromLead(postData)
         updateLead(formData, lead.id).then(res => {
-            const newLead = getUpdatedLead(lead, fieldValue.field.id, res)
+            const newLead = getUpdatedLead(lead, res)
             if (!newLead) return
             updateLeadInfo(newLead, true)
-            console.log("updated")
             onClose()
         }).catch((e) => {
             setError("root", e?.response?.data?.detail?.message)
