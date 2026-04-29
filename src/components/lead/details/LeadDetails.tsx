@@ -41,8 +41,8 @@ export const LeadDetailsLayout = () => {
     }
 
     const leadTitle = useMemo(() => {
-        if (!lead) return ""
-        return getLeadTitleArray(lead).join(" ")
+        if (!lead) return null
+        return getLeadTitleArray(lead)
     }, [lead])
 
     //reconoce cambios para actualizar la lista de audit
@@ -58,7 +58,7 @@ export const LeadDetailsLayout = () => {
                             sx={{ underline: "hover", fontWeight: 600 }} >
                             {campaign?.name}
                         </Link>
-                        <Typography sx={{ color: 'text.primary' }}>{leadTitle}</Typography>
+                        <Typography sx={{ color: 'text.primary' }}>{leadTitle?.join(" ") ?? "Lead"}</Typography>
                     </Breadcrumbs>}
                 {lead &&
                     <Grid container spacing={3}>
@@ -79,7 +79,7 @@ export const LeadDetailsLayout = () => {
 interface LeadInfoProps {
     lead: LeadDetailed,
     handleActive: (lead: LeadDetailed) => void,
-    leadTitle: string,
+    leadTitle: (string | undefined)[] | null,
     updateLeadInfo: (lead: LeadDetailed) => void
 }
 
@@ -92,7 +92,9 @@ export const LeadInfo = ({ lead, leadTitle, handleActive, updateLeadInfo }: Lead
                     <Stack spacing={1}>
                         <LeadTags lead={lead} tags={lead.tags} updateLeadInfo={updateLeadInfo} />
                         <TitleAndActive active={lead?.active} >
-                            <Typography variant="h1">{leadTitle.length > 0 ? leadTitle : "Título no encontrado"}</Typography>
+                            <Typography sx={{ textOverflow: "ellipsis" }} variant="h1">
+                                {(leadTitle && leadTitle?.length > 0) ? leadTitle?.join(" ") : "Título no encontrado"}
+                            </Typography>
                         </TitleAndActive>
                     </Stack>
                     <ButtonGroup fullWidth>

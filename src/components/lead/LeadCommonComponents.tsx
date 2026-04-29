@@ -18,7 +18,8 @@ import { Link as RouterLink } from 'react-router-dom';
 import { getLeadTitleArray } from './leadService';
 
 export const NewTabLink = ({ url, value }: { url: string, value?: string }) =>
-    <Link href={`${url}`} target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()}>
+    <Link href={url} sx={{ textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}
+        title={url} target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()}>
         {`${value ? value : url}`}
     </Link>
 
