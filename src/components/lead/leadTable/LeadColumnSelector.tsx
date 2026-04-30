@@ -14,7 +14,7 @@ function intersection(a: readonly number[], b: readonly number[]) {
 interface LeadColumnSelectorProps<T> {
   originalList: T[],
   selectedIds: number[],
-  handleSelectedIds: (ids: number[]) => void,
+  handleSelectedIds: (ids: number[], closeModal?: boolean) => void,
   handleClose: () => void,
   showField: keyof T
 }
@@ -148,7 +148,7 @@ export default function LeadColumnSelector<T extends { id: number }>
           <CommonButton actionType='CLOSE' variant="outlined" onClick={() => handleClose()}>
             Cancelar
           </CommonButton>
-          <CommonButton actionType='OPTIONS' variant="contained" onClick={() => handleSelectedIds(right)} disabled={right.length === 0}>
+          <CommonButton actionType='OPTIONS' variant="contained" onClick={() => handleSelectedIds(right, true)} disabled={right.length === 0}>
             Guardar Cambios
           </CommonButton>
         </ButtonGroup>

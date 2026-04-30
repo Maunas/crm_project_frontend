@@ -1,11 +1,8 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { memo, useCallback, useEffect, useMemo, useState } from "react"
-import { GenericModal } from "../../common/layout/GenericContainer"
-import LeadColumnSelector from "./LeadColumnSelector"
+
+import { memo, useCallback, useMemo } from "react"
 import type { LeadField } from "../../../types/leadFields"
 import type { Lead } from "../../../types/leads"
 import { useDragAndDrop } from "../../hooks/useDragAndDrop"
-import { getLeadFields } from "../../leadFields/leadFieldServices"
 import { Link, useNavigate, type NavigateFunction } from "react-router-dom"
 import { Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, useTheme, ButtonGroup, Badge, IconButton } from "@mui/material"
 import { alpha, lighten } from "@mui/material/styles"
@@ -18,11 +15,11 @@ import type { LeadFieldValue } from "../../../types/leadFields"
 import { SelectableTableRow } from "../../common/lists/CustomTableRow"
 
 const TABLE_SX = { minWidth: 650 } as const
-const DEFAULT_N_OF_FIELDS = 6
 
 interface LeadListTableProps {
     leads: Lead[],
-    campaignId: number,
+    leadFields: LeadField[],
+    selectedIds: number[],
     modalProps: {
         open: string | number | boolean;
         handleOpen: (idModal: string | number) => void;
@@ -33,34 +30,14 @@ interface LeadListTableProps {
         orderBy: string | number | null;
         ascending: boolean;
         handleOrderList: (field: string | number | null) => void;
-    }
+    },
+    handleSelectedIds: (ids: number[], closeModal?: boolean) => void
 }
 
-export const LeadListTable = memo(({ leads, campaignId, activeFilters = 0, modalProps, orderProps }: LeadListTableProps) => {
+export const LeadListTable = memo(({ leads, leadFields, selectedIds, activeFilters = 0, modalProps, orderProps, handleSelectedIds }: LeadListTableProps) => {
 
     const nav = useNavigate()
     const { palette } = useTheme()
-
-    const [leadFields, setLeadFields] = useState<LeadField[]>([])
-
-    useEffect(() => {
-        if (!campaignId) return
-        getLeadFields({ detailed: false, campaign_id: campaignId, only_active: true, page_size: 0 })
-            .then(leadFields => setLeadFields(leadFields.items))
-    }, [campaignId])
-
-    const [selectedIds, setSelectedIds] = useState<number[]>([])
-
-    //Trae el arreglo de ids, con el orden definido de leads en localStorage. Si no, trae los primeros N elementos
-    useEffect(() => {
-        if (!leadFields || leadFields.length === 0) return
-        const localSelectedFields = JSON.parse(window.localStorage.getItem("sel_lead_fields") ?? "{}")?.[campaignId]
-        if (localSelectedFields) {
-            setSelectedIds(localSelectedFields)
-        } else {
-            setSelectedIds(leadFields.slice(0, DEFAULT_N_OF_FIELDS).map(fields => fields.id))
-        }
-    }, [leadFields])
 
     //Filtra los objetos LeadField para seguir el orden del arreglo de ids.
     const selectedColumns = useMemo(() => {
@@ -70,32 +47,11 @@ export const LeadListTable = memo(({ leads, campaignId, activeFilters = 0, modal
             .sort((a, b) => selectedIds.indexOf(a.id) - selectedIds.indexOf(b.id))
     }, [leadFields, selectedIds])
 
-    //Ante cambios a selectedIds los actualiza en localStorage
-    useEffect(() => {
-        if (selectedIds.length === 0) return
-        const totalSelectedFields = window.localStorage.getItem("sel_lead_fields")
-        let newTotalSelectedFields: Record<number, number[]> = {}
-        if (totalSelectedFields) {
-            newTotalSelectedFields = { ...JSON.parse(totalSelectedFields) }
-        }
-        newTotalSelectedFields[campaignId] = selectedIds
-        window.localStorage.setItem("sel_lead_fields", JSON.stringify(newTotalSelectedFields))
-    }, [selectedIds])
-
-
-    const handleSelectedIds = useCallback((ids: number[]) => {
-        setSelectedIds(ids)
-        modalProps.handleClose()
-    }, [modalProps])
-
-    const { dragStyles, dragEvents } = useDragAndDrop(selectedIds, (items) => setSelectedIds(items))
+    const { dragStyles, dragEvents } = useDragAndDrop(selectedIds, (items) => handleSelectedIds(items))
 
     //Si hay leads, pero no hay columnas seleccionadas
     if (selectedColumns?.length === 0 && leads.length > 0) return (
         <Stack spacing={3} sx={{ my: 3, alignItems: "center" }}>
-            <GenericModal idModal="columns_selector" modalProps={modalProps} buttonText="Modificar Columnas" maxWidth="md" showButton={false}>
-                <LeadColumnSelector originalList={leadFields} selectedIds={selectedIds!} handleSelectedIds={handleSelectedIds} handleClose={modalProps.handleClose} showField="name" />
-            </GenericModal>
             <Stack spacing={2} sx={{ alignItems: "center" }}>
                 <Typography variant="h3">No hay leads para presentar.</Typography>
                 <Typography variant="h4">Revisa las columnas seleccionadas.</Typography>
@@ -131,9 +87,6 @@ export const LeadListTable = memo(({ leads, campaignId, activeFilters = 0, modal
 
     if (leads.length > 0) return (
         <>
-            <GenericModal idModal="columns_selector" modalProps={modalProps} buttonText="Modificar Columnas" maxWidth="md" showButton={false}>
-                <LeadColumnSelector originalList={leadFields} selectedIds={selectedIds!} handleSelectedIds={handleSelectedIds} handleClose={modalProps.handleClose} showField="name" />
-            </GenericModal>
             {selectedColumns && selectedColumns.length > 0 &&
                 <TableContainer component={Paper}>
                     <Table sx={{ ...TABLE_SX, backgroundColor: lighten(palette.background.paper, .1) }} aria-label="simple table">
