@@ -48,3 +48,21 @@ export interface LeadAuditChange {
   new_value: string | number[],
   old_value: string | number[] | null,
 }
+
+export interface LeadViewPost {
+  campaign_id: number,
+  name: string,
+  visibility: string,
+  team_id?: number | null,
+  view_type?: string | null,
+  filters?: { [item: string]: unknown },
+  ui_config?: { [item: string]: unknown },
+  sort_config?: { [item: string]: unknown }
+}
+
+export interface LeadView extends LeadViewPost {
+  id: number,
+  organization_id: number
+}
+
+export interface LeadViewDetailed extends LeadView, Metadata { }

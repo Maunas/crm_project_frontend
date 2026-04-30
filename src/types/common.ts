@@ -28,13 +28,16 @@ export interface Metadata {
 /**
  * Contienen los parámetros permitidos de cada request.
  */
-export interface ListParams {
+export interface OrderParams {
+  order_by?: number | string | null,
+  ascending?: boolean
+}
+
+export interface ListParams extends OrderParams {
   only_active?: boolean,
   detailed?: boolean,
   page?: number,
   page_size?: number,
-  order_by?: number | string | null,
-  ascending?: boolean
 }
 export interface WorkspaceParams extends ListParams {
   organization_id?: number
