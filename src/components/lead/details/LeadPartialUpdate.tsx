@@ -60,7 +60,6 @@ export const LeadPartialUpdate = ({ fieldValue, onClose, lead, updateLeadInfo }:
             const newLead = getUpdatedLead(lead, fieldValue.field.id, res)
             if (!newLead) return
             updateLeadInfo(newLead)
-            console.log("updated")
             onClose()
         }).catch((e) => {
             setError("root", e?.response?.data?.detail?.message)

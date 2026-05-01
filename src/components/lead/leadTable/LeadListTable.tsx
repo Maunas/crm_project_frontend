@@ -57,7 +57,6 @@ export const LeadListTable = memo(({ leads, leadFields, selectedFieldIds, active
     const { dragStyles, dragEvents } = useDragAndDrop(selectedFieldIds, (items) => handleSelectedFieldIds(items))
 
     const areAllItemsChecked = useMemo(() => checkedItems.size === leads.length, [checkedItems, leads])
-    console.log(areAllItemsChecked, checkedItems.size, leads.length)
     const onRowClick = useCallback((id: number) => nav(`/leads/${id}`), [nav])
 
     //Si hay leads, pero no hay columnas seleccionadas
