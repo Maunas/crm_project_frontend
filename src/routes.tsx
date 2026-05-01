@@ -6,7 +6,7 @@ import { CampaignDetails } from "./components/campaigns/CampaignDetails";
 import { WorkspaceList } from "./components/workspaces/WorkspaceList";
 import { GenericContainer } from "./components/common/layout/GenericContainer";
 import { CreateLeadFormPage, UpdateLeadFormPage } from "./components/lead/leadForm/LeadFormWraper";
-import { LeadList } from "./components/lead/leadTable/LeadList";
+import { LeadListPage } from "./components/lead/leadTable/LeadListPage";
 import { OrganizationList } from "./components/organizations/OrganizationList";
 import { NomenclatorList } from "./components/nomenclators/NomenclatorList";
 import { NomenclatorItemList } from "./components/nomenclators/NomenclatorItemList";
@@ -42,7 +42,7 @@ export const router = createBrowserRouter([
             },
             {
                 path: "/leads",
-                element: <GenericContainer containerSx={{ minWidth: "85%" }}><LeadList /></GenericContainer>
+                element: <GenericContainer containerSx={{ minWidth: "85%" }}><LeadListPage /></GenericContainer>
             },
             {
                 path: "/leads/new",

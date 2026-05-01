@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { PaginationComponent } from '../../common/lists/PaginationComponent'
-import { LeadListTable } from './LeadListTable'
 import type { LeadFilter, LeadListParams, OrderParams, Paginable } from '../../../types/common'
 import { CommonCollapsedButton } from '../../common/details/DetailsCommonButton'
 import type { Lead } from '../../../types/leads'
@@ -17,10 +16,11 @@ import LeadColumnSelector from './LeadColumnSelector'
 import { LeadListOptions } from './LeadListOptions'
 import { useSelectCheckbox } from '../../hooks/useSelectCheckbox'
 import AddIcon from '@mui/icons-material/Add';
+import { LeadListContent } from './LeadListContent'
 
 const DEFAULT_N_OF_FIELDS = 6
 
-export const LeadList = () => {
+export const LeadListPage = () => {
 
     const [params, setParams] = useSearchParams()
     const { modalProps } = useModal()
@@ -151,12 +151,14 @@ export const LeadList = () => {
 
     const [presentationMode, setPresentationMode] = useState<string>("TABLE")
 
+
+    const handlePresentation = useCallback((mode: string) => {
+        setPresentationMode(mode)
+    }, [])
+
     const presentationProps = useMemo(() => ({
-        presentationMode,
-        handlePresentation: (mode: "string") => {
-            setPresentationMode(mode)
-        }
-    }), [presentationMode, setPresentationMode])
+        presentationMode, handlePresentation
+    }), [presentationMode, handlePresentation])
 
     //------------------------------------LeadView------------------------------------
 
@@ -211,7 +213,7 @@ export const LeadList = () => {
                 </Stack>
                 {
                     leads && !!campaignId && !!workspaceId ?
-                        <LeadListTable leads={leads.items} leadFields={leadFields} selectedFieldIds={selectedFieldIds} modalProps={modalProps}
+                        <LeadListContent leads={leads.items} leadFields={leadFields} selectedFieldIds={selectedFieldIds} modalProps={modalProps} presentationMode={presentationMode}
                             activeFilters={filters.length} orderProps={orderProps} handleSelectedFieldIds={handleSelectedFieldIds} selectCheckboxProps={selectCheckboxProps} />
                         :
                         <Stack spacing={3} sx={{ alignItems: "center", my: 3 }}>

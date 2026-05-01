@@ -158,10 +158,10 @@ export const LeadListOptions = memo(({ areThereLeads, campaignId, filters, heade
                     <ToggleButton value="TABLE">
                         <TableChartIcon />
                     </ToggleButton>
-                    <ToggleButton value="LIST">
+                    <ToggleButton value="LIST" disabled>
                         <FormatListBulletedIcon />
                     </ToggleButton>
-                    <ToggleButton value="GRID">
+                    <ToggleButton value="GRID" disabled>
                         <WindowIcon />
                     </ToggleButton>
                 </ToggleButtonGroup>
