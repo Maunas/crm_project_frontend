@@ -3,8 +3,8 @@ import { memo, useCallback, useMemo } from "react"
 import type { LeadField } from "../../../types/leadFields"
 import type { Lead } from "../../../types/leads"
 import { useDragAndDrop } from "../../hooks/useDragAndDrop"
-import { Link, useNavigate, type NavigateFunction } from "react-router-dom"
-import { Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, useTheme, ButtonGroup, Badge, IconButton } from "@mui/material"
+import { Link, useNavigate } from "react-router-dom"
+import { Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, useTheme, ButtonGroup, Badge, IconButton, Checkbox } from "@mui/material"
 import { alpha, lighten } from "@mui/material/styles"
 import { CommonButton } from "../../common/details/DetailsCommonButton"
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
@@ -19,7 +19,7 @@ const TABLE_SX = { minWidth: 650 } as const
 interface LeadListTableProps {
     leads: Lead[],
     leadFields: LeadField[],
-    selectedIds: number[],
+    selectedFieldIds: number[],
     modalProps: {
         open: string | number | boolean;
         handleOpen: (idModal: string | number) => void;
@@ -31,10 +31,17 @@ interface LeadListTableProps {
         ascending: boolean;
         handleOrderList: (field: string | number | null) => void;
     },
-    handleSelectedIds: (ids: number[], closeModal?: boolean) => void
+    handleSelectedFieldIds: (ids: number[], closeModal?: boolean) => void,
+    selectCheckboxProps: {
+        checkedItems: Map<number, Lead>;
+        addItem: (item: Lead | Lead[]) => void;
+        removeItem: (item: Lead) => void;
+        removeAllItems: () => void;
+    }
 }
 
-export const LeadListTable = memo(({ leads, leadFields, selectedIds, activeFilters = 0, modalProps, orderProps, handleSelectedIds }: LeadListTableProps) => {
+export const LeadListTable = memo(({ leads, leadFields, selectedFieldIds, activeFilters = 0, modalProps, orderProps, handleSelectedFieldIds,
+    selectCheckboxProps: { checkedItems, addItem, removeItem, removeAllItems } }: LeadListTableProps) => {
 
     const nav = useNavigate()
     const { palette } = useTheme()
@@ -42,12 +49,16 @@ export const LeadListTable = memo(({ leads, leadFields, selectedIds, activeFilte
     //Filtra los objetos LeadField para seguir el orden del arreglo de ids.
     const selectedColumns = useMemo(() => {
         if (!leadFields || leadFields.length === 0) return null
-        if (!selectedIds || selectedIds.length === 0) return null
-        return leadFields.filter(leadField => selectedIds.includes(leadField.id))
-            .sort((a, b) => selectedIds.indexOf(a.id) - selectedIds.indexOf(b.id))
-    }, [leadFields, selectedIds])
+        if (!selectedFieldIds || selectedFieldIds.length === 0) return null
+        return leadFields.filter(leadField => selectedFieldIds.includes(leadField.id))
+            .sort((a, b) => selectedFieldIds.indexOf(a.id) - selectedFieldIds.indexOf(b.id))
+    }, [leadFields, selectedFieldIds])
 
-    const { dragStyles, dragEvents } = useDragAndDrop(selectedIds, (items) => handleSelectedIds(items))
+    const { dragStyles, dragEvents } = useDragAndDrop(selectedFieldIds, (items) => handleSelectedFieldIds(items))
+
+    const areAllItemsChecked = useMemo(() => checkedItems.size === leads.length, [checkedItems, leads])
+    console.log(areAllItemsChecked, checkedItems.size, leads.length)
+    const onRowClick = useCallback((id: number) => nav(`/leads/${id}`), [nav])
 
     //Si hay leads, pero no hay columnas seleccionadas
     if (selectedColumns?.length === 0 && leads.length > 0) return (
@@ -92,6 +103,13 @@ export const LeadListTable = memo(({ leads, leadFields, selectedIds, activeFilte
                     <Table sx={{ ...TABLE_SX, backgroundColor: lighten(palette.background.paper, .1) }} aria-label="simple table">
                         <TableHead>
                             <TableRow>
+                                <TableCell padding="checkbox">
+                                    <Checkbox
+                                        color="primary"
+                                        checked={areAllItemsChecked}
+                                        onChange={(_, checked) => checked ? addItem(leads) : removeAllItems()}
+                                    />
+                                </TableCell>
                                 {selectedColumns.map((column, idx) =>
                                     <LeadTableHeaderRow key={column.id} column={column} idx={idx} orderProps={orderProps}
                                         dragStyles={dragStyles} dragEvents={dragEvents} palette={palette} />
@@ -101,8 +119,19 @@ export const LeadListTable = memo(({ leads, leadFields, selectedIds, activeFilte
                         </TableHead>
                         <TableBody>
                             {leads.map(lead => (
-                                <LeadTableBodyRow key={lead.id} lead={lead}
-                                    modalProps={modalProps} nav={nav} selectedColumns={selectedColumns} />
+                                <SelectableTableRow onClick={() => onRowClick(lead.id)} key={lead.id} >
+                                    <TableCell padding="checkbox" onClick={e => e.stopPropagation()}>
+                                        <Checkbox
+                                            color="primary"
+                                            checked={checkedItems.has(lead.id)}
+                                            onChange={(_, checked) => {
+                                                if (checked) addItem(lead)
+                                                else removeItem(lead)
+                                            }}
+                                        />
+                                    </TableCell>
+                                    <LeadTableBodyRow key={lead.id} lead={lead} modalProps={modalProps} selectedColumns={selectedColumns} />
+                                </SelectableTableRow>
                             ))}
                         </TableBody>
                     </Table>
@@ -128,7 +157,7 @@ interface LeadTableHeaderRowProps {
         onDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
         onDragStart: () => void;
         onDrop: () => void;
-    }
+    },
 }
 export const LeadTableHeaderRow = memo(({ column, idx, orderProps, dragStyles, dragEvents, palette }: LeadTableHeaderRowProps) => {
     const handleOrder = useCallback(() => orderProps.handleOrderList(column.id), [orderProps, column.id])
@@ -173,16 +202,14 @@ export const LeadTableHeaderRow = memo(({ column, idx, orderProps, dragStyles, d
 
 interface LeadTableBodyRowProps {
     lead: Lead,
-    nav: NavigateFunction,
     selectedColumns: LeadField[],
     modalProps: {
         open: string | number | boolean;
         handleOpen: (idModal: string | number) => void;
         handleClose: () => void;
-    },
+    }
 }
-export const LeadTableBodyRow = memo(({ nav, lead, selectedColumns, modalProps }: LeadTableBodyRowProps) => {
-    const onRowClick = useCallback(() => nav(`/leads/${lead.id}`), [nav, lead.id])
+export const LeadTableBodyRow = memo(({ lead, selectedColumns, modalProps }: LeadTableBodyRowProps) => {
 
     // Evita O(leads*columnas*field_values.find) en cada render:
     // lookup por columna para esta fila.
@@ -193,17 +220,14 @@ export const LeadTableBodyRow = memo(({ nav, lead, selectedColumns, modalProps }
     }, [lead.field_values])
 
     return (
-        <SelectableTableRow onClick={onRowClick} key={lead.id} >
-            {selectedColumns.map((column) => {
-                const leadValue = fieldValueByFieldId.get(column.id)
-                return (
-                    <TableCell component="td" scope="row" align="left" key={`${lead.id}-${column.id}`}>
-                        <LeadListCellValue leadId={lead.id} fieldValue={leadValue} modalProps={modalProps}
-                            type={column.field_type_code} subtype={column.field_subtype_code} />
-                    </TableCell>
-                )
-            })
-            }
-        </SelectableTableRow>
+        selectedColumns.map((column) => {
+            const leadValue = fieldValueByFieldId.get(column.id)
+            return (
+                <TableCell component="td" scope="row" align="left" key={`${lead.id}-${column.id}`}>
+                    <LeadListCellValue leadId={lead.id} fieldValue={leadValue} modalProps={modalProps}
+                        type={column.field_type_code} subtype={column.field_subtype_code} />
+                </TableCell>
+            )
+        })
     )
 })

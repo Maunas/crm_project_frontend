@@ -71,6 +71,12 @@ export interface DeleteResponse {
   action: string
 }
 
+export interface BulkDeleteResponse {
+  deleted: number[],
+  disabled: number[],
+  failed: number[],
+}
+
 export interface EnableResponse {
   actived: boolean
 }

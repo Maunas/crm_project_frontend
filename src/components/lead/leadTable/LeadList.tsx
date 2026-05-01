@@ -6,15 +6,16 @@ import type { LeadFilter, LeadListParams, OrderParams, Paginable } from '../../.
 import type { Lead } from '../../../types/leads'
 import { useListPagination } from '../../hooks/useListPagination'
 import { useModal } from '../../hooks/useModal'
-import { getFilteredLeads, getLeads } from '../leadService'
+import { bulkDeleteLead, createView, getFilteredLeads, getLeads } from '../leadService'
 import { Link as RouterLink, useSearchParams } from 'react-router-dom'
 import { Typography, Grid, Stack } from '@mui/material'
 import { useOrderList } from '../../hooks/useOrderList'
-import { LeadCampaignSelector, LeadTableOptions } from './LeadTableOptions'
 import type { LeadField } from '../../../types/leadFields'
 import { getLeadFields } from '../../leadFields/leadFieldServices'
 import { GenericModal } from '../../common/layout/GenericContainer'
 import LeadColumnSelector from './LeadColumnSelector'
+import { LeadListOptions } from './LeadListOptions'
+import { useSelectCheckbox } from '../../hooks/useSelectCheckbox'
 
 const DEFAULT_N_OF_FIELDS = 6
 
@@ -30,6 +31,8 @@ export const LeadList = () => {
     const [orderParams, setOrderParams] = useState<OrderParams>({})
 
     const [filters, setFilters] = useState<LeadFilter[]>([])
+
+    const headerParams = useMemo(() => ({ ...fetchParams, ...orderParams }), [fetchParams, orderParams])
 
     //Si tiene filtros, debe usar otro endpoint.
     const fetchLeads = useCallback((page: number, filters: LeadFilter[], headers: LeadListParams, campaignId: string | number) => {
@@ -67,9 +70,19 @@ export const LeadList = () => {
         setCampaignId(id)
     }, [])
 
+    const campaignSelectorProps = useMemo(() => ({
+        workspaceId, campaignId, handleWorkspaceChange, handleCampaignChange
+    }), [workspaceId, campaignId, handleWorkspaceChange, handleCampaignChange])
+
     //--------------------------------Paginación------------------------------
 
     const { fetchPage, pageComponentProps } = useListPagination(leads)
+
+    useEffect(() => {
+        if (!campaignId) return
+        fetchLeads(fetchPage, filters, headerParams, campaignId)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [campaignId, fetchPage, fetchLeads])
 
     //-------------------------------Ordenamiento-------------------------------
 
@@ -77,21 +90,21 @@ export const LeadList = () => {
     const orderListFn = useCallback((orderBy: number | string | null, ascending: boolean) => {
         if (!campaignId) return null
         setOrderParams({ order_by: orderBy, ascending })
-        fetchLeads(leads?.page ?? 1, filters, { ...fetchParams, ...orderParams }, campaignId)
-    }, [campaignId, filters, orderParams, fetchParams, leads?.page, fetchLeads])
+        fetchLeads(leads?.page ?? 1, filters, { ...fetchParams, order_by: orderBy, ascending }, campaignId)
+    }, [campaignId, filters, fetchParams, leads?.page, fetchLeads])
 
     const { orderProps } = useOrderList(orderListFn)
 
     //----------------------------------Filtros----------------------------------
 
     //Al aplicar filtros vuelve a la primera página
-    const setFiltersAndHeaders = useCallback((filters: LeadFilter[], fetchParams: LeadListParams) => {
+    const setFiltersAndHeaders = useCallback((filters: LeadFilter[], newParams: LeadListParams) => {
         if (!campaignId) return null
-        return fetchLeads(1, filters, fetchParams, campaignId).then(() => {
-            setFetchParams(fetchParams)
+        return fetchLeads(1, filters, { ...newParams, ...orderParams }, campaignId).then(() => {
+            setFetchParams(newParams)
             setFilters(filters)
         })
-    }, [campaignId, fetchLeads])
+    }, [campaignId, fetchLeads, orderParams])
 
     //-----------------------------Orden de Columnas-----------------------------
 
@@ -103,45 +116,74 @@ export const LeadList = () => {
             .then(leadFields => setLeadFields(leadFields.items))
     }, [campaignId])
 
-    const [selectedIds, setSelectedIds] = useState<number[]>([])
+    const [selectedFieldIds, setSelectedFieldIds] = useState<number[]>([])
 
     //Trae el arreglo de ids, con el orden definido de leads en localStorage. Si no, trae los primeros N elementos
     useEffect(() => {
         if (!leadFields || leadFields.length === 0 || !campaignId) return
         const localSelectedFields = JSON.parse(window.localStorage.getItem("sel_lead_fields") ?? "{}")?.[campaignId]
         if (localSelectedFields) {
-            setSelectedIds(localSelectedFields)
+            setSelectedFieldIds(localSelectedFields)
         } else {
-            setSelectedIds(leadFields.slice(0, DEFAULT_N_OF_FIELDS).map(fields => fields.id))
+            setSelectedFieldIds(leadFields.slice(0, DEFAULT_N_OF_FIELDS).map(fields => fields.id))
         }
     }, [leadFields, campaignId])
 
-    const handleSelectedIds = useCallback((ids: number[], closeModal: boolean = false) => {
-        setSelectedIds(ids)
+    const handleSelectedFieldIds = useCallback((ids: number[], closeModal: boolean = false) => {
+        setSelectedFieldIds(ids)
         if (closeModal) modalProps.handleClose()
     }, [modalProps])
 
-    //Ante cambios a selectedIds los actualiza en localStorage
+    //Ante cambios a selectedFieldIds los actualiza en localStorage
     useEffect(() => {
-        if (selectedIds.length === 0 || !campaignId) return
+        if (selectedFieldIds.length === 0 || !campaignId) return
         const totalSelectedFields = window.localStorage.getItem("sel_lead_fields")
         let newTotalSelectedFields: Record<number, number[]> = {}
         if (totalSelectedFields) {
             newTotalSelectedFields = { ...JSON.parse(totalSelectedFields) }
         }
-        newTotalSelectedFields[Number(campaignId)] = selectedIds
+        newTotalSelectedFields[Number(campaignId)] = selectedFieldIds
         window.localStorage.setItem("sel_lead_fields", JSON.stringify(newTotalSelectedFields))
-    }, [selectedIds, campaignId])
+    }, [selectedFieldIds, campaignId])
 
     //--------------------------------Presentación--------------------------------
 
     const [presentationMode, setPresentationMode] = useState<string>("TABLE")
 
-    useEffect(() => {
+    const presentationProps = useMemo(() => ({
+        presentationMode,
+        handlePresentation: (mode: "string") => {
+            setPresentationMode(mode)
+        }
+    }), [presentationMode, setPresentationMode])
+
+    //------------------------------------LeadView------------------------------------
+
+    const saveView = () => {
         if (!campaignId) return
-        fetchLeads(fetchPage, filters, { ...fetchParams, ...orderParams }, campaignId)
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [campaignId, fetchPage, fetchLeads])
+        createView({
+            name: "Vista",
+            campaign_id: Number(campaignId),
+            visibility: "PRIVATE",
+            view_type: presentationMode,
+            filters: { "filters": filters },
+            sort_config: { "order_by": orderProps.orderBy, "ascending": orderProps.ascending },
+            ui_config: { "selected_ids": selectedFieldIds }
+        })
+    }
+
+    //-------------------------------Leads Seleccionados-------------------------------
+
+    const selectCheckboxProps = useSelectCheckbox<Lead>()
+
+    const bulkDelete = useCallback(() => {
+        if (!campaignId) return
+        return bulkDeleteLead({ ids: Array.from(selectCheckboxProps.checkedItems.keys()) })
+            .then(() => {
+                fetchLeads(fetchPage, filters, headerParams, campaignId)
+                selectCheckboxProps.removeAllItems()
+            })
+    }, [selectCheckboxProps, campaignId, fetchLeads, fetchPage, filters, headerParams])
 
     return (
         <Stack spacing={3}>
@@ -155,15 +197,14 @@ export const LeadList = () => {
             </Grid>
             <Stack spacing={2}>
                 <Stack direction="row" sx={{ flexWrap: "wrap", alignItems: "center", justifyContent: "space-between" }} spacing={2} useFlexGap>
-                    <LeadCampaignSelector workspaceId={workspaceId} setWorkspaceId={handleWorkspaceChange}
-                        campaignId={campaignId} setCampaignId={handleCampaignChange} />
-                    <LeadTableOptions areThereLeads={areThereLeads} campaignId={campaignId} modalProps={modalProps}
-                        filters={filters} headers={{ ...fetchParams, ...orderParams }} setFiltersAndHeaders={setFiltersAndHeaders} />
+                    <LeadListOptions areThereLeads={areThereLeads} campaignId={campaignId} modalProps={modalProps} campaignSelectorProps={campaignSelectorProps} presentationProps={presentationProps}
+                        filters={filters} headers={{ ...fetchParams, ...orderParams }} setFiltersAndHeaders={setFiltersAndHeaders} saveView={saveView} selectCheckboxProps={selectCheckboxProps}
+                        bulkDelete={bulkDelete} />
                 </Stack>
                 {
                     leads && !!campaignId && !!workspaceId ?
-                        <LeadListTable leads={leads.items} leadFields={leadFields} selectedIds={selectedIds} modalProps={modalProps}
-                            activeFilters={filters.length} orderProps={orderProps} handleSelectedIds={handleSelectedIds} />
+                        <LeadListTable leads={leads.items} leadFields={leadFields} selectedFieldIds={selectedFieldIds} modalProps={modalProps}
+                            activeFilters={filters.length} orderProps={orderProps} handleSelectedFieldIds={handleSelectedFieldIds} selectCheckboxProps={selectCheckboxProps} />
                         :
                         <Stack spacing={3} sx={{ alignItems: "center", my: 3 }}>
                             <Typography variant="h3">No hay leads para presentar</Typography>
@@ -173,7 +214,7 @@ export const LeadList = () => {
                 <PaginationComponent {...pageComponentProps} />
             </Stack >
             <GenericModal idModal="columns_selector" modalProps={modalProps} buttonText="Modificar Columnas" maxWidth="md" showButton={false}>
-                <LeadColumnSelector originalList={leadFields} selectedIds={selectedIds!} handleSelectedIds={handleSelectedIds} handleClose={modalProps.handleClose} showField="name" />
+                <LeadColumnSelector originalList={leadFields} selectedFieldIds={selectedFieldIds!} handleSelectedFieldIds={handleSelectedFieldIds} handleClose={modalProps.handleClose} showField="name" />
             </GenericModal>
         </Stack>
     )

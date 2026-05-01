@@ -206,7 +206,7 @@ export const ListValues = memo(({ value, idFieldValue, type, isNav = false, maxI
     if (!typedValue || typeof typedValue === "string") return null
 
     return (
-        <Stack direction="row" spacing={.5} sx={{ flexWrap: "wrap" }}>
+        <Stack direction="row" spacing={.5} useFlexGap sx={{ flexWrap: "wrap" }}>
             {visibleItems.map(val =>
                 <CustomChip
                     key={`${idFieldValue}-${val.id}`}
