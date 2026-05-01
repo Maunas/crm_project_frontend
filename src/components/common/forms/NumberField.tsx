@@ -200,7 +200,7 @@ export function NumberSpinner({ id: idProp, label, error, size = 'medium', requi
               sx={{
                 borderTopRightRadius: 0,
                 borderBottomRightRadius: 0,
-                paddingInline: "1rem",
+                paddingInline: 1,
                 width: "auto",
                 borderRight: '0px',
                 '&.Mui-disabled': {
@@ -238,7 +238,8 @@ export function NumberSpinner({ id: idProp, label, error, size = 'medium', requi
                     ) + 1,
                   sx: {
                     textAlign: 'center',
-                    paddingInline: 0
+                    paddingInline: 0,
+                    py: .5
                   },
                 },
               }}
@@ -256,7 +257,7 @@ export function NumberSpinner({ id: idProp, label, error, size = 'medium', requi
               sx={{
                 borderTopLeftRadius: 0,
                 borderBottomLeftRadius: 0,
-                paddingInline: "1rem",
+                paddingInline: 1,
                 width: "auto",
                 borderLeft: '0px',
                 '&.Mui-disabled': {

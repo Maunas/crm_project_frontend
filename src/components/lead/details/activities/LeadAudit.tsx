@@ -2,11 +2,11 @@ import { useEffect, useMemo, useState } from "react"
 import type { LeadAudit } from "../../../../types/leads"
 import { getAudit } from "./leadActivitiesService"
 import type { Paginable } from "../../../../types/common"
-import { Avatar, Card, CardActionArea, CardActions, CardContent, CardHeader, Collapse, Divider, Grid, Stack, Typography } from "@mui/material"
+import { Avatar, Box, Button, Card, CardActionArea, CardActions, CardContent, CardHeader, Collapse, Divider, Stack, Typography } from "@mui/material"
 import { CustomChip } from "../../../common/details/StyledDisplayComponents"
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward"
 import EditIcon from "@mui/icons-material/Edit"
-import CreateIcon from "@mui/icons-material/Create"
+import AddIcon from "@mui/icons-material/Add"
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import WatchLaterIcon from '@mui/icons-material/WatchLater';
 import { CustomListItemAvatar } from "../../../common/lists/CustomListItem"
@@ -17,6 +17,8 @@ import { PaginationComponent } from "../../../common/lists/PaginationComponent"
 import Timeline from '@mui/lab/Timeline';
 import { CustomTimelineItem } from "../../../common/layout/MinorComponents"
 import { timelineItemClasses } from "@mui/lab/TimelineItem"
+
+const MAX_ITEMS_NUM = 3
 
 export const LeadAuditList = ({ leadId, reloadAudit }: { leadId: number, reloadAudit: number }) => {
 
@@ -40,7 +42,14 @@ export const LeadAuditList = ({ leadId, reloadAudit }: { leadId: number, reloadA
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reloadAudit])
 
-  const [showItem, setShowItem] = useState<number>(0)
+  const [showItems, setShowItems] = useState<number>(0)
+
+  const [showMoreItems, setShowMoreItems] = useState<boolean>(false)
+
+  const handleShowItems = (idx: number) => {
+    setShowItems(idx)
+    setShowMoreItems(false)
+  }
 
   if (audit) return (
     <Stack spacing={2} sx={{ height: "100%" }}>
@@ -53,28 +62,39 @@ export const LeadAuditList = ({ leadId, reloadAudit }: { leadId: number, reloadA
       }}>
         {audit.items.map((item, idx) => {
           return (
-            <CustomTimelineItem selected={idx === showItem} last={idx === audit.items.length - 1} key={item.id}>
+            <CustomTimelineItem selected={idx === showItems} last={idx === audit.items.length - 1} key={item.id}>
               <Card raised>
-                <CardActionArea onClick={() => setShowItem(idx)} title="Ver detalle">
+                <CardActionArea onClick={() => handleShowItems(idx)} title="Ver detalle">
                   <LeadAuditHeader activityType={item.activity_type}
-                    message={item.details.message ?? `${item.details?.changes?.length ?? 0} cambios`} />
+                    message={item.details.message ?? `${Object.values(item.details?.changes ?? {}).length} cambios`} />
                 </CardActionArea>
-                <Collapse in={idx === showItem} timeout="auto" unmountOnExit>
+                <Collapse in={idx === showItems} timeout="auto" unmountOnExit>
                   <Divider />
-                  {item.details.changes &&
+                  {item?.details?.changes &&
                     <CardContent sx={{ py: 1 }}>
-                      <Grid container rowSpacing={1} columnSpacing={.5} sx={{ alignItems: "center" }}>
-                        {item.details.changes.map(change =>
-                          <Grid size="grow" key={`${item.id}-${change.field_id}`} sx={{ minWidth: "15rem", alignItems: "center" }}>
-                            <Stack direction="row" spacing={1} sx={{ px: 2, alignItems: "center" }}>
-                              <Typography variant="body2">{change.field_name}:</Typography>
-                              <LeadAuditValue value={change.old_value} color="error" size="small" fieldName={change.field_name} />
-                              <ArrowForwardIcon />
-                              <LeadAuditValue value={change.new_value} color="success" fieldName={change.field_name} />
+                      <Stack spacing={1} useFlexGap sx={{ alignItems: "start" }}>
+                        {Object.entries(item.details.changes).map(([field_id, change], idx) => {
+                          if (!showMoreItems && idx >= MAX_ITEMS_NUM) return null
+
+                          return (
+                            <Stack spacing={1} key={`audit-${item.id}-${field_id}`} sx={{ alignItems: "start" }}>
+                              <Typography variant="body2" sx={{ fontWeight: "bold" }}>{change.field_name}:</Typography>
+                              <Stack direction="row" useFlexGap spacing={1} sx={{ flexWrap: "wrap", px: 1, alignItems: "center" }}>
+                                <Box>
+                                  <LeadAuditValue value={change.old_value} id={item.id} color="error" size="small" fieldName={change.field_name} />
+                                </Box>
+                                <ArrowForwardIcon fontSize="small" />
+                                <Box>
+                                  <LeadAuditValue value={change.new_value} id={item.id} color="success" size="small" fieldName={change.field_name} />
+                                </Box>
+                              </Stack>
                             </Stack>
-                          </Grid>
-                        )}
-                      </Grid>
+                          )
+                        })}
+                        {!showMoreItems && Object.values(item.details.changes)?.length > MAX_ITEMS_NUM &&
+                          <Button sx={{ mx: "auto" }} onClick={() => setShowMoreItems(true)}>Ver más</Button>
+                        }
+                      </Stack>
                     </CardContent>
                   }
                   <Divider />
@@ -111,7 +131,7 @@ const LeadAuditHeader = ({ activityType, message }: { activityType?: string, mes
         { icon: <EditIcon />, color: "info", title: "Actualización de datos" }
       )
       case "LEAD_CREATED": return (
-        { icon: <CreateIcon />, color: "success", title: "Nuevo Lead" }
+        { icon: <AddIcon />, color: "success", title: "Nuevo Lead" }
       )
       default: return (
         { icon: <InfoOutlinedIcon />, color: "warning", title: "Otro" }
@@ -135,25 +155,37 @@ const LeadAuditHeader = ({ activityType, message }: { activityType?: string, mes
 
 
 interface LeadAuditValueProps {
-  value: string | number[] | null,
+  value: string | number | number[] | null,
   fieldName: string,
   size?: "small" | "medium" | "large" | "xlarge",
-  color?: ColorTypes
+  color?: ColorTypes,
+  id: number
 }
 
-const showValue = (val: string | number[] | null, name: string) => {
+const showValue = (val: string | number | number[] | null, name: string) => {
+  if (typeof val === "number") return val
   if (!val) return name
   return val.length > 50 ? name : val
 }
 
-const LeadAuditValue = ({ value, fieldName, size = "medium", color = "primary" }: LeadAuditValueProps) => {
+const chipSx = {
+  minWidth: "4rem",
+  maxWidth: "12rem"
+}
 
-  if (typeof value === "string") {
-    return <CustomChip size={size} color={color} label={showValue(value, fieldName)} />
+const LeadAuditValue = ({ value, fieldName, id, size = "medium", color = "primary" }: LeadAuditValueProps) => {
+  if (!value) {
+    return <CustomChip size={size} color={color} label="---" title="Sin valor" sx={chipSx} />
   }
-  return <Stack spacing={.5} sx={{ flexWrap: "wrap", direction: "row", justifyContent: "center" }}>
+  if (typeof value === "number") {
+    return <CustomChip size={size} color={color} label={value} title={`${value}`} sx={chipSx} />
+  }
+  if (typeof value === "string") {
+    return <CustomChip size={size} color={color} label={showValue(value, fieldName)} title={value} sx={chipSx} />
+  }
+  return <Stack spacing={.5} direction="row" useFlexGap sx={{ flexWrap: "wrap", direction: "row", justifyContent: "start" }}>
     {value?.map(item =>
-      <CustomChip size={size} color={color} label={showValue(`${item}`, fieldName)} />
+      <CustomChip size={size} color={color} key={`audit-value-${id}-${value}`} label={showValue(`${item}`, fieldName)} title={`${item}`} sx={chipSx} />
     )}
   </Stack>
 }

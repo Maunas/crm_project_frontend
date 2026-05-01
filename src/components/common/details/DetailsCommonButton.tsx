@@ -55,7 +55,7 @@ export const CommonButton = ({ actionType = "NONE", handleClick, children, ...bt
 
     return (
         <LightButton variant='contained' onClick={handleClick} {...btnProps}>
-            <Stack spacing={1} direction="row" sx={{ alignItems: "center" }}>
+            <Stack spacing={.5} useFlexGap direction="row" sx={{ alignItems: "center" }}>
                 {cloneElement(ACTION_ICONS[actionType], { fontSize: btnProps.size })}
                 {children}
             </Stack>

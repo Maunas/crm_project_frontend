@@ -10,6 +10,7 @@ import { getCampaign } from "../../campaigns/campaignServices.ts"
 import type { Campaign } from "../../../types/campaigns.ts"
 import { LeadFieldSections } from "./LeadDetailsSections.tsx"
 import { TitleAndActive } from "../../common/layout/MinorComponents.tsx"
+import { LeadTags } from "./LeadTags.tsx"
 
 export const LeadDetailsLayout = () => {
 
@@ -34,14 +35,14 @@ export const LeadDetailsLayout = () => {
         })
     }
 
-    const updateLeadInfo = (newLead: LeadDetailed) => {
+    const updateLeadInfo = (newLead: LeadDetailed, reloadAudits: boolean = false) => {
         setLead(newLead)
-        setReloadAudit(prev => prev + 1)
+        if (reloadAudits) setReloadAudit(prev => prev + 1)
     }
 
     const leadTitle = useMemo(() => {
-        if (!lead) return ""
-        return getLeadTitleArray(lead).join(" ")
+        if (!lead) return null
+        return getLeadTitleArray(lead)
     }, [lead])
 
     //reconoce cambios para actualizar la lista de audit
@@ -57,7 +58,7 @@ export const LeadDetailsLayout = () => {
                             sx={{ underline: "hover", fontWeight: 600 }} >
                             {campaign?.name}
                         </Link>
-                        <Typography sx={{ color: 'text.primary' }}>{leadTitle}</Typography>
+                        <Typography sx={{ color: 'text.primary' }}>{leadTitle?.join(" ") ?? "Lead"}</Typography>
                     </Breadcrumbs>}
                 {lead &&
                     <Grid container spacing={3}>
@@ -78,7 +79,7 @@ export const LeadDetailsLayout = () => {
 interface LeadInfoProps {
     lead: LeadDetailed,
     handleActive: (lead: LeadDetailed) => void,
-    leadTitle: string,
+    leadTitle: (string | undefined)[] | null,
     updateLeadInfo: (lead: LeadDetailed) => void
 }
 
@@ -88,9 +89,14 @@ export const LeadInfo = ({ lead, leadTitle, handleActive, updateLeadInfo }: Lead
         <Stack spacing={2}>
             <GenericPaper>
                 <Stack spacing={3} sx={{ alignItems: "center" }}>
-                    <TitleAndActive active={lead?.active} >
-                        <Typography variant="h1">{leadTitle.length > 0 ? leadTitle : "Título no encontrado"}</Typography>
-                    </TitleAndActive>
+                    <Stack spacing={1} sx={{ width: "100%" }}>
+                        <LeadTags lead={lead} tags={lead.tags} updateLeadInfo={updateLeadInfo} />
+                        <TitleAndActive active={lead?.active} >
+                            <Typography sx={{ textOverflow: "ellipsis" }} variant="h1">
+                                {(leadTitle && leadTitle?.length > 0) ? leadTitle?.join(" ") : "Título no encontrado"}
+                            </Typography>
+                        </TitleAndActive>
+                    </Stack>
                     <ButtonGroup fullWidth>
                         <CommonButton actionType={lead.active ? "DISABLE" : "ENABLE"} variant="outlined"
                             color={lead.active ? "error" : "success"} onClick={() => handleActive(lead)}>

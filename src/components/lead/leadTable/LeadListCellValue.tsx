@@ -8,13 +8,14 @@ interface CellValueProps {
     fieldValue?: LeadFieldValue,
     type?: string | null,
     subtype?: string | null,
+    shortLeadTitle?: boolean,
     modalProps?: {
         open: string | number | boolean;
         handleOpen: (idModal: string | number) => void;
         handleClose: () => void;
     }
 }
-export const LeadListCellValue = memo(({ fieldValue, type, subtype, modalProps }: CellValueProps) => {
+export const LeadListCellValue = memo(({ fieldValue, type, subtype, modalProps, shortLeadTitle = false }: CellValueProps) => {
 
     const getValue = useCallback((field_value: LeadFieldValue | undefined) => {
         if (!field_value) return null
@@ -51,7 +52,7 @@ export const LeadListCellValue = memo(({ fieldValue, type, subtype, modalProps }
         case "SELECTOR": case "CHECKBOX":
             return <ListValues value={value} idFieldValue={fieldValue.id} type="Selector" maxItems={2} />
         case "LEAD":
-            return <ListValues value={value} idFieldValue={fieldValue.id} type="Lead" maxItems={2} isNav />
+            return <ListValues value={value} idFieldValue={fieldValue.id} type="Lead" maxItems={2} isNav shortTitle={shortLeadTitle} />
         default: return `${value}`
     }
 })

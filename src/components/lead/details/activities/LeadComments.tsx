@@ -49,7 +49,7 @@ export const LeadComments = ({ leadId }: { leadId: number }) => {
     return (
         <Stack spacing={2} sx={{ height: "100%" }}>
             <Stack spacing={2} sx={{
-                borderRadius: 3, px: 3, py: 2,
+                borderRadius: 3, px: 3, py: 2, flexGrow: 1, justifyContent: "space-between",
                 bgcolor: alpha(palette.background.default, .5), alignItems: "end"
             }}
             >

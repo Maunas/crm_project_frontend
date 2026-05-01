@@ -171,10 +171,16 @@ export const getSelectorField = <T>(selector: T[], field: keyof T, isMultiple: b
 }
 
 //Obtener el título de un lead
-export const getLeadTitleArray = (lead: Lead, short: boolean = false) => {
-  if (short) return [lead.field_values.sort((a, b) => a.field_id - b.field_id)[0].value]
-  return lead.field_values
-    .filter(fv => fv.field.title_order != null)
-    .sort((a, b) => (a.field.title_order ?? 0) - (b.field.title_order ?? 0))
-    .map(fv => fv.value)
+export const getLeadTitleArray = (lead: Lead | LeadDetailed, short: boolean = false) => {
+  if (short) {
+    const firstValue = lead.field_values.find(fv => fv.field.title_order === 1)?.value
+    return firstValue ? [firstValue] : ["Sin título"]
+  }
+  else {
+    const titleArray = lead.field_values
+      .filter(fv => fv.field.title_order != null && fv.value)
+      .sort((a, b) => a.field.title_order - b.field.title_order)
+      .map(fv => fv.value!)
+    return titleArray.length > 0 ? titleArray : ["Sin título"]
+  }
 }

@@ -163,14 +163,6 @@ interface SidebarProps {
 }
 export const NomenclatorItemSidebar = memo(({ mode, entity, nomenclator, closeSidebar, updateEntityOnList, handleSidebar, handleActive }: SidebarProps) => {
 
-    const [parentItem, setParentItem] = useState<NomenclatorItemDetailed | null>(null)
-
-    useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        if (!entity?.parent_item_id) return setParentItem(null)
-        getNomenclatorItem(entity?.parent_item_id).then(setParentItem)
-    }, [entity])
-
     switch (mode) {
 
         case "CREATE_NOM":
@@ -181,9 +173,8 @@ export const NomenclatorItemSidebar = memo(({ mode, entity, nomenclator, closeSi
             return <NomenclatorItemFormSidebar existingNom={entity as NomenclatorItemDetailed} nomenclator={nomenclator}
                 closeSidebar={closeSidebar} updateEntityOnList={entity => updateEntityOnList(entity, mode)}
                 handleSidebar={handleSidebar} />
-
         case "DETAILS_NOM":
-            return <NomenclatorItemDetails entity={entity as NomenclatorItemDetailed} parentEntity={parentItem} closeSidebar={closeSidebar}
+            return <NomenclatorItemDetails item={entity as NomenclatorItemDetailed} closeSidebar={closeSidebar}
                 handleSidebar={handleSidebar} handleActive={handleActive} />
     }
 })

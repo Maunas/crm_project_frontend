@@ -1,7 +1,7 @@
 import { useState, type HTMLInputTypeAttribute } from "react";
 import NumberField, { NumberSpinner } from "./NumberField";
 import { Controller, type Control, type FieldValues, type Path, type PathValue, type UseFormRegister, } from "react-hook-form";
-import { Box, Checkbox, FormControl, FormControlLabel, FormLabel, Grid, IconButton, InputAdornment, InputLabel, OutlinedInput, Rating, Slider, Switch, TextField, Typography, } from "@mui/material";
+import { Box, Checkbox, FormControl, FormControlLabel, FormLabel, Grid, IconButton, InputAdornment, InputLabel, OutlinedInput, Rating, Slider, Stack, Switch, TextField, Typography, } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { FormErrorMessage } from "./StyledFormComponents";
 
@@ -54,40 +54,38 @@ export const ControlledSlider = <T extends FieldValues>
   return (
     <Controller name={name} control={control} render={({ field }) => (
       <FormControl error={!!errorMessage} fullWidth size={size}>
-        <Grid container spacing={.5} sx={{ alignItems: "start", pl: 1 }}>
-          <Grid size={12}>
-            {label && (
-              <Typography variant={size === "medium" ? "body1" : "subtitle2"}>
-                {label} {required && "*"}
-              </Typography>
-            )}
-          </Grid>
-          <Grid container size="grow" sx={{ alignItems: "center", justifyContent: "space-between" }}>
-            <Grid size="grow" sx={{ alignItems: "center" }}>
+        <Stack>
+          {label && (
+            <Typography variant={size === "medium" ? "body1" : "subtitle2"} sx={{ pl: 2 }}>
+              {label} {required && "*"}
+            </Typography>
+          )}
+          <Grid container size="grow" columnSpacing={2} sx={{ alignItems: "center", justifyContent: "space-between" }}>
+            <Grid size="grow" sx={{ alignItems: "center", minWidth: "10rem", maxWidth: "20rem" }}>
               {type === "slider" && (
                 <Box sx={{ pl: 2 }}>
                   <Slider {...field}
-                    value={field.value || defaultValue} size="medium"
+                    value={Number(field.value) || Number(defaultValue)} size="medium"
                     color="secondary" min={min} max={max} step={step}
                   />
                 </Box>
               )}
               {type === "rating" && (
                 <Rating {...field}
-                  value={field.value || defaultValue}
+                  value={Number(field.value) || Number(defaultValue)}
                   max={max} precision={step} size="medium"
                 />
               )}
             </Grid>
-            <Grid size="grow" sx={{ alignItems: "center", maxWidth: "13rem" }}>
+            <Grid size="auto" sx={{ alignItems: "center", maxWidth: "13rem", ml: "auto" }}>
               <NumberSpinner {...field}
-                value={field.value || defaultValue}
+                value={Number(field.value) || Number(defaultValue)}
                 onValueChange={(value) => field.onChange(value)}
                 min={type === "rating" ? 0 : min} max={max} step={step} size={size}
               />
             </Grid>
           </Grid>
-        </Grid>
+        </Stack>
         {errorMessage && (
           <FormErrorMessage>{errorMessage}</FormErrorMessage>
         )}

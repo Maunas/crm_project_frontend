@@ -17,16 +17,19 @@ import type { Lead } from '../../types/leads';
 import { Link as RouterLink } from 'react-router-dom';
 import { getLeadTitleArray } from './leadService';
 
-export const NewTabLink = ({ url, value }: { url: string, value?: string }) =>
-    <Link href={`${url}`} target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()}>
+export const NewTabLink = ({ url, value }: { url: string, value?: string | null }) => {
+    if (!value) return null
+    return <Link href={url} sx={{ textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}
+        title={url} target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()}>
         {`${value ? value : url}`}
     </Link>
+}
 
-
-export const AddressValue = ({ value, subtype }: { value: string, subtype?: string | null }) => {
+export const AddressValue = ({ value, subtype }: { value: string | null, subtype?: string | null }) => {
+    if (!value) return null
     if (subtype === "MAPS_URL") return <NewTabLink url={`${value}`} />
     else return <NewTabLink value={value}
-        url={`https://www.google.com/maps/search/${value.replaceAll(" ", "+")}`} />
+        url={`https://www.google.com/maps/search/${value?.replaceAll(" ", "+")}`} />
 }
 
 const CAPITALIZE_STYLE = { textTransform: "capitalize" }
@@ -81,7 +84,7 @@ export const RatingValue = memo(({ value, subtype, counter = false, tooltip = fa
 
     return (
         <ChipTooltip show={tooltip} title={value} >
-            <Stack direction="row" spacing={1} sx={{ lineHeight: 0, alignItems: "center", width: "min-content" }}>
+            <Stack direction="row" spacing={1} sx={{ lineHeight: 0, alignItems: "center", width: "auto" }}>
                 {subtype === "STAR_RATING" &&
                     <Rating value={Number(value)} size={size} name="read-only" readOnly />
                 }
@@ -175,10 +178,11 @@ interface ListValuesProps {
     maxItems?: number | false;
     isNav?: boolean;
     renderAs?: "chips" | "text";
+    shortTitle?: boolean
 }
 const STOP_PROPAGATION = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => e.stopPropagation()
 
-export const ListValues = memo(({ value, idFieldValue, type, isNav = false, maxItems = false }: ListValuesProps) => {
+export const ListValues = memo(({ value, idFieldValue, type, isNav = false, maxItems = false, shortTitle = false }: ListValuesProps) => {
 
     const typedValue = useMemo(() => value as Lead[] | NomenclatorItem[]
         , [value])
@@ -189,9 +193,9 @@ export const ListValues = memo(({ value, idFieldValue, type, isNav = false, maxI
     }, [typedValue, maxItems])
 
     const getLabel = useCallback((val: Lead | NomenclatorItem) => {
-        if (type === "Lead") return getLeadTitleArray(val as Lead, true).join(" ")
+        if (type === "Lead") return getLeadTitleArray(val as Lead, shortTitle).join(" ")
         else return `${(val as NomenclatorItem).value}`
-    }, [type])
+    }, [type, shortTitle])
 
     const getLink = useCallback((val: Lead | NomenclatorItem) => {
         if (type === "Lead") return `/leads/${val.id}`
@@ -210,7 +214,7 @@ export const ListValues = memo(({ value, idFieldValue, type, isNav = false, maxI
             {visibleItems.map(val =>
                 <CustomChip
                     key={`${idFieldValue}-${val.id}`}
-                    label={getLabel(val)}
+                    label={getLabel(val)} title={getLabel(val)}
                     color="secondary" size="small"
                     {...(isNav && {
                         component: RouterLink, to: getLink(val),
