@@ -36,7 +36,7 @@ type MuiButtonProps = ComponentProps<typeof Button>;
 interface CommonBtnProps extends MuiButtonProps {
     actionType?: ActionType,
     handleClick?: () => void,
-    children: ReactNode,
+    children?: ReactNode,
     //Se pasan en btnProps
     component?: React.ForwardRefExoticComponent<LinkProps & React.RefAttributes<HTMLAnchorElement>>,
     to?: string,

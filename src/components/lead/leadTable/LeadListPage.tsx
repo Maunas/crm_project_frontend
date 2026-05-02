@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { PaginationComponent } from '../../common/lists/PaginationComponent'
-import type { LeadFilter, LeadListParams, OrderParams, Paginable } from '../../../types/common'
+import type { LeadFilter, LeadListParams, ListParams, OrderParams, Paginable } from '../../../types/common'
 import { CommonCollapsedButton } from '../../common/details/DetailsCommonButton'
-import type { Lead } from '../../../types/leads'
+import type { Lead, LeadView } from '../../../types/leads'
 import { useListPagination } from '../../hooks/useListPagination'
 import { useModal } from '../../hooks/useModal'
-import { bulkDeleteLead, createView, getFilteredLeads, getLeads } from '../leadService'
+import { bulkDeleteLead, createView, getFilteredLeads, getLeads, updateView } from '../leadService'
 import { Link as RouterLink, useSearchParams } from 'react-router-dom'
 import { Typography, Grid, Stack, IconButton } from '@mui/material'
 import { useOrderList } from '../../hooks/useOrderList'
@@ -87,14 +87,13 @@ export const LeadListPage = () => {
 
     //-------------------------------Ordenamiento-------------------------------
 
-
     const orderListFn = useCallback((orderBy: number | string | null, ascending: boolean) => {
         if (!campaignId) return null
         setOrderParams({ order_by: orderBy, ascending })
         fetchLeads(leads?.page ?? 1, filters, { ...fetchParams, order_by: orderBy, ascending }, campaignId)
     }, [campaignId, filters, fetchParams, leads?.page, fetchLeads])
 
-    const { orderProps } = useOrderList(orderListFn)
+    const { orderProps, setOrderList } = useOrderList(orderListFn)
 
     //----------------------------------Filtros----------------------------------
 
@@ -161,19 +160,50 @@ export const LeadListPage = () => {
     }), [presentationMode, handlePresentation])
 
     //------------------------------------LeadView------------------------------------
-
-    const saveView = () => {
+    //Necesarios acá para interactuar con los estados y hacer fetch de Leads
+    const saveView = useCallback((name: string, visibility: string, existingId?: number) => {
         if (!campaignId) return
-        createView({
-            name: "Vista",
+        const newView = {
+            name: name,
+            visibility: visibility,
             campaign_id: Number(campaignId),
-            visibility: "PRIVATE",
-            view_type: presentationMode,
             filters: { "filters": filters },
             sort_config: { "order_by": orderProps.orderBy, "ascending": orderProps.ascending },
-            ui_config: { "selected_ids": selectedFieldIds }
-        })
-    }
+            ui_config: { "selected_ids": selectedFieldIds, "fetch_params": fetchParams },
+            view_type: presentationMode,
+        }
+        if (existingId) return updateView(newView, existingId)
+        else return createView(newView)
+    }, [campaignId, fetchParams, filters, orderProps, presentationMode, selectedFieldIds])
+
+    const loadView = useCallback((view: LeadView) => {
+        if (!campaignId || Number(campaignId) !== view.campaign_id) return
+        let newFilters: LeadFilter[] = []
+        if (view?.filters?.filters) {
+            newFilters = view.filters.filters
+            setFilters(newFilters)
+        }
+        let newFetchParams: ListParams = {}
+        if (view?.ui_config?.fetch_params) {
+            newFetchParams = view.ui_config.fetch_params
+            setFetchParams(newFetchParams)
+        }
+        let newOrderParams: OrderParams = {}
+        if (view?.sort_config?.order_by && view?.sort_config?.ascending !== undefined) {
+            newOrderParams = { order_by: view.sort_config.order_by, ascending: view.sort_config.ascending }
+            setOrderParams(newOrderParams)
+            setOrderList(view.sort_config.order_by, view.sort_config.ascending)
+        }
+        if (view?.ui_config?.selected_ids) {
+            setSelectedFieldIds(view.ui_config.selected_ids)
+        }
+        if (view?.view_type) {
+            setPresentationMode(view?.view_type)
+        }
+        fetchLeads(fetchPage, newFilters, { ...newFetchParams, ...newOrderParams }, campaignId)
+    }, [campaignId, fetchLeads, fetchPage, setOrderList])
+
+    const viewUpdateProps = useMemo(() => ({ saveView, loadView }), [saveView, loadView])
 
     //-------------------------------Leads Seleccionados-------------------------------
 
@@ -208,7 +238,7 @@ export const LeadListPage = () => {
             <Stack spacing={2}>
                 <Stack direction="row" sx={{ flexWrap: "wrap", alignItems: "center", justifyContent: "space-between" }} spacing={2} useFlexGap>
                     <LeadListOptions areThereLeads={areThereLeads} campaignId={campaignId} modalProps={modalProps} campaignSelectorProps={campaignSelectorProps} presentationProps={presentationProps}
-                        filters={filters} headers={{ ...fetchParams, ...orderParams }} setFiltersAndHeaders={setFiltersAndHeaders} saveView={saveView} selectCheckboxProps={selectCheckboxProps}
+                        filters={filters} headers={{ ...fetchParams, ...orderParams }} setFiltersAndHeaders={setFiltersAndHeaders} viewUpdateProps={viewUpdateProps} selectCheckboxProps={selectCheckboxProps}
                         bulkDelete={bulkDelete} />
                 </Stack>
                 {

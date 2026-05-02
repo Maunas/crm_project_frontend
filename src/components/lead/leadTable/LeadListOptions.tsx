@@ -1,4 +1,4 @@
-import { Autocomplete, Badge, Button, Divider, Stack, TextField, ToggleButton, ToggleButtonGroup, type AutocompleteRenderInputParams } from "@mui/material"
+import { Autocomplete, Badge, Button, Divider, Grid, IconButton, List, ListItem, ListItemButton, ListItemText, Popover, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography, type AutocompleteRenderInputParams } from "@mui/material"
 import { memo, useCallback, useContext, useEffect, useState } from "react"
 import type { Campaign, Workspace } from "../../../types/campaigns"
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
@@ -9,11 +9,13 @@ import { UserContext } from "../../common/contexts";
 import { CommonButton } from "../../common/details/DetailsCommonButton";
 import { GenericModal } from "../../common/layout/GenericContainer";
 import { LeadFilters } from "./LeadFilters";
-import type { LeadFilter, LeadListParams } from "../../../types/common";
+import type { LeadFilter, LeadListParams, Paginable } from "../../../types/common";
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import WindowIcon from '@mui/icons-material/Window';
 import TableChartIcon from '@mui/icons-material/TableChart';
-import type { Lead } from "../../../types/leads";
+import type { Lead, LeadView } from "../../../types/leads";
+import EditIcon from '@mui/icons-material/Edit'
+import CloseIcon from '@mui/icons-material/Close'
 
 interface LeadCampaignSelectorsProps {
     workspaceId: string | number | null,
@@ -107,7 +109,6 @@ interface LeadTableOptionsProps {
         handleOpen: (idModal: string | number) => void;
         handleClose: () => void;
     },
-    saveView: () => void,
     selectCheckboxProps: {
         checkedItems: Map<number, Lead>;
         addItem: (item: Lead | Lead[]) => void;
@@ -117,9 +118,13 @@ interface LeadTableOptionsProps {
         areThereInactiveItems: boolean;
     },
     bulkDelete: () => Promise<void> | undefined;
+    viewUpdateProps: {
+        saveView: (name: string, visibility: string, existingId?: number | undefined) => Promise<LeadView> | undefined;
+        loadView: (view: LeadView) => void;
+    }
 }
 
-export const LeadListOptions = memo(({ areThereLeads, campaignId, filters, headers, setFiltersAndHeaders, modalProps, campaignSelectorProps, presentationProps, selectCheckboxProps, saveView, bulkDelete }: LeadTableOptionsProps) => {
+export const LeadListOptions = memo(({ areThereLeads, campaignId, filters, headers, setFiltersAndHeaders, modalProps, campaignSelectorProps, presentationProps, selectCheckboxProps, viewUpdateProps, bulkDelete }: LeadTableOptionsProps) => {
 
     //Al aplicar filtros vuelve a la primera página
     const applyFilters = useCallback((data: { headers: LeadListParams, filters: LeadFilter[] }) => {
@@ -129,19 +134,20 @@ export const LeadListOptions = memo(({ areThereLeads, campaignId, filters, heade
     }, [setFiltersAndHeaders, headers, modalProps])
 
     return (
-        <Stack direction="row" spacing={3} divider={<Divider orientation="vertical" flexItem />} sx={{ justifyContent: "space-between", width: "100%" }}>
-            <LeadCampaignSelector {...campaignSelectorProps} />
-            <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: "wrap", ml: "auto", justifyContent: "end", alignItems: "center" }}>
+        <Grid container spacing={3} sx={{ justifyContent: "space-between", width: "100%" }}>
+            <Grid size="auto">
+                <LeadCampaignSelector {...campaignSelectorProps} />
+            </Grid>
+            <Divider orientation="vertical" flexItem />
+            <Grid container size="grow" spacing={1} sx={{ justifyContent: "end", alignItems: "center", minWidth: "20rem" }}>
                 {
                     areThereLeads && !!campaignId &&
                     <CommonButton actionType='OPTIONS' color='secondary' onClick={() => modalProps.handleOpen("columns_selector")} >
-                        Modificar Columnas
                     </CommonButton>
                 }
                 {areThereLeads &&
                     <Badge badgeContent={filters.length} color="success">
                         <CommonButton actionType="FILTER" color="secondary" onClick={() => modalProps.handleOpen("lead_filters")}>
-                            Aplicar Filtros
                         </CommonButton>
                     </Badge>}
                 <GenericModal idModal="lead_filters" modalProps={modalProps} buttonText="Aplicar Filtros" maxWidth="lg"
@@ -168,8 +174,93 @@ export const LeadListOptions = memo(({ areThereLeads, campaignId, filters, heade
                 {selectCheckboxProps.checkedItems.size > 0 &&
                     <Button variant="outlined" color="error" onClick={bulkDelete}>Eliminar Seleccionados</Button>
                 }
-                <Button onClick={() => saveView()}>Guardar Vista</Button>
-            </Stack >
-        </Stack>
+                {campaignSelectorProps?.campaignId &&
+                    <LeadViewMenu {...viewUpdateProps} campaignId={Number(campaignSelectorProps.campaignId)} />}
+            </Grid >
+        </Grid>
     )
 })
+
+import React from 'react'
+import { deleteView, getLeadViews } from "../leadService";
+import { useListPagination } from "../../hooks/useListPagination";
+import { PaginationComponent } from "../../common/lists/PaginationComponent";
+
+interface LeadViewMenuProps {
+    saveView: (name: string, visibility: string, existingId?: number | undefined) => Promise<LeadView> | undefined;
+    loadView: (view: LeadView) => void;
+    campaignId: number
+}
+
+export const LeadViewMenu = ({ saveView, loadView, campaignId }: LeadViewMenuProps) => {
+    const [viewAnchor, setViewAnchor] = React.useState<null | HTMLElement>(null);
+    const open = Boolean(viewAnchor);
+
+    const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+        setViewAnchor(event.currentTarget);
+    };
+    const handleClose = () => {
+        setViewAnchor(null);
+    };
+
+    const [currentViews, setCurrentViews] = useState<Paginable<LeadView> | null>(null)
+
+    const { fetchPage, pageComponentProps, pageSize } = useListPagination(currentViews, 12)
+
+    const fetchLeadViews = useCallback((page: number) => {
+        return getLeadViews({ only_active: true, page_size: pageSize, page: page, campaign_id: campaignId })
+            .then(setCurrentViews)
+    }, [campaignId, pageSize])
+
+    useEffect(() => {
+        fetchLeadViews(fetchPage)
+    }, [fetchPage, fetchLeadViews])
+
+    const handleDelete = (viewId: number) => {
+        if (!currentViews || currentViews.items.length === 0) return
+        deleteView(viewId)
+            .then(() => fetchLeadViews(fetchPage))
+    }
+
+    return (
+        <>
+            <Button onClick={handleClick}>Cargar Vista</Button>
+            <Popover anchorEl={viewAnchor} open={open} onClose={handleClose}
+                anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'right',
+                }}
+                transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                }}           >
+                <Stack spacing={1}>
+                    <Typography variant="h4" component="h3" sx={{ px: 2, pt: 2 }}>Vistas Creadas</Typography>
+                    <List sx={{ maxHeight: "30rem", minWidth: "15rem", maxWidth: "25rem", overflowY: "auto" }} dense >
+                        {currentViews?.items && currentViews?.items?.length > 0 &&
+                            currentViews.items.map(view => (
+                                <ListItem key={`list-${view.id}`} disablePadding
+                                    secondaryAction={
+                                        <Stack direction="row" sx={{ mr: -1 }}>
+                                            <IconButton title="Cambiar Nombre" edge="end" size='small' onClick={() => { }}><EditIcon fontSize='small' /></IconButton>
+                                            <IconButton title="Eliminar" edge="end" size='small' onClick={() => { handleDelete(view.id) }}><CloseIcon color='error' fontSize='small' /></IconButton>
+                                        </Stack>
+                                    }
+                                >
+                                    <ListItemButton onClick={() => loadView(view)} sx={{ py: .5 }}>
+                                        <ListItemText sx={{ my: 0, mr: 3 }} primary={view.name} secondary={view.visibility} />
+                                    </ListItemButton>
+                                </ListItem>
+                            ))
+                        }
+                    </List >
+                    {
+                        pageComponentProps.totalPages > 1 &&
+                        <PaginationComponent {...pageComponentProps} />
+                    }
+                    <Button onClick={() => { saveView("Vista Test", "PUBLIC") }} fullWidth>Crear Vista</Button>
+                </Stack >
+            </Popover>
+        </>
+    )
+}

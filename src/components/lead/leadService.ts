@@ -1,5 +1,5 @@
 import type { LeadPostForm } from "./leadForm/LeadForm";
-import type { DeleteResponse, EnableResponse, ErrorBody, ErrorMessage, LeadFilter, ListParams, Paginable } from "../../types/common";
+import type { DeleteResponse, EnableResponse, ErrorBody, ErrorMessage, LeadFilter, LeadListParams, ListParams, Paginable } from "../../types/common";
 import type { Lead, LeadDetailed, LeadPostValue, LeadView, LeadViewDetailed, LeadViewPost } from "../../types/leads";
 import type { LeadField } from "../../types/leadFields";
 import { API_BASE_URL, axiosCRM, setFormErrors } from "../../generalService";
@@ -52,7 +52,7 @@ export const bulkDeleteLead = async (body: { ids: number[] }): Promise<DeleteRes
 };
 
 
-export const getLeadViews = async <T extends ListParams>(params?: T)
+export const getLeadViews = async <T extends LeadListParams>(params?: T)
   : Promise<Paginable<T["detailed"] extends true ? LeadViewDetailed : LeadView>> => {
   const view = await axiosCRM.get(`${API_BASE_URL}/lead_views`, { params });
   return view.data;
@@ -77,7 +77,7 @@ export const enableView = async (id: number): Promise<EnableResponse> => {
   const view = await axiosCRM.put(`${API_BASE_URL}/lead_views/active/${id}`);
   return view.data;
 };
-export const disableView = async (id: number): Promise<DeleteResponse> => {
+export const deleteView = async (id: number): Promise<DeleteResponse> => {
   const view = await axiosCRM.delete(`${API_BASE_URL}/lead_views/${id}`);
   return view.data;
 };
