@@ -24,10 +24,13 @@ export const generalSearch = async (query: string) => {
   return res.data
 }
 
-export const getDictionaries = async (keys: string): Promise<Dictionary> => {
-  const res = await axiosCRM.get(`${API_BASE_URL}/metadata/dictionaries`, { params: { keys } })
+type DictTypes = keyof Dictionary
+
+export const getDictionaries = async (keys: DictTypes[]): Promise<Dictionary> => {
+  const res = await axiosCRM.get(`${API_BASE_URL}/metadata/dictionaries`, { params: { keys: keys.join(",") } })
   return res.data
 }
+
 export const getFieldType = (
   fieldType: string,
   value: string | boolean | number,

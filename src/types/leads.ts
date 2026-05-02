@@ -73,6 +73,24 @@ export interface LeadViewPost {
   }
 }
 
+export interface LeadViewParams {
+  view_type?: string | null,
+  filters?: {
+    filters?: LeadFilter[],
+    [item: string]: unknown
+  },
+  ui_config?: {
+    selected_ids?: number[],
+    fetch_params?: ListParams,
+    [item: string]: unknown
+  },
+  sort_config?: {
+    order_by?: string | number | null,
+    ascending?: boolean,
+    [item: string]: unknown
+  }
+}
+
 export interface LeadView extends LeadViewPost {
   id: number,
   organization_id: number

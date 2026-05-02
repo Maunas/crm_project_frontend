@@ -101,7 +101,8 @@ export interface Dictionary {
   "lead_search_operators"?: DictionaryItem[]
   "routing_condition_types"?: DictionaryItem[]
   "team_roles"?: DictionaryItem[]
-  "lead_states_categories"?: DictionaryItem[]
+  "lead_states_categories"?: DictionaryItem[],
+  lead_view_visibilities?: DictionaryItem[]
 }
 
 export interface DictionaryItem {

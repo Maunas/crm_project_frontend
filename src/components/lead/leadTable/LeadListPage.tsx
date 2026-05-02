@@ -161,8 +161,17 @@ export const LeadListPage = () => {
 
     //------------------------------------LeadView------------------------------------
     //Necesarios acá para interactuar con los estados y hacer fetch de Leads
-    const saveView = useCallback((name: string, visibility: string, existingId?: number) => {
+    const updateViewName = (name: string, existingView?: LeadView) => {
+        const newView = {
+            ...existingView,
+            name: name
+        }
+        return updateView(newView, existingView.id)
+    }
+
+    const saveView = useCallback((name: string, visibility: string, existingView?: LeadView) => {
         if (!campaignId) return
+        if (existingView) return updateViewName(name, existingView)
         const newView = {
             name: name,
             visibility: visibility,
@@ -172,8 +181,17 @@ export const LeadListPage = () => {
             ui_config: { "selected_ids": selectedFieldIds, "fetch_params": fetchParams },
             view_type: presentationMode,
         }
-        if (existingId) return updateView(newView, existingId)
-        else return createView(newView)
+        return createView(newView)
+    }, [campaignId, fetchParams, filters, orderProps, presentationMode, selectedFieldIds])
+
+    const getCurrentView = useCallback(() => {
+        if (!campaignId) return
+        return {
+            filters: { "filters": filters },
+            sort_config: { "order_by": orderProps.orderBy, "ascending": orderProps.ascending },
+            ui_config: { "selected_ids": selectedFieldIds, "fetch_params": fetchParams },
+            view_type: presentationMode,
+        }
     }, [campaignId, fetchParams, filters, orderProps, presentationMode, selectedFieldIds])
 
     const loadView = useCallback((view: LeadView) => {
@@ -203,7 +221,7 @@ export const LeadListPage = () => {
         fetchLeads(fetchPage, newFilters, { ...newFetchParams, ...newOrderParams }, campaignId)
     }, [campaignId, fetchLeads, fetchPage, setOrderList])
 
-    const viewUpdateProps = useMemo(() => ({ saveView, loadView }), [saveView, loadView])
+    const viewUpdateProps = useMemo(() => ({ saveView, loadView, getCurrentView }), [saveView, loadView, getCurrentView])
 
     //-------------------------------Leads Seleccionados-------------------------------
 

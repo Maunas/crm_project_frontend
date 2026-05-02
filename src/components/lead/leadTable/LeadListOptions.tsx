@@ -120,6 +120,7 @@ interface LeadTableOptionsProps {
     viewUpdateProps: {
         saveView: (name: string, visibility: string, existingId?: number | undefined) => Promise<LeadView> | undefined;
         loadView: (view: LeadView) => void;
+        getCurrentView: () => LeadViewParams;
     }
 }
 
