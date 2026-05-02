@@ -1,4 +1,4 @@
-import type { LeadFilter, Metadata } from "./common";
+import type { LeadFilter, ListParams, Metadata } from "./common";
 import type { LeadFieldValue, LeadFieldValueDetailed } from "./leadFields";
 import type { ColorTypes } from "./mui-theme.d";
 
@@ -63,6 +63,7 @@ export interface LeadViewPost {
   },
   ui_config?: {
     selected_ids?: number[],
+    fetch_params?: ListParams,
     [item: string]: unknown
   },
   sort_config?: {
