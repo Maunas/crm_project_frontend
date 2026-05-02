@@ -45,6 +45,9 @@ export interface CampaignParams extends ListParams {
 export interface LeadListParams extends ListParams {
   campaign_id?: number
 }
+export interface LeadFlowParams extends ListParams {
+  organization_id?: number
+}
 
 /**
  * Contiene los formatos de mensaje de error.

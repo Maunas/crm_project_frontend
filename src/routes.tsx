@@ -14,6 +14,7 @@ import { SearchResultsList } from "./components/common/SearchResults";
 import { LoginFormPage } from "./components/users/LoginForm";
 import { UserProvider } from "./components/users/UserProvider";
 import { SignupFormPage } from "./components/users/SignupForm";
+import { LeadFlowEditor } from "./components/leadFlows/LeadFlowEditor";
 
 export const router = createBrowserRouter([
     {
@@ -79,6 +80,10 @@ export const router = createBrowserRouter([
             {
                 path: "/search",
                 Component: SearchResultsList,
+            },
+            {
+                path: "/lead-flow-editor",
+                Component: LeadFlowEditor,
             },
             {
                 path: "*", //Si no coincide con nada más.
