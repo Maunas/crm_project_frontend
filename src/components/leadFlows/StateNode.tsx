@@ -3,175 +3,114 @@ import { Handle, Position } from 'reactflow'
 import type { NodeProps } from 'reactflow'
 import { Box, Typography, Chip, IconButton } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
-import EditIcon from '@mui/icons-material/Edit'
-import FlagIcon from '@mui/icons-material/Flag'
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
-import CancelIcon from '@mui/icons-material/Cancel'
 import type { Category } from '../../types/leadFlow'
+import { CATEGORY_CONFIG } from '../../types/leadFlow'
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import CircleIcon from '@mui/icons-material/Circle';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import CancelIcon from '@mui/icons-material/Cancel';
 
-interface StateNodeData {
-  name: string
-  category: Category
-  is_initial: boolean
-  color: string
-  onEdit: () => void
-  onDelete: () => void
+export interface StateNodeData {
+  label: string;
+  category: Category;
+  isInitial: boolean;
+  color?: string;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
 }
 
-const categoryIcons: Record<Category, React.ReactNode> = {
-  OPEN: <FlagIcon fontSize="small" />,
-  WON: <EmojiEventsIcon fontSize="small" />,
-  LOST: <CancelIcon fontSize="small" />,
-}
+const getCategoryIcon = (category: Category) => {
+  const sx = { fontSize: 14 }; // Tamaño pequeño para que entre bien en el Chip
+  switch (category) {
+    case 'WON':
+      return <EmojiEventsIcon sx={sx} />;
+    case 'LOST':
+      return <CancelIcon sx={sx} />;
+    case 'OPEN':
+    default:
+      return <CircleIcon sx={sx} />;
+  }
+};
 
-const categoryLabels: Record<Category, string> = {
-  OPEN: 'Abierto',
-  WON: 'Éxito',
-  LOST: 'Fracaso',
-}
-
-const categoryColors: Record<Category, string> = {
-  OPEN: '#2196f3',
-  WON: '#4caf50',
-  LOST: '#f44336',
-}
-
-function StateNode({ data }: NodeProps<StateNodeData>) {
-  const { name, category, is_initial, color, onEdit, onDelete } = data
+function StateNodeComponent({ id, data, selected }: NodeProps<{ data: StateNodeData }>) {
+  const { label, category, isInitial, color, onEdit, onDelete } = data.data ?? data;
+  const categoryConfig = CATEGORY_CONFIG[category];
+  const nodeColor = color || categoryConfig?.color || '#64748b';
 
   return (
     <Box
+      onDoubleClick={() => onEdit(id)} // <-- AQUÍ ESTÁ EL DOBLE CLIC
       sx={{
-        width: 'max-content',
-        minWidth: 'clamp(150px, 15vw, 180px)', 
-        maxWidth: 'clamp(200px, 25vw, 250px)',
-        bgcolor: 'background.paper',
-        borderRadius: 2,
-        boxShadow: 3,
-        border: `3px solid ${color || categoryColors[category]}`,
-        overflow: 'hidden',
         position: 'relative',
-        '&:hover .node-actions': {
-          opacity: 1,
+        minWidth: 160,
+        backgroundColor: 'background.paper',
+        borderRadius: 2,
+        border: 2,
+        borderColor: selected ? 'primary.main' : nodeColor,
+        boxShadow: selected ? `0 0 0 2px ${nodeColor}40` : 'none',
+        transition: 'all 0.2s ease',
+        cursor: 'pointer', // Indicador visual de que es interactivo
+        '&:hover': {
+          boxShadow: `0 4px 20px ${nodeColor}30`,
+          '& .node-actions': { opacity: 1 },
         },
       }}
     >
-      {/* PUERTOS DE ENTRADA (Target) - Donde llegan las flechas */}
-      <Handle 
-        type="target" 
-        position={Position.Top} 
-        id="target-top"
-        style={{ background: '#555', width: 12, height: 12, border: '2px solid white' }} // 
-      />
-      <Handle 
-        type="target" 
-        position={Position.Top} 
-        id="top"
-        style={{ background: '#555', width: 12, height: 12, border: '2px solid white' }} 
-      />
+      {/* Target handle - top (Oculto en estado inicial) */}
+      {!isInitial && (
+        <Handle
+          type="target"
+          position={Position.Top}
+          style={{ width: 12, height: 12, top: -6, backgroundColor: nodeColor, border: '2px solid #1e293b' }}
+        />
+      )}
 
       {/* Header con categoría */}
-      <Box
-        sx={{
-          bgcolor: color || categoryColors[category],
-          color: 'white',
-          px: 1.5,
-          py: 0.5,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 1.5, py: 0.75, borderBottom: 1, borderColor: 'divider', backgroundColor: `${nodeColor}15` }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-          {categoryIcons[category]}
-          <Typography variant="caption" fontWeight="medium">
-            {categoryLabels[category]}
-          </Typography>
-        </Box>
-        {is_initial && (
-          <Chip
-            label="Inicial"
-            size="small"
-            sx={{
-              bgcolor: 'rgba(255,255,255,0.3)',
-              color: 'white',
-              height: 20,
-              fontSize: '0.65rem',
-            }}
+          {isInitial && <PlayArrowIcon sx={{ fontSize: 16, color: nodeColor }} />}
+          <Chip 
+            icon={getCategoryIcon(category)} 
+            label={categoryConfig?.label || category} 
+            size="small" 
+            sx={{ 
+              height: 20, 
+              fontSize: '0.65rem', 
+              fontWeight: 600, 
+              backgroundColor: `${nodeColor}30`, 
+              color: nodeColor,
+              // Le decimos al ícono que herede el color del texto del Chip
+              '& .MuiChip-icon': {
+                color: nodeColor,
+                marginLeft: '4px'
+              }
+            }} 
           />
-        )}
+        </Box>
       </Box>
 
-      {/* Content */}
-      <Box sx={{ p: 1.5 }}>
-        <Typography
-          variant="subtitle1"
-          fontWeight="bold"
-          sx={{
-            textAlign: 'center',
-            wordBreak: 'break-word',
-          }}
-        >
-          {name}
+      {/* Nombre del Estado */}
+      <Box sx={{ px: 2, py: 1.5 }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.primary', textAlign: 'center' }}>
+          {label}
         </Typography>
       </Box>
 
-      {/* Actions */}
-      <Box
-        className="node-actions"
-        sx={{
-          position: 'absolute',
-          top: 4,
-          right: 4,
-          display: 'flex',
-          gap: 0.5,
-          opacity: 0,
-          transition: 'opacity 0.2s',
-        }}
-      >
-        <IconButton
-          size="small"
-          onClick={(e) => {
-            e.stopPropagation()
-            onEdit()
-          }}
-          sx={{
-            bgcolor: 'rgba(255,255,255,0.9)',
-            '&:hover': { bgcolor: 'white' },
-          }}
-        >
-          <EditIcon fontSize="small" />
-        </IconButton>
-        <IconButton
-          size="small"
-          onClick={(e) => {
-            e.stopPropagation()
-            onDelete()
-          }}
-          sx={{
-            bgcolor: 'rgba(255,255,255,0.9)',
-            '&:hover': { bgcolor: 'white' },
-          }}
-        >
-          <DeleteIcon fontSize="small" color="error" />
+      {/* Botón de eliminar (Aparece en Hover) */}
+      <Box className="node-actions" sx={{ position: 'absolute', top: -12, right: -12, opacity: 0, transition: 'opacity 0.2s ease' }}>
+        <IconButton size="small" onClick={(e) => { e.stopPropagation(); onDelete(id); }} sx={{ backgroundColor: 'error.main', color: 'white', width: 24, height: 24, '&:hover': { backgroundColor: 'error.dark' } }}>
+          <DeleteIcon sx={{ fontSize: 14 }} />
         </IconButton>
       </Box>
 
-      {/* PUERTOS DE SALIDA (Source) - De donde nacen las flechas */}
-      <Handle 
-        type="source" 
-        position={Position.Bottom} 
-        id="source-bottom"
-        style={{ background: '#1976d2', width: 12, height: 12, border: '2px solid white' }} 
-      />
-      <Handle 
-        type="source" 
-        position={Position.Bottom} 
-        id="bottom"
-        style={{ background: '#1976d2', width: 12, height: 12, border: '2px solid white' }} 
+      {/* Source handle - bottom */}
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        style={{ width: 12, height: 12, bottom: -6, backgroundColor: nodeColor, border: '2px solid #1e293b' }}
       />
     </Box>
-  )
+  );
 }
 
-export default memo(StateNode)
+export const StateNode = memo(StateNodeComponent);

@@ -35,6 +35,8 @@ function CustomEdge({
     curvature: 0.4,
   })
 
+  const isLocked = data?.isLocked;
+
   return (
     <>
       <BaseEdge
@@ -48,6 +50,7 @@ function CustomEdge({
         }}
       />
       <EdgeLabelRenderer>
+        {!isLocked && (
         <div
           style={{
             position: 'absolute',
@@ -72,7 +75,7 @@ function CustomEdge({
           >
             <CloseIcon sx={{ fontSize: 14, color: '#ef4444' }} />
           </IconButton>
-        </div>
+        </div>)}
       </EdgeLabelRenderer>
     </>
   )
