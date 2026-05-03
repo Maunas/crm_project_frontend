@@ -15,7 +15,6 @@ import 'reactflow/dist/style.css';
 import { Box, Button, Paper, Typography, Snackbar, Alert, TextField } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import { v4 as uuidv4 } from 'uuid';
-import { FormControlLabel, Switch } from '@mui/material'
 import { StateNode } from './StateNode';
 import CustomEdge from './CustomEdge';
 import StateDialog from './StateDialog';
@@ -28,10 +27,20 @@ const edgeTypes = { customEdge: CustomEdge };
 
 interface FlowEditorProps {
   leadFlowId?: number | null;
-  onSave: (flowName: string, states: FlowState[], transitions: FlowTransition[]) => Promise<void>;
+  initialFlowName?: string;
+  initialFlowDescription?: string;
+  initialStates?: FlowState[];
+  initialTransitions?: FlowTransition[];
+  onSave: (flowName: string, flowDescription: string, states: FlowState[], transitions: FlowTransition[]) => Promise<void>;
 }
 
-export default function FlowEditor({ leadFlowId, onSave }: FlowEditorProps) {
+
+export default function FlowEditor({ leadFlowId, 
+  initialFlowName = '', 
+  initialFlowDescription = '',
+  initialStates = [], 
+  initialTransitions = [], 
+  onSave }: FlowEditorProps) {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
   const theme = useTheme();
@@ -39,8 +48,26 @@ export default function FlowEditor({ leadFlowId, onSave }: FlowEditorProps) {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [isLocked, setIsLocked] = useState(false)
   const [flowName, setFlowName] = useState('');
+  const [flowDescription, setFlowDescription] = useState(initialFlowDescription); 
   const [states, setStates] = useState<FlowState[]>([]);
   const [transitions, setTransitions] = useState<FlowTransition[]>([]);
+
+  //Efecto para cargar los datos cuando vienen del backend
+  useEffect(() => {
+    if (initialStates.length > 0) {
+      setStates(initialStates);
+      syncNodesToStates(initialStates); // Dibuja los nodos
+    }
+    if (initialTransitions.length > 0) {
+      setTransitions(initialTransitions);
+      syncEdgesToTransitions(initialTransitions); // Dibuja las flechas
+    }
+    if (initialFlowName) {
+      setFlowName(initialFlowName);
+    }
+    if (initialFlowDescription) setFlowDescription(initialFlowDescription);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialStates, initialTransitions, initialFlowName, initialFlowDescription]);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingState, setEditingState] = useState<FlowState | null>(null);
@@ -199,10 +226,35 @@ export default function FlowEditor({ leadFlowId, onSave }: FlowEditorProps) {
 
     setSaving(true);
     try {
-      await onSave(flowName, states, transitions);
+      await onSave(flowName, flowDescription, states, transitions);
       setSnackbar({ open: true, message: 'Flujo guardado correctamente', severity: 'success' });
-    } catch (error) {
-      setSnackbar({ open: true, message: 'Error al guardar el flujo', severity: 'error' });
+    } catch (error: any) {
+      console.error("Error completo del back:", error.response?.data);
+
+      const data = error.response?.data;
+      let finalMessage = 'Error al guardar el flujo';
+
+      if (data?.detail) {
+        if (Array.isArray(data.detail)) {
+          // Caso 1: Es una lista de errores (típico de validación FastAPI/Pydantic)
+          // Mapeamos cada error para obtener su mensaje
+          finalMessage = data.detail
+            .map((err: any) => err.message || err.msg || 'Error de validación')
+            .join(' | '); // Los unimos con una barra para que entren en el Snackbar
+        } else if (typeof data.detail === 'string') {
+          // Caso 2: Es un string simple (errores lanzados con HTTPException)
+          finalMessage = data.detail;
+        }
+      } else if (data?.message) {
+        // Caso 3: Formato que mencionaste antes
+        finalMessage = data.message;
+      }
+
+      setSnackbar({ 
+        open: true, 
+        message: finalMessage, 
+        severity: 'error' 
+      });
     } finally {
       setSaving(false);
     }
@@ -227,13 +279,22 @@ export default function FlowEditor({ leadFlowId, onSave }: FlowEditorProps) {
             Editor de Flujos
           </Typography>
 
-          <TextField 
-            size="small"
-            placeholder="Nombre del flujo de negocio..."
-            value={flowName}
-            onChange={(e) => setFlowName(e.target.value)}
-            sx={{ flex: 1, mx: 4 }}
-          />
+          <Box sx={{ flex: 1, display: 'flex', gap: 2, mx: 2 }}>
+            <TextField 
+              size="small"
+              label="Nombre del flujo"
+              value={flowName}
+              onChange={(e) => setFlowName(e.target.value)}
+              sx={{ flex: 1 }}
+            />
+            <TextField 
+              size="small"
+              label="Descripción (Opcional)"
+              value={flowDescription}
+              onChange={(e) => setFlowDescription(e.target.value)}
+              sx={{ flex: 2 }}
+            />
+          </Box>
 
           <Button variant="contained" startIcon={<SaveIcon />} onClick={handleSave} disabled={saving || states.length === 0}>
             {saving ? 'Guardando...' : 'Guardar Flujo'}

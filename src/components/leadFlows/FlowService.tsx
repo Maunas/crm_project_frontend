@@ -26,7 +26,7 @@ export const deleteLeadFlow = async (id: number): Promise<DeleteResponse> => {
 }
 
 export const getLeadFlowStates = async (leadFlowId: number): Promise<FlowState[]> => {
-    const response = await axiosCRM.get(`${API_BASE_URL}/lead_flows?lead_flow_id=${leadFlowId}`)
+    const response = await axiosCRM.get(`${API_BASE_URL}/lead_states?lead_flow_id=${leadFlowId}`)
     return response.data
 }
 
@@ -44,3 +44,23 @@ export const postLeadStateTransitionsBulk = async (data: { lead_flow_id: number,
     const response = await axiosCRM.post(`${API_BASE_URL}/lead_state_transitions/bulk`, data)
     return response.data
 }
+
+export const updateLeadState = async (stateId: number, stateData: any): Promise<FlowState> => {
+    const response = await axiosCRM.put(`${API_BASE_URL}/lead_states/${stateId}`, stateData)
+    return response.data
+}   
+
+export const updateLeadStateTransitionBulk = async (transitionData: any): Promise<FlowTransition> => {
+    const response = await axiosCRM.put(`${API_BASE_URL}/lead_state_transitions/bulk`, transitionData)
+    return response.data
+}
+
+export const updateLeadFlow = async (flowId: number, flowData: any): Promise<LeadFlow> => {
+    const response = await axiosCRM.put(`${API_BASE_URL}/lead_flows/${flowId}`, flowData)
+    return response.data
+}
+
+export const saveLeadFlowGraph = async (payload: any): Promise<{message: string, id: number}> => {
+    const response = await axiosCRM.post(`${API_BASE_URL}/lead_flows/graph`, payload);
+    return response.data;
+};

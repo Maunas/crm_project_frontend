@@ -82,7 +82,7 @@ export const router = createBrowserRouter([
                 Component: SearchResultsList,
             },
             {
-                path: "/lead-flow-editor",
+                path: "/lead-flow-editor/:id?",
                 Component: LeadFlowEditor,
             },
             {
