@@ -179,7 +179,7 @@ const LeadTagsMenu = ({ leadId, tags, currentTags, menuAnchor, handleClose, page
             <Popover
                 disableScrollLock
                 disableAutoFocus
-                id="basic-menu"
+                id="tags-menu"
                 anchorEl={menuAnchor}
                 anchorOrigin={{
                     vertical: 'bottom',
@@ -194,7 +194,7 @@ const LeadTagsMenu = ({ leadId, tags, currentTags, menuAnchor, handleClose, page
             >
                 <Stack spacing={1} sx={{ p: 2 }} ref={menuRef}>
                     <Typography variant="h4" component="h3">Asignar Tags</Typography>
-                    <List sx={{ maxHeight: "30rem", maxWidth: "25rem", overflowY: "auto" }} >
+                    <List sx={{ maxHeight: "30rem", minWidth: "15rem", maxWidth: "25rem", overflowY: "auto" }} dense >
                         {
                             tags.map(tag => (
                                 <ListItem key={`list-${tag.id}`} disablePadding

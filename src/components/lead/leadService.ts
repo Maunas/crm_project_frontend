@@ -1,6 +1,6 @@
 import type { LeadPostForm } from "./leadForm/LeadForm";
-import type { DeleteResponse, EnableResponse, ErrorBody, ErrorMessage, LeadFilter, ListParams, Paginable } from "../../types/common";
-import type { Lead, LeadDetailed, LeadPostValue } from "../../types/leads";
+import type { DeleteResponse, EnableResponse, ErrorBody, ErrorMessage, LeadFilter, LeadListParams, ListParams, Paginable } from "../../types/common";
+import type { Lead, LeadDetailed, LeadPostValue, LeadView, LeadViewDetailed, LeadViewPost } from "../../types/leads";
 import type { LeadField } from "../../types/leadFields";
 import { API_BASE_URL, axiosCRM, setFormErrors } from "../../generalService";
 import type { FieldArrayWithId, UseFormSetError } from "react-hook-form";
@@ -43,6 +43,43 @@ export const enableLead = async (id: number): Promise<EnableResponse> => {
 export const disableLead = async (id: number): Promise<DeleteResponse> => {
   const lead = await axiosCRM.delete(`${API_BASE_URL}/leads/${id}`);
   return lead.data;
+};
+
+
+export const bulkDeleteLead = async (body: { ids: number[] }): Promise<DeleteResponse[]> => {
+  const res = await axiosCRM.post(`${API_BASE_URL}/leads/bulk-delete`, body);
+  return res.data;
+};
+
+
+export const getLeadViews = async <T extends LeadListParams>(params?: T)
+  : Promise<Paginable<T["detailed"] extends true ? LeadViewDetailed : LeadView>> => {
+  const view = await axiosCRM.get(`${API_BASE_URL}/lead_views`, { params });
+  return view.data;
+};
+
+export const getLeadView = async (id: number): Promise<LeadViewDetailed> => {
+  const view = await axiosCRM.get(`${API_BASE_URL}/lead_views/${id}`);
+  return view.data;
+};
+
+export const createView = async (body: LeadViewPost): Promise<LeadViewDetailed> => {
+  const view = await axiosCRM.post(`${API_BASE_URL}/lead_views`, body);
+  return view.data;
+};
+
+export const updateView = async (body: LeadViewPost, id: number): Promise<LeadView> => {
+  const view = await axiosCRM.put(`${API_BASE_URL}/lead_views/${id}`, body);
+  return view.data;
+};
+
+export const enableView = async (id: number): Promise<EnableResponse> => {
+  const view = await axiosCRM.put(`${API_BASE_URL}/lead_views/active/${id}`);
+  return view.data;
+};
+export const deleteView = async (id: number): Promise<DeleteResponse> => {
+  const view = await axiosCRM.delete(`${API_BASE_URL}/lead_views/${id}`);
+  return view.data;
 };
 
 

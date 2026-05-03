@@ -13,18 +13,18 @@ function intersection(a: readonly number[], b: readonly number[]) {
 
 interface LeadColumnSelectorProps<T> {
   originalList: T[],
-  selectedIds: number[],
-  handleSelectedIds: (ids: number[]) => void,
+  selectedFieldIds: number[],
+  handleSelectedFieldIds: (ids: number[], closeModal?: boolean) => void,
   handleClose: () => void,
   showField: keyof T
 }
 
 export default function LeadColumnSelector<T extends { id: number }>
-  ({ originalList, selectedIds, handleSelectedIds, handleClose, showField }: LeadColumnSelectorProps<T>) {
+  ({ originalList, selectedFieldIds, handleSelectedFieldIds, handleClose, showField }: LeadColumnSelectorProps<T>) {
 
   const [checked, setChecked] = React.useState<number[]>([]);
-  const [left, setLeft] = React.useState<number[]>(not(originalList.map(f => f.id), selectedIds) ?? []);
-  const [right, setRight] = React.useState<number[]>(intersection(originalList.map(f => f.id), selectedIds));
+  const [left, setLeft] = React.useState<number[]>(not(originalList.map(f => f.id), selectedFieldIds) ?? []);
+  const [right, setRight] = React.useState<number[]>(intersection(originalList.map(f => f.id), selectedFieldIds));
 
   const leftChecked = intersection(checked, left);
   const rightChecked = intersection(checked, right);
@@ -148,7 +148,7 @@ export default function LeadColumnSelector<T extends { id: number }>
           <CommonButton actionType='CLOSE' variant="outlined" onClick={() => handleClose()}>
             Cancelar
           </CommonButton>
-          <CommonButton actionType='OPTIONS' variant="contained" onClick={() => handleSelectedIds(right)} disabled={right.length === 0}>
+          <CommonButton actionType='OPTIONS' variant="contained" onClick={() => handleSelectedFieldIds(right, true)} disabled={right.length === 0}>
             Guardar Cambios
           </CommonButton>
         </ButtonGroup>

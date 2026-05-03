@@ -28,13 +28,16 @@ export interface Metadata {
 /**
  * Contienen los parámetros permitidos de cada request.
  */
-export interface ListParams {
+export interface OrderParams {
+  order_by?: number | string | null,
+  ascending?: boolean
+}
+
+export interface ListParams extends OrderParams {
   only_active?: boolean,
   detailed?: boolean,
   page?: number,
   page_size?: number,
-  order_by?: number | string | null,
-  ascending?: boolean
 }
 export interface WorkspaceParams extends ListParams {
   organization_id?: number
@@ -68,6 +71,12 @@ export interface DeleteResponse {
   action: string
 }
 
+export interface BulkDeleteResponse {
+  deleted: number[],
+  disabled: number[],
+  failed: number[],
+}
+
 export interface EnableResponse {
   actived: boolean
 }
@@ -92,7 +101,8 @@ export interface Dictionary {
   "lead_search_operators"?: DictionaryItem[]
   "routing_condition_types"?: DictionaryItem[]
   "team_roles"?: DictionaryItem[]
-  "lead_states_categories"?: DictionaryItem[]
+  "lead_states_categories"?: DictionaryItem[],
+  lead_view_visibilities?: DictionaryItem[]
 }
 
 export interface DictionaryItem {

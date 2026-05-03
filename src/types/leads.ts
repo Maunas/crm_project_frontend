@@ -1,4 +1,4 @@
-import type { Metadata } from "./common";
+import type { LeadFilter, ListParams, Metadata } from "./common";
 import type { LeadFieldValue, LeadFieldValueDetailed } from "./leadFields";
 import type { ColorTypes } from "./mui-theme.d";
 
@@ -50,6 +50,54 @@ export interface LeadAuditChange {
     old_value: string | number | number[] | null,
   }
 }
+
+export interface LeadViewPost {
+  campaign_id: number,
+  name: string,
+  visibility: string,
+  team_id?: number | null,
+  view_type?: string | null,
+  filters?: {
+    filters?: LeadFilter[],
+    [item: string]: unknown
+  },
+  ui_config?: {
+    selected_ids?: number[],
+    fetch_params?: ListParams,
+    [item: string]: unknown
+  },
+  sort_config?: {
+    order_by?: string | number | null,
+    ascending?: boolean,
+    [item: string]: unknown
+  }
+}
+
+export interface LeadViewParams {
+  view_type?: string | null,
+  filters?: {
+    filters?: LeadFilter[],
+    [item: string]: unknown
+  },
+  ui_config?: {
+    selected_ids?: number[],
+    fetch_params?: ListParams,
+    [item: string]: unknown
+  },
+  sort_config?: {
+    order_by?: string | number | null,
+    ascending?: boolean,
+    [item: string]: unknown
+  }
+}
+
+export interface LeadView extends LeadViewPost {
+  id: number,
+  organization_id: number
+}
+
+export interface LeadViewDetailed extends LeadView, Metadata { }
+
 
 export interface LeadTagPost {
   name: string,
