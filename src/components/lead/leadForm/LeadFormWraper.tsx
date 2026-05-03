@@ -7,11 +7,13 @@ import type { Campaign, Workspace } from "../../../types/campaigns"
 import { createLead, getLead, getLeadTitleArray, simulateCreateLead, updateLead } from "../leadService"
 import { getWorkspaces } from "../../workspaces/workspaceServices"
 import { getCampaigns } from "../../campaigns/campaignServices"
-import { useNavigate, useParams } from "react-router-dom"
+import { useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { Autocomplete, Divider, Grid, Stack, TextField, Typography } from "@mui/material"
 
 /** Wrapper para presentar LeadForm de creación en una página. */
 export const CreateLeadFormPage = () => {
+
+    const [params] = useSearchParams()
 
     const [campaigns, setCampaigns] = useState<Campaign[]>([])
     const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null)
@@ -22,12 +24,28 @@ export const CreateLeadFormPage = () => {
     const nav = useNavigate()
 
     useEffect(() => {
-        getWorkspaces({ "page_size": 0, only_active: true }).then(res => setWorkspaces(res.items))
+        getWorkspaces({ "page_size": 0, only_active: true }).then(res => {
+            setWorkspaces(res.items)
+            const paramWspId = params.get("workspace")
+            if (!paramWspId) return
+            const paramWsp = res.items.find(wsp => wsp.id === Number(paramWspId))
+            if (!paramWsp) return
+            setSelectedWorkspace(paramWsp)
+        })
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     useEffect(() => {
         if (!selectedWorkspace) return
-        getCampaigns({ page_size: 0, only_active: true, workspace_id: selectedWorkspace.id }).then(res => setCampaigns(res.items))
+        getCampaigns({ page_size: 0, only_active: true, workspace_id: selectedWorkspace.id }).then(res => {
+            setCampaigns(res.items)
+            const paramCmpId = params.get("campaign")
+            if (!paramCmpId) return
+            const paramCmp = res.items.find(cmp => cmp.id === Number(paramCmpId))
+            if (!paramCmp) return
+            setSelectedCampaign(paramCmp)
+        })
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedWorkspace])
 
     const onSubmit = useCallback((data: FormData) => {
@@ -58,7 +76,7 @@ export const CreateLeadFormPage = () => {
                 </Grid>
                 {campaignError && <FormErrorMessage>{campaignError}</FormErrorMessage>}
                 {selectedCampaign && <Divider />}
-                <LeadForm campaignId={selectedCampaign?.id} onSubmit={onSubmit} onCancel={() => nav("/leads")} setCampaignError={setCampaignError} />
+                <LeadForm campaignId={selectedCampaign?.id} onSubmit={onSubmit} onCancel={() => nav(`/leads?workspace=${selectedWorkspace?.id}&campaign=${selectedCampaign?.id}`)} setCampaignError={setCampaignError} />
             </Stack>
         </Stack>
     )
