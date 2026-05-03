@@ -85,62 +85,62 @@ export const LeadDetailsLayout = () => {
 
 
     return (
-        <Container maxWidth={false}>
-            {/* --- BOTÓN ANTERIOR (Flotante a la izquierda) --- */}
-            <Fab 
-                color="primary" 
-                size="small" 
-                onClick={handlePrev} 
-                disabled={isLoadingNavigation}
-                sx={{ 
-                    position: 'fixed', 
-                    left: 24, 
-                    top: '50%', 
-                    transform: 'translateY(-50%)', 
-                    zIndex: 1200 
-                }}
-            >
-                {isLoadingNavigation ? <CircularProgress size={24} color="inherit" /> : <ArrowBackIosNewIcon />}
-            </Fab>
+        <Container maxWidth={false} sx={{ display: 'flex', gap: 2, alignItems: 'stretch' }}>
+            
+            {/* --- COLUMNA IZQUIERDA (Pegajosa) --- */}
+            <Box sx={{ flexShrink: 0, width: '40px', display: 'flex', justifyContent: 'center' }}>
+                <Box sx={{ position: 'sticky', top: '50vh', transform: 'translateY(-50%)', zIndex: 10, height: 'max-content' }}>
+                    <Fab 
+                        color="primary" 
+                        size="small" 
+                        onClick={handlePrev} 
+                        disabled={isLoadingNavigation}
+                    >
+                        {isLoadingNavigation ? <CircularProgress size={24} color="inherit" /> : <ArrowBackIosNewIcon />}
+                    </Fab>
+                </Box>
+            </Box>
 
-            {/* --- BOTÓN SIGUIENTE (Flotante a la derecha) --- */}
-            <Fab 
-                color="primary" 
-                size="small" 
-                onClick={handleNext} 
-                disabled={isLoadingNavigation}
-                sx={{ 
-                    position: 'fixed', 
-                    right: 24, 
-                    top: '50%', 
-                    transform: 'translateY(-50%)', 
-                    zIndex: 1200 
-                }}
-            >
-                {isLoadingNavigation ? <CircularProgress size={24} color="inherit" /> : <ArrowForwardIosIcon />}
-            </Fab>
-            <Stack spacing={3}>
-                {campaign &&
-                    <Breadcrumbs aria-label="breadcrumb">
-                        <Link component={RouterLink} to={`/leads?workspace=${campaign?.workspace_id}&campaign=${campaign?.id}`}
-                            sx={{ underline: "hover", fontWeight: 600 }} >
-                            {campaign?.name}
-                        </Link>
-                        <Typography sx={{ color: 'text.primary' }}>{leadTitle}</Typography>
-                    </Breadcrumbs>}
-                {lead &&
-                    <Grid container spacing={3}>
-                        <Grid size={{ xs: 12, md: 4, lg: 4 }} sx={{ minWidth: "20rem" }} >
-                            <LeadInfo lead={lead} handleActive={handleActive} leadTitle={leadTitle} updateLeadInfo={updateLeadInfo} />
-                        </Grid>
-                        <Grid size="grow" sx={{ minWidth: "20rem" }} component={GenericPaper} >
-                            <LeadActivities leadId={lead.id} reloadAudit={reloadAudit} />
-                        </Grid>
-                    </Grid >
-                }
-            </Stack >
-        </Container >
-    )
+            {/* --- CONTENIDO PRINCIPAL --- */}
+            <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                <Stack spacing={3}>
+                    {campaign &&
+                        <Breadcrumbs aria-label="breadcrumb">
+                            <Link component={RouterLink} to={`/leads?workspace=${campaign?.workspace_id}&campaign=${campaign?.id}`}
+                                sx={{ underline: "hover", fontWeight: 600 }} >
+                                {campaign?.name}
+                            </Link>
+                            <Typography sx={{ color: 'text.primary' }}>{leadTitle}</Typography>
+                        </Breadcrumbs>}
+                    {lead &&
+                        <Grid container spacing={3}>
+                            <Grid size={{ xs: 12, md: 4, lg: 4 }} sx={{ minWidth: "20rem" }} >
+                                <LeadInfo lead={lead} handleActive={handleActive} leadTitle={leadTitle} updateLeadInfo={updateLeadInfo} />
+                            </Grid>
+                            <Grid size="grow" sx={{ minWidth: "20rem" }} component={GenericPaper} >
+                                <LeadActivities leadId={lead.id} reloadAudit={reloadAudit} />
+                            </Grid>
+                        </Grid >
+                    }
+                </Stack >
+            </Box>
+
+            {/* --- COLUMNA DERECHA (Pegajosa) --- */}
+            <Box sx={{ flexShrink: 0, width: '40px', display: 'flex', justifyContent: 'center' }}>
+                <Box sx={{ position: 'sticky', top: '50vh', transform: 'translateY(-50%)', zIndex: 10, height: 'max-content' }}>
+                    <Fab 
+                        color="primary" 
+                        size="small" 
+                        onClick={handleNext} 
+                        disabled={isLoadingNavigation}
+                    >
+                        {isLoadingNavigation ? <CircularProgress size={24} color="inherit" /> : <ArrowForwardIosIcon />}
+                    </Fab>
+                </Box>
+            </Box>
+
+        </Container >
+    )
 }
 
 
