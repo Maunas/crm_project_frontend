@@ -24,7 +24,7 @@ export interface LeadFieldPost {
   required: boolean;
   is_primary: boolean;
   is_visible: boolean;
-  lead_field_section_id: number | null;
+  lead_field_section_id?: number | null;
   default_value?: string | null;
   input_mask?: string | null;
   mask_template_code?: string | null;

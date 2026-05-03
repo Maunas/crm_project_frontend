@@ -21,6 +21,9 @@ import StateDialog from './StateDialog';
 import { Sidebar } from './Sidebar';
 import type {Category} from '../../types/leadFlow'
 import { DEFAULT_STATE_COLORS, type FlowState, type FlowTransition } from '../../types/leadFlow';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { useNavigate } from 'react-router-dom';
+import { IconButton } from '@mui/material'; // Asegúrate de tener IconButton
 
 const nodeTypes = { stateNode: StateNode };
 const edgeTypes = { customEdge: CustomEdge };
@@ -51,7 +54,7 @@ export default function FlowEditor({ leadFlowId,
   const [flowDescription, setFlowDescription] = useState(initialFlowDescription); 
   const [states, setStates] = useState<FlowState[]>([]);
   const [transitions, setTransitions] = useState<FlowTransition[]>([]);
-
+  const navigate = useNavigate();
   //Efecto para cargar los datos cuando vienen del backend
   useEffect(() => {
     if (initialStates.length > 0) {
@@ -84,6 +87,16 @@ export default function FlowEditor({ leadFlowId,
       }))
     )
   }, [isLocked, setEdges])
+
+  const handleBack = () => {
+    const returnUrl = sessionStorage.getItem('flow_return_url');
+    if (returnUrl) {
+      sessionStorage.removeItem('flow_return_url'); // Limpiamos la ruta
+      navigate(returnUrl); // Volvemos a donde estábamos (ej: /campaigns)
+    } else {
+      navigate(-1); // Fallback por si entró directo al editor
+    }
+  };
   
   // 1. Sincronizar estados visuales
   const syncNodesToStates = useCallback((updatedStates: FlowState[]) => {
@@ -275,9 +288,14 @@ export default function FlowEditor({ leadFlowId,
       <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         {/* Header Superior con el Input y Botón Guardar */}
         <Paper elevation={0} sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: 0, bgcolor: 'background.paper' }}>
-          <Typography variant="h5" fontWeight="bold" color="text.primary">
-            Editor de Flujos
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <IconButton onClick={handleBack} sx={{ mr: 1, color: 'text.secondary' }}>
+              <ArrowBackIcon />
+            </IconButton>
+            <Typography variant="h5" fontWeight="bold" color="text.primary">
+              Editor de Flujos
+            </Typography>
+          </Box>
 
           <Box sx={{ flex: 1, display: 'flex', gap: 2, mx: 2 }}>
             <TextField 

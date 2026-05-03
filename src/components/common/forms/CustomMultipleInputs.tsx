@@ -2,6 +2,7 @@ import { Autocomplete, Checkbox, CircularProgress, FormControl, FormControlLabel
 import { useEffect, useState } from 'react'
 import { Controller, type Control, type ControllerRenderProps, type FieldValues, type Path } from 'react-hook-form'
 import { FormErrorMessage } from './StyledFormComponents'
+import type { ReactNode } from 'react';
 
 interface BasicMultipleInputProps<Option> {
     label?: string,
@@ -27,10 +28,11 @@ interface ControlledACProps<T extends FieldValues, Option> extends BasicControlF
     autocomplete?: string,
     helper?: string,
     placeholder?: string
+    renderOption?: (props: React.HTMLAttributes<HTMLLIElement>, option: Option) => ReactNode;
 }
 
 export const ControlledAutocomplete = <T extends FieldValues, Option>
-    ({ control, name, label, options, getOptionLabel, getOptionKey, returnField = null,
+    ({ control, name, label, options, getOptionLabel, getOptionKey, returnField = null, renderOption,
         required = false, multiple = false, disabled = false, hidden = false, disableClearable = false,
         errorMessage = null, autocomplete = "one-time-code", helper, placeholder, size = "medium", ...props }: ControlledACProps<T, Option>) => {
 
@@ -77,7 +79,7 @@ export const ControlledAutocomplete = <T extends FieldValues, Option>
                     options={options ?? []}
                     onChange={(_, value) => handleChange(field, value)}
                     value={handleValue(field)}
-                    getOptionLabel={getOptionLabel} getOptionKey={getOptionKey}
+                    getOptionLabel={getOptionLabel} getOptionKey={getOptionKey} renderOption={renderOption}
                     isOptionEqualToValue={(option, value) => getOptionKey(option) === getOptionKey(value)}
                     fullWidth
                     renderInput={(params) =>

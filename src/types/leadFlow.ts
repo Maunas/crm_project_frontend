@@ -1,8 +1,8 @@
 export type Category = 'OPEN' | 'WON' | 'LOST'
 
 export interface LeadFlowPost {
-  name: String
-  description?: String
+  name: string
+  description?: string
 }
 
 export interface LeadFlow extends LeadFlowPost {
