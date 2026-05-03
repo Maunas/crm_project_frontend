@@ -12,7 +12,7 @@ import { disableNomenclator, enableNomenclator, getNomenclator, getNomenclators 
 import type { UserContextItems } from '../users/UserProvider'
 import { UserContext } from '../common/contexts'
 import { Link as RouterLink, useSearchParams } from 'react-router-dom'
-import { Link, List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
+import { List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
 import { ListAction } from '../common/lists/Icons'
 import { CustomListItem } from '../common/lists/CustomListItem'
 
@@ -125,14 +125,7 @@ export const NomenclatorList = () => {
                                                         (Nomenclador del Sistema)
                                                     </Typography>}
                                                 </Stack>
-                                            }
-                                                secondary={
-                                                    nom.campaign_id
-                                                        ? <Link component={RouterLink} to={`/campaigns/${nom.campaign_id}`}>
-                                                            Perteneciente a la Campaña {nom.campaign_id}
-                                                        </Link>
-                                                        : "Nomenclador Global"
-                                                } />
+                                            } />
                                         </ListItemButton>
                                     </CustomListItem>
                                 )}

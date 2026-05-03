@@ -1,4 +1,4 @@
-import { Autocomplete, Badge, Button, Divider, Grid, Stack, TextField, ToggleButton, ToggleButtonGroup, type AutocompleteRenderInputParams } from "@mui/material"
+import { Autocomplete, Badge, Divider, Grid, Stack, TextField, ToggleButton, ToggleButtonGroup, type AutocompleteRenderInputParams, ButtonGroup } from "@mui/material"
 import { memo, useCallback, useContext, useEffect, useState } from "react"
 import type { Campaign, Workspace } from "../../../types/campaigns"
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
@@ -13,8 +13,9 @@ import type { LeadFilter, LeadListParams } from "../../../types/common";
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import WindowIcon from '@mui/icons-material/Window';
 import TableChartIcon from '@mui/icons-material/TableChart';
-import type { Lead, LeadView } from "../../../types/leads";
+import type { Lead, LeadView, LeadViewParams } from "../../../types/leads";
 import { LeadViewMenu } from "./LeadViewMenu";
+import { ChipTooltip } from "../../common/details/ChipTooltip";
 
 interface LeadCampaignSelectorsProps {
     workspaceId: string | number | null,
@@ -118,9 +119,9 @@ interface LeadTableOptionsProps {
     },
     bulkDelete: () => Promise<void> | undefined;
     viewUpdateProps: {
-        saveView: (name: string, visibility: string, existingId?: number | undefined) => Promise<LeadView> | undefined;
+        saveView: (name: string, visibility: string, existingView?: LeadView) => Promise<LeadView> | undefined
         loadView: (view: LeadView) => void;
-        getCurrentView: () => LeadViewParams;
+        currentView: LeadViewParams | undefined;
     }
 }
 
@@ -140,42 +141,58 @@ export const LeadListOptions = memo(({ areThereLeads, campaignId, filters, heade
             </Grid>
             <Divider orientation="vertical" flexItem />
             <Grid container size="grow" spacing={1} sx={{ justifyContent: "end", alignItems: "center", minWidth: "20rem" }}>
-                {
-                    areThereLeads && !!campaignId &&
-                    <CommonButton actionType='OPTIONS' color='secondary' onClick={() => modalProps.handleOpen("columns_selector")} >
-                    </CommonButton>
-                }
-                {areThereLeads &&
-                    <Badge badgeContent={filters.length} color="success">
-                        <CommonButton actionType="FILTER" color="secondary" onClick={() => modalProps.handleOpen("lead_filters")}>
-                        </CommonButton>
-                    </Badge>}
-                <GenericModal idModal="lead_filters" modalProps={modalProps} buttonText="Aplicar Filtros" maxWidth="lg"
-                    actionType='FILTER' color='secondary' showButton={false} >
-                    <LeadFilters applyFilters={applyFilters} filters={{ filters, headers }} campaignId={Number(campaignId)}
-                        onClose={() => modalProps.handleClose()} />
-                </GenericModal>
                 <ToggleButtonGroup
+                    size="small"
                     value={presentationProps.presentationMode}
                     exclusive
                     onChange={(_, value) => presentationProps.handlePresentation(value)}
                     aria-label="text alignment"
                 >
-                    <ToggleButton value="TABLE">
-                        <TableChartIcon />
-                    </ToggleButton>
-                    <ToggleButton value="LIST" disabled>
-                        <FormatListBulletedIcon />
-                    </ToggleButton>
-                    <ToggleButton value="GRID" disabled>
-                        <WindowIcon />
-                    </ToggleButton>
+                    <ChipTooltip title='Tabla' color="contrast">
+                        <ToggleButton value="TABLE">
+                            <TableChartIcon />
+                        </ToggleButton>
+                    </ChipTooltip>
+                    <ChipTooltip title='Lista' color="contrast">
+                        <ToggleButton value="LIST" disabled>
+                            <FormatListBulletedIcon />
+                        </ToggleButton>
+                    </ChipTooltip>
+                    <ChipTooltip title='Grilla' color="contrast">
+                        <ToggleButton value="GRID" disabled>
+                            <WindowIcon />
+                        </ToggleButton>
+                    </ChipTooltip>
                 </ToggleButtonGroup>
-                {selectCheckboxProps.checkedItems.size > 0 &&
-                    <Button variant="outlined" color="error" onClick={bulkDelete}>Eliminar Seleccionados</Button>
-                }
-                {campaignSelectorProps?.campaignId &&
-                    <LeadViewMenu {...viewUpdateProps} campaignId={Number(campaignSelectorProps.campaignId)} />}
+                <ButtonGroup >
+                    {areThereLeads &&
+                        <ChipTooltip title='Filtros' color="secondary">
+                            <Badge badgeContent={filters.length} color="success">
+                                <CommonButton variant="outlined" actionType="FILTER" color="secondary" onClick={() => modalProps.handleOpen("lead_filters")} />
+                            </Badge>
+                        </ChipTooltip>}
+                    {
+                        areThereLeads && !!campaignId &&
+                        <ChipTooltip title='Campos a Mostrar' color="secondary">
+                            <CommonButton variant="outlined" actionType='OPTIONS' color='secondary' onClick={() => modalProps.handleOpen("columns_selector")} />
+                        </ChipTooltip>
+
+                    }
+                    {campaignSelectorProps?.campaignId &&
+                        <LeadViewMenu {...viewUpdateProps} campaignId={Number(campaignSelectorProps.campaignId)} />}
+                    {selectCheckboxProps.checkedItems.size > 0 &&
+                        <ChipTooltip title='Eliminar Seleccionados' color="error">
+                            <CommonButton variant="outlined" actionType="CLOSE" color="error" onClick={bulkDelete} />
+                        </ChipTooltip>
+                    }
+                </ButtonGroup>
+
+                <GenericModal idModal="lead_filters" modalProps={modalProps} buttonText="Aplicar Filtros" maxWidth="lg"
+                    actionType='FILTER' color='secondary' showButton={false} >
+                    <LeadFilters applyFilters={applyFilters} filters={{ filters, headers }} campaignId={Number(campaignId)}
+                        onClose={() => modalProps.handleClose()} />
+                </GenericModal>
+
             </Grid >
         </Grid>
     )

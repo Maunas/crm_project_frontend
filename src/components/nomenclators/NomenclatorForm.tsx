@@ -45,7 +45,7 @@ export const NomenclatorForm = ({ existingNom, submit, onCancel }: NomenclatorPr
 
     const defaultValues = useMemo(() => ({
         name: existingNom?.name ?? null,
-        parent_nomenclator_id: existingNom?.parent_nomenclator.id ?? null,
+        parent_nomenclator_id: existingNom?.parent_nomenclator?.id ?? null,
     }), [existingNom])
 
     const { control, handleSubmit, reset, formState: { errors }, setError } = useForm<NomenclatorPost>({ defaultValues })

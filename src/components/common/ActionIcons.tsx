@@ -12,6 +12,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
+import SettingsIcon from '@mui/icons-material/Settings';
 
 export const ACTION_ICONS = {
     NONE: <></>,
@@ -24,6 +25,7 @@ export const ACTION_ICONS = {
     SAVE: <SaveOutlinedIcon sx={{ display: "block" }} />,
     FILTER: <FilterAltIcon sx={{ display: "block" }} />,
     OPTIONS: <SettingsInputComponentIcon sx={{ display: "block" }} />,
+    SETTINGS: <SettingsIcon sx={{ display: "block" }} />,
     RETURN: <ArrowBackIcon sx={{ display: "block" }} />,
     LOGIN: <PersonIcon sx={{ display: "block" }} />,
     SIGNUP: <PersonAddIcon sx={{ display: "block" }} />,
@@ -33,4 +35,4 @@ export const ACTION_ICONS = {
 
 export type ActionType = "MODIFY" | "CLOSE" | "CREATE" | "DISABLE" | "ENABLE" |
     "DETAILS" | "FILTER" | "OPTIONS" | "SAVE" | "RETURN" |
-    "LOGIN" | "SIGNUP" | "NONE" | "LIST" | "CHECK"
+    "LOGIN" | "SIGNUP" | "NONE" | "LIST" | "CHECK" | "SETTINGS"

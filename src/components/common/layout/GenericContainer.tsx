@@ -3,7 +3,7 @@ import { memo, type ComponentProps, type ReactNode } from 'react'
 import { CommonButton } from '../details/DetailsCommonButton'
 
 interface GenericContainerProps {
-    children: ReactNode,
+    children?: ReactNode,
     maxWidth?: false | Breakpoint | undefined,
     containerSx?: object,
     paperSx?: object

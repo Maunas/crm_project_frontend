@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { PaginationComponent } from '../../common/lists/PaginationComponent'
 import type { LeadFilter, LeadListParams, ListParams, OrderParams, Paginable } from '../../../types/common'
 import { CommonCollapsedButton } from '../../common/details/DetailsCommonButton'
-import type { Lead, LeadView } from '../../../types/leads'
+import type { Lead, LeadView, LeadViewParams } from '../../../types/leads'
 import { useListPagination } from '../../hooks/useListPagination'
 import { useModal } from '../../hooks/useModal'
 import { bulkDeleteLead, createView, getFilteredLeads, getLeads, updateView } from '../leadService'
@@ -105,6 +105,9 @@ export const LeadListPage = () => {
             setFilters(filters)
         })
     }, [campaignId, fetchLeads, orderParams])
+    //Reinicia los filtros al cambiar de campaña
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => { setFiltersAndHeaders([], fetchParams) }, [campaignId])
 
     //-----------------------------Orden de Columnas-----------------------------
 
@@ -162,6 +165,7 @@ export const LeadListPage = () => {
     //------------------------------------LeadView------------------------------------
     //Necesarios acá para interactuar con los estados y hacer fetch de Leads
     const updateViewName = (name: string, existingView?: LeadView) => {
+        if (!existingView?.campaign_id) return
         const newView = {
             ...existingView,
             name: name
@@ -184,14 +188,14 @@ export const LeadListPage = () => {
         return createView(newView)
     }, [campaignId, fetchParams, filters, orderProps, presentationMode, selectedFieldIds])
 
-    const getCurrentView = useCallback(() => {
+    const currentView = useMemo(() => {
         if (!campaignId) return
         return {
             filters: { "filters": filters },
             sort_config: { "order_by": orderProps.orderBy, "ascending": orderProps.ascending },
             ui_config: { "selected_ids": selectedFieldIds, "fetch_params": fetchParams },
             view_type: presentationMode,
-        }
+        } as LeadViewParams
     }, [campaignId, fetchParams, filters, orderProps, presentationMode, selectedFieldIds])
 
     const loadView = useCallback((view: LeadView) => {
@@ -221,7 +225,7 @@ export const LeadListPage = () => {
         fetchLeads(fetchPage, newFilters, { ...newFetchParams, ...newOrderParams }, campaignId)
     }, [campaignId, fetchLeads, fetchPage, setOrderList])
 
-    const viewUpdateProps = useMemo(() => ({ saveView, loadView, getCurrentView }), [saveView, loadView, getCurrentView])
+    const viewUpdateProps = useMemo(() => ({ saveView, loadView, currentView }), [saveView, loadView, currentView])
 
     //-------------------------------Leads Seleccionados-------------------------------
 

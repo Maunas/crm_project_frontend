@@ -6,7 +6,7 @@ import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import SortIcon from '@mui/icons-material/Sort';
 import type { LeadView, LeadViewParams } from '../../../types/leads';
 import { type DictionaryItem, type Paginable } from '../../../types/common';
-import { Button, IconButton, TextField, List, ListItem, ListItemButton, ListItemText, Popover, Stack, Typography, Divider } from '@mui/material';
+import { Button, IconButton, TextField, List, ListItem, ListItemButton, ListItemText, Popover, Stack, Typography } from '@mui/material';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import WindowIcon from '@mui/icons-material/Window';
 import TableChartIcon from '@mui/icons-material/TableChart';
@@ -17,15 +17,17 @@ import { getDictionaries } from '../../../generalService';
 import { ControlledRadio } from "../../common/forms/CustomMultipleInputs";
 import { FormErrorMessage } from "../../common/forms/StyledFormComponents";
 import { setFormErrors } from "../../../generalService";
+import { CommonButton } from '../../common/details/DetailsCommonButton';
+import { ChipTooltip } from '../../common/details/ChipTooltip';
 
 interface LeadViewMenuProps {
     saveView: (name: string, visibility: string, existingView?: LeadView) => Promise<LeadView> | undefined;
     loadView: (view: LeadView) => void;
-    getCurrentView: () => LeadViewParams;
+    currentView: LeadViewParams | undefined;
     campaignId: number
 }
 
-export const LeadViewMenu = ({ saveView, loadView, campaignId, getCurrentView }: LeadViewMenuProps) => {
+export const LeadViewMenu = ({ saveView, loadView, campaignId, currentView }: LeadViewMenuProps) => {
     const [viewAnchor, setViewAnchor] = React.useState<null | HTMLElement>(null);
     const open = Boolean(viewAnchor);
 
@@ -78,9 +80,13 @@ export const LeadViewMenu = ({ saveView, loadView, campaignId, getCurrentView }:
         setViewFormAnchor(null)
     }
 
+    const selectedView = useMemo(() => editView ?? currentView, [editView, currentView])
+
     return (
         <>
-            <Button onClick={handleClick}>Cargar Vista</Button>
+            <ChipTooltip title='Vistas' color="primary">
+                <CommonButton variant="outlined" actionType='SETTINGS' color="primary" onClick={handleClick} />
+            </ChipTooltip>
             <Popover anchorEl={viewAnchor} open={open} onClose={handleClose}
                 anchorOrigin={{
                     vertical: 'bottom',
@@ -132,7 +138,9 @@ export const LeadViewMenu = ({ saveView, loadView, campaignId, getCurrentView }:
                     <Button onClick={() => setViewFormAnchor(menuRef.current)} fullWidth>Crear Vista</Button>
                 </Stack >
             </Popover>
-            <ViewForm existingView={editView} visibilities={visibilities} formAnchor={viewFormAnchor} handleClose={handleCloseForm} handleCreate={handleCreate} />
+            <ViewForm existingView={editView} visibilities={visibilities} formAnchor={viewFormAnchor} handleClose={handleCloseForm} handleCreate={handleCreate} >
+                {selectedView && "si."}
+            </ViewForm>
         </>
     )
 }
@@ -142,13 +150,14 @@ interface ViewFormProps {
     formAnchor: null | HTMLElement,
     handleClose: () => void,
     visibilities: DictionaryItem[]
-    handleCreate: (name: string, visibility: string, existingView?: LeadView) => Promise<LeadView> | undefined;
+    handleCreate: (name: string, visibility: string, existingView?: LeadView) => Promise<void> | undefined;
     children?: React.ReactNode
 }
 
 interface LeadViewCreate {
     name: string,
-    visibility: null | HTMLElement,
+    visibility: string,
+    team_id: number
 }
 
 export const ViewForm = ({ existingView, visibilities, formAnchor, handleClose, handleCreate, children }: ViewFormProps) => {
@@ -167,11 +176,10 @@ export const ViewForm = ({ existingView, visibilities, formAnchor, handleClose, 
     useEffect(() => { reset(defaultValues) }, [defaultValues, reset])
 
     const onSubmit = (data: LeadViewCreate) => {
-        handleCreate(data.name, data.visibility, existingView)
-            .then(() => {
-                reset(defaultValues)
-                handleClose()
-            })
+        handleCreate(data.name, data.visibility, existingView)?.then(() => {
+            reset(defaultValues)
+            handleClose()
+        })
             .catch(e => setFormErrors(e, setError))
     }
 
