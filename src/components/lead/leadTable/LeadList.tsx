@@ -11,9 +11,10 @@ import { Link as RouterLink, useSearchParams } from 'react-router-dom'
 import { Typography, Grid, Stack } from '@mui/material'
 import { useOrderList } from '../../hooks/useOrderList'
 import { LeadCampaignSelector, LeadTableOptions } from './LeadTableOptions'
+import { useLeadNavigation } from '../../../contexts/LeadNavigationContext';
 
 export const LeadList = () => {
-
+    const { setListContext } = useLeadNavigation();
     const [params, setParams] = useSearchParams()
 
     const [leads, setLeads] = useState<Paginable<Lead> | null>(null)
@@ -61,6 +62,21 @@ export const LeadList = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [campaignId, fetchPage, fetchLeads])
 
+    // Efecto para sincronizar con el LeadNavigationContext
+    useEffect(() => {
+        // Verificamos leads y leads.items porque leads es un objeto Paginable
+        if (leads && leads.items && leads.items.length > 0) {
+            // Mapeamos los IDs desde la propiedad "items"
+            const ids = leads.items.map(lead => lead.id);
+            
+            // Construimos los parámetros actuales incluyendo la página en la que estamos
+            const currentParams = { ...headers, page: leads.page, campaign_id: Number(campaignId) };
+            
+            // Enviamos: (IDs, Parámetros, Filtros, Total de Páginas)
+            setListContext(ids, currentParams, filters, leads.total_pages);
+        }
+    }, [leads, headers, filters, setListContext]); // Usamos las dependencias reales de tu componente
+
     const { modalProps } = useModal()
 
     //Al aplicar filtros vuelve a la primera página
@@ -82,6 +98,8 @@ export const LeadList = () => {
     const { orderProps } = useOrderList(orderList)
 
     const areThereLeads = useMemo(() => leads?.items ? leads.items.length > 0 : false, [leads])
+
+    
 
     return (
         <Stack spacing={3}>

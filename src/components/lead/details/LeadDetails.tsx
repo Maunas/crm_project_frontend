@@ -1,3 +1,7 @@
+import { useLeadNavigation } from "../../../contexts/LeadNavigationContext.tsx"; // Ajusta la ruta
+import { Box, Fab, CircularProgress } from "@mui/material";
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { useEffect, useMemo, useState } from "react"
 import { LeadActivities } from "./activities/LeadActivities.tsx"
 import { GenericPaper } from "../../common/layout/GenericContainer.tsx"
@@ -17,6 +21,38 @@ export const LeadDetailsLayout = () => {
     const [lead, setLead] = useState<LeadDetailed | null>(null)
     const [campaign, setCampaign] = useState<Campaign | null>(null)
     const nav = useNavigate()
+    const leadIdNum = Number(id);
+
+    // 1. Traemos las funciones del contexto
+    const { getNextLeadId, getPrevLeadId, isLoadingNavigation } = useLeadNavigation();
+
+    // 2. Funciones de navegación
+    const handleNext = async () => {
+        const nextId = await getNextLeadId(leadIdNum);
+        if (nextId) nav(`/leads/${nextId}`);
+    };
+
+    const handlePrev = async () => {
+        const prevId = await getPrevLeadId(leadIdNum);
+        if (prevId) nav(`/leads/${prevId}`);
+    };
+
+    // 3. Efecto para escuchar las flechas del teclado
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Evitamos navegar si el usuario está enfocado en un campo de texto
+            const activeTag = document.activeElement?.tagName;
+            if (activeTag === 'INPUT' || activeTag === 'TEXTAREA' || activeTag === 'SELECT') {
+                return;
+            }
+
+            if (e.key === 'ArrowRight') handleNext();
+            if (e.key === 'ArrowLeft') handlePrev();
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [leadIdNum]); // Es importante que leadIdNum esté en las dependencias
 
     useEffect(() => {
         if (id) getLead(parseInt(id)).then((lead) => {
@@ -50,6 +86,39 @@ export const LeadDetailsLayout = () => {
 
     return (
         <Container maxWidth={false}>
+            {/* --- BOTÓN ANTERIOR (Flotante a la izquierda) --- */}
+            <Fab 
+                color="primary" 
+                size="small" 
+                onClick={handlePrev} 
+                disabled={isLoadingNavigation}
+                sx={{ 
+                    position: 'fixed', 
+                    left: 24, 
+                    top: '50%', 
+                    transform: 'translateY(-50%)', 
+                    zIndex: 1200 
+                }}
+            >
+                {isLoadingNavigation ? <CircularProgress size={24} color="inherit" /> : <ArrowBackIosNewIcon />}
+            </Fab>
+
+            {/* --- BOTÓN SIGUIENTE (Flotante a la derecha) --- */}
+            <Fab 
+                color="primary" 
+                size="small" 
+                onClick={handleNext} 
+                disabled={isLoadingNavigation}
+                sx={{ 
+                    position: 'fixed', 
+                    right: 24, 
+                    top: '50%', 
+                    transform: 'translateY(-50%)', 
+                    zIndex: 1200 
+                }}
+            >
+                {isLoadingNavigation ? <CircularProgress size={24} color="inherit" /> : <ArrowForwardIosIcon />}
+            </Fab>
             <Stack spacing={3}>
                 {campaign &&
                     <Breadcrumbs aria-label="breadcrumb">
