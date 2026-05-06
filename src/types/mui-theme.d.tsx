@@ -69,3 +69,9 @@ declare module '@mui/material/ListItemAvatar' {
     color?: ColorTypes;
   }
 }
+
+declare module '@mui/material/Button' {
+  interface ButtonPropsColorOverrides {
+    contrast: true;
+  }
+}

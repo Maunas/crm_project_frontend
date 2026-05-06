@@ -1,4 +1,4 @@
-import type { Metadata } from "./common"
+import type { Metadata } from "./shared"
 
 export interface UserLogin {
     email: string,

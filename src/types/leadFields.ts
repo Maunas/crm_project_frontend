@@ -1,5 +1,5 @@
 import type { Campaign } from "./campaigns";
-import type { Metadata } from "./common";
+import type { Metadata } from "./shared";
 import type { Lead } from "./leads";
 import type { Nomenclator, NomenclatorItem } from "./nomenclators";
 

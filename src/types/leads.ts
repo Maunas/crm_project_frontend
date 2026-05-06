@@ -1,4 +1,4 @@
-import type { LeadFilter, ListParams, Metadata } from "./common";
+import type { LeadFilter, ListParams, Metadata } from "./shared";
 import type { LeadFieldValue, LeadFieldValueDetailed } from "./leadFields";
 import type { ColorTypes } from "./mui-theme.d";
 
