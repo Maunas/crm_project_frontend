@@ -7,7 +7,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import Header from "./Header";
 import Navbar from "./Navbar";
 
-export const drawerWidth = 240;
+export const drawerWidth = "15rem";
 
 /************************************ Transición de apertura y cierre ****************************************/
 const openedMixin = (theme: Theme): CSSObject => ({

@@ -1,11 +1,12 @@
 import { useEffect, useMemo } from "react"
 import type { LeadTag, LeadTagPost } from "../../../types/leads"
-import { COLORS, setFormErrors } from "../../../services/generalService"
 import { Controller, useForm, useWatch, type Control, type FieldValues, type Path } from "react-hook-form"
 import { alpha, Button, IconButton, Stack, TextField, useTheme, type PaletteColor } from "@mui/material"
 import type { ColorTypes } from "../../../types/mui-theme.d"
 import { FormErrorMessage } from "../../../components/ui/forms/FormFeedback"
 import CircleIcon from '@mui/icons-material/Circle'
+import { setFormErrors } from "src/utils/forms"
+import { COLORS } from "src/utils/constants"
 
 interface LeadTagFormProps {
     existingTag: LeadTag | null,

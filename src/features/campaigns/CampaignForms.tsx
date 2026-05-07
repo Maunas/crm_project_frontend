@@ -4,7 +4,7 @@ import { ControlledAutocomplete } from "../../components/ui/forms/CustomMultiple
 import { FormErrorMessage } from "../../components/ui/forms/FormFeedback"
 import type { CampaignDetailed, CampaignPost, Workspace, WorkspaceDetailed } from "../../types/campaigns"
 import type { LeadFieldPost } from "../../types/leadFields"
-import { setFormErrors } from "../../services/generalService"
+import { setFormErrors } from "src/utils/forms"
 import { getWorkspace, getWorkspaces } from "../workspaces/workspaceServices"
 import { createCampaign, updateCampaign } from "./campaignServices"
 import { createLeadField } from "../leadFields/leadFieldServices"

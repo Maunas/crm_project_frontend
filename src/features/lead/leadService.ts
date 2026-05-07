@@ -2,7 +2,7 @@ import type { LeadPostForm } from "./leadForm/LeadForm";
 import type { DeleteResponse, EnableResponse, ErrorBody, ErrorMessage, LeadFilter, LeadListParams, ListParams, Paginable } from "../../types/shared";
 import type { Lead, LeadDetailed, LeadPostValue, LeadView, LeadViewDetailed, LeadViewPost } from "../../types/leads";
 import type { LeadField } from "../../types/leadFields";
-import { setFormErrors } from "../../services/generalService";
+import { setFormErrors } from "src/utils/forms";
 import type { FieldArrayWithId, UseFormSetError } from "react-hook-form";
 import axiosCRM from "src/lib/axios";
 

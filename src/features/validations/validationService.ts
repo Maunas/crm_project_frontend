@@ -1,7 +1,7 @@
 import type { FieldValidationListPost, FieldValidationListPostInstance } from "./ValidationForm";
 import type { DeleteResponse, ErrorBody, ErrorMessage } from "../../types/shared";
 import { type FieldValidationRule, type FieldValidationRuleTemplate, type FieldValidationRulePost, fieldValidationRulePostFields } from "../../types/leadFields";
-import { setFormErrors } from "../../services/generalService";
+import { setFormErrors } from "src/utils/forms";
 import type { Path, UseFormSetError } from "react-hook-form";
 import axiosCRM from "src/lib/axios";
 

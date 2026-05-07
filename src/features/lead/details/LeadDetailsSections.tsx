@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react"
 import type { LeadDetailed } from "../../../types/leads.ts"
 import type { LeadFieldValueDetailed } from "../../../types/leadFields.ts"
-import { formatMoney } from "../../../services/generalService.ts"
 import { useModal } from "src/hooks/useModal.ts"
 import { Accordion, AccordionDetails, AccordionSummary, Divider, Paper, Typography, Stack, IconButton, List, ListItemText } from "@mui/material"
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
@@ -10,6 +9,7 @@ import EditIcon from "@mui/icons-material/Edit"
 import { CustomListItem } from "../../../components/ui/lists/CustomListItem.tsx"
 import { LeadFieldTypeIcon } from "../../leadFields/LeadFieldTypeIcon.tsx"
 import { LeadPartialUpdate } from "./LeadPartialUpdate.tsx"
+import { formatMoney } from "src/utils/formatters.ts"
 
 interface LeadDetailsSection {
     name: string,

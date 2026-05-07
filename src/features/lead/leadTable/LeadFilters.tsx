@@ -6,7 +6,7 @@ import { LeadFormBool, LeadFormMoney, LeadFormNumber, LeadFormRating, LeadFormTe
 import { FormErrorMessage } from '../../../components/ui/forms/FormFeedback'
 import type { LeadFilter, LeadListParams } from '../../../types/shared'
 import { getLeadFields } from '../../leadFields/leadFieldServices'
-import { setFormErrors } from '../../../services/generalService'
+import { setFormErrors } from 'src/utils/forms'
 import { dictOperatorsMock } from '../../../mocks/operators'
 import { useFieldArray, useForm, useWatch, type Control, type FieldErrors, type Path, type UseFieldArrayRemove, type UseFormRegister } from 'react-hook-form'
 import { alpha, Button, Divider, Grid, Typography, Stack, ButtonGroup, useColorScheme, useTheme, Fade, Box } from '@mui/material'

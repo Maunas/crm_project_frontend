@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form'
 import { RegisteredTextInput } from '../../components/ui/forms/CustomInputs'
 import type { Organization, OrganizationDetailed, OrganizationPost } from '../../types/campaigns'
-import { setFormErrors } from '../../services/generalService'
+import { setFormErrors } from "src/utils/forms"
 import { createOrganization, updateOrganization } from '../workspaces/workspaceServices'
 import { Grid, Typography, ButtonGroup, Stack } from '@mui/material'
 import { useEffect, useMemo } from 'react'

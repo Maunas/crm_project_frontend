@@ -7,7 +7,7 @@ import { WorkspaceDetails } from './WorkspaceDetails'
 import type { Paginable } from '../../types/shared'
 import type { CampaignDetailed, WorkspaceDetailed } from '../../types/campaigns'
 import { disableWorkspace, enableWorkspace, getWorkspace, getWorkspaces } from './workspaceServices'
-import type { UserContextItems } from '../users/UserProvider';
+import type { UserContextItems } from 'src/stores/UserProvider';
 import { useSearchParams } from 'react-router-dom';
 import { ButtonGroup, Grid, List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
 import { CustomListItem } from '../../components/ui/lists/CustomListItem';

@@ -4,7 +4,6 @@ import { RegisteredTextInput } from "../../../components/ui/forms/CustomInputs"
 import { FormErrorMessage } from "../../../components/ui/forms/FormFeedback"
 import type { LeadComment, LeadCommentPost } from "../../../types/leads"
 import type { ColorTypes } from "../../../types/mui-theme.d"
-import { COLORS, setFormErrors } from "../../../services/generalService"
 import { createComment, updateComment } from "./leadActivitiesService"
 import { Controller, useForm, type Control } from "react-hook-form"
 import { Box, Grid, IconButton, Stack } from "@mui/material"
@@ -12,6 +11,8 @@ import CircleIcon from '@mui/icons-material/Circle';
 import { alpha, styled, useTheme } from "@mui/material/styles"
 import type { PaletteColor } from "@mui/material/styles"
 import CommonButton from "src/components/ui/buttons/CommonButton"
+import { COLORS } from "src/utils/constants"
+import { setFormErrors } from "src/utils/forms"
 
 interface CommentFromNoteProps {
     leadId: number,

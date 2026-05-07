@@ -1,10 +1,10 @@
 import React, { useEffect, useState, type ReactNode } from 'react'
-import type { UserData, UserLogin, UserSignup } from '../../types/users';
-import type { OrganizationDetailed } from '../../types/campaigns';
-import { loginUser, signupUser } from './userServices';
-import { getOrganizations } from '../workspaces/workspaceServices';
 import { useNavigate } from 'react-router-dom';
+import { loginUser, signupUser } from 'src/features/users/userServices';
+import { getOrganizations } from 'src/features/workspaces/workspaceServices';
 import { UserContext } from 'src/stores/contexts';
+import type { OrganizationDetailed } from 'src/types/campaigns';
+import type { UserData, UserLogin, UserSignup } from 'src/types/users';
 
 export interface UserContextItems {
     userOrganizations: OrganizationDetailed[],

@@ -3,7 +3,7 @@ import type {
     InputMaskTemplate
 } from "../../types/leadFields";
 import type { DeleteResponse, EnableResponse, ListParams, Paginable } from "../../types/shared";
-import { orderList } from "../../services/generalService";
+import { orderListByField } from "src/utils/lists";
 import axiosCRM from "src/lib/axios";
 
 interface LeadFieldParams extends ListParams {
@@ -14,7 +14,7 @@ export const getLeadFields = async <T extends LeadFieldParams>(
     params?: T,
 ): Promise<Paginable<T["detailed"] extends true ? LeadFieldDetailed : LeadField>> => {
     const leadField = await axiosCRM.get(`lead_fields`, { params });
-    return { ...leadField.data, items: orderList(leadField.data.items, "order") };
+    return { ...leadField.data, items: orderListByField(leadField.data.items, "order") };
 };
 
 export const getLeadField = async (id: number): Promise<LeadFieldDetailed> => {
@@ -56,14 +56,14 @@ export const getFieldTypes = async <T extends ListParams>(params?: T): Promise<P
     T["detailed"] extends true ? LeadFieldTypeDetailed : LeadFieldType
 >> => {
     const tmp = await axiosCRM.get(`lead_field_types`, { params });
-    return { ...tmp.data, items: orderList(tmp.data.items, "id") };
+    return { ...tmp.data, items: orderListByField(tmp.data.items, "id") };
 };
 
 export const getFieldSections = async <T extends ListParams>(params?: T): Promise<Paginable<
     T["detailed"] extends true ? LeadFieldSectionDetailed : LeadFieldSection
 >> => {
     const sections = await axiosCRM.get(`lead_field_sections`, { params });
-    return { ...sections.data, items: orderList(sections.data.items, "id") };
+    return { ...sections.data, items: orderListByField(sections.data.items, "id") };
 };
 
 /****************************************Mapeo de Datos****************************************** */

@@ -8,7 +8,7 @@ import type {
 } from "../../types/leadFields";
 import type { Campaign, CampaignDetailed } from "../../types/campaigns";
 import type { Nomenclator } from "../../types/nomenclators";
-import { setFormErrors } from "../../services/generalService";
+import { setFormErrors } from "src/utils/forms";
 import { createLeadField, getFieldDataByType, getFieldSections, getFieldTemplates, getFieldTypes, getInputMaskTemplates, updateLeadField } from "./leadFieldServices";
 import { getCampaigns } from "../campaigns/campaignServices";
 import { getNomenclators } from "../nomenclators/nomenclatorService";

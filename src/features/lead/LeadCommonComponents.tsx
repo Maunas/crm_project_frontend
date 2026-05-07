@@ -6,7 +6,7 @@ import dayjs from 'dayjs';
 import { ChipTooltip } from '../../components/ui/details/ChipTooltip';
 import DOMPurify from 'dompurify';
 import Markdown from 'react-markdown';
-import { getFieldType } from '../../services/generalService';
+import { getFieldTypeValue } from 'src/utils/formatters';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import type { NomenclatorItem } from '../../types/nomenclators';
@@ -162,7 +162,7 @@ const ModalValueContent = ({ type, subtype, value }: ModalContentProps) => {
 }
 
 export const BoolValue = memo(({ value, size = "medium" }: { value: string, size?: "medium" | "small" }) => {
-    const boolValue = useMemo(() => getFieldType("BOOL", value), [value])
+    const boolValue = useMemo(() => getFieldTypeValue("BOOL", value), [value])
     return (
         <CustomChip color={boolValue ? "success" : "error"} size={size}
             label={boolValue ?

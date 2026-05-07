@@ -4,7 +4,7 @@ import type { Campaign, Workspace } from "../../../types/campaigns"
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { getWorkspaces } from "../../workspaces/workspaceServices";
 import { getCampaigns } from "../../campaigns/campaignServices";
-import type { UserContextItems } from "../../users/UserProvider";
+import type { UserContextItems } from 'src/stores/UserProvider';
 import CommonButton from 'src/components/ui/buttons/CommonButton';
 import GenericModal from "src/components/layout/container/GenericModal";
 import { LeadFilters } from "./LeadFilters";

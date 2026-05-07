@@ -1,5 +1,5 @@
 import { memo, useCallback, useMemo } from "react";
-import { formatMoney } from "../../../services/generalService"
+import { formatMoney } from "src/utils/formatters"
 import type { LeadFieldValue } from "../../../types/leadFields"
 import { AddressValue, BoolValue, DateValue, ListValues, ModalValue, NewTabLink, PasswordValue, RatingValue } from "../LeadCommonComponents"
 

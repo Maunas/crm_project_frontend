@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
 import { ControlledTextInput } from "../../components/ui/forms/CustomInputs"
-import { setFormErrors } from "../../services/generalService"
+import { setFormErrors } from "src/utils/forms"
 import { useForm } from "react-hook-form"
 import { Typography, Grid, ButtonGroup, Stack } from "@mui/material"
 import { FormErrorMessage } from "../../components/ui/forms/FormFeedback"

@@ -1,4 +1,4 @@
-import { orderList } from "../../services/generalService";
+import { orderListByField } from "src/utils/lists";
 import type { DeleteResponse, EnableResponse, ListParams, Paginable } from "../../types/shared";
 import type { Nomenclator, NomenclatorDetailed, NomenclatorItem, NomenclatorItemDetailed, NomenclatorItemPost, NomenclatorPost } from "../../types/nomenclators";
 import axiosCRM from "src/lib/axios";
@@ -15,7 +15,7 @@ export const getNomenclators = async <T extends NomenclatorParams>(params?: T): 
     T["detailed"] extends true ? NomenclatorDetailed : Nomenclator
 >> => {
     const noms = await axiosCRM.get(`nomenclators`, { params });
-    return { ...noms.data, items: orderList(noms.data.items) };
+    return { ...noms.data, items: orderListByField(noms.data.items) };
 };
 
 export const getNomenclator = async (id: number): Promise<NomenclatorDetailed> => {
@@ -45,7 +45,7 @@ export const getNomenclatorItems = async <T extends NomenclatorItemParams>(param
     T["detailed"] extends true ? NomenclatorItemDetailed : NomenclatorItem
 >> => {
     const nomItem = await axiosCRM.get(`/nomenclator_items`, { params });
-    return { ...nomItem.data, items: orderList(nomItem.data.items, "id") };
+    return { ...nomItem.data, items: orderListByField(nomItem.data.items, "id") };
 };
 export const getNomenclatorItem = async (id: number): Promise<NomenclatorItemDetailed> => {
     const nom = await axiosCRM.get(`nomenclator_items/${id}`)

@@ -1,5 +1,5 @@
 import { memo, useCallback, useContext, useEffect, useState } from 'react'
-import type { UserContextItems } from '../users/UserProvider'
+import type { UserContextItems } from 'src/stores/UserProvider'
 import type { Paginable } from '../../types/shared'
 import { ButtonGroup, List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
 import PaginationComponent from 'src/components/ui/lists/PaginationComponent'

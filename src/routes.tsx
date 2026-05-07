@@ -9,7 +9,7 @@ import { OrganizationList } from "./features/organizations/OrganizationList";
 import { NomenclatorList } from "./features/nomenclators/NomenclatorList";
 import { NomenclatorItemList } from "./features/nomenclators/NomenclatorItemList";
 import { LoginFormPage } from "./features/users/LoginForm";
-import { UserProvider } from "./features/users/UserProvider";
+import { UserProvider } from "src/stores/UserProvider";
 import { SignupFormPage } from "./features/users/SignupForm";
 import { SearchResultsList } from "./features/search/SearchResults";
 import { GenericContainer } from "./components/layout/container/GenericContainer";

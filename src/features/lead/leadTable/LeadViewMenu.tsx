@@ -16,7 +16,7 @@ import { useForm, useWatch } from 'react-hook-form';
 import { getDictionaries } from '../../../services/generalService';
 import { ControlledRadio } from "../../../components/ui/forms/CustomMultipleInputs";
 import { FormErrorMessage } from "../../../components/ui/forms/FormFeedback";
-import { setFormErrors } from "../../../services/generalService";
+import { setFormErrors } from "src/utils/forms";
 import CommonButton from 'src/components/ui/buttons/CommonButton';
 import { ChipTooltip } from '../../../components/ui/details/ChipTooltip';
 

@@ -2,7 +2,7 @@ import React, { memo } from 'react'
 import MaterialUISwitch from './ThemeSlider';
 import { UserContext } from 'src/stores/contexts';
 import { Link } from 'react-router-dom';
-import type { UserContextItems } from '../../../features/users/UserProvider';
+import type { UserContextItems } from 'src/stores/UserProvider';
 import { Avatar, Box, Button, Divider, FormControlLabel, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Stack, Typography } from '@mui/material'
 import { useColorScheme, useTheme } from '@mui/material/styles';
 import { AccountCircle, Check } from '@mui/icons-material';
