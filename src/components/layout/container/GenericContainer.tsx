@@ -32,7 +32,7 @@ const ContainerWithSidebar = ({ isSidebarOpen = false, rootGridProps, mainGridPr
 
     return (
         <Container maxWidth={isSidebarOpen ? false : containerSize ?? "lg"}>
-            <Grid container spacing={2} {...rootGridProps} >
+            <Grid container spacing={3} {...rootGridProps} >
                 <Grid size="grow" sx={{ minWidth: "30rem" }} {...mainGridProps}>
                     <GenericPaper>
                         {children}
