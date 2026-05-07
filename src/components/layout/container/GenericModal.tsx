@@ -1,6 +1,7 @@
 import { memo } from "react"
 import CommonButton, { type CommonBtnProps } from "src/components/ui/buttons/CommonButton"
 import { Dialog, type DialogProps } from "@mui/material"
+import GenericPaper from "./GenericPaper"
 
 interface GenericModalProps extends Omit<DialogProps, "open"> {
     idModal: string | number,
@@ -36,7 +37,9 @@ const GenericModal = memo(({ idModal, modalProps: { open, handleOpen, handleClos
                     backdrop: { onClick: (e) => e.stopPropagation() }
                 }}
             >
-                {children}
+                <GenericPaper>
+                    {children}
+                </GenericPaper>
             </Dialog>
         </>
     )

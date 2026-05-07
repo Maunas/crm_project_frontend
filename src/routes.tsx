@@ -1,5 +1,4 @@
 import { createBrowserRouter } from "react-router-dom";
-import MainLayout from "./mainLayout";
 import { NotFound } from "./pages/NotFound";
 import { LeadDetailsLayout } from "./features/lead/details/LeadDetails";
 import { CampaignDetails } from "./features/campaigns/CampaignDetails";
@@ -14,6 +13,7 @@ import { UserProvider } from "./features/users/UserProvider";
 import { SignupFormPage } from "./features/users/SignupForm";
 import { SearchResultsList } from "./features/search/SearchResults";
 import { GenericContainer } from "./components/layout/container/GenericContainer";
+import MainLayout from "./app/mainLayout";
 
 export const router = createBrowserRouter([
     {

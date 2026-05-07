@@ -19,7 +19,8 @@ export const GenericContainer = ({ children, paperProps = {}, ...props }: Generi
 
 
 interface ContainerWithSidebarProps {
-    sidebarComponent: ReactNode | null,
+    isSidebarOpen?: boolean,
+    sidebarComponent: ReactNode,
     containerSize?: false | Breakpoint,
     rootGridProps?: GridProps,
     mainGridProps?: GridProps,
@@ -27,16 +28,17 @@ interface ContainerWithSidebarProps {
     children?: ReactNode,
 }
 
-const ContainerWithSidebar = ({ rootGridProps, mainGridProps, sidebarGridProps, sidebarComponent, containerSize, children }: ContainerWithSidebarProps) => {
+const ContainerWithSidebar = ({ isSidebarOpen = false, rootGridProps, mainGridProps, sidebarGridProps, sidebarComponent, containerSize, children }: ContainerWithSidebarProps) => {
+
     return (
-        <Container maxWidth={sidebarComponent ? false : containerSize ?? "lg"}>
+        <Container maxWidth={isSidebarOpen ? false : containerSize ?? "lg"}>
             <Grid container spacing={2} {...rootGridProps} >
                 <Grid size="grow" sx={{ minWidth: "30rem" }} {...mainGridProps}>
                     <GenericPaper>
                         {children}
                     </GenericPaper>
                 </Grid>
-                {sidebarComponent &&
+                {isSidebarOpen &&
                     <Grid size={5} sx={{ minWidth: "30rem" }} {...sidebarGridProps}>
                         <GenericPaper>
                             {sidebarComponent}

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import AddIcon from "@mui/icons-material/Add"
 import type { Paginable } from '../../../types/shared'
 import { createTag, deleteTag, getTags, updateLeadTags, updateTag } from './LeadDetailsService'
-import { PaginationComponent } from '../../../components/ui/lists/PaginationComponent'
+import PaginationComponent from 'src/components/ui/lists/PaginationComponent'
 import type { ColorTypes } from '../../../types/mui-theme.d'
 import EditIcon from '@mui/icons-material/Edit'
 import CloseIcon from '@mui/icons-material/Close'

@@ -2,7 +2,7 @@ import { CampaignList } from "../campaigns/CampaignList"
 import type { CampaignDetailed, WorkspaceDetailed } from "../../types/campaigns"
 import dayjs from "dayjs"
 import { Stack, Typography, ButtonGroup, Divider, Grid } from "@mui/material"
-import { TitleAndActive } from "src/components/ui/details/TitleAndActive"
+import TitleAndActive from "src/components/ui/details/TitleAndActive"
 import CommonButton from "src/components/ui/buttons/CommonButton"
 import HandleActiveButton from "src/components/ui/buttons/HandleActiveButton"
 
@@ -46,9 +46,9 @@ export const WorkspaceDetails = ({ entity, closeSidebar, handleSidebar, handleAc
                 <Divider />
 
                 <ButtonGroup sx={{ marginLeft: "auto" }}>
-                    <CommonButton handleClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
+                    <CommonButton onClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
                     <HandleActiveButton active={entity.active} handleActive={() => handleActive(entity)} />
-                    <CommonButton handleClick={() => handleSidebar("UPDATE_WSP", entity)} actionType="MODIFY" >Modificar</CommonButton>
+                    <CommonButton onClick={() => handleSidebar("UPDATE_WSP", entity)} actionType="MODIFY" >Modificar</CommonButton>
                 </ButtonGroup>
             </Stack>
         </Stack>

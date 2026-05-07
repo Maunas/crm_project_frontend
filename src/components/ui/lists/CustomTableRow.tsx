@@ -1,6 +1,6 @@
+import { memo } from 'react'
 import { TableRow } from '@mui/material'
 import { lighten, styled } from '@mui/material/styles'
-import { memo } from 'react'
 
 const TABLE_ROW_SX = { '&:hover': { cursor: "pointer" } }
 

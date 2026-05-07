@@ -59,5 +59,4 @@ const MaterialUISwitch = styled(Switch)(({ theme }) => ({
     },
 }));
 
-
 export default MaterialUISwitch

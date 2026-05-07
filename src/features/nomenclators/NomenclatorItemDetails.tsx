@@ -1,7 +1,7 @@
 import { ButtonGroup, Divider, Grid, Link, Stack, Typography } from "@mui/material"
 import dayjs from "dayjs"
 import type { NomenclatorItemDetailed } from "../../types/nomenclators"
-import { TitleAndActive } from "src/components/ui/details/TitleAndActive"
+import TitleAndActive from "src/components/ui/details/TitleAndActive"
 import CommonButton from "src/components/ui/buttons/CommonButton"
 import HandleActiveButton from "src/components/ui/buttons/HandleActiveButton"
 
@@ -46,12 +46,12 @@ export const NomenclatorItemDetails = ({ item, closeSidebar, handleSidebar, hand
                 </Grid>
                 <Divider />
                 <ButtonGroup sx={{ marginLeft: "auto" }}>
-                    <CommonButton handleClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
+                    <CommonButton onClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
                     {item.organization_id &&
                         <HandleActiveButton active={item.active} handleActive={() => handleActive(item)} />
                     }
                     {item.organization_id &&
-                        <CommonButton handleClick={() => handleSidebar("UPDATE_NOM", item)} actionType="MODIFY" >Modificar</CommonButton>
+                        <CommonButton onClick={() => handleSidebar("UPDATE_NOM", item)} actionType="MODIFY" >Modificar</CommonButton>
                     }
                 </ButtonGroup>
             </Stack>

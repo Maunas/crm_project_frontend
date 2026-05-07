@@ -12,7 +12,7 @@ import { CustomListItemAvatar } from "../../../components/ui/lists/CustomListIte
 import type { ColorTypes } from "../../../types/mui-theme.d"
 import { MetadataShort } from "./LeadComments"
 import { useListPagination } from "../../../hooks/useListPagination"
-import { PaginationComponent } from "../../../components/ui/lists/PaginationComponent"
+import PaginationComponent from "src/components/ui/lists/PaginationComponent"
 import Timeline from '@mui/lab/Timeline';
 import { timelineItemClasses } from "@mui/lab/TimelineItem"
 import CustomChip from "src/components/ui/details/CustomChip"

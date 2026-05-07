@@ -1,5 +1,5 @@
 import React, { type ReactNode } from "react";
-import { Box, Divider, IconButton } from "@mui/material";
+import { Box, Divider, IconButton, Stack } from "@mui/material";
 import { styled, useTheme, type CSSObject, type Theme } from "@mui/material/styles";
 import MuiDrawer from '@mui/material/Drawer';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
@@ -90,21 +90,22 @@ export default function LayoutSidebar({ children }: SidebarProps) {
     };
 
     return (
-        <>
+        <Stack sx={{ minHeight: "100%" }}>
             <Header handleDrawerOpen={handleDrawerOpen} open={open} />
-            <Drawer variant="permanent" open={open}>
-                <DrawerHeader>
-                    <IconButton onClick={handleDrawerClose} color="inherit">
-                        {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
-                    </IconButton>
-                </DrawerHeader>
-                <Divider />
-                <Navbar open={open} />
-            </Drawer>
-            <Box component="main" sx={{ flexGrow: 1, overflowX: "auto", p: 3 }}>
-                <DrawerHeader sx={{ backgroundColor: theme.palette.background.default }} />
-                {children}
-            </Box>
-        </>
+            <Stack direction="row" sx={{ flexGrow: 1 }}>
+                <Drawer variant="permanent" open={open}>
+                    <DrawerHeader>
+                        <IconButton onClick={handleDrawerClose} color="inherit">
+                            {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+                        </IconButton>
+                    </DrawerHeader>
+                    <Divider />
+                    <Navbar open={open} />
+                </Drawer>
+                <Box component="main" sx={{ flexGrow: 1, overflowY: "auto", overflowX: "hidden", p: 3 }}>
+                    {children}
+                </Box>
+            </Stack>
+        </Stack>
     );
 }

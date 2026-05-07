@@ -1,12 +1,12 @@
+import { memo, useMemo } from 'react';
+import { ChipTooltip } from 'src/components/ui/details/ChipTooltip';
 import { Link, useLocation } from 'react-router-dom';
 import { List, ListItem, ListItemButton, ListItemIcon, ListItemText, useTheme } from '@mui/material'
+import { alpha } from '@mui/material/styles';
 import PersonIcon from '@mui/icons-material/Person';
 import WorkIcon from '@mui/icons-material/Work';
 import StoreIcon from '@mui/icons-material/Store';
 import LabelIcon from '@mui/icons-material/Label';
-import { memo, useMemo } from 'react';
-import { alpha } from '@mui/material/styles';
-import { ChipTooltip } from 'src/components/ui/details/ChipTooltip';
 
 const options = [
   { name: "Leads", icon: <PersonIcon />, link: "/leads" },
@@ -22,7 +22,6 @@ interface NavbarProps {
 const Navbar = memo(({ open }: NavbarProps) => {
 
   const { palette } = useTheme()
-
   const { pathname } = useLocation()
 
   const activeIdx = useMemo(() =>
@@ -61,8 +60,7 @@ const Navbar = memo(({ open }: NavbarProps) => {
           <ListItem disablePadding sx={LIST_ITEM_STYLES[idx]}>
             <ListItemButton
               component={Link} to={item.link} title={item.name}
-              sx={ITEM_STYLES}
-            >
+              sx={ITEM_STYLES} >
               <ListItemIcon sx={ICON_STYLES}>
                 {item.icon}
               </ListItemIcon>

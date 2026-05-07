@@ -33,8 +33,6 @@ const ACTION_ICONS = {
     CHECK: <TaskAltIcon sx={{ display: "block" }} />,
 }
 
-export type ActionType = "MODIFY" | "CLOSE" | "CREATE" | "DISABLE" | "ENABLE" |
-    "DETAILS" | "FILTER" | "OPTIONS" | "SAVE" | "RETURN" |
-    "LOGIN" | "SIGNUP" | "NONE" | "LIST" | "CHECK" | "SETTINGS"
+export type ActionType = keyof typeof ACTION_ICONS
 
 export default ACTION_ICONS

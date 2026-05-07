@@ -9,7 +9,7 @@ import type { Campaign } from "../../../types/campaigns.ts"
 import { LeadFieldSections } from "./LeadDetailsSections.tsx"
 import { LeadTags } from "./LeadTags.tsx"
 import GenericPaper from "src/components/layout/container/GenericPaper.tsx"
-import { TitleAndActive } from "src/components/ui/details/TitleAndActive.tsx"
+import TitleAndActive from "src/components/ui/details/TitleAndActive.tsx"
 import CommonButton from "src/components/ui/buttons/CommonButton.tsx"
 
 export const LeadDetailsLayout = () => {

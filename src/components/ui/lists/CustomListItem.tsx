@@ -1,6 +1,9 @@
 import { ListItem, ListItemAvatar } from '@mui/material'
 import { alpha, styled } from '@mui/material/styles'
 
+/**
+ * Solo muestra los secondaryAction si se está haciendo hover.
+ */
 export const CustomListItem = styled(ListItem)(
     () => [
         {

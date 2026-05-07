@@ -1,6 +1,6 @@
+import { memo } from "react";
 import { LinearProgress } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { memo } from "react";
 
 const CustomBar = memo(styled(LinearProgress)(({ theme, color = "primary" }) => {
     const paletteColor = color === "inherit" ? "primary" : color

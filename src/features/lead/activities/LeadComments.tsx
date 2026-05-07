@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react"
 import { CreateCommentWrapper, UpdateCommentFromNote } from "./LeadCommentForm"
-import { PaginationComponent } from "../../../components/ui/lists/PaginationComponent"
+import PaginationComponent from "src/components/ui/lists/PaginationComponent"
 import type { Metadata, Paginable } from "../../../types/shared"
 import type { LeadComment } from "../../../types/leads"
 import type { ColorTypes } from "../../../types/mui-theme.d"

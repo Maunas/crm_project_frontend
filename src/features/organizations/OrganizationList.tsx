@@ -1,5 +1,5 @@
 import { useCallback, useContext } from 'react'
-import { EnabledIcon, ListAction } from '../../components/ui/lists/Icons'
+import { EnabledIcon } from '../../components/ui/lists/Icons'
 import { OrganizationFormSidebar } from './OrganizationForm'
 import type { OrganizationDetailed } from '../../types/campaigns'
 import { disableOrganization, enableOrganization, getOrganization } from '../workspaces/workspaceServices'
@@ -15,6 +15,7 @@ import ContainerWithSidebar from 'src/components/layout/container/GenericContain
 import CommonButton from 'src/components/ui/buttons/CommonButton'
 import CustomChip from 'src/components/ui/details/CustomChip'
 import HandleActiveButton from 'src/components/ui/buttons/HandleActiveButton'
+import { CommonIconButton } from 'src/components/ui/buttons/CommonIconButton'
 dayjs.locale('es')
 
 export const OrganizationList = () => {
@@ -78,7 +79,7 @@ export const OrganizationList = () => {
     }, [closeSidebar, handleSidebar, selectedEntity, selectedOrg?.id, updateEntityOnList])
 
     return (
-        <ContainerWithSidebar sidebarComponent={
+        <ContainerWithSidebar isSidebarOpen={Boolean(sidebarMode)} sidebarComponent={
             <OrganizationSidebar mode={sidebarMode} entity={selectedEntity} handleSidebar={handleSidebar}
                 closeSidebar={closeSidebar} updateEntityOnList={updateEntityOnList} handleActive={handleActive} />
         }>
@@ -86,7 +87,7 @@ export const OrganizationList = () => {
                 <Stack spacing={2} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
                     <Typography variant="h1">Lista de Organizaciones</Typography>
                     {userOrganizations && userOrganizations?.length > 0 &&
-                        <CommonButton actionType="CREATE" handleClick={() => handleSidebar("CREATE_ORG", null)} sx={{ marginLeft: "auto" }}>
+                        <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_ORG", null)} sx={{ marginLeft: "auto" }}>
                             Crear Organización
                         </CommonButton>
                     }
@@ -97,12 +98,12 @@ export const OrganizationList = () => {
                             {userOrganizations.map(org =>
                                 <CustomListItem key={org.id} disablePadding secondaryAction={
                                     <Stack direction="row" spacing={.5} sx={{ alignItems: "center" }}>
-                                        <ListAction actionType='DETAILS' title='Detalle' onClick={() => handleSidebar("DETAILS_ORG", org)} tooltipSize="small" size="small" />
-                                        <ListAction actionType='MODIFY' title='Modificar' onClick={() => handleSidebar("UPDATE_ORG", org)} tooltipSize="small" size="small" />
+                                        <CommonIconButton actionType='DETAILS' title='Detalle' onClick={() => handleSidebar("DETAILS_ORG", org)} tooltipSize="small" size="small" />
+                                        <CommonIconButton actionType='MODIFY' title='Modificar' onClick={() => handleSidebar("UPDATE_ORG", org)} tooltipSize="small" size="small" />
                                         {selectedOrg?.id !== org.id &&
                                             <>
-                                                <ListAction actionType='CHECK' title='Seleccionar Activa' color="info" onClick={() => setSelectedOrg(org)} tooltipSize="small" size="small" />
-                                                <ListAction actionType={org.active ? "DISABLE" : "ENABLE"} tooltipSize="small" size="small"
+                                                <CommonIconButton actionType='CHECK' title='Seleccionar Activa' color="info" onClick={() => setSelectedOrg(org)} tooltipSize="small" size="small" />
+                                                <CommonIconButton actionType={org.active ? "DISABLE" : "ENABLE"} tooltipSize="small" size="small"
                                                     title={org.active ? "Deshabilitar" : "Habilitar"}
                                                     onClick={() => handleActive(org)} color={org.active ? "error" : "success"} />
                                             </>
@@ -212,11 +213,11 @@ const OrganizationDetails = ({ entity, closeSidebar, handleSidebar, handleActive
                 </Grid>
                 <Divider />
                 <ButtonGroup sx={{ marginLeft: "auto" }}>
-                    <CommonButton handleClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
+                    <CommonButton onClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
                     {selectedOrg?.id !== entity.id &&
                         <HandleActiveButton active={entity.active} handleActive={() => handleActive(entity)} />
                     }
-                    <CommonButton handleClick={() => handleSidebar("UPDATE_ORG", entity)} actionType="MODIFY" >Modificar</CommonButton>
+                    <CommonButton onClick={() => handleSidebar("UPDATE_ORG", entity)} actionType="MODIFY" >Modificar</CommonButton>
                 </ButtonGroup>
             </Stack>
         </Stack>

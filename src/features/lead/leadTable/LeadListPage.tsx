@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { PaginationComponent } from '../../../components/ui/lists/PaginationComponent'
+import PaginationComponent from 'src/components/ui/lists/PaginationComponent'
 import type { LeadFilter, LeadListParams, ListParams, OrderParams, Paginable } from '../../../types/shared'
 import type { Lead, LeadView, LeadViewParams } from '../../../types/leads'
 import { bulkDeleteLead, createView, getFilteredLeads, getLeads, updateView } from '../leadService'

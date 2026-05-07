@@ -1,20 +1,20 @@
 import { memo, useCallback, useContext, useEffect, useState } from 'react'
 import { NomenclatorFormSidebar } from './NomenclatorForm'
 import { NomenclatorDetails } from './NomenclatorDetails'
-import { PaginationComponent } from '../../components/ui/lists/PaginationComponent'
+import PaginationComponent from 'src/components/ui/lists/PaginationComponent'
 import type { Paginable } from '../../types/shared'
 import type { NomenclatorDetailed } from '../../types/nomenclators'
 import { disableNomenclator, enableNomenclator, getNomenclator, getNomenclators } from './nomenclatorService'
 import type { UserContextItems } from '../users/UserProvider'
 import { Link as RouterLink, useSearchParams } from 'react-router-dom'
 import { List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
-import { ListAction } from '../../components/ui/lists/Icons'
 import { CustomListItem } from '../../components/ui/lists/CustomListItem'
 import { UserContext } from 'src/stores/contexts'
 import { useSidebar } from 'src/hooks/useSidebar'
 import { useListPagination } from 'src/hooks/useListPagination'
 import ContainerWithSidebar from 'src/components/layout/container/GenericContainer'
 import CommonButton from 'src/components/ui/buttons/CommonButton'
+import { CommonIconButton } from 'src/components/ui/buttons/CommonIconButton'
 
 export const NomenclatorList = () => {
 
@@ -84,7 +84,7 @@ export const NomenclatorList = () => {
     }, [closeSidebar, handleSidebar, selectedEntity, updateEntityOnList])
 
     return (
-        <ContainerWithSidebar sidebarComponent={
+        <ContainerWithSidebar isSidebarOpen={Boolean(sidebarMode)} sidebarComponent={
             <NomenclatorSidebar mode={sidebarMode} entity={selectedEntity} handleSidebar={handleSidebar}
                 closeSidebar={closeSidebar} updateEntityOnList={updateEntityOnList}
                 handleActive={handleActive} />
@@ -93,7 +93,7 @@ export const NomenclatorList = () => {
                 <Stack direction="row" useFlexGap spacing={2} sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
                     <Typography variant="h1">Lista de Nomencladores</Typography>
                     {nomenclators && nomenclators.items?.length > 0 &&
-                        <CommonButton actionType="CREATE" handleClick={() => { handleSidebar("CREATE_NOM", null) }}
+                        <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_NOM", null) }}
                             sx={{ marginLeft: "auto" }}>
                             Crear Nomenclador
                         </CommonButton>
@@ -106,12 +106,12 @@ export const NomenclatorList = () => {
                                 {nomenclators.items.map(nom =>
                                     <CustomListItem key={nom.id} disablePadding secondaryAction={
                                         <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-                                            <ListAction actionType='DETAILS' title='Detalle' onClick={() => handleSidebar("DETAILS_NOM", nom)} tooltipSize='small' />
-                                            <ListAction actionType='LIST' title='Ver Items' component={RouterLink} to={`/nomenclators/${nom.id}`} tooltipSize='small' />
+                                            <CommonIconButton actionType='DETAILS' title='Detalle' onClick={() => handleSidebar("DETAILS_NOM", nom)} tooltipSize='small' />
+                                            <CommonIconButton actionType='LIST' title='Ver Items' component={RouterLink} to={`/nomenclators/${nom.id}`} tooltipSize='small' />
                                             {nom.organization_id &&
                                                 <>
-                                                    <ListAction actionType='MODIFY' title='Modificar' onClick={() => handleSidebar("UPDATE_NOM", nom)} tooltipSize='small' />
-                                                    <ListAction actionType={nom.active ? "DISABLE" : "ENABLE"} tooltipSize="small"
+                                                    <CommonIconButton actionType='MODIFY' title='Modificar' onClick={() => handleSidebar("UPDATE_NOM", nom)} tooltipSize='small' />
+                                                    <CommonIconButton actionType={nom.active ? "DISABLE" : "ENABLE"} tooltipSize="small"
                                                         title={nom.active ? "Deshabilitar" : "Habilitar"}
                                                         onClick={() => handleActive(nom)} color={nom.active ? "error" : "success"} />
                                                 </>}

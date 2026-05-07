@@ -6,7 +6,7 @@ interface PaginationComponentProps {
   page: number,
   handlePage: (event: React.ChangeEvent<unknown>, value: number) => void
 }
-export const PaginationComponent = memo(({ totalPages, page, handlePage }: PaginationComponentProps) => {
+const PaginationComponent = memo(({ totalPages, page, handlePage }: PaginationComponentProps) => {
   return (
     <Box sx={{ width: "100%" }}>
       <Pagination
@@ -18,5 +18,6 @@ export const PaginationComponent = memo(({ totalPages, page, handlePage }: Pagin
       />
     </Box>
   )
-}
-)
+})
+
+export default PaginationComponent

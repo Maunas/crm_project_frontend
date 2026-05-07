@@ -1,8 +1,8 @@
 import { useContext, useEffect, useState } from 'react'
 import { WorkspaceFormSidebar } from './WorkspaceForms';
 import { CreateCampaignFormSidebar } from '../campaigns/CampaignForms';
-import { EnabledIcon, ListAction } from '../../components/ui/lists/Icons';
-import { PaginationComponent } from '../../components/ui/lists/PaginationComponent'
+import { EnabledIcon } from '../../components/ui/lists/Icons';
+import PaginationComponent from 'src/components/ui/lists/PaginationComponent'
 import { WorkspaceDetails } from './WorkspaceDetails'
 import type { Paginable } from '../../types/shared'
 import type { CampaignDetailed, WorkspaceDetailed } from '../../types/campaigns'
@@ -16,6 +16,7 @@ import { useListPagination } from 'src/hooks/useListPagination';
 import { UserContext } from 'src/stores/contexts';
 import ContainerWithSidebar from 'src/components/layout/container/GenericContainer';
 import CommonButton from 'src/components/ui/buttons/CommonButton';
+import { CommonIconButton } from 'src/components/ui/buttons/CommonIconButton';
 
 export const WorkspaceList = () => {
 
@@ -88,7 +89,7 @@ export const WorkspaceList = () => {
     }
 
     return (
-        <ContainerWithSidebar sidebarGridProps={{ size: "grow" }}
+        <ContainerWithSidebar isSidebarOpen={Boolean(sidebarMode)} sidebarGridProps={{ size: "grow" }}
             sidebarComponent={
                 <WorkspaceSidebar mode={sidebarMode} entity={selectedEntity} handleSidebar={handleSidebar}
                     closeSidebar={closeSidebar} updateEntityOnList={updateEntityOnList}
@@ -100,10 +101,10 @@ export const WorkspaceList = () => {
                         <Typography variant="h1">Lista de Espacios de Trabajo</Typography>
                     </Grid>
                     <ButtonGroup variant="contained" color="primary" sx={{ marginLeft: "auto" }}>
-                        <CommonButton actionType='CREATE' handleClick={() => handleSidebar("CREATE_WSP", null)}>
+                        <CommonButton actionType='CREATE' onClick={() => handleSidebar("CREATE_WSP", null)}>
                             Crear Espacio de Trabajo
                         </CommonButton>
-                        <CommonButton actionType='CREATE' handleClick={() => handleSidebar("CREATE_CMP", null)}>
+                        <CommonButton actionType='CREATE' onClick={() => handleSidebar("CREATE_CMP", null)}>
                             Crear Campaña
                         </CommonButton>
                     </ButtonGroup>
@@ -114,11 +115,11 @@ export const WorkspaceList = () => {
                             {workspaces?.items.map(wsp =>
                                 <CustomListItem key={`wsp-${wsp.id}`} disablePadding secondaryAction={
                                     <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-                                        <ListAction actionType='DETAILS' title="Detalles" tooltipSize="small" size="small"
+                                        <CommonIconButton actionType='DETAILS' title="Detalles" tooltipSize="small" size="small"
                                             onClick={() => { handleSidebar("DETAILS_WSP", wsp) }} />
-                                        <ListAction actionType='MODIFY' title="Modificar" tooltipSize="small" size="small"
+                                        <CommonIconButton actionType='MODIFY' title="Modificar" tooltipSize="small" size="small"
                                             onClick={() => { handleSidebar("UPDATE_WSP", wsp) }} />
-                                        <ListAction actionType={wsp.active ? "DISABLE" : "ENABLE"} tooltipSize="small" size="small"
+                                        <CommonIconButton actionType={wsp.active ? "DISABLE" : "ENABLE"} tooltipSize="small" size="small"
                                             title={wsp.active ? "Deshabilitar" : "Habilitar"}
                                             onClick={() => handleActive(wsp)} color={wsp.active ? "error" : "success"} />
                                     </Stack>

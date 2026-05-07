@@ -13,7 +13,7 @@ import { Typography, ButtonGroup, Link, Breadcrumbs, Stack, Grid, Divider } from
 import { ValidationFormSidebar } from '../validations/ValidationForm'
 import { useSidebar } from 'src/hooks/useSidebar'
 import ContainerWithSidebar from 'src/components/layout/container/GenericContainer'
-import { TitleAndActive } from 'src/components/ui/details/TitleAndActive'
+import TitleAndActive from 'src/components/ui/details/TitleAndActive'
 import CommonButton from 'src/components/ui/buttons/CommonButton'
 import HandleActiveButton from 'src/components/ui/buttons/HandleActiveButton'
 
@@ -101,7 +101,7 @@ export const CampaignDetails = () => {
     }, [nav, updateEntity])
 
     return (
-        <ContainerWithSidebar containerSize="xl"
+        <ContainerWithSidebar isSidebarOpen={Boolean(sidebarMode)} containerSize="xl"
             sidebarComponent={campaign &&
                 <CampaignDetailSidebar mode={sidebarMode} entity={selectedEntity} campaign={campaign}
                     handleSidebar={handleSidebar} closeSidebar={closeSidebar} updateEntity={updateEntity} />}
@@ -152,7 +152,7 @@ export const CampaignDetails = () => {
                             </Grid >
                             <ButtonGroup sx={{ marginLeft: "auto" }}>
                                 <HandleActiveButton active={campaign.active} handleActive={() => handleActiveCampaign(campaign)} />
-                                <CommonButton handleClick={() => handleSidebar("UPDATE_CMP", null)} actionType="MODIFY">Modificar</CommonButton>
+                                <CommonButton onClick={() => handleSidebar("UPDATE_CMP", null)} actionType="MODIFY">Modificar</CommonButton>
                                 <CommonButton component={RouterLink} variant='outlined' to={`/leads?workspace=${campaign.workspace_id}&campaign=${campaign.id}`}
                                     actionType="LIST">Ver Lista de Leads</CommonButton>
                             </ButtonGroup>

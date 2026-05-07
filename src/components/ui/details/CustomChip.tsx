@@ -1,8 +1,8 @@
+import { memo } from "react";
+import { textTheme } from "../../../theme/typographyTheme";
 import { Chip, type ChipTypeMap } from "@mui/material";
 import type { OverridableComponent } from "@mui/material/OverridableComponent";
 import { alpha, lighten, styled } from "@mui/material/styles";
-import { memo } from "react";
-import { textTheme } from "../../../theme/typographyTheme";
 
 const CHIP_OPACITY = .5
 const CHIP_SIZES = {
@@ -12,11 +12,11 @@ const CHIP_SIZES = {
     "xlarge": { padding: "8px", gap: ".5rem", fontSize: "1.125rem", fontWeight: 600 }
 }
 
-//Como el ícono no utiliza lineHeight, se lo multiplica para que tenga la misma altura del texto.
 const ICON_SIZE_EM = textTheme.root.lineHeight
 
 const CustomChip = memo(styled(Chip)(({ theme, color, defaultColor = "primary", size = "medium" }) => {
-    const chipColor = color === "default" ? "contrast" : (color ?? defaultColor) //Soluciona una incompatibilidad con el valor "default"
+    //Soluciona una incompatibilidad con el valor "default"
+    const chipColor = color === "default" ? "contrast" : (color ?? defaultColor)
     const paletteColor = theme.palette[chipColor] ?? theme.palette[defaultColor]
     const sizeObject = CHIP_SIZES[size as keyof typeof CHIP_SIZES]
 
@@ -29,9 +29,10 @@ const CustomChip = memo(styled(Chip)(({ theme, color, defaultColor = "primary", 
         backgroundColor: alpha(paletteColor.lighter, CHIP_OPACITY),
         borderColor: paletteColor.main,
         color: paletteColor[900],
-        "& .MuiSvgIcon-root": { display: "block", fontSize: `${ICON_SIZE_EM}em` },
         ...sizeObject,
-
+    }, {
+        //Como el ícono no utiliza lineHeight, se lo multiplica para que tenga la misma altura del texto.
+        "& .MuiSvgIcon-root": { display: "block", fontSize: `${ICON_SIZE_EM}em` },
     },
     //Invierte los tonos en darkmode
     theme.applyStyles('dark', {
@@ -39,6 +40,7 @@ const CustomChip = memo(styled(Chip)(({ theme, color, defaultColor = "primary", 
         color: lighten(paletteColor[50], .8),
     }),
     ]
+    //Se castea a OverridableComponent para permitir el uso de los props component y to para RouterLink
 })) as unknown as OverridableComponent<ChipTypeMap> & { defaultComponent: "div" };
 
 export default CustomChip

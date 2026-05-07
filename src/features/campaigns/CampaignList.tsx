@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
-import { EnabledIcon, ListAction } from "../../components/ui/lists/Icons"
-import { PaginationComponent } from "../../components/ui/lists/PaginationComponent"
+import { EnabledIcon } from "../../components/ui/lists/Icons"
 import type { Paginable } from "../../types/shared"
 import type { CampaignDetailed, WorkspaceDetailed } from "../../types/campaigns"
 import { getCampaigns } from "./campaignServices"
@@ -9,6 +8,8 @@ import { Grid, ListItemButton, ListItemText, Stack, Typography } from "@mui/mate
 import { CustomListItem } from "../../components/ui/lists/CustomListItem"
 import { useListPagination } from "src/hooks/useListPagination"
 import CommonButton from "src/components/ui/buttons/CommonButton"
+import PaginationComponent from "src/components/ui/lists/PaginationComponent"
+import { CommonIconButton } from "src/components/ui/buttons/CommonIconButton"
 
 interface CampaignListProps {
     selectedWorkspaceId: number,
@@ -50,9 +51,9 @@ export const CampaignListData = ({ campaigns }: { campaigns: CampaignDetailed[] 
                 <Grid container key={`cmp-${idx}`} size="grow" sx={{ minWidth: "15rem" }}>
                     <CustomListItem disablePadding secondaryAction={
                         <Stack direction="row" spacing={.5} sx={{ alignItems: "center" }}>
-                            <ListAction actionType='DETAILS' title="Detalles" tooltipSize="small" size="small"
+                            <CommonIconButton actionType='DETAILS' title="Detalles" tooltipSize="small" size="small"
                                 component={Link} to={`/campaigns/${cmp.id}`} />
-                            <ListAction actionType='LIST' title="Ver Leads" tooltipSize="small" size="small"
+                            <CommonIconButton actionType='LIST' title="Ver Leads" tooltipSize="small" size="small"
                                 component={Link} to={`/leads?workspace=${cmp.workspace_id}&campaign=${cmp.id}`} />
                         </Stack>}>
                         <ListItemButton component={Link} to={`/campaigns/${cmp.id}`} >

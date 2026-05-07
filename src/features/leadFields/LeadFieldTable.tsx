@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react"
 import { SimulateLeadFormModal } from "../lead/leadForm/LeadFormWraper"
-import { EnabledIcon, ListAction } from "../../components/ui/lists/Icons"
+import { EnabledIcon } from "../../components/ui/lists/Icons"
 import type { LeadFieldDetailed } from "../../types/leadFields"
 import type { CampaignDetailed } from "../../types/campaigns"
 import { disableLeadField, enableLeadField } from "./leadFieldServices"
@@ -10,6 +10,7 @@ import { SelectableTableRow } from "../../components/ui/lists/CustomTableRow"
 import { useModal } from "src/hooks/useModal"
 import CommonButton from "src/components/ui/buttons/CommonButton"
 import GenericModal from "src/components/layout/container/GenericModal"
+import { CommonIconButton } from "src/components/ui/buttons/CommonIconButton"
 
 interface LeadFieldTableProps {
     campaign: CampaignDetailed,
@@ -112,13 +113,13 @@ export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateE
                                         </TableCell>
                                         <TableCell align="right">
                                             <Stack direction="row" sx={{ justifyContent: "end" }}>
-                                                <ListAction actionType="DETAILS" title="Detalle" tooltipSize="small" size="small"
+                                                <CommonIconButton actionType="DETAILS" title="Detalle" tooltipSize="small" size="small"
                                                     onClick={(e) => stopPropagationEvent(e, () => handleSidebar("DETAILS_FIELD", row))} />
                                                 {row.order > 1 &&
                                                     <>
-                                                        <ListAction actionType="MODIFY" title="Modificar" tooltipSize="small" size="small"
+                                                        <CommonIconButton actionType="MODIFY" title="Modificar" tooltipSize="small" size="small"
                                                             onClick={(e) => stopPropagationEvent(e, () => handleSidebar("UPDATE_FIELD", row))} />
-                                                        <ListAction actionType={row.active ? "DISABLE" : "ENABLE"} tooltipSize="small" size="small"
+                                                        <CommonIconButton actionType={row.active ? "DISABLE" : "ENABLE"} tooltipSize="small" size="small"
                                                             title={row.active ? "Deshabilitar" : "Habilitar"}
                                                             onClick={(e) => stopPropagationEvent(e, () => handleActive(row))} color={row.active ? "error" : "success"} />
                                                     </>}

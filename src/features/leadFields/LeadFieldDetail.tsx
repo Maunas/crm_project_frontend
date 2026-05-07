@@ -8,7 +8,7 @@ import { Grid, Stack, Typography, Divider, Link, ButtonGroup, Box } from '@mui/m
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { ValidationList } from '../validations/ValidationList';
 import { alpha, useTheme } from '@mui/material/styles';
-import { TitleAndActive } from 'src/components/ui/details/TitleAndActive';
+import TitleAndActive from 'src/components/ui/details/TitleAndActive';
 import CustomChip from 'src/components/ui/details/CustomChip';
 import CommonButton from 'src/components/ui/buttons/CommonButton';
 import HandleActiveButton from 'src/components/ui/buttons/HandleActiveButton';
@@ -169,12 +169,12 @@ export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeS
                 </Stack>
                 <Divider />
                 <ButtonGroup sx={{ marginLeft: "auto" }}>
-                    <CommonButton handleClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
+                    <CommonButton onClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
                     {leadField.order > 1 && //Si no se separa el condicional arruina el estilo del ButtonGroup
                         <HandleActiveButton active={leadField.active} handleActive={() => handleActive(leadField)} />
                     }
                     {leadField.order > 1 &&
-                        <CommonButton handleClick={() => handleSidebar("UPDATE_FIELD", leadField)} actionType="MODIFY" >
+                        <CommonButton onClick={() => handleSidebar("UPDATE_FIELD", leadField)} actionType="MODIFY" >
                             Modificar
                         </CommonButton>
                     }

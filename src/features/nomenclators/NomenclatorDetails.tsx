@@ -2,7 +2,7 @@ import type { NomenclatorDetailed } from "../../types/nomenclators"
 import { ButtonGroup, Divider, Grid, Link, Stack, Typography } from "@mui/material"
 import { Link as RouterLink } from "react-router-dom"
 import dayjs from "dayjs"
-import { TitleAndActive } from "src/components/ui/details/TitleAndActive"
+import TitleAndActive from "src/components/ui/details/TitleAndActive"
 import CommonButton from "src/components/ui/buttons/CommonButton"
 import HandleActiveButton from "src/components/ui/buttons/HandleActiveButton"
 
@@ -50,12 +50,12 @@ export const NomenclatorDetails = ({ entity, closeSidebar, handleSidebar, handle
                 <Divider />
 
                 <ButtonGroup sx={{ marginLeft: "auto" }}>
-                    <CommonButton handleClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
+                    <CommonButton onClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
                     {entity.organization_id &&
                         <HandleActiveButton active={entity.active} handleActive={() => handleActive(entity)} />
                     }
                     {entity.organization_id &&
-                        <CommonButton handleClick={() => handleSidebar("UPDATE_NOM", entity)} actionType="MODIFY" >Modificar</CommonButton>
+                        <CommonButton onClick={() => handleSidebar("UPDATE_NOM", entity)} actionType="MODIFY" >Modificar</CommonButton>
                     }
                 </ButtonGroup>
             </Stack>

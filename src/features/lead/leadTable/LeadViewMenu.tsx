@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { deleteView, getLeadViews } from "../leadService";
 import { useListPagination } from "src/hooks/useListPagination";
-import { PaginationComponent } from "../../../components/ui/lists/PaginationComponent";
+import PaginationComponent from "src/components/ui/lists/PaginationComponent";
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import SortIcon from '@mui/icons-material/Sort';
 import type { LeadView, LeadViewParams } from '../../../types/leads';

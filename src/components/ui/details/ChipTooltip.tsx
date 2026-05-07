@@ -1,19 +1,19 @@
 import { Tooltip, type PopperPlacementType } from "@mui/material"
-import CustomChip from "./CustomProgressBar"
 import { memo, type ReactElement } from "react"
 import { useTheme } from "@mui/material/styles"
 import type { ColorTypes } from "../../../types/mui-theme.d"
+import CustomChip from "./CustomChip"
 
 interface ChipTooltipProps {
     show?: boolean,
     title: string,
     color?: ColorTypes,
-    children: ReactElement,
     placement?: PopperPlacementType,
     size?: "small" | "medium" | "large" | "xlarge"
+    children: ReactElement,
 }
 
-export const ChipTooltip = memo(({ show = true, placement = "top", title, color = "primary", size = "medium", children }: ChipTooltipProps) => {
+export const ChipTooltip = memo(({ show = true, title, color = "primary", placement = "top", size = "medium", children }: ChipTooltipProps) => {
 
     const { palette } = useTheme()
 
@@ -36,7 +36,6 @@ export const ChipTooltip = memo(({ show = true, placement = "top", title, color 
             arrow: {
                 sx: { color: palette[color].main }
             }
-
         }} >
         {children}
     </Tooltip >)

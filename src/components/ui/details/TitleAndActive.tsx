@@ -1,12 +1,12 @@
-import Stack from '@mui/material/Stack'
 import CustomChip from './CustomChip'
+import Stack from '@mui/material/Stack'
 
 interface DetailsTitleProps {
     active: boolean,
     children?: React.ReactNode,
 }
 
-export const TitleAndActive = ({ active, children }: DetailsTitleProps) => {
+const TitleAndActive = ({ active, children }: DetailsTitleProps) => {
     return (
         <Stack direction="row" spacing={2} useFlexGap sx={{ flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", width: "100%", flexGrow: 1 }}>
             {children}
@@ -17,3 +17,5 @@ export const TitleAndActive = ({ active, children }: DetailsTitleProps) => {
         </Stack >
     )
 }
+
+export default TitleAndActive

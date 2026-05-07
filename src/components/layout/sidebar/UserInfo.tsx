@@ -1,13 +1,12 @@
-import { Avatar, Box, Button, Divider, FormControlLabel, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Stack, Typography } from '@mui/material'
-import MoreIcon from '@mui/icons-material/More';
 import React, { memo } from 'react'
-import { AccountCircle, Check } from '@mui/icons-material';
-import type { UserContextItems } from '../../../features/users/UserProvider';
-import { Link } from 'react-router-dom';
-import theme from '../../../theme/theme';
-import { useColorScheme, useTheme } from '@mui/material/styles';
 import MaterialUISwitch from './ThemeSlider';
 import { UserContext } from 'src/stores/contexts';
+import { Link } from 'react-router-dom';
+import type { UserContextItems } from '../../../features/users/UserProvider';
+import { Avatar, Box, Button, Divider, FormControlLabel, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Stack, Typography } from '@mui/material'
+import { useColorScheme, useTheme } from '@mui/material/styles';
+import { AccountCircle, Check } from '@mui/icons-material';
+import MoreIcon from '@mui/icons-material/More';
 
 const UserInfo = memo(() => {
 
@@ -64,7 +63,7 @@ const UserInfo = memo(() => {
                 <Divider />
             </MenuItem>
             {
-                activeOrganizations.map(org => {
+                activeOrganizations?.map(org => {
                     return <MenuItem dense key={org.id} onClick={() => setSelectedOrg(org)}>
                         {org.id === selectedOrg?.id &&
                             <ListItemIcon>
@@ -84,7 +83,7 @@ const UserInfo = memo(() => {
                     label={palette.mode === "dark" ? "Modo Oscuro" : "Modo Claro"}
                 />
             </MenuItem>
-            <MenuItem dense onClick={() => logout()} sx={{ "&:hover": { color: theme.palette.error.main } }}>
+            <MenuItem dense onClick={() => logout()} sx={{ "&:hover": { color: palette.error.main } }}>
                 <ListItemText>
                     Cerrar Sesión
                 </ListItemText>
@@ -117,7 +116,7 @@ const UserInfo = memo(() => {
                     aria-haspopup="true"
                     color="inherit"
                 >
-                    <Avatar sx={{ color: theme.palette.secondary.dark, backgroundColor: theme.palette.secondary.light }} />
+                    <Avatar sx={{ color: palette.secondary.dark, backgroundColor: palette.secondary.light }} />
                 </IconButton>
                 <Stack>
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>{user?.email}</Typography>
@@ -142,7 +141,7 @@ const UserInfo = memo(() => {
                     aria-haspopup="true"
                     onClick={handleProfileMenuOpen}
                 >
-                    <Avatar sx={{ color: theme.palette.secondary.dark, backgroundColor: theme.palette.secondary.light }} />
+                    <Avatar sx={{ color: palette.secondary.dark, backgroundColor: palette.secondary.light }} />
                 </IconButton>
             </Box>
             <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
@@ -177,7 +176,6 @@ const UserInfo = memo(() => {
             </IconButton>
         </Box>
     </>)
-}
-)
+})
 
 export default UserInfo
