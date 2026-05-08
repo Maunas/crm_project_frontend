@@ -1,12 +1,12 @@
-import { useForm } from 'react-hook-form'
-import { RegisteredTextInput } from '../../components/ui/forms/CustomInputs'
-import type { Organization, OrganizationDetailed, OrganizationPost } from '../../types/campaigns'
-import { setFormErrors } from "src/utils/forms"
-import { createOrganization, updateOrganization } from '../workspaces/workspaceServices'
-import { Grid, Typography, ButtonGroup, Stack } from '@mui/material'
 import { useEffect, useMemo } from 'react'
-import { FormErrorMessage } from '../../components/ui/forms/FormFeedback'
 import CommonButton from 'src/components/ui/buttons/CommonButton'
+import { RegisteredTextInput } from 'src/components/ui/forms/CustomInputs'
+import { FormErrorMessage } from 'src/components/ui/forms/FormFeedback'
+import { createOrganization, updateOrganization } from './organizationServices'
+import { setFormErrors } from "src/utils/forms"
+import type { Organization, OrganizationDetailed, OrganizationPost } from 'src/types/campaigns'
+import { useForm } from 'react-hook-form'
+import { Grid, Typography, ButtonGroup, Stack } from '@mui/material'
 
 interface OrganizationSidebarProps {
     existingOrg?: Organization,
@@ -30,10 +30,8 @@ export const OrganizationFormSidebar = ({ existingOrg, closeSidebar, handleSideb
                 .then(updateList)
         }
     }
-
     return <OrganizationForm existingOrg={existingOrg} submit={submit} onCancel={closeSidebar} />
 }
-
 
 interface OrganizationProps {
     existingOrg?: Organization | OrganizationDetailed,
@@ -59,34 +57,36 @@ const OrganizationForm = ({ existingOrg, submit, onCancel }: OrganizationProps) 
 
     return (
         <form>
-            <Stack spacing={2}>
+            <Stack spacing={3}>
                 <Typography variant="h2">
                     {!existingOrg ? "Crear Organización" : `Modificar Organización: ${existingOrg.name}`}
                 </Typography>
-                <Grid container spacing={2} sx={{
-                    justifyContent: "center",
-                    alignItems: "center",
-                }}>
-                    <Grid size="grow" sx={{ minWidth: "20rem" }}>
-                        <RegisteredTextInput name="name" register={register} label="Nombre"
-                            required errorMessage={errors.name?.message} />
+                <Stack spacing={2} sx={{ alignItems: "start" }}>
+                    <Grid container spacing={1} sx={{
+                        justifyContent: "center",
+                        alignItems: "center",
+                    }}>
+                        <Grid size="grow" sx={{ minWidth: "20rem" }}>
+                            <RegisteredTextInput name="name" register={register} label="Nombre"
+                                required errorMessage={errors.name?.message} />
+                        </Grid>
+                        <Grid size="grow" sx={{ minWidth: "20rem" }}>
+                            <RegisteredTextInput name="description" register={register} label="Descripción"
+                                errorMessage={errors.description?.message} />
+                        </Grid>
                     </Grid>
-                    <Grid size="grow" sx={{ minWidth: "20rem" }}>
-                        <RegisteredTextInput name="description" register={register} label="Descripción"
-                            errorMessage={errors.description?.message} />
-                    </Grid>
-                </Grid>
-                {errors?.root &&
-                    <FormErrorMessage>{errors?.root?.message}</FormErrorMessage>}
-                <ButtonGroup sx={{ marginLeft: "auto" }}>
-                    <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel}>
-                        Cancelar
-                    </CommonButton>
-                    <CommonButton actionType={existingOrg ? "MODIFY" : "CREATE"} variant="contained"
-                        onClick={handleSubmit(onSubmit)}>
-                        Guardar Organización
-                    </CommonButton>
-                </ButtonGroup>
+                    {errors?.root &&
+                        <FormErrorMessage>{errors?.root?.message}</FormErrorMessage>}
+                    <ButtonGroup sx={{ alignSelf: "end" }}>
+                        <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel}>
+                            Cancelar
+                        </CommonButton>
+                        <CommonButton actionType={existingOrg ? "MODIFY" : "CREATE"} variant="contained"
+                            onClick={handleSubmit(onSubmit)}>
+                            Guardar
+                        </CommonButton>
+                    </ButtonGroup>
+                </Stack>
             </Stack>
         </form>
     )

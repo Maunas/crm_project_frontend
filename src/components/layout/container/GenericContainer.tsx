@@ -40,7 +40,7 @@ const ContainerWithSidebar = ({ isSidebarOpen = false, rootGridProps, mainGridPr
                 </Grid>
                 {isSidebarOpen &&
                     <Grid size={5} sx={{ minWidth: "30rem" }} {...sidebarGridProps}>
-                        <GenericPaper>
+                        <GenericPaper elevation={1}>
                             {sidebarComponent}
                         </GenericPaper>
                     </Grid>}

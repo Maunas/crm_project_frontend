@@ -7,11 +7,11 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import Header from "./Header";
 import Navbar from "./Navbar";
 
-export const drawerWidth = "15rem";
+export const drawerWidth = "15"; //rem
 
 /************************************ Transición de apertura y cierre ****************************************/
 const openedMixin = (theme: Theme): CSSObject => ({
-    width: drawerWidth,
+    width: `${drawerWidth}rem`,
     transition: theme.transitions.create('width', {
         easing: theme.transitions.easing.sharp,
         duration: theme.transitions.duration.enteringScreen,
@@ -44,7 +44,7 @@ const DrawerHeader = styled('div')(({ theme }) => ({
 
 const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(
     ({ theme }) => ({
-        width: drawerWidth,
+        width: `${drawerWidth}rem`,
         flexShrink: 0,
         whiteSpace: 'nowrap',
         boxSizing: 'border-box',

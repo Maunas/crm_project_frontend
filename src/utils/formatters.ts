@@ -1,3 +1,6 @@
+import dayjs from 'dayjs'
+import 'dayjs/locale/es'
+dayjs.locale('es')
 
 /**
  * Formatea el dinero a ARS, o a otro definido por languageCode y currencyCode
@@ -7,6 +10,27 @@
  */
 export const formatMoney = (money: number, languageCode: string = "es-AR", currencyCode: string = "ARS") => {
     return new Intl.NumberFormat(languageCode, { style: "currency", currency: currencyCode }).format(money)
+}
+
+type dateFormat = "dateTime" | "dateTimeLong" | "date" | "dateLong" | "time" | "custom"
+
+export const formatDate = (date: string, formatType: dateFormat, customFormat: string = 'dddd DD/MM/YYYY HH:mm:ss') => {
+    let format
+    switch (formatType) {
+        case "dateTime": format = "DD/MM/YYYY HH:mm:ss"
+            break;
+        case "dateTimeLong": format = "dddd DD/MM/YYYY HH:mm:ss"
+            break;
+        case "date": format = "DD/MM/YYYY"
+            break;
+        case "dateLong": format = "dddd DD/MM/YYYY"
+            break;
+        case "time": format = "HH:mm:ss"
+            break;
+        default: format = customFormat
+            break;
+    }
+    return dayjs(date).format(format)
 }
 
 

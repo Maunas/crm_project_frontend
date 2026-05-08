@@ -1,16 +1,16 @@
 import React, { useEffect, useState, type ReactNode } from 'react'
-import { useNavigate } from 'react-router-dom';
+import { getOrganizations } from 'src/features/organizations/organizationServices';
 import { loginUser, signupUser } from 'src/features/users/userServices';
-import { getOrganizations } from 'src/features/workspaces/workspaceServices';
-import { UserContext } from 'src/stores/contexts';
 import type { OrganizationDetailed } from 'src/types/campaigns';
 import type { UserData, UserLogin, UserSignup } from 'src/types/users';
+import { UserContext } from 'src/stores/contexts';
+import { useNavigate } from 'react-router-dom';
 
 export interface UserContextItems {
     userOrganizations: OrganizationDetailed[],
     activeOrganizations: OrganizationDetailed[],
-    selectedOrg: OrganizationDetailed | null,
-    setSelectedOrg: React.Dispatch<React.SetStateAction<OrganizationDetailed | null>>,
+    activeOrg: OrganizationDetailed | null,
+    setActiveOrg: React.Dispatch<React.SetStateAction<OrganizationDetailed | null>>,
     setOrganizations: React.Dispatch<React.SetStateAction<OrganizationDetailed[]>>,
     fetchOrganizations: () => void,
     user: UserData | null,
@@ -19,7 +19,7 @@ export interface UserContextItems {
     logout: () => void
 }
 
-export const UserProvider = ({ children }: { children: ReactNode }) => {
+export const UserProvider = ({ children }: { children?: ReactNode }) => {
 
     const nav = useNavigate()
 
@@ -32,6 +32,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
     const fetchOrganizations = () => {
         getOrganizations({ only_active: true, detailed: true, page_size: 0 }).then(orgs => {
+            console.log("clg", orgs)
             setOrganizations(orgs.items)
         })
     }
@@ -73,22 +74,22 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         else window.localStorage.removeItem("user")
     }, [user])
 
-    const [selectedOrg, setSelectedOrg] = React.useState<OrganizationDetailed | null>(() => {
+    const [activeOrg, setActiveOrg] = React.useState<OrganizationDetailed | null>(() => {
         const localUser = window.localStorage.getItem("selected_org")
         return localUser ? JSON.parse(localUser) : null
     });
 
     React.useEffect(() => {
-        if (selectedOrg) window.localStorage.setItem("selected_org", JSON.stringify(selectedOrg))
+        if (activeOrg) window.localStorage.setItem("selected_org", JSON.stringify(activeOrg))
         else window.localStorage.removeItem("selected_org")
-    }, [selectedOrg])
+    }, [activeOrg])
 
 
     return (
         <UserContext.Provider value={{
             user, login, logout, signup,
             //To Do: Cuando se realice la seguridad en backend, quitar organizations.
-            userOrganizations: organizations, activeOrganizations: organizations, selectedOrg, setSelectedOrg, setOrganizations, fetchOrganizations
+            userOrganizations: organizations, activeOrganizations: organizations, activeOrg, setActiveOrg, setOrganizations, fetchOrganizations
         }} >
             {children}
         </UserContext.Provider>

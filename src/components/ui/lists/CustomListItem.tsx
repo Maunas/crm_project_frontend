@@ -1,20 +1,35 @@
 import { ListItem, ListItemAvatar } from '@mui/material'
-import { alpha, styled } from '@mui/material/styles'
+import { alpha, lighten, styled } from '@mui/material/styles'
 
 /**
  * Solo muestra los secondaryAction si se está haciendo hover.
  */
 export const CustomListItem = styled(ListItem)(
-    () => [
-        {
-            "& .MuiListItem-secondaryAction": {
-                display: "none"
-            },
-            "&:hover .MuiListItem-secondaryAction": {
-                display: "block"
-            }
-        }
-    ]
+    ({ selected = false, theme }) => {
+        const selectedStyle = selected ?
+            [
+                {
+                    borderRadius: ".5rem",
+                    backgroundColor: lighten(theme.palette.background.paper, .3),
+                    boxShadow: `0 2px 6px -1px ${alpha(theme.palette.primary.dark, .6)}`,
+                },
+                theme.applyStyles("dark", {
+                    backgroundColor: lighten(theme.palette.background.paper, .15),
+                    boxShadow: `0 2px 6px -1px ${alpha(theme.palette.primary.main, .4)}`,
+                })
+            ] : {}
+
+        return [
+            selectedStyle,
+            {
+                "& .MuiListItem-secondaryAction": {
+                    display: "none"
+                },
+                "&:hover .MuiListItem-secondaryAction": {
+                    display: "block"
+                },
+            }]
+    }
 )
 
 export const CustomListItemAvatar = styled(ListItemAvatar)(

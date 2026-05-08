@@ -28,14 +28,12 @@ const LightButton = styled(Button)(({ theme, color = "primary", variant = "conta
 })
 /**
  * Componente basado en Button, que agrega un ícono a su contenido segun el tipo de acción
- * @param actionType 
- * @returns 
  */
 const CommonButton = ({ actionType = "NONE", children, ...btnProps }: CommonBtnProps) => {
 
     return (
         <LightButton variant='contained' {...btnProps}>
-            <Stack spacing={.5} useFlexGap direction="row" sx={{ alignItems: "center", ml: children ? -.6 : 0 }}>
+            <Stack spacing={.5} useFlexGap direction="row" sx={{ alignItems: "center", ml: children ? -.6 : 0, textAlign: "center" }}>
                 {cloneElement(ACTION_ICONS[actionType], { fontSize: btnProps.size })}
                 {children}
             </Stack>
