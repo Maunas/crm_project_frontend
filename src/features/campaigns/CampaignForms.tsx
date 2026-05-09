@@ -1,16 +1,16 @@
 import { useEffect, useMemo, useState } from "react"
-import { RegisteredTextInput } from "../../components/ui/forms/CustomInputs"
-import { ControlledAutocomplete } from "../../components/ui/forms/CustomMultipleInputs"
-import { FormErrorMessage } from "../../components/ui/forms/FormFeedback"
-import type { CampaignDetailed, CampaignPost, Workspace, WorkspaceDetailed } from "../../types/campaigns"
-import type { LeadFieldPost } from "../../types/leadFields"
-import { setFormErrors } from "src/utils/forms"
-import { getWorkspace, getWorkspaces } from "../workspaces/workspaceServices"
+import { RegisteredTextInput } from "src/components/ui/forms/CustomInputs"
+import { ControlledAutocomplete } from "src/components/ui/forms/CustomMultipleInputs"
+import { FormErrorMessage } from "src/components/ui/forms/FormFeedback"
+import CommonButton from "src/components/ui/buttons/CommonButton"
+import type { CampaignDetailed, CampaignPost, Workspace, WorkspaceDetailed } from "src/types/campaigns"
 import { createCampaign, updateCampaign } from "./campaignServices"
+import { getWorkspace, getWorkspaces } from "../workspaces/workspaceServices"
 import { createLeadField } from "../leadFields/leadFieldServices"
+import type { LeadFieldPost } from "src/types/leadFields"
+import { setFormErrors } from "src/utils/forms"
 import { useForm } from "react-hook-form"
 import { ButtonGroup, Grid, Stack, Typography } from "@mui/material"
-import CommonButton from "src/components/ui/buttons/CommonButton"
 
 interface UpdateCampaignSidebarProps {
     existingCmp: CampaignDetailed,
@@ -32,10 +32,10 @@ export const UpdateCampaignFormSidebar = ({ existingCmp, updateEntityOnList, clo
 
 interface CreateCampaignSidebarProps {
     handleSidebar: (mode: string, entity: CampaignDetailed | WorkspaceDetailed | null) => void
-    closeSidebar: () => void,
+    workspace: WorkspaceDetailed,
 }
 //Wrapper de CampaignForm para crear desde un Sidebar
-export const CreateCampaignFormSidebar = ({ handleSidebar, closeSidebar }: CreateCampaignSidebarProps) => {
+export const CreateCampaignFormSidebar = ({ handleSidebar, workspace }: CreateCampaignSidebarProps) => {
 
     const requiredFields: Omit<LeadFieldPost, "campaign_id">[] = [
         {
@@ -59,17 +59,19 @@ export const CreateCampaignFormSidebar = ({ handleSidebar, closeSidebar }: Creat
                     .catch(e => { console.error(e) })
             })
     }
+    const handleClose = () => handleSidebar("DETAILS_WSP", workspace)
 
-    return <CampaignForm submit={submit} onCancel={closeSidebar} />
+    return <CampaignForm submit={submit} onCancel={handleClose} workspaceId={workspace.id} />
 }
 
 interface CampaignProps {
     existingCmp?: CampaignDetailed,
     submit: (data: CampaignPost) => Promise<void>,
     onCancel: () => void
+    workspaceId?: number | null,
 }
 
-export const CampaignForm = ({ existingCmp, submit, onCancel }: CampaignProps) => {
+export const CampaignForm = ({ existingCmp, workspaceId, submit, onCancel }: CampaignProps) => {
 
     const [workspaces, setWorkspaces] = useState<Workspace[] | []>([])
 
@@ -81,8 +83,8 @@ export const CampaignForm = ({ existingCmp, submit, onCancel }: CampaignProps) =
     const defaultValues = useMemo(() => ({
         name: existingCmp?.name,
         description: existingCmp?.description,
-        workspace_id: existingCmp?.workspace_id,
-    }), [existingCmp])
+        workspace_id: existingCmp?.workspace_id ?? workspaceId ?? undefined,
+    }), [existingCmp, workspaceId])
 
     const { register, handleSubmit, reset, control, formState: { errors }, setError }
         = useForm<CampaignPost>({ defaultValues })
@@ -103,6 +105,13 @@ export const CampaignForm = ({ existingCmp, submit, onCancel }: CampaignProps) =
                 </Typography>
                 <Stack spacing={2}>
                     <Grid container spacing={1} sx={{ justifyContent: "center", alignItems: "center" }}>
+                        {!existingCmp &&
+                            <Grid size="grow" sx={{ minWidth: "20rem" }}>
+                                <ControlledAutocomplete control={control} label="Espacio de Trabajo" name="workspace_id" options={workspaces}
+                                    getOptionLabel={option => option.name!} getOptionKey={option => `${option.id}`} returnField="id"
+                                    errorMessage={errors?.workspace_id?.message} required />
+                            </Grid>
+                        }
                         <Grid size="grow" sx={{ minWidth: "20rem" }}>
                             <RegisteredTextInput name="name" register={register} label="Nombre"
                                 required errorMessage={errors.name?.message} />
@@ -111,22 +120,15 @@ export const CampaignForm = ({ existingCmp, submit, onCancel }: CampaignProps) =
                             <RegisteredTextInput name="description" register={register} label="Descripción"
                                 errorMessage={errors.description?.message} multiline />
                         </Grid>
-                        {!existingCmp &&
-                            <Grid size="grow" sx={{ minWidth: "20rem" }}>
-                                <ControlledAutocomplete control={control} label="Espacio de Trabajo" name="workspace_id" options={workspaces}
-                                    getOptionLabel={option => option.name!} getOptionKey={option => `${option.id}`} returnField="id"
-                                    errorMessage={errors?.workspace_id?.message} required />
-                            </Grid>
-                        }
                     </Grid>
                     {errors?.root &&
                         <FormErrorMessage>{errors?.root?.message}</FormErrorMessage>}
-                    <ButtonGroup sx={{ marginLeft: "auto" }}>
+                    <ButtonGroup sx={{ alignSelf: "end" }}>
                         <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel}>
                             Cancelar
                         </CommonButton>
                         <CommonButton actionType={existingCmp ? "MODIFY" : "CREATE"} variant="contained" type="submit">
-                            Guardar Campaña
+                            Guardar
                         </CommonButton>
                     </ButtonGroup>
                 </Stack>

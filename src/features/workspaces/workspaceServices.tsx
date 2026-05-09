@@ -1,5 +1,5 @@
-import type { DeleteResponse, EnableResponse, Paginable, WorkspaceParams } from "../../types/shared"
-import type { Workspace, WorkspaceDetailed, WorkspacePost } from "../../types/campaigns"
+import type { DeleteResponse, EnableResponse, Paginable, WorkspaceParams } from "src/types/shared"
+import type { Workspace, WorkspaceDetailed, WorkspacePost } from "src/types/campaigns"
 import axiosCRM from "src/lib/axios"
 
 export const getWorkspaces = async<T extends WorkspaceParams>(params?: T):

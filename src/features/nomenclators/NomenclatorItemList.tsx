@@ -15,7 +15,7 @@ import type { NomenclatorDetailed, NomenclatorItemDetailed } from 'src/types/nom
 import { UserContext } from 'src/stores/contexts'
 import type { UserContextItems } from 'src/stores/UserProvider'
 import { Link as RouterLink, useParams, useSearchParams } from 'react-router-dom'
-import { ButtonGroup, List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
+import { Breadcrumbs, ButtonGroup, Link, List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 export const NomenclatorItemList = () => {
@@ -100,63 +100,69 @@ export const NomenclatorItemList = () => {
                 closeSidebar={closeSidebar} updateEntityOnList={updateEntityOnList} nomenclator={nomenclator}
                 handleActive={handleActive} />
         }>
-            <Stack spacing={3}>
-                <Stack spacing={1} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
-                    <Typography variant="h1">Opciones de {nomenclator?.name}</Typography>
-                    <ButtonGroup variant="outlined" sx={{ marginLeft: "auto" }} >
-                        <CommonButton actionType='RETURN' variant='outlined' component={RouterLink} to="/nomenclators">Volver</CommonButton>
-                        {nomenclatorItems && nomenclatorItems.items?.length > 0 &&
-                            <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_NOM", null) }}>
-                                Crear Opciones
-                            </CommonButton>
+            <Stack spacing={2}>
+                <Breadcrumbs aria-label="breadcrumb">
+                    <Link component={RouterLink} to={`/nomenclators?selected=${nomenclator?.id}`} underline="hover" color="inherit">
+                        Nomencladores
+                    </Link>
+                    {nomenclator &&
+                        <Typography sx={{ color: 'text.primary' }}>{nomenclator.name}</Typography>}
+                </Breadcrumbs>
+                <Stack spacing={3}>
+                    <Stack spacing={1} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
+                        <Typography variant="h1">Opciones de {nomenclator?.name}</Typography>
+                        <ButtonGroup variant="outlined" sx={{ marginLeft: "auto" }} >
+                            {nomenclatorItems && nomenclatorItems.items?.length > 0 &&
+                                <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_NOM", null) }} />
+                            }
+                        </ButtonGroup>
+                    </Stack>
+                    <Stack spacing={2}>
+                        {
+                            nomenclatorItems && nomenclatorItems.items?.length > 0 ?
+                                <List>
+                                    {nomenclatorItems.items.map(nom =>
+                                        <CustomListItem key={nom.id} selected={nom.id === selectedEntity?.id} disablePadding secondaryAction={
+                                            <Stack direction="row" sx={{ alignItems: "center" }}>
+                                                <CommonIconButton actionType='DETAILS' title='Detalle' onClick={() => handleSidebar("DETAILS_NOM", nom)} tooltipSize='small' size='small' />
+                                                {(nom.organization_id || activeOrg?.id === 0) &&
+                                                    <>
+                                                        <CommonIconButton actionType='MODIFY' title='Modificar' onClick={() => handleSidebar("UPDATE_NOM", nom)} tooltipSize='small' size='small' />
+                                                        <CommonIconButton actionType={nom.active ? "DISABLE" : "ENABLE"} tooltipSize="small" size='small'
+                                                            title={nom.active ? "Deshabilitar" : "Habilitar"}
+                                                            onClick={() => handleActive(nom)} color={nom.active ? "error" : "success"} />
+                                                    </>}
+                                            </Stack>
+                                        }>
+                                            <ListItemButton onClick={() => handleSidebar("DETAILS_NOM", nom)} >
+                                                <ListItemText sx={{ mr: 7 }} primary={
+                                                    <Stack spacing={1} direction="row" sx={{ alignItems: "center" }}>
+                                                        <EnabledIcon active={nom.active} />
+                                                        <Typography sx={{ fontWeight: "bold" }}>{nom.value}</Typography>
+                                                        {nom.parent_item &&
+                                                            <>
+                                                                <ArrowBackIcon />
+                                                                <Typography variant="subtitle2">
+                                                                    {nom.parent_item.value}
+                                                                </Typography>
+                                                            </>
+                                                        }
+                                                    </Stack>
+                                                }
+                                                    secondary={!nom.organization_id && <span style={{ fontStyle: "italic" }}>
+                                                        Opción del Sistema
+                                                    </span>} />
+                                            </ListItemButton>
+                                        </CustomListItem>
+                                    )}
+                                </List>
+                                : <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
+                                    <Typography variant="h4">No se han encontrado opciones en este nomenclador...</Typography>
+                                    <CommonButton actionType='CREATE' onClick={() => { handleSidebar("CREATE_NOM", null) }} variant="contained">Agregar</CommonButton>
+                                </Stack>
                         }
-                    </ButtonGroup>
-                </Stack>
-                <Stack spacing={2}>
-                    {
-                        nomenclatorItems && nomenclatorItems.items?.length > 0 ?
-                            <List>
-                                {nomenclatorItems.items.map(nom =>
-                                    <CustomListItem key={nom.id} selected={nom.id === selectedEntity?.id} disablePadding secondaryAction={
-                                        <Stack direction="row" sx={{ alignItems: "center" }}>
-                                            <CommonIconButton actionType='DETAILS' title='Detalle' onClick={() => handleSidebar("DETAILS_NOM", nom)} tooltipSize='small' size='small' />
-                                            {(nom.organization_id || activeOrg?.id === 0) &&
-                                                <>
-                                                    <CommonIconButton actionType='MODIFY' title='Modificar' onClick={() => handleSidebar("UPDATE_NOM", nom)} tooltipSize='small' size='small' />
-                                                    <CommonIconButton actionType={nom.active ? "DISABLE" : "ENABLE"} tooltipSize="small" size='small'
-                                                        title={nom.active ? "Deshabilitar" : "Habilitar"}
-                                                        onClick={() => handleActive(nom)} color={nom.active ? "error" : "success"} />
-                                                </>}
-                                        </Stack>
-                                    }>
-                                        <ListItemButton onClick={() => handleSidebar("DETAILS_NOM", nom)} >
-                                            <ListItemText sx={{ mr: 7 }} primary={
-                                                <Stack spacing={1} direction="row" sx={{ alignItems: "center" }}>
-                                                    <EnabledIcon active={nom.active} />
-                                                    <Typography sx={{ fontWeight: "bold" }}>{nom.value}</Typography>
-                                                    {nom.parent_item &&
-                                                        <>
-                                                            <ArrowBackIcon />
-                                                            <Typography variant="subtitle2">
-                                                                {nom.parent_item.value}
-                                                            </Typography>
-                                                        </>
-                                                    }
-                                                </Stack>
-                                            }
-                                                secondary={!nom.organization_id && <span style={{ fontStyle: "italic" }}>
-                                                    Opción del Sistema
-                                                </span>} />
-                                        </ListItemButton>
-                                    </CustomListItem>
-                                )}
-                            </List>
-                            : <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
-                                <Typography variant="h4">No se han encontrado opciones en este nomenclador...</Typography>
-                                <CommonButton actionType='CREATE' onClick={() => { handleSidebar("CREATE_NOM", null) }} variant="contained">Crear Opción</CommonButton>
-                            </Stack>
-                    }
-                    <PaginationComponent {...pageComponentProps} />
+                        <PaginationComponent {...pageComponentProps} />
+                    </Stack>
                 </Stack>
             </Stack>
         </ContainerWithSidebar >

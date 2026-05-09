@@ -3,19 +3,19 @@ import { UpdateCampaignFormSidebar } from './CampaignForms'
 import { LeadFieldTable } from '../leadFields/LeadFieldTable'
 import { LeadFieldDetail } from '../leadFields/LeadFieldDetail'
 import { LeadFieldFormSidebar } from '../leadFields/LeadFieldForm'
-import type { CampaignDetailed } from '../../types/campaigns'
-import type { LeadFieldDetailed } from '../../types/leadFields'
-import { disableCampaign, enableCampaign, getCampaign } from './campaignServices'
-import { getLeadField, getLeadFields } from '../leadFields/leadFieldServices'
-import { Link as RouterLink, useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import dayjs from 'dayjs'
-import { Typography, ButtonGroup, Link, Breadcrumbs, Stack, Grid, Divider } from '@mui/material'
 import { ValidationFormSidebar } from '../validations/ValidationForm'
-import { useSidebar } from 'src/hooks/useSidebar'
 import ContainerWithSidebar from 'src/components/layout/container/GenericContainer'
 import TitleAndActive from 'src/components/ui/details/TitleAndActive'
 import CommonButton from 'src/components/ui/buttons/CommonButton'
 import HandleActiveButton from 'src/components/ui/buttons/HandleActiveButton'
+import DetailsMetadata from 'src/components/ui/details/DetailsMetadata'
+import { useSidebar } from 'src/hooks/useSidebar'
+import type { CampaignDetailed } from 'src/types/campaigns'
+import type { LeadFieldDetailed } from 'src/types/leadFields'
+import { disableCampaign, enableCampaign, getCampaign } from './campaignServices'
+import { getLeadField, getLeadFields } from '../leadFields/leadFieldServices'
+import { Link as RouterLink, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { Typography, ButtonGroup, Link, Breadcrumbs, Stack, Divider } from '@mui/material'
 
 export const CampaignDetails = () => {
     const { id } = useParams()
@@ -123,47 +123,27 @@ export const CampaignDetails = () => {
                 </Stack>
                 {campaign &&
                     <Stack spacing={2} >
-                        <Grid container spacing={2}>
-                            <Grid size="grow" sx={{ minWidth: "20rem" }}>
-                                {campaign.description
-                                    ? <Typography variant="body1">{campaign.description}</Typography>
-                                    : <Typography variant="body1" sx={{ fontStyle: "italic" }}>No tiene descripción.</Typography>
-                                }
-                            </Grid>
-                            <Grid container spacing={1} size={{ sm: 12, md: 12, lg: 3 }} sx={{ minWidth: "20rem" }}>
-                                <Grid size="grow" sx={{ minWidth: "18rem" }}>
-                                    <Typography variant="body1" sx={{ fontWeight: "bold" }}>Fecha de creación:</Typography>
-                                    <Typography variant="body1" sx={{ textTransform: "capitalize", pl: 2 }}>
-                                        {dayjs(campaign?.created_at).format('dddd DD/MM/YYYY HH:mm:ss')}
-                                    </Typography>
-                                </Grid>
-                                <Grid size="grow" sx={{ minWidth: "18rem" }}>
-                                    <Typography variant="body1" sx={{ fontWeight: "bold" }}>Fecha de última modificación:</Typography>
-                                    <Typography variant="body1" sx={{ textTransform: "capitalize", pl: 2 }}>
-                                        {dayjs(campaign?.updated_at).format('dddd DD/MM/YYYY HH:mm:ss')}
-                                    </Typography>
-                                </Grid>
-                            </Grid>
-                        </Grid>
+                        {campaign.description &&
+                            <Typography variant="body1">{campaign.description}</Typography>
+                        }
+                        <DetailsMetadata entity={campaign} />
                         <Divider />
-                        <Grid size="grow" spacing={2} container sx={{ justifyContent: "center", alignItems: "center" }} >
-                            <Grid size="grow" sx={{ minWidth: "16rem" }} >
-                                <Typography variant="h2">Acciones</Typography>
-                            </Grid >
+                        <Stack spacing={2} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
+                            <Typography variant="h2">Acciones</Typography>
                             <ButtonGroup sx={{ marginLeft: "auto" }}>
                                 <HandleActiveButton active={campaign.active} handleActive={() => handleActiveCampaign(campaign)} />
                                 <CommonButton onClick={() => handleSidebar("UPDATE_CMP", null)} actionType="MODIFY">Modificar</CommonButton>
                                 <CommonButton component={RouterLink} variant='outlined' to={`/leads?workspace=${campaign.workspace_id}&campaign=${campaign.id}`}
                                     actionType="LIST">Ver Lista de Leads</CommonButton>
                             </ButtonGroup>
-                        </Grid>
+                        </Stack>
                         <Divider />
                         <LeadFieldTable campaign={campaign} leadFields={leadFields} updateLeadFields={updateLeadFields}
                             handleSidebar={handleSidebar} updateEntity={updateEntity} />
                     </Stack>
                 }
             </Stack>
-        </ContainerWithSidebar>
+        </ContainerWithSidebar >
     )
 }
 

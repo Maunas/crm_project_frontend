@@ -1,22 +1,22 @@
 import { useContext, useEffect, useState } from 'react'
 import { WorkspaceFormSidebar } from './WorkspaceForms';
-import { CreateCampaignFormSidebar } from '../campaigns/CampaignForms';
-import { EnabledIcon } from '../../components/ui/lists/Icons';
-import PaginationComponent from 'src/components/ui/lists/PaginationComponent'
 import { WorkspaceDetails } from './WorkspaceDetails'
-import type { Paginable } from '../../types/shared'
-import type { CampaignDetailed, WorkspaceDetailed } from '../../types/campaigns'
-import { disableWorkspace, enableWorkspace, getWorkspace, getWorkspaces } from './workspaceServices'
-import type { UserContextItems } from 'src/stores/UserProvider';
-import { useSearchParams } from 'react-router-dom';
-import { ButtonGroup, Grid, List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
-import { CustomListItem } from '../../components/ui/lists/CustomListItem';
-import { useSidebar } from 'src/hooks/useSidebar';
-import { useListPagination } from 'src/hooks/useListPagination';
-import { UserContext } from 'src/stores/contexts';
+import { CreateCampaignFormSidebar } from '../campaigns/CampaignForms';
+import { EnabledIcon } from 'src/components/ui/lists/Icons';
+import PaginationComponent from 'src/components/ui/lists/PaginationComponent'
+import { CustomListItem } from 'src/components/ui/lists/CustomListItem';
 import ContainerWithSidebar from 'src/components/layout/container/GenericContainer';
 import CommonButton from 'src/components/ui/buttons/CommonButton';
 import { CommonIconButton } from 'src/components/ui/buttons/CommonIconButton';
+import { useSidebar } from 'src/hooks/useSidebar';
+import { useListPagination } from 'src/hooks/useListPagination';
+import { disableWorkspace, enableWorkspace, getWorkspace, getWorkspaces } from './workspaceServices'
+import type { Paginable } from 'src/types/shared'
+import type { CampaignDetailed, WorkspaceDetailed } from 'src/types/campaigns'
+import { UserContext } from 'src/stores/contexts';
+import type { UserContextItems } from 'src/stores/UserProvider';
+import { useSearchParams } from 'react-router-dom';
+import { List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
 
 export const WorkspaceList = () => {
 
@@ -96,25 +96,18 @@ export const WorkspaceList = () => {
                     handleActive={handleActive} />
             }>
             <Stack spacing={3}>
-                <Grid container spacing={2} sx={{ justifyContent: "space-between", alignItems: "center" }}>
-                    <Grid size="grow" sx={{ minWidth: "15rem" }}>
-                        <Typography variant="h1">Lista de Espacios de Trabajo</Typography>
-                    </Grid>
-                    <ButtonGroup variant="contained" color="primary" sx={{ marginLeft: "auto" }}>
-                        <CommonButton actionType='CREATE' onClick={() => handleSidebar("CREATE_WSP", null)}>
-                            Crear Espacio de Trabajo
-                        </CommonButton>
-                        <CommonButton actionType='CREATE' onClick={() => handleSidebar("CREATE_CMP", null)}>
-                            Crear Campaña
-                        </CommonButton>
-                    </ButtonGroup>
-                </Grid>
+                <Stack spacing={2} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
+                    <Typography variant="h1">Lista de Espacios de Trabajo</Typography>
+                    {workspaces && workspaces?.items.length > 0 &&
+                        <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_WSP", null)} sx={{ marginLeft: "auto" }} />
+                    }
+                </Stack>
                 <Stack spacing={2}>
                     {workspaces?.items && workspaces?.items?.length > 0 ?
                         <List>
                             {workspaces?.items.map(wsp =>
-                                <CustomListItem key={`wsp-${wsp.id}`} disablePadding secondaryAction={
-                                    <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                                <CustomListItem key={`wsp-${wsp.id}`} selected={wsp.id === selectedEntity?.id} disablePadding secondaryAction={
+                                    <Stack direction="row" sx={{ alignItems: "center" }}>
                                         <CommonIconButton actionType='DETAILS' title="Detalles" tooltipSize="small" size="small"
                                             onClick={() => { handleSidebar("DETAILS_WSP", wsp) }} />
                                         <CommonIconButton actionType='MODIFY' title="Modificar" tooltipSize="small" size="small"
@@ -125,7 +118,7 @@ export const WorkspaceList = () => {
                                     </Stack>
                                 }>
                                     <ListItemButton onClick={() => { handleSidebar("DETAILS_WSP", wsp) }} >
-                                        <ListItemText primary={
+                                        <ListItemText sx={{ mr: 7 }} primary={
                                             <Stack spacing={1} direction="row">
                                                 <EnabledIcon active={wsp.active} />
                                                 <Typography sx={{ fontWeight: "bold" }}>{wsp.name}</Typography>
@@ -139,7 +132,7 @@ export const WorkspaceList = () => {
                         : <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
                             <Typography variant="h4">No se han encontrado espacios de trabajo...</Typography>
                             <CommonButton actionType='CREATE' onClick={() => handleSidebar("CREATE_WSP", null)} variant="contained">
-                                Crear Espacio
+                                Agregar
                             </CommonButton>
                         </Stack>
                     }
@@ -170,7 +163,7 @@ const WorkspaceSidebar = ({ mode, entity, closeSidebar, updateEntityOnList, hand
                 updateEntityOnList={entity => updateEntityOnList(entity, mode)}
                 handleSidebar={handleSidebar} />
         case "CREATE_CMP":
-            return <CreateCampaignFormSidebar closeSidebar={closeSidebar}
+            return <CreateCampaignFormSidebar workspace={entity as WorkspaceDetailed}
                 handleSidebar={handleSidebar} />
         case "UPDATE_WSP":
             return <WorkspaceFormSidebar existingWsp={entity as WorkspaceDetailed} closeSidebar={closeSidebar}

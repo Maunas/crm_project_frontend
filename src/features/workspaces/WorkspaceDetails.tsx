@@ -1,10 +1,10 @@
 import { CampaignList } from "../campaigns/CampaignList"
-import type { CampaignDetailed, WorkspaceDetailed } from "../../types/campaigns"
-import dayjs from "dayjs"
-import { Stack, Typography, ButtonGroup, Divider, Grid } from "@mui/material"
 import TitleAndActive from "src/components/ui/details/TitleAndActive"
+import DetailsMetadata from "src/components/ui/details/DetailsMetadata"
 import CommonButton from "src/components/ui/buttons/CommonButton"
 import HandleActiveButton from "src/components/ui/buttons/HandleActiveButton"
+import type { CampaignDetailed, WorkspaceDetailed } from "src/types/campaigns"
+import { Stack, Typography, ButtonGroup, Divider } from "@mui/material"
 
 interface WorkspaceDetailsProps {
     entity: WorkspaceDetailed | null,
@@ -24,28 +24,16 @@ export const WorkspaceDetails = ({ entity, closeSidebar, handleSidebar, handleAc
                 {entity.description ? <Typography variant="body1">{entity.description}</Typography>
                     : <Typography variant="body1" sx={{ fontStyle: "italic" }}>No tiene descripción.</Typography>
                 }
+                <Stack spacing={3} >
+                    <Divider />
+                    {entity.campaigns &&
+                        <CampaignList workspace={entity} handleSidebar={handleSidebar} />
+                    }
+                    <Divider />
+                </Stack>
+                <DetailsMetadata entity={entity} />
                 <Divider />
-                {entity.campaigns &&
-                    <CampaignList selectedWorkspaceId={entity.id} handleSidebar={handleSidebar} />
-                }
-                <Divider />
-                <Grid container spacing={1} >
-                    <Grid size="grow" sx={{ minWidth: "18rem" }}>
-                        <Typography variant="body1" sx={{ fontWeight: "bold" }}>Fecha de creación:</Typography>
-                        <Typography variant="body1" sx={{ textTransform: "capitalize", pl: 2 }}>
-                            {dayjs(entity?.created_at).format('dddd DD/MM/YYYY HH:mm:ss')}
-                        </Typography>
-                    </Grid>
-                    <Grid size="grow" sx={{ minWidth: "18rem" }}>
-                        <Typography variant="body1" sx={{ fontWeight: "bold" }}>Fecha de última modificación:</Typography>
-                        <Typography variant="body1" sx={{ textTransform: "capitalize", pl: 2 }}>
-                            {dayjs(entity?.updated_at).format('dddd DD/MM/YYYY HH:mm:ss')}
-                        </Typography>
-                    </Grid>
-                </Grid>
-                <Divider />
-
-                <ButtonGroup sx={{ marginLeft: "auto" }}>
+                <ButtonGroup sx={{ alignSelf: "end" }}>
                     <CommonButton onClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
                     <HandleActiveButton active={entity.active} handleActive={() => handleActive(entity)} />
                     <CommonButton onClick={() => handleSidebar("UPDATE_WSP", entity)} actionType="MODIFY" >Modificar</CommonButton>

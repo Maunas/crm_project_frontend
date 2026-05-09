@@ -1,21 +1,21 @@
 import { useEffect, useState } from "react"
-import { EnabledIcon } from "../../components/ui/lists/Icons"
-import type { Paginable } from "../../types/shared"
-import type { CampaignDetailed, WorkspaceDetailed } from "../../types/campaigns"
-import { getCampaigns } from "./campaignServices"
-import { Link } from "react-router-dom"
-import { Grid, ListItemButton, ListItemText, Stack, Typography } from "@mui/material"
-import { CustomListItem } from "../../components/ui/lists/CustomListItem"
-import { useListPagination } from "src/hooks/useListPagination"
+import { EnabledIcon } from "src/components/ui/lists/Icons"
+import { CustomListItem } from "src/components/ui/lists/CustomListItem"
 import CommonButton from "src/components/ui/buttons/CommonButton"
 import PaginationComponent from "src/components/ui/lists/PaginationComponent"
 import { CommonIconButton } from "src/components/ui/buttons/CommonIconButton"
+import { useListPagination } from "src/hooks/useListPagination"
+import type { Paginable } from "src/types/shared"
+import type { CampaignDetailed, WorkspaceDetailed } from "src/types/campaigns"
+import { getCampaigns } from "./campaignServices"
+import { Link } from "react-router-dom"
+import { Grid, ListItemButton, ListItemText, Stack, Typography } from "@mui/material"
 
 interface CampaignListProps {
-    selectedWorkspaceId: number,
+    workspace: WorkspaceDetailed,
     handleSidebar: (mode: string, entity: WorkspaceDetailed | CampaignDetailed | null) => void
 }
-export const CampaignList = ({ selectedWorkspaceId, handleSidebar }: CampaignListProps) => {
+export const CampaignList = ({ workspace, handleSidebar }: CampaignListProps) => {
 
     const [campaigns, setCampaigns] = useState<Paginable<CampaignDetailed> | null>(null)
 
@@ -23,14 +23,19 @@ export const CampaignList = ({ selectedWorkspaceId, handleSidebar }: CampaignLis
 
     useEffect(() => {
         getCampaigns({
-            workspace_id: selectedWorkspaceId, detailed: true, only_active: false,
+            workspace_id: workspace.id, detailed: true, only_active: false,
             page: fetchPage || 1, page_size: pageSize
         }).then(setCampaigns)
-    }, [selectedWorkspaceId, refresh, fetchPage, pageSize])
+    }, [workspace.id, refresh, fetchPage, pageSize])
 
     if (campaigns?.items && campaigns.items.length > 0) return (
         <Stack spacing={2}>
-            <Typography variant="h3">Lista de Campañas</Typography>
+            <Stack spacing={1} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
+                <Typography variant="h3">Lista de Campañas</Typography>
+                {campaigns && campaigns?.items.length > 0 &&
+                    <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_CMP", workspace)} sx={{ marginLeft: "auto" }} size="small" />
+                }
+            </Stack>
             <CampaignListData campaigns={campaigns.items} />
             <PaginationComponent {...pageComponentProps} />
         </Stack>
@@ -38,7 +43,7 @@ export const CampaignList = ({ selectedWorkspaceId, handleSidebar }: CampaignLis
     else return (
         <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
             <Typography variant="h4">No se han encontrado campañas para este espacio de trabajo...</Typography>
-            <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_CMP", null)} variant="contained">Agregar Campaña</CommonButton>
+            <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_CMP", workspace)} variant="contained">Agregar</CommonButton>
         </Stack>
     )
 }
@@ -46,18 +51,18 @@ export const CampaignList = ({ selectedWorkspaceId, handleSidebar }: CampaignLis
 export const CampaignListData = ({ campaigns }: { campaigns: CampaignDetailed[] }) => {
 
     return (
-        <Grid container spacing={1} sx={{ marginInline: 1 }}>
+        <Grid container sx={{ marginInline: 1 }}>
             {campaigns.map((cmp, idx) =>
                 <Grid container key={`cmp-${idx}`} size="grow" sx={{ minWidth: "15rem" }}>
                     <CustomListItem disablePadding secondaryAction={
-                        <Stack direction="row" spacing={.5} sx={{ alignItems: "center" }}>
+                        <Stack direction="row" sx={{ alignItems: "center" }}>
                             <CommonIconButton actionType='DETAILS' title="Detalles" tooltipSize="small" size="small"
                                 component={Link} to={`/campaigns/${cmp.id}`} />
                             <CommonIconButton actionType='LIST' title="Ver Leads" tooltipSize="small" size="small"
                                 component={Link} to={`/leads?workspace=${cmp.workspace_id}&campaign=${cmp.id}`} />
                         </Stack>}>
                         <ListItemButton component={Link} to={`/campaigns/${cmp.id}`} >
-                            <ListItemText primary={
+                            <ListItemText sx={{ mr: 4 }} primary={
                                 <Stack spacing={1} direction="row" color="inherit" sx={{ width: "100%", alignItems: "center" }}>
                                     <EnabledIcon active={cmp.active} />
                                     <Typography sx={{ fontWeight: "bold" }} color="inherit">{cmp.name}</Typography>
@@ -65,7 +70,6 @@ export const CampaignListData = ({ campaigns }: { campaigns: CampaignDetailed[] 
                             }
                                 secondary={cmp.description} />
                         </ListItemButton>
-
                     </CustomListItem>
                 </Grid>
             )

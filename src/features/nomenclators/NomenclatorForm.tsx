@@ -94,7 +94,7 @@ export const NomenclatorForm = ({ existingNom, submit, onCancel }: NomenclatorPr
                         <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel}>
                             Cancelar
                         </CommonButton>
-                        <CommonButton actionType="MODIFY" variant="contained" type="submit">
+                        <CommonButton actionType={existingNom ? "MODIFY" : "CREATE"} variant="contained" type="submit">
                             Guardar
                         </CommonButton>
                     </ButtonGroup>

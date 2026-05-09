@@ -77,7 +77,7 @@ export const NomenclatorItemForm = ({ existingNom, nomenclator, submit, onCancel
     }
 
     return (
-        <form>
+        <form onSubmit={handleSubmit(onSubmit)}>
             <Stack spacing={3}>
                 <Typography variant="h2">
                     {!existingNom ? "Crear Opciones de Nomenclador"
@@ -108,9 +108,8 @@ export const NomenclatorItemForm = ({ existingNom, nomenclator, submit, onCancel
                             <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel} fullWidth>
                                 Cancelar
                             </CommonButton>
-                            <CommonButton actionType={existingNom ? "MODIFY" : "CREATE"} variant="contained"
-                                onClick={handleSubmit(onSubmit)} fullWidth>
-                                Guardar Opción
+                            <CommonButton actionType={existingNom ? "MODIFY" : "CREATE"} variant="contained" type="submit" fullWidth>
+                                Guardar
                             </CommonButton>
                         </ButtonGroup>
                         {!existingNom &&

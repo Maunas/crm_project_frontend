@@ -80,9 +80,7 @@ export const OrganizationList = () => {
                 <Stack spacing={2} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
                     <Typography variant="h1">Lista de Organizaciones</Typography>
                     {userOrganizations && userOrganizations?.length > 0 &&
-                        <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_ORG", null)} sx={{ marginLeft: "auto" }}>
-                            Crear Organización
-                        </CommonButton>
+                        <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_ORG", null)} sx={{ marginLeft: "auto" }} />
                     }
                 </Stack>
                 <Stack spacing={2}>
@@ -121,7 +119,7 @@ export const OrganizationList = () => {
                         : <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
                             <Typography variant="h4">No se han encontrado organizaciones...</Typography>
                             <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_ORG", null)} variant="contained">
-                                Crear Organización
+                                Agregar
                             </CommonButton>
                         </Stack>
                     }

@@ -96,9 +96,7 @@ export const NomenclatorList = () => {
                     <Typography variant="h1">Lista de Nomencladores</Typography>
                     {nomenclators && nomenclators.items?.length > 0 &&
                         <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_NOM", null) }}
-                            sx={{ marginLeft: "auto" }}>
-                            Crear Nomenclador
-                        </CommonButton>
+                            sx={{ marginLeft: "auto" }} />
                     }
                 </Stack>
                 <Stack spacing={2}>
@@ -144,7 +142,7 @@ export const NomenclatorList = () => {
                             : <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
                                 <Typography variant="h4">No se han encontrado nomencladores...</Typography>
                                 <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_NOM", null) }} variant="contained">
-                                    Crear Nomenclador
+                                    Agregar
                                 </CommonButton>
                             </Stack>
                     }
