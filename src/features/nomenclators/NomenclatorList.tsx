@@ -18,7 +18,7 @@ import { CommonIconButton } from 'src/components/ui/buttons/CommonIconButton'
 
 export const NomenclatorList = () => {
 
-    const { selectedOrg } = useContext<UserContextItems>(UserContext)
+    const { activeOrg } = useContext<UserContextItems>(UserContext)
 
     const [nomenclators, setNomenclators] = useState<Paginable<NomenclatorDetailed> | null>(null)
 
@@ -31,7 +31,7 @@ export const NomenclatorList = () => {
     useEffect(() => {
         getNomenclators({ only_active: false, detailed: true, page: fetchPage, page_size: pageSize })
             .then(setNomenclators)
-    }, [fetchPage, pageSize, selectedOrg])
+    }, [fetchPage, pageSize, activeOrg])
 
 
     const updateEntityOnList = useCallback((entity: NomenclatorDetailed | null, mode: string) => {

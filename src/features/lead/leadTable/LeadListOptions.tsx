@@ -26,7 +26,7 @@ interface LeadCampaignSelectorsProps {
 
 export const LeadCampaignSelector = memo(({ workspaceId, handleWorkspaceChange, campaignId, handleCampaignChange }: LeadCampaignSelectorsProps) => {
 
-    const { selectedOrg } = useContext<UserContextItems>(UserContext)
+    const { activeOrg } = useContext<UserContextItems>(UserContext)
 
     const [workspaces, setWorkspaces] = useState<Workspace[]>([])
     const [campaigns, setCampaigns] = useState<Campaign[]>([])
@@ -54,7 +54,7 @@ export const LeadCampaignSelector = memo(({ workspaceId, handleWorkspaceChange, 
             })
         })
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedOrg])
+    }, [activeOrg])
 
     const onWorkspaceChange = useCallback((newWorkspaceId: number | null) => {
         if (!newWorkspaceId) return

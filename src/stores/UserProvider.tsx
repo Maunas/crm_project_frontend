@@ -1,16 +1,17 @@
-import React, { useEffect, useState, type ReactNode } from 'react'
+import React, { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { getOrganizations } from 'src/features/organizations/organizationServices';
-import { loginUser, signupUser } from 'src/features/users/userServices';
-import type { OrganizationDetailed } from 'src/types/campaigns';
+import { loginUser, signupUser } from 'src/features/auth/userServices';
+import type { Organization, OrganizationDetailed } from 'src/types/campaigns';
 import type { UserData, UserLogin, UserSignup } from 'src/types/users';
 import { UserContext } from 'src/stores/contexts';
 import { useNavigate } from 'react-router-dom';
+import { SUPERUSER } from 'src/utils/constants';
 
 export interface UserContextItems {
     userOrganizations: OrganizationDetailed[],
-    activeOrganizations: OrganizationDetailed[],
-    activeOrg: OrganizationDetailed | null,
-    setActiveOrg: React.Dispatch<React.SetStateAction<OrganizationDetailed | null>>,
+    activeOrganizations: Organization[],
+    activeOrg: Organization | null,
+    setActiveOrg: React.Dispatch<React.SetStateAction<Organization | null>>,
     setOrganizations: React.Dispatch<React.SetStateAction<OrganizationDetailed[]>>,
     fetchOrganizations: () => void,
     user: UserData | null,
@@ -32,7 +33,6 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
 
     const fetchOrganizations = () => {
         getOrganizations({ only_active: true, detailed: true, page_size: 0 }).then(orgs => {
-            console.log("clg", orgs)
             setOrganizations(orgs.items)
         })
     }
@@ -47,13 +47,35 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
         const userOrganizationAccessIds = user.organizations_access.map(org => org.organization_id)
         return organizations.filter(org => userOrganizationAccessIds.includes(org.id))
     }, [user, organizations])
-
-        const activeOrganizations = useMemo(() => userOrganizations.filter(org => org.active), [userOrganizations])
     */
+
+    const activeOrganizations = useMemo(() => {
+        const active = organizations.filter(org => org.active) as Organization[]
+        active.push(SUPERUSER)
+        return active
+    }, [organizations])
+
+
+
+    useEffect(() => {
+        if (user) window.localStorage.setItem("user", JSON.stringify(user))
+        else window.localStorage.removeItem("user")
+    }, [user])
+
+    const [activeOrg, setActiveOrg] = React.useState<Organization | null>(() => {
+        const localUser = window.localStorage.getItem("selected_org")
+        return localUser ? JSON.parse(localUser) : null
+    });
+
+    React.useEffect(() => {
+        if (activeOrg) window.localStorage.setItem("selected_org", JSON.stringify(activeOrg))
+        else window.localStorage.removeItem("selected_org")
+    }, [activeOrg])
 
     const login = (data: UserLogin) => {
         return loginUser(data).then(user => {
             setUser(user)
+            setActiveOrg(activeOrganizations[0])
         })
     }
 
@@ -66,30 +88,15 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
     const logout = () => {
         alert("Logout")
         setUser(null)
+        setActiveOrg(null)
         nav("/login")
     }
-
-    useEffect(() => {
-        if (user) window.localStorage.setItem("user", JSON.stringify(user))
-        else window.localStorage.removeItem("user")
-    }, [user])
-
-    const [activeOrg, setActiveOrg] = React.useState<OrganizationDetailed | null>(() => {
-        const localUser = window.localStorage.getItem("selected_org")
-        return localUser ? JSON.parse(localUser) : null
-    });
-
-    React.useEffect(() => {
-        if (activeOrg) window.localStorage.setItem("selected_org", JSON.stringify(activeOrg))
-        else window.localStorage.removeItem("selected_org")
-    }, [activeOrg])
-
 
     return (
         <UserContext.Provider value={{
             user, login, logout, signup,
             //To Do: Cuando se realice la seguridad en backend, quitar organizations.
-            userOrganizations: organizations, activeOrganizations: organizations, activeOrg, setActiveOrg, setOrganizations, fetchOrganizations
+            userOrganizations: organizations, activeOrganizations, activeOrg, setActiveOrg, setOrganizations, fetchOrganizations
         }} >
             {children}
         </UserContext.Provider>

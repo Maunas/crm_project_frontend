@@ -7,7 +7,7 @@ import { styled } from '@mui/material/styles';
 import MenuIcon from '@mui/icons-material/Menu';
 import { HeaderSearchBar } from 'src/features/search/GeneralSearchBar';
 import { drawerWidth } from './Sidebar';
-import UserInfo from './UserInfo';
+import UserInfo from './HeaderMenu';
 
 interface AppBarProps extends MuiAppBarProps {
   open?: boolean;

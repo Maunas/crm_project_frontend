@@ -8,9 +8,9 @@ import { useColorScheme, useTheme } from '@mui/material/styles';
 import { AccountCircle, Check } from '@mui/icons-material';
 import MoreIcon from '@mui/icons-material/More';
 
-const UserInfo = memo(() => {
+const HeaderMenu = memo(() => {
 
-    const { user, logout, activeOrganizations, selectedOrg, setSelectedOrg } = React.useContext<UserContextItems>(UserContext)
+    const { user, logout, activeOrganizations, activeOrg, setActiveOrg } = React.useContext<UserContextItems>(UserContext)
 
     const { setMode } = useColorScheme();
     const { palette } = useTheme();
@@ -42,6 +42,7 @@ const UserInfo = memo(() => {
     const handleMobileMenuClose = () => {
         setMobileMoreAnchorEl(null);
     };
+    console.log(activeOrg)
 
     const menuId = 'primary-search-account-menu';
     const renderProfileMenu = (
@@ -64,13 +65,13 @@ const UserInfo = memo(() => {
             </MenuItem>
             {
                 activeOrganizations?.map(org => {
-                    return <MenuItem dense key={org.id} onClick={() => setSelectedOrg(org)}>
-                        {org.id === selectedOrg?.id &&
+                    return <MenuItem dense key={org.id} onClick={() => setActiveOrg(org)}>
+                        {org.id === activeOrg?.id &&
                             <ListItemIcon>
                                 <Check />
                             </ListItemIcon>
                         }
-                        <ListItemText inset={org.id !== selectedOrg?.id} primary={org.name}>
+                        <ListItemText inset={org.id !== activeOrg?.id} primary={org.name}>
                         </ListItemText>
                     </MenuItem>
                 })
@@ -120,7 +121,7 @@ const UserInfo = memo(() => {
                 </IconButton>
                 <Stack>
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>{user?.email}</Typography>
-                    <Typography variant="body2">{selectedOrg?.name}</Typography>
+                    <Typography variant="body2">{activeOrg?.name}</Typography>
                 </Stack>
             </MenuItem>
         </Menu>
@@ -131,7 +132,7 @@ const UserInfo = memo(() => {
             <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: "center" }}>
                 <Stack>
                     <Typography variant="body2" sx={{ textAlign: "end", fontWeight: 600 }}>{user.email}</Typography>
-                    <Typography variant="body2" sx={{ textAlign: "end" }}>{selectedOrg?.name}</Typography>
+                    <Typography variant="body2" sx={{ textAlign: "end" }}>{activeOrg?.name}</Typography>
                 </Stack>
                 <IconButton
                     size="large"
@@ -178,4 +179,4 @@ const UserInfo = memo(() => {
     </>)
 })
 
-export default UserInfo
+export default HeaderMenu
