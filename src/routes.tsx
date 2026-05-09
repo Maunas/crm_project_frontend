@@ -14,6 +14,8 @@ import { SearchResultsList } from "./components/common/SearchResults";
 import { LoginFormPage } from "./components/users/LoginForm";
 import { UserProvider } from "./components/users/UserProvider";
 import { SignupFormPage } from "./components/users/SignupForm";
+import { AutomationList } from "./components/fieldAutomation/AutomationList";
+import { AutomationPage } from "./components/fieldAutomation/AutomationPage";
 
 export const router = createBrowserRouter([
     {
@@ -71,6 +73,14 @@ export const router = createBrowserRouter([
             {
                 path: "/organizations/",
                 Component: OrganizationList
+            },
+            {
+                path: "/automations/",
+                Component: AutomationList
+            },
+            {
+                path: "/automations/:id",
+                Component: AutomationPage
             },
             {
                 path: "/campaigns/:id",

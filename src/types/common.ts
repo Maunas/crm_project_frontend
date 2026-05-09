@@ -49,6 +49,10 @@ export interface LeadListParams extends ListParams {
   campaign_id?: number
 }
 
+export interface FieldAutomationParams extends ListParams {
+  campaign_id?: number
+}
+
 /**
  * Contiene los formatos de mensaje de error.
  */

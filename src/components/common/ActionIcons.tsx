@@ -13,6 +13,7 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import SettingsIcon from '@mui/icons-material/Settings';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 export const ACTION_ICONS = {
     NONE: <></>,
@@ -31,8 +32,9 @@ export const ACTION_ICONS = {
     SIGNUP: <PersonAddIcon sx={{ display: "block" }} />,
     LIST: <FormatListBulletedIcon sx={{ display: "block" }} />,
     CHECK: <TaskAltIcon sx={{ display: "block" }} />,
+    DUPLICATE: <ContentCopyIcon sx={{ display: "block" }} />
 }
 
 export type ActionType = "MODIFY" | "CLOSE" | "CREATE" | "DISABLE" | "ENABLE" |
     "DETAILS" | "FILTER" | "OPTIONS" | "SAVE" | "RETURN" |
-    "LOGIN" | "SIGNUP" | "NONE" | "LIST" | "CHECK" | "SETTINGS"
+    "LOGIN" | "SIGNUP" | "NONE" | "LIST" | "CHECK" | "SETTINGS" | "DUPLICATE"

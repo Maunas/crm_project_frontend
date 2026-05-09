@@ -154,6 +154,8 @@ export const CampaignDetails = () => {
                                 <CommonButton handleClick={() => handleSidebar("UPDATE_CMP", null)} actionType="MODIFY">Modificar</CommonButton>
                                 <CommonButton component={RouterLink} variant='outlined' to={`/leads?workspace=${campaign.workspace_id}&campaign=${campaign.id}`}
                                     actionType="LIST">Ver Lista de Leads</CommonButton>
+                                <CommonButton component={RouterLink} variant='outlined' to={`/automations/?campaign_id=${campaign.id}`}
+                                    actionType="LIST">Automatizaciones</CommonButton>
                             </ButtonGroup>
                         </Grid>
                         <Divider />

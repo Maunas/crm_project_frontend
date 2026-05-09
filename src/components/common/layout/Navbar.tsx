@@ -7,12 +7,14 @@ import LabelIcon from '@mui/icons-material/Label';
 import { ChipTooltip } from '../details/ChipTooltip';
 import { memo, useMemo } from 'react';
 import { alpha } from '@mui/material/styles';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 
 const options = [
   { name: "Leads", icon: <PersonIcon />, link: "/leads" },
   { name: "Campañas", icon: <WorkIcon />, link: "/campaigns" },
   { name: "Organizaciones", icon: <StoreIcon />, link: "/organizations" },
   { name: "Nomencladores", icon: <LabelIcon />, link: "/nomenclators" },
+  { name: "Automatizaciones", icon: <AutoFixHighIcon />, link: "/automations" },
 ]
 
 interface NavbarProps {
