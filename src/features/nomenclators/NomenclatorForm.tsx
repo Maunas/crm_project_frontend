@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from "react"
-import { ControlledTextInput } from "../../components/ui/forms/CustomInputs"
+import { ControlledTextInput } from "src/components/ui/forms/CustomInputs"
+import { FormErrorMessage } from "src/components/ui/forms/FormFeedback"
+import { ControlledAutocomplete } from "src/components/ui/forms/CustomMultipleInputs"
+import CommonButton from "src/components/ui/buttons/CommonButton"
+import { createNomenclator, getNomenclators, updateNomenclator } from "./nomenclatorService"
+import type { Nomenclator, NomenclatorDetailed, NomenclatorPost } from "src/types/nomenclators"
 import { setFormErrors } from "src/utils/forms"
 import { useForm } from "react-hook-form"
-import { Typography, Button, Grid, ButtonGroup, Stack } from "@mui/material"
-import { FormErrorMessage } from "../../components/ui/forms/FormFeedback"
-import { createNomenclator, getNomenclators, updateNomenclator } from "./nomenclatorService"
-import type { Nomenclator, NomenclatorDetailed, NomenclatorPost } from "../../types/nomenclators"
-import { ControlledAutocomplete } from "../../components/ui/forms/CustomMultipleInputs"
+import { Typography, Grid, ButtonGroup, Stack } from "@mui/material"
 
 interface NomenclatorSidebarProps {
     existingNom?: NomenclatorDetailed,
@@ -17,7 +18,6 @@ interface NomenclatorSidebarProps {
 
 //Wrapper de NomenclatorForm para funcionar en un Sidebar
 export const NomenclatorFormSidebar = ({ existingNom, closeSidebar, handleSidebar, updateEntityOnList }: NomenclatorSidebarProps) => {
-
     const submit = (data: NomenclatorPost) => {
         const updateList = (res: NomenclatorDetailed) => {
             updateEntityOnList(res)
@@ -31,7 +31,6 @@ export const NomenclatorFormSidebar = ({ existingNom, closeSidebar, handleSideba
                 .then(updateList)
         }
     }
-
     return <NomenclatorForm existingNom={existingNom} submit={submit} onCancel={closeSidebar} />
 }
 
@@ -64,40 +63,42 @@ export const NomenclatorForm = ({ existingNom, submit, onCancel }: NomenclatorPr
     }
 
     return (
-        <form>
-            <Stack spacing={2}>
+        <form onSubmit={handleSubmit(onSubmit)}>
+            <Stack spacing={3}>
                 <Typography variant="h2">
                     {!existingNom ? "Crear Nomenclador"
                         : `Modificar Nomenclador: ${existingNom.name}`}
                 </Typography>
-                <Grid container spacing={1} sx={{
-                    justifyContent: "center",
-                    alignItems: "center",
-                }}>
-                    <Grid size="grow" sx={{ minWidth: "20rem" }}>
-                        <ControlledTextInput name="name" control={control} label="Nombre"
-                            required errorMessage={errors.name?.message} />
-                    </Grid>
-                    {!existingNom &&
+                <Stack spacing={2}>
+                    <Grid container spacing={1} sx={{
+                        justifyContent: "center",
+                        alignItems: "center",
+                    }}>
                         <Grid size="grow" sx={{ minWidth: "20rem" }}>
-                            <ControlledAutocomplete control={control}
-                                options={nomenclators} label="Nomenclador Padre" name="parent_nomenclator_id"
-                                getOptionLabel={option => option.name!} getOptionKey={option => `${option.id}`} returnField="id"
-                                errorMessage={errors?.parent_nomenclator_id?.message} />
+                            <ControlledTextInput name="name" control={control} label="Nombre"
+                                required errorMessage={errors.name?.message} />
                         </Grid>
+                        {!existingNom &&
+                            <Grid size="grow" sx={{ minWidth: "20rem" }}>
+                                <ControlledAutocomplete control={control}
+                                    options={nomenclators} label="Nomenclador Padre" name="parent_nomenclator_id"
+                                    getOptionLabel={option => option.name!} getOptionKey={option => `${option.id}`} returnField="id"
+                                    errorMessage={errors?.parent_nomenclator_id?.message} />
+                            </Grid>
+                        }
+                    </Grid>
+                    {errors?.root &&
+                        <FormErrorMessage >{errors?.root?.message}</FormErrorMessage>
                     }
-                </Grid>
-                {errors?.root &&
-                    <FormErrorMessage >{errors?.root?.message}</FormErrorMessage>
-                }
-                <ButtonGroup>
-                    <Button variant="outlined" onClick={onCancel}>
-                        Cancelar
-                    </Button>
-                    <Button variant="contained" onClick={handleSubmit(onSubmit)}>
-                        Guardar Nomenclador
-                    </Button>
-                </ButtonGroup>
+                    <ButtonGroup sx={{ alignSelf: "end" }}>
+                        <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel}>
+                            Cancelar
+                        </CommonButton>
+                        <CommonButton actionType="MODIFY" variant="contained" type="submit">
+                            Guardar
+                        </CommonButton>
+                    </ButtonGroup>
+                </Stack>
             </Stack>
         </form>
     )

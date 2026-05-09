@@ -1,5 +1,5 @@
-import type { FieldValues, UseFormSetError } from "react-hook-form";
 import type { ErrorBody, ErrorMessage } from "src/types/shared";
+import type { FieldValues, UseFormSetError } from "react-hook-form";
 
 /**
  * Identifica los errores y los setea con su campo correspondiente.

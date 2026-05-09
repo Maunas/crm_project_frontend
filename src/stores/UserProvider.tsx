@@ -3,9 +3,9 @@ import { getOrganizations } from 'src/features/organizations/organizationService
 import { loginUser, signupUser } from 'src/features/auth/userServices';
 import type { Organization, OrganizationDetailed } from 'src/types/campaigns';
 import type { UserData, UserLogin, UserSignup } from 'src/types/users';
+import { SUPERUSER } from 'src/utils/constants';
 import { UserContext } from 'src/stores/contexts';
 import { useNavigate } from 'react-router-dom';
-import { SUPERUSER } from 'src/utils/constants';
 
 export interface UserContextItems {
     userOrganizations: OrganizationDetailed[],

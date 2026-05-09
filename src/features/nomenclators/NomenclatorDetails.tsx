@@ -1,10 +1,12 @@
-import type { NomenclatorDetailed } from "../../types/nomenclators"
-import { ButtonGroup, Divider, Grid, Link, Stack, Typography } from "@mui/material"
-import { Link as RouterLink } from "react-router-dom"
-import dayjs from "dayjs"
+import { useContext } from "react"
 import TitleAndActive from "src/components/ui/details/TitleAndActive"
 import CommonButton from "src/components/ui/buttons/CommonButton"
 import HandleActiveButton from "src/components/ui/buttons/HandleActiveButton"
+import DetailsMetadata from "src/components/ui/details/DetailsMetadata"
+import type { NomenclatorDetailed } from "src/types/nomenclators"
+import { UserContext } from "src/stores/contexts"
+import { Link as RouterLink } from "react-router-dom"
+import { ButtonGroup, Divider, Link, Stack, Typography } from "@mui/material"
 
 interface NomenclatorDetailsProps {
     entity: NomenclatorDetailed | null,
@@ -15,6 +17,8 @@ interface NomenclatorDetailsProps {
 
 export const NomenclatorDetails = ({ entity, closeSidebar, handleSidebar, handleActive }: NomenclatorDetailsProps) => {
 
+    const { activeOrg } = useContext(UserContext)
+
     if (entity) return (
         <Stack spacing={3} >
             <TitleAndActive active={entity.active}>
@@ -22,7 +26,7 @@ export const NomenclatorDetails = ({ entity, closeSidebar, handleSidebar, handle
             </TitleAndActive>
             <Stack spacing={2}>
                 <Stack spacing={1}>
-                    {!entity.organization_id && <Typography variant="body1" sx={{ fontStyle: "italic" }} >(Nomenclador del Sistema)</Typography>}
+                    {!entity.organization_id && <Typography variant="body1" sx={{ fontStyle: "italic" }} >Nomenclador del Sistema</Typography>}
                     {entity.parent_nomenclator &&
                         <Stack spacing={.5} direction="row">
                             <Typography>Depende del nomenclador:</Typography>
@@ -33,28 +37,15 @@ export const NomenclatorDetails = ({ entity, closeSidebar, handleSidebar, handle
                 <Divider />
                 <CommonButton actionType="LIST" variant="contained" component={RouterLink} to={`/nomenclators/${entity.id}`} >Ver Items de Nomenclador</CommonButton>
                 <Divider />
-                <Grid container spacing={1} >
-                    <Grid size="grow" sx={{ minWidth: "18rem" }}>
-                        <Typography variant="body1" sx={{ fontWeight: "bold" }}>Fecha de creación:</Typography>
-                        <Typography variant="body1" sx={{ textTransform: "capitalize", pl: "auto" }}>
-                            {dayjs(entity?.created_at).format('dddd DD/MM/YYYY HH:mm:ss')}
-                        </Typography>
-                    </Grid>
-                    <Grid size="grow" sx={{ minWidth: "18rem" }}>
-                        <Typography variant="body1" sx={{ fontWeight: "bold" }}>Fecha de última modificación:</Typography>
-                        <Typography variant="body1" sx={{ textTransform: "capitalize", pl: "auto" }}>
-                            {dayjs(entity?.updated_at).format('dddd DD/MM/YYYY HH:mm:ss')}
-                        </Typography>
-                    </Grid>
-                </Grid>
+                <DetailsMetadata entity={entity} />
                 <Divider />
 
-                <ButtonGroup sx={{ marginLeft: "auto" }}>
+                <ButtonGroup sx={{ alignSelf: "end" }}>
                     <CommonButton onClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
-                    {entity.organization_id &&
+                    {(entity.organization_id || activeOrg?.id === 0) &&
                         <HandleActiveButton active={entity.active} handleActive={() => handleActive(entity)} />
                     }
-                    {entity.organization_id &&
+                    {(entity.organization_id || activeOrg?.id === 0) &&
                         <CommonButton onClick={() => handleSidebar("UPDATE_NOM", entity)} actionType="MODIFY" >Modificar</CommonButton>
                     }
                 </ButtonGroup>

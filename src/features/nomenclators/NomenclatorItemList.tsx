@@ -1,24 +1,27 @@
 import { memo, useCallback, useContext, useEffect, useState } from 'react'
-import type { UserContextItems } from 'src/stores/UserProvider'
-import type { Paginable } from '../../types/shared'
-import { ButtonGroup, List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
-import PaginationComponent from 'src/components/ui/lists/PaginationComponent'
-import { disableNomenclatorItem, enableNomenclatorItem, getNomenclator, getNomenclatorItem, getNomenclatorItems } from './nomenclatorService'
-import { Link as RouterLink, useParams, useSearchParams } from 'react-router-dom'
 import { NomenclatorItemDetails } from './NomenclatorItemDetails'
-import type { NomenclatorDetailed, NomenclatorItemDetailed } from '../../types/nomenclators'
 import { NomenclatorItemFormSidebar } from './NomenclatorItemForm'
-import { CustomListItem } from '../../components/ui/lists/CustomListItem'
-import { UserContext } from 'src/stores/contexts'
-import { useSidebar } from 'src/hooks/useSidebar'
-import { useListPagination } from 'src/hooks/useListPagination'
+import { CustomListItem } from 'src/components/ui/lists/CustomListItem'
+import PaginationComponent from 'src/components/ui/lists/PaginationComponent'
 import ContainerWithSidebar from 'src/components/layout/container/GenericContainer'
 import CommonButton from 'src/components/ui/buttons/CommonButton'
+import { EnabledIcon } from 'src/components/ui/lists/Icons'
 import { CommonIconButton } from 'src/components/ui/buttons/CommonIconButton'
+import { disableNomenclatorItem, enableNomenclatorItem, getNomenclator, getNomenclatorItem, getNomenclatorItems } from './nomenclatorService'
+import { useSidebar } from 'src/hooks/useSidebar'
+import { useListPagination } from 'src/hooks/useListPagination'
+import type { Paginable } from 'src/types/shared'
+import type { NomenclatorDetailed, NomenclatorItemDetailed } from 'src/types/nomenclators'
+import { UserContext } from 'src/stores/contexts'
+import type { UserContextItems } from 'src/stores/UserProvider'
+import { Link as RouterLink, useParams, useSearchParams } from 'react-router-dom'
+import { ButtonGroup, List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 export const NomenclatorItemList = () => {
 
     const { nomenclatorId } = useParams()
+
     const { activeOrg } = useContext<UserContextItems>(UserContext)
 
     const [nomenclator, setNomenclator] = useState<NomenclatorDetailed | null>(null)
@@ -98,7 +101,7 @@ export const NomenclatorItemList = () => {
                 handleActive={handleActive} />
         }>
             <Stack spacing={3}>
-                <Stack spacing={2} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
+                <Stack spacing={1} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
                     <Typography variant="h1">Opciones de {nomenclator?.name}</Typography>
                     <ButtonGroup variant="outlined" sx={{ marginLeft: "auto" }} >
                         <CommonButton actionType='RETURN' variant='outlined' component={RouterLink} to="/nomenclators">Volver</CommonButton>
@@ -114,25 +117,36 @@ export const NomenclatorItemList = () => {
                         nomenclatorItems && nomenclatorItems.items?.length > 0 ?
                             <List>
                                 {nomenclatorItems.items.map(nom =>
-                                    <CustomListItem key={nom.id} disablePadding secondaryAction={
-                                        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-                                            <CommonIconButton actionType='DETAILS' title='Detalle' onClick={() => handleSidebar("DETAILS_NOM", nom)} tooltipSize='small' />
-                                            {nom.organization_id &&
+                                    <CustomListItem key={nom.id} selected={nom.id === selectedEntity?.id} disablePadding secondaryAction={
+                                        <Stack direction="row" sx={{ alignItems: "center" }}>
+                                            <CommonIconButton actionType='DETAILS' title='Detalle' onClick={() => handleSidebar("DETAILS_NOM", nom)} tooltipSize='small' size='small' />
+                                            {(nom.organization_id || activeOrg?.id === 0) &&
                                                 <>
-                                                    <CommonIconButton actionType='MODIFY' title='Modificar' onClick={() => handleSidebar("UPDATE_NOM", nom)} tooltipSize='small' />
-                                                    <CommonIconButton actionType={nom.active ? "DISABLE" : "ENABLE"} tooltipSize="small"
+                                                    <CommonIconButton actionType='MODIFY' title='Modificar' onClick={() => handleSidebar("UPDATE_NOM", nom)} tooltipSize='small' size='small' />
+                                                    <CommonIconButton actionType={nom.active ? "DISABLE" : "ENABLE"} tooltipSize="small" size='small'
                                                         title={nom.active ? "Deshabilitar" : "Habilitar"}
                                                         onClick={() => handleActive(nom)} color={nom.active ? "error" : "success"} />
                                                 </>}
                                         </Stack>
                                     }>
                                         <ListItemButton onClick={() => handleSidebar("DETAILS_NOM", nom)} >
-                                            <ListItemText primary={
-                                                <Stack spacing={1} direction="row">
+                                            <ListItemText sx={{ mr: 7 }} primary={
+                                                <Stack spacing={1} direction="row" sx={{ alignItems: "center" }}>
+                                                    <EnabledIcon active={nom.active} />
                                                     <Typography sx={{ fontWeight: "bold" }}>{nom.value}</Typography>
+                                                    {nom.parent_item &&
+                                                        <>
+                                                            <ArrowBackIcon />
+                                                            <Typography variant="subtitle2">
+                                                                {nom.parent_item.value}
+                                                            </Typography>
+                                                        </>
+                                                    }
                                                 </Stack>
                                             }
-                                                secondary={!nom.organization_id && "(Opción del Sistema)"} />
+                                                secondary={!nom.organization_id && <span style={{ fontStyle: "italic" }}>
+                                                    Opción del Sistema
+                                                </span>} />
                                         </ListItemButton>
                                     </CustomListItem>
                                 )}

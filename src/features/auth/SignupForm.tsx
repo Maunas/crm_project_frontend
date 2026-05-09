@@ -1,13 +1,13 @@
 import { useContext } from "react"
-import { Link, useNavigate } from "react-router-dom"
-import type { UserSignup } from "../../types/users"
-import { Button, ButtonGroup, Grid, Paper, Stack, Typography } from "@mui/material"
-import { useForm } from "react-hook-form"
-import { setFormErrors } from "src/utils/forms"
 import { PasswordField, RegisteredTextInput } from "../../components/ui/forms/CustomInputs"
 import { FormErrorMessage } from "../../components/ui/forms/FormFeedback"
-import { UserContext } from "src/stores/contexts"
 import CommonButton from "src/components/ui/buttons/CommonButton"
+import type { UserSignup } from "../../types/users"
+import { setFormErrors } from "src/utils/forms"
+import { UserContext } from "src/stores/contexts"
+import { useForm } from "react-hook-form"
+import { Link, useNavigate } from "react-router-dom"
+import { Button, ButtonGroup, Grid, Paper, Stack, Typography } from "@mui/material"
 
 export const SignupFormPage = () => {
 

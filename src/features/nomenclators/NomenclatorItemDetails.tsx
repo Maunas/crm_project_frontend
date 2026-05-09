@@ -1,9 +1,11 @@
-import { ButtonGroup, Divider, Grid, Link, Stack, Typography } from "@mui/material"
-import dayjs from "dayjs"
-import type { NomenclatorItemDetailed } from "../../types/nomenclators"
+import { useContext } from "react"
 import TitleAndActive from "src/components/ui/details/TitleAndActive"
 import CommonButton from "src/components/ui/buttons/CommonButton"
 import HandleActiveButton from "src/components/ui/buttons/HandleActiveButton"
+import DetailsMetadata from "src/components/ui/details/DetailsMetadata"
+import type { NomenclatorItemDetailed } from "src/types/nomenclators"
+import { UserContext } from "src/stores/contexts"
+import { ButtonGroup, Divider, Link, Stack, Typography } from "@mui/material"
 
 interface NomenclatorDetailsProps {
     item: NomenclatorItemDetailed | null,
@@ -14,13 +16,15 @@ interface NomenclatorDetailsProps {
 
 export const NomenclatorItemDetails = ({ item, closeSidebar, handleSidebar, handleActive }: NomenclatorDetailsProps) => {
 
+    const { activeOrg } = useContext(UserContext)
+
     if (item) return (
         <Stack spacing={3} >
             <TitleAndActive active={item.active}>
                 <Typography variant="h2">{item.value}</Typography>
             </TitleAndActive>
             <Stack spacing={2} >
-                {!item.organization_id && <Typography variant="body1" sx={{ fontStyle: "italic" }} >(Nomenclador del Sistema)</Typography>}
+                {!item.organization_id && <Typography variant="body1" sx={{ fontStyle: "italic" }} >Nomenclador del Sistema</Typography>}
                 <Divider />
                 {item.parent_item &&
                     <>
@@ -30,27 +34,14 @@ export const NomenclatorItemDetails = ({ item, closeSidebar, handleSidebar, hand
                         </Stack>
                         <Divider />
                     </>}
-                <Grid container spacing={1} >
-                    <Grid size="grow" sx={{ minWidth: "18rem" }}>
-                        <Typography variant="body1" sx={{ fontWeight: "bold" }}>Fecha de creación:</Typography>
-                        <Typography variant="body1" sx={{ textTransform: "capitalize", pl: 2 }}>
-                            {dayjs(item?.created_at).format('dddd DD/MM/YYYY HH:mm:ss')}
-                        </Typography>
-                    </Grid>
-                    <Grid size="grow" sx={{ minWidth: "18rem" }}>
-                        <Typography variant="body1" sx={{ fontWeight: "bold" }}>Fecha de última modificación:</Typography>
-                        <Typography variant="body1" sx={{ textTransform: "capitalize", pl: 2 }}>
-                            {dayjs(item?.updated_at).format('dddd DD/MM/YYYY HH:mm:ss')}
-                        </Typography>
-                    </Grid>
-                </Grid>
+                <DetailsMetadata entity={item} />
                 <Divider />
-                <ButtonGroup sx={{ marginLeft: "auto" }}>
+                <ButtonGroup sx={{ alignSelf: "end" }}>
                     <CommonButton onClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
-                    {item.organization_id &&
+                    {(item.organization_id || activeOrg?.id === 0) &&
                         <HandleActiveButton active={item.active} handleActive={() => handleActive(item)} />
                     }
-                    {item.organization_id &&
+                    {(item.organization_id || activeOrg?.id === 0) &&
                         <CommonButton onClick={() => handleSidebar("UPDATE_NOM", item)} actionType="MODIFY" >Modificar</CommonButton>
                     }
                 </ButtonGroup>
