@@ -1,20 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
-import { ControlledCheckbox, ControlledTextInput } from "../../components/ui/forms/CustomInputs";
-import { ControlledAutocomplete, ControlledRadio } from "../../components/ui/forms/CustomMultipleInputs";
-import { FormErrorMessage } from "../../components/ui/forms/FormFeedback";
-import type {
-  InputMaskTemplate,
-  LeadFieldDetailed, LeadFieldPost, LeadFieldSection, LeadFieldTemplate, LeadFieldTypeDetailed,
-} from "../../types/leadFields";
-import type { Campaign, CampaignDetailed } from "../../types/campaigns";
-import type { Nomenclator } from "../../types/nomenclators";
-import { setFormErrors } from "src/utils/forms";
-import { createLeadField, getFieldDataByType, getFieldSections, getFieldTemplates, getFieldTypes, getInputMaskTemplates, updateLeadField } from "./leadFieldServices";
-import { getCampaigns } from "../campaigns/campaignServices";
+import { ControlledCheckbox, ControlledTextInput } from "src/components/ui/forms/CustomInputs";
+import { ControlledAutocomplete, ControlledRadio } from "src/components/ui/forms/CustomMultipleInputs";
+import { FormErrorMessage } from "src/components/ui/forms/FormFeedback";
+import CommonButton from "src/components/ui/buttons/CommonButton";
+import { createLeadField, getFieldSections, getFieldTemplates, getFieldTypes, getInputMaskTemplates, updateLeadField } from "./leadFieldServices";
 import { getNomenclators } from "../nomenclators/nomenclatorService";
+import { getCampaigns } from "../campaigns/campaignServices";
+import { setFormErrors } from "src/utils/forms";
+import { getFieldDataByType } from "./leadFieldUtils";
+import type { InputMaskTemplate, LeadFieldDetailed, LeadFieldPost, LeadFieldSection, LeadFieldTemplate, LeadFieldTypeDetailed } from "src/types/leadFields";
+import type { Campaign, CampaignDetailed } from "src/types/campaigns";
+import type { Nomenclator } from "src/types/nomenclators";
 import { useForm, useWatch, type Control, type FieldErrors, type UseFormRegister } from "react-hook-form";
 import { Grid, FormGroup, Typography, ButtonGroup, Stack } from "@mui/material";
-import CommonButton from "src/components/ui/buttons/CommonButton";
 
 
 interface LeadFieldSidebarProps {
@@ -131,7 +129,7 @@ export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFi
 
 
   return (
-    <form>
+    <form onSubmit={handleSubmit((data) => onSaveLeadField(data))}>
       <Stack spacing={3}>
         {!existingLF ? (
           <Typography variant="h1">
@@ -154,7 +152,7 @@ export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFi
               <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel}>
                 Cancelar
               </CommonButton>
-              <CommonButton actionType={existingLF ? "MODIFY" : "CREATE"} variant="contained" onClick={handleSubmit((data) => onSaveLeadField(data))}>
+              <CommonButton actionType={existingLF ? "MODIFY" : "CREATE"} variant="contained" type="submit">
                 Guardar
               </CommonButton>
             </ButtonGroup>

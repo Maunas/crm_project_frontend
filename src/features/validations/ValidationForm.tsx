@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
-import { ControlledTextInput, RegisteredTextInput } from "../../components/ui/forms/CustomInputs";
-import { ControlledAutocomplete, ControlledRadio } from "../../components/ui/forms/CustomMultipleInputs";
-import { EnabledIcon } from "../../components/ui/lists/Icons";
+import { ControlledTextInput, RegisteredTextInput } from "src/components/ui/forms/CustomInputs";
+import { ControlledAutocomplete, ControlledRadio } from "src/components/ui/forms/CustomMultipleInputs";
+import { EnabledIcon } from "src/components/ui/lists/Icons";
 import CommonButton from "src/components/ui/buttons/CommonButton";
-import { FormErrorMessage } from "../../components/ui/forms/FormFeedback";
-import type { FieldValidationRule, FieldValidationRulePost, FieldValidationRuleTemplate, LeadFieldDetailed } from "../../types/leadFields";
-import { createValidation, deleteValidation, getValidationDataByType, getValidationTemplates, setValFormErrors, updateValidation } from "./validationService";
+import { FormErrorMessage } from "src/components/ui/forms/FormFeedback";
+import type { FieldValidationRule, FieldValidationRulePost, FieldValidationRuleTemplate, LeadFieldDetailed } from "src/types/leadFields";
+import { createValidation, deleteValidation, getValidationTemplates, updateValidation } from "./validationService";
 import { useFieldArray, useForm, useWatch, type Control, type FieldErrors, type UseFieldArrayRemove, type UseFormClearErrors, type UseFormGetValues, type UseFormRegister, type UseFormSetValue } from "react-hook-form";
 import { Divider, Grid, Stack, Typography, ButtonGroup } from "@mui/material";
+import { getValidationDataByType, setValFormErrors } from "./validationUtils";
 
 export interface FieldValidationListPostInstance extends FieldValidationRulePost {
     required_params: string[];
@@ -68,7 +69,7 @@ export const ValidationRuleForm = ({ leadField, onSubmit, onSubmitAll, onErrorAl
     const setCreationMethod = (validation_rules: FieldValidationRule[]) => {
         return validation_rules.map(val => ({
             ...val,
-            creation_method: "manual",
+            creation_method: val.template_code ? "template" : "manual",
         }) as FieldValidationListPostInstance
         )
     }
@@ -122,35 +123,37 @@ export const ValidationRuleForm = ({ leadField, onSubmit, onSubmitAll, onErrorAl
     }
 
     return (
-        <Stack spacing={2}>
+        <Stack spacing={3}>
             <Typography variant="h2">{leadField.name}</Typography>
-            <Typography variant="h3">Reglas de Validación</Typography>
-            <Divider />
-            {fields?.length > 0 ?
-                fields.map((field, idx) => (
-                    <ValidationInstance key={field.array_id} idx={idx} templates={templates}
-                        register={register} control={control} setValue={setValue} remove={remove} getValues={getValues}
-                        errors={errors} clearErrors={clearErrors} />
-                ))
-                : <Typography variant="h4" sx={{ textAlign: "center" }}>No hay reglas de Validación.</Typography>
-            }
-            <ButtonGroup sx={{ marginLeft: "auto" }}>
-                <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel}>Cancelar</CommonButton>
-                <CommonButton actionType="CREATE" variant="contained" onClick={() =>
-                    append({
-                        name: "",
-                        error_message: "",
-                        creation_method: "template",
-                        template_params: {},
-                        required_params: [],
-                        field_id: leadField.id,
-                        to_delete: false
-                    })
-                } color="secondary">
-                    Agregar Validación
-                </CommonButton>
-                <CommonButton actionType="MODIFY" onClick={handleSubmit(submit)}>Guardar Lista</CommonButton>
-            </ButtonGroup>
+            <Stack spacing={2}>
+                <Typography variant="h3">Reglas de Validación</Typography>
+                <Divider />
+                {fields?.length > 0 ?
+                    fields.map((field, idx) => (
+                        <ValidationInstance key={field.array_id} idx={idx} templates={templates}
+                            register={register} control={control} setValue={setValue} remove={remove} getValues={getValues}
+                            errors={errors} clearErrors={clearErrors} />
+                    ))
+                    : <Typography variant="h5" sx={{ textAlign: "center" }}>No hay validaciones cargadas</Typography>
+                }
+                <ButtonGroup sx={{ alignSelf: "end" }}>
+                    <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel}>Cancelar</CommonButton>
+                    <CommonButton actionType="CREATE" variant="outlined" onClick={() =>
+                        append({
+                            name: "",
+                            error_message: "",
+                            creation_method: "template",
+                            template_params: {},
+                            required_params: [],
+                            field_id: leadField.id,
+                            to_delete: false
+                        })
+                    } color="secondary">
+                        Agregar
+                    </CommonButton>
+                    <CommonButton actionType="MODIFY" onClick={handleSubmit(submit)}>Guardar</CommonButton>
+                </ButtonGroup>
+            </Stack>
         </Stack>
     );
 };
@@ -273,7 +276,7 @@ export const ValidationInstance = ({ idx, templates, register, control, setValue
                             {creationMethod === "template" &&
                                 selectedTemplate?.error_message && (
                                     <Grid size="auto" sx={{ justifyContent: "center" }}>
-                                        <CommonButton actionType="OPTIONS" variant="outlined"
+                                        <CommonButton actionType="NONE" variant="outlined"
                                             onClick={generateErrorMessage} fullWidth>
                                             Generar
                                         </CommonButton>
@@ -295,25 +298,25 @@ export const ValidationInstance = ({ idx, templates, register, control, setValue
                                     />
                                 </Grid>
                             )}
-                            {creationMethod === "template" && !existingValId && (
+                            {creationMethod === "template" && (
                                 <Grid size="grow" sx={{ minWidth: "15rem" }}>
                                     <ControlledAutocomplete control={control} name={`validation_rules.${idx}.template_code`} options={templates}
                                         label="Plantilla" getOptionKey={(op) => op.code} getOptionLabel={(op) => op.name} returnField="code"
                                         required errorMessage={errors?.validation_rules?.[idx]?.template_code?.message}
-                                        helper={selectedTemplate?.description} size="small"
+                                        helper={selectedTemplate?.description} size="small" disabled={Boolean(existingValId)}
                                     />
                                 </Grid>
                             )}
                         </Grid>
-                        {creationMethod === "template" && selectedTemplate && !existingValId &&
+                        {creationMethod === "template" && selectedTemplate &&
                             selectedTemplate.required_params?.length > 0 &&
                             <Grid container spacing={1} size="grow" sx={{ minWidth: "8rem" }}>
                                 {selectedTemplate?.required_params.map((param) => (
                                     <Grid container size="grow" sx={{ minWidth: "4rem" }} spacing={2} key={`${idx}-${param}`} >
                                         <RegisteredTextInput register={register} name={`validation_rules.${idx}.template_params.${param}`}
                                             label={param} id={`validation_rules.${idx}.template_params.${param}-${selectedTemplate.name}`}
-                                            required errorMessage={errors?.validation_rules?.[idx]?.template_params?.[param]?.message}
-                                            size="small"
+                                            required size="small"
+                                            errorMessage={errors?.validation_rules?.[idx]?.template_params?.[param]?.message}
                                         />
                                     </Grid>
                                 ))}
@@ -324,6 +327,8 @@ export const ValidationInstance = ({ idx, templates, register, control, setValue
             </Grid>
             {errors.validation_rules?.[idx]?.root &&
                 <FormErrorMessage>{errors.validation_rules?.[idx]?.root?.message}</FormErrorMessage>}
+            {errors.validation_rules?.[idx] &&
+                <FormErrorMessage>{errors.validation_rules?.[idx]?.message}</FormErrorMessage>}
             <Divider />
         </Stack>
     );

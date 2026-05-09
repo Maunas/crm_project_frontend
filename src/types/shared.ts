@@ -58,6 +58,7 @@ export interface ErrorMessage<T> {
 }
 export interface ErrorBody<T> {
   message?: string //Error en el cuerpo
+  detail?: string //Error en el cuerpo
   response?: {
     data: {
       detail: string | //Si el error no tiene identificador

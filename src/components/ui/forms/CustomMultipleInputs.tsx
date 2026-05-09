@@ -115,10 +115,10 @@ export const AutocompleteLoader = ({ label, size = "medium", ...props }: LoaderP
                         input: {
                             ...params.slotProps.input,
                             endAdornment: (
-                                <React.Fragment>
+                                <>
                                     <CircularProgress color="inherit" size={size === "small" ? 15 : 20} />
                                     {params.slotProps.input.endAdornment}
-                                </React.Fragment>
+                                </>
                             ),
                         },
                     }}

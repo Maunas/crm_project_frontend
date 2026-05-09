@@ -42,7 +42,6 @@ const HeaderMenu = memo(() => {
     const handleMobileMenuClose = () => {
         setMobileMoreAnchorEl(null);
     };
-    console.log(activeOrg)
 
     const menuId = 'primary-search-account-menu';
     const renderProfileMenu = (

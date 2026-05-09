@@ -1,3 +1,7 @@
+import React, { useMemo } from 'react';
+import { CustomListItemAvatar } from '../../components/ui/lists/CustomListItem';
+import type { ColorTypes } from '../../types/mui-theme.d';
+import { Avatar } from '@mui/material';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import CodeOutlinedIcon from '@mui/icons-material/CodeOutlined';
 import ExploreOutlinedIcon from '@mui/icons-material/ExploreOutlined';
@@ -22,19 +26,15 @@ import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined
 import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined';
 import NumbersOutlinedIcon from '@mui/icons-material/NumbersOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import TitleOutlinedIcon from '@mui/icons-material/TitleOutlined';
 import AlternateEmailOutlinedIcon from '@mui/icons-material/AlternateEmailOutlined';
 import CreditCardOutlinedIcon from '@mui/icons-material/CreditCardOutlined';
-import React, { useMemo } from 'react';
-import { Avatar } from '@mui/material';
-import { CustomListItemAvatar } from '../../components/ui/lists/CustomListItem';
-import type { ColorTypes } from '../../types/mui-theme.d';
+import DriveFileRenameOutlineSharpIcon from '@mui/icons-material/DriveFileRenameOutlineSharp';
 
 export const LeadFieldTypeIcon = ({ typeCode, subtypeCode }: { typeCode?: string | null, subtypeCode?: string | null }) => {
 
     const icon = useMemo<{ color: ColorTypes, component: React.ReactNode }>(() => {
         switch (typeCode) {
-            case "STRING": return { color: "primary", component: <TitleOutlinedIcon /> }
+            case "STRING": return { color: "primary", component: <DriveFileRenameOutlineSharpIcon /> }
             case "NUMBER": case "INT": return { color: "primary", component: <NumbersOutlinedIcon /> }
             case "BOOL": return { color: "primary", component: <ToggleOnOutlinedIcon /> }
 

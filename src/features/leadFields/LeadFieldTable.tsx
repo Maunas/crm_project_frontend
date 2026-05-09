@@ -1,16 +1,15 @@
 import { useEffect, useMemo } from "react"
 import { SimulateLeadFormModal } from "../lead/leadForm/LeadFormWraper"
-import { EnabledIcon } from "../../components/ui/lists/Icons"
-import type { LeadFieldDetailed } from "../../types/leadFields"
-import type { CampaignDetailed } from "../../types/campaigns"
-import { disableLeadField, enableLeadField } from "./leadFieldServices"
-import { Box, ButtonGroup, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material"
-import { lighten, useTheme } from "@mui/material/styles"
-import { SelectableTableRow } from "../../components/ui/lists/CustomTableRow"
-import { useModal } from "src/hooks/useModal"
+import { EnabledIcon } from "src/components/ui/lists/Icons"
+import { SelectableTableRow } from "src/components/ui/lists/CustomTableRow"
 import CommonButton from "src/components/ui/buttons/CommonButton"
 import GenericModal from "src/components/layout/container/GenericModal"
 import { CommonIconButton } from "src/components/ui/buttons/CommonIconButton"
+import { useModal } from "src/hooks/useModal"
+import type { LeadFieldDetailed } from "src/types/leadFields"
+import type { CampaignDetailed } from "src/types/campaigns"
+import { disableLeadField, enableLeadField } from "./leadFieldServices"
+import { Box, ButtonGroup, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material"
 
 interface LeadFieldTableProps {
     campaign: CampaignDetailed,
@@ -47,7 +46,6 @@ export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateE
     }
 
     const { modalProps } = useModal()
-    const { palette } = useTheme()
 
     const sortedFields = useMemo(() => {
         if (!leadFields || leadFields?.length === 0) return []
@@ -55,27 +53,26 @@ export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateE
     }, [leadFields])
 
     return (
-        <Stack spacing={2}>
+        <Stack spacing={3}>
             <Stack useFlexGap direction="row" spacing={2}
                 sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
                 <Typography variant="h2">Lista de Campos de Lead</Typography>
                 {sortedFields.length > 0 &&
                     <ButtonGroup sx={{ marginLeft: "auto" }}>
-                        <CommonButton onClick={() => handleSidebar("CREATE_FIELD", null)} actionType="CREATE">Agregar Campo</CommonButton>
                         <GenericModal modalProps={modalProps} idModal="simulateLead" buttonText='Vista previa de formulario'
                             btnProps={{ actionType: "DETAILS", variant: "outlined" }} sx={{ minWidth: "80vw" }} >
                             {campaign &&
                                 <SimulateLeadFormModal campaign={campaign} leadFields={sortedFields} onCancel={modalProps.handleClose} />
                             }
                         </GenericModal>
+                        <CommonButton onClick={() => handleSidebar("CREATE_FIELD", null)} actionType="CREATE" />
                     </ButtonGroup>
                 }
             </Stack>
 
-
             {sortedFields.length > 0 ?
-                <TableContainer component={Paper}  >
-                    <Table aria-label="simple table" size='small' sx={{ backgroundColor: lighten(palette.background.paper, .1) }}>
+                <TableContainer component={Paper} elevation={4}  >
+                    <Table aria-label="simple table" size='small' >
                         <TableHead >
                             <TableRow sx={{ "& .MuiTableCell-root": { fontWeight: 600 } }}>
                                 <TableCell></TableCell>
@@ -112,7 +109,7 @@ export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateE
                                             <EnabledIcon active={row.is_visible} trueTooltip='Visible' falseTooltip='Oculto' size="small" />
                                         </TableCell>
                                         <TableCell align="right">
-                                            <Stack direction="row" sx={{ justifyContent: "end" }}>
+                                            <Stack direction="row" sx={{ justifyContent: "end" }} className="table-actions">
                                                 <CommonIconButton actionType="DETAILS" title="Detalle" tooltipSize="small" size="small"
                                                     onClick={(e) => stopPropagationEvent(e, () => handleSidebar("DETAILS_FIELD", row))} />
                                                 {row.order > 1 &&
@@ -133,7 +130,7 @@ export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateE
                 :
                 <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
                     <Typography variant="h4">No se han encontrado campos para esta campaña...</Typography>
-                    <CommonButton onClick={() => handleSidebar("CREATE_FIELD", null)} actionType="CREATE">Agregar Campo</CommonButton>
+                    <CommonButton onClick={() => handleSidebar("CREATE_FIELD", null)} actionType="CREATE">Agregar</CommonButton>
                 </Stack>
             }
         </Stack>

@@ -1,17 +1,17 @@
 
-import type { LeadFieldDetailed } from '../../types/leadFields'
-import type { CampaignDetailed } from '../../types/campaigns';
-import { disableLeadField, enableLeadField } from './leadFieldServices';
-import { Link as RouterLink } from 'react-router-dom'
-import dayjs from 'dayjs'
-import { Grid, Stack, Typography, Divider, Link, ButtonGroup, Box } from '@mui/material'
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { ValidationList } from '../validations/ValidationList';
-import { alpha, useTheme } from '@mui/material/styles';
 import TitleAndActive from 'src/components/ui/details/TitleAndActive';
 import CustomChip from 'src/components/ui/details/CustomChip';
 import CommonButton from 'src/components/ui/buttons/CommonButton';
 import HandleActiveButton from 'src/components/ui/buttons/HandleActiveButton';
+import DetailsMetadata from 'src/components/ui/details/DetailsMetadata';
+import { disableLeadField, enableLeadField } from './leadFieldServices';
+import type { LeadFieldDetailed } from 'src/types/leadFields'
+import type { CampaignDetailed } from 'src/types/campaigns';
+import { Link as RouterLink } from 'react-router-dom'
+import { Grid, Stack, Typography, Divider, Link, ButtonGroup, Box } from '@mui/material'
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import { alpha, useTheme } from '@mui/material/styles';
 
 interface LeadFieldDetailProps {
     leadField: LeadFieldDetailed,
@@ -132,9 +132,14 @@ export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeS
                         <Grid size="grow" sx={{ minWidth: "18rem" }}>
                             <>
                                 <Typography variant="body1" sx={{ fontWeight: "bold" }}>Valor por Defecto:</Typography>
-                                <Typography variant="body1" sx={{ pl: 2 }}>
-                                    {leadField?.default_value}
-                                </Typography>
+                                <Box sx={{
+                                    width: "100%", bgcolor: alpha(palette.background.default, .5),
+                                    textAlign: "center", px: 2, py: 1, borderRadius: 3
+                                }}>
+                                    <Typography variant="body1">
+                                        {leadField?.default_value}
+                                    </Typography>
+                                </Box>
                             </>
                         </Grid>
                     }
@@ -142,33 +147,26 @@ export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeS
                         {leadField?.input_mask &&
                             <>
                                 <Typography variant="body1" sx={{ fontWeight: "bold" }}>Máscara de Entrada:</Typography>
-                                <Typography variant="body1" sx={{ pl: 2 }}>
-                                    {leadField?.input_mask}
-                                </Typography>
+                                <Box sx={{
+                                    width: "100%", bgcolor: alpha(palette.background.default, .5),
+                                    textAlign: "center", px: 2, py: 1, borderRadius: 3
+                                }}>
+                                    <Typography variant="body1">
+                                        {leadField?.input_mask}
+                                    </Typography>
+                                </Box>
                             </>
                         }
-
                     </Grid>
                 </Stack>
-                <Divider />
-                <ValidationList leadField={leadField} handleSidebar={handleSidebar} />
-                <Divider />
-                <Stack spacing={1} direction="row" useFlexGap sx={{ flexWrap: "wrap" }} >
-                    <Stack sx={{ minWidth: "18rem" }}>
-                        <Typography variant="body1" sx={{ fontWeight: "bold" }}>Fecha de creación:</Typography>
-                        <Typography variant="body1" sx={{ textTransform: "capitalize", pl: 2 }}>
-                            {dayjs(leadField?.created_at).format('dddd DD/MM/YYYY HH:mm:ss')}
-                        </Typography>
-                    </Stack>
-                    <Stack sx={{ minWidth: "18rem" }}>
-                        <Typography variant="body1" sx={{ fontWeight: "bold" }}>Fecha de última modificación:</Typography>
-                        <Typography variant="body1" sx={{ textTransform: "capitalize", pl: 2 }}>
-                            {dayjs(leadField?.updated_at).format('dddd DD/MM/YYYY HH:mm:ss')}
-                        </Typography>
-                    </Stack>
+                <Stack spacing={3}>
+                    <Divider />
+                    <ValidationList leadField={leadField} handleSidebar={handleSidebar} />
+                    <Divider />
                 </Stack>
+                <DetailsMetadata entity={leadField} />
                 <Divider />
-                <ButtonGroup sx={{ marginLeft: "auto" }}>
+                <ButtonGroup sx={{ alignSelf: "end" }}>
                     <CommonButton onClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
                     {leadField.order > 1 && //Si no se separa el condicional arruina el estilo del ButtonGroup
                         <HandleActiveButton active={leadField.active} handleActive={() => handleActive(leadField)} />

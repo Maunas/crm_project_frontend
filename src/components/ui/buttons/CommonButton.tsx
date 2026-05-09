@@ -33,8 +33,10 @@ const CommonButton = ({ actionType = "NONE", children, ...btnProps }: CommonBtnP
 
     return (
         <LightButton variant='contained' {...btnProps}>
-            <Stack spacing={.5} useFlexGap direction="row" sx={{ alignItems: "center", ml: children ? -.6 : 0, textAlign: "center" }}>
-                {cloneElement(ACTION_ICONS[actionType], { fontSize: btnProps.size })}
+            <Stack spacing={.5} useFlexGap direction="row"
+                sx={{ alignItems: "center", textAlign: "center" }}>
+                {actionType === "NONE" ? ACTION_ICONS[actionType] :
+                    cloneElement(ACTION_ICONS[actionType], { fontSize: btnProps.size, sx: { ml: children ? -.5 : 0 } })}
                 {children}
             </Stack>
         </LightButton>

@@ -55,6 +55,9 @@ export const CampaignDetails = () => {
             }
             case "UPDATE_FIELD": {
                 const newLeadField = entity as LeadFieldDetailed
+                if (newLeadField.id === selectedEntity?.id) {
+                    handleSidebar("KEEP", newLeadField)
+                }
                 return setLeadFields(prevList => {
                     if (!prevList || !(prevList?.length > 0)) return prevList
                     const newLeadFields = [...prevList]
@@ -79,7 +82,7 @@ export const CampaignDetails = () => {
                 })
             }
         }
-    }, [campaign, closeSidebar, selectedEntity, updateLeadFields])
+    }, [campaign, closeSidebar, selectedEntity, updateLeadFields, handleSidebar])
 
     const handleActiveCampaign = useCallback((campaign: CampaignDetailed) => {
         const updateActive = () => {

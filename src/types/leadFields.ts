@@ -98,8 +98,6 @@ export interface FieldValidationRulePost {
   field_id: number;
 }
 
-export const fieldValidationRulePostFields = ["name", "error_message", "template_code", "template_params", "expression", "field_id"]
-
 export interface FieldValidationRule extends FieldValidationRulePost {
   id: number;
 }

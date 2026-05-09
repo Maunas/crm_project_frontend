@@ -12,11 +12,11 @@ import CloseIcon from '@mui/icons-material/Close';
 import type { NomenclatorItem } from '../../types/nomenclators';
 import type { Lead } from '../../types/leads';
 import { Link as RouterLink } from 'react-router-dom';
-import { getLeadTitleArray } from './leadService';
 import CustomBar from 'src/components/ui/details/CustomProgressBar';
 import GenericModal from 'src/components/layout/container/GenericModal';
 import CommonButton from 'src/components/ui/buttons/CommonButton';
 import CustomChip from 'src/components/ui/details/CustomChip';
+import { getLeadTitleArray } from './leadUtils';
 
 export const NewTabLink = ({ url, value }: { url: string, value?: string | null }) => {
     if (!value) return null
@@ -46,7 +46,6 @@ export const DateValue = ({ date, isDatetime = false, short = false }:
         </div>
     )
 }
-
 
 export const HiddenValue = ({ value, hiddenValue = "●●●●●●●●", allowShow = false }: { value: string, hiddenValue?: string, allowShow?: boolean }) => {
     const [showPassword, setShowPassword] = useState<boolean>(false);
