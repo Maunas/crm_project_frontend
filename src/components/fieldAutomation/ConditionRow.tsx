@@ -11,8 +11,6 @@ import {
   Typography,
   Tooltip,
   Chip,
-  Checkbox,          
-  FormControlLabel,
   alpha,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -20,10 +18,9 @@ import {
   ConditionOperatorEnum,
   CONDITION_OPERATOR_LABELS,
 } from '../../types/automation';
-import {getNomenclatorItems} from '../nomenclators/nomenclatorService';
-import type {LeadField} from '../../types/leadFields';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import type {RuleCondition} from '../../types/automation';
+import { getNomenclatorItems } from '../nomenclators/nomenclatorService';
+import type { LeadField } from '../../types/leadFields';
+import type { RuleCondition } from '../../types/automation';
 import type { NomenclatorItem } from '../../types/nomenclators';
 
 interface ConditionRowProps {
@@ -48,10 +45,19 @@ export const ConditionRow: React.FC<ConditionRowProps> = ({
   fields,
   readOnly = false,
 }) => {
-
+  // 1. FILTRAMOS CAMPOS INVÁLIDOS PARA CONDICIONES (Incluyendo LEAD)
   const allowedFields = useMemo(() => {
-    const invalidTypes = ['PASSWORD', 'FILE', 'RICH_TEXT', 'ADDRESS'];
-    return fields.filter(f => !invalidTypes.includes(f.field_type.code));
+    const invalidTypes = ['FILE', 'CALCULATED', 'LEAD'];
+    const invalidSubtypes = ['PASSWORD']; // Se pueden agregar otros subtipos no lógicos aquí
+
+    return fields.filter(f => {
+      // Rechazar si coincide el tipo principal
+      if (invalidTypes.includes(f.field_type.code)) return false;
+      // Rechazar si coincide el subtipo (ojo: puede venir nulo)
+      if (f.field_subtype_code && invalidSubtypes.includes(f.field_subtype_code)) return false;
+      // Si pasa ambos filtros, se permite
+      return true;
+    });
   }, [fields]);
 
   const selectedField = allowedFields.find(f => f.id === condition.field_id);
@@ -61,9 +67,7 @@ export const ConditionRow: React.FC<ConditionRowProps> = ({
 
   useEffect(() => {
     const fetchOptions = async () => {
-      // Verifica si es un tipo selector y tiene un nomenclator_id asociado
       const isSelector = selectedField?.field_type?.code?.startsWith('SELECTOR');
-      
       if (isSelector && selectedField?.nomenclator_id) {
         setLoadingOptions(true);
         try {
@@ -72,7 +76,6 @@ export const ConditionRow: React.FC<ConditionRowProps> = ({
             page_size: 0, 
             only_active: true 
           });
-          // response.items contiene la lista de NomenclatorItem
           setSelectorOptions(response.items);
         } catch (error) {
           console.error("Error cargando opciones del selector:", error);
@@ -80,72 +83,44 @@ export const ConditionRow: React.FC<ConditionRowProps> = ({
           setLoadingOptions(false);
         }
       } else {
-        setSelectorOptions([]); // Limpia si cambia a un campo que no es selector
+        setSelectorOptions([]); 
       }
     };
-
     fetchOptions();
   }, [selectedField?.id, selectedField?.nomenclator_id]);
 
   const getAvailableOperators = (field: LeadField | undefined): ConditionOperatorEnum[] => {
-    if (!field) return Object.values(ConditionOperatorEnum);
+    if (!field) return [ConditionOperatorEnum.EQUALS];
     
     switch (field.field_type.code) {
-      case 'NUMBER':
-      case 'INT':
-      case 'MONEY':
-      case 'CALCULATED':
-      case 'DATE':
-      case 'DATE_TIME':
+      case 'NUMBER': case 'INT': case 'MONEY': case 'CALCULATED': case 'DATE': case 'DATE_TIME':
         return [
-          ConditionOperatorEnum.EQUALS,
-          ConditionOperatorEnum.NOT_EQUALS,
-          ConditionOperatorEnum.GREATER_THAN,
-          ConditionOperatorEnum.LESS_THAN,
-          ConditionOperatorEnum.IS_EMPTY,
-          ConditionOperatorEnum.IS_NOT_EMPTY,
+          ConditionOperatorEnum.EQUALS, ConditionOperatorEnum.NOT_EQUALS,
+          ConditionOperatorEnum.GREATER_THAN, ConditionOperatorEnum.LESS_THAN,
+          ConditionOperatorEnum.IS_EMPTY, ConditionOperatorEnum.IS_NOT_EMPTY,
         ];
       case 'BOOL':
+      case 'BOOLEAN':
         return [
-          ConditionOperatorEnum.EQUALS,
-          ConditionOperatorEnum.NOT_EQUALS,
-          ConditionOperatorEnum.IS_EMPTY,
-          ConditionOperatorEnum.IS_NOT_EMPTY,
+          ConditionOperatorEnum.EQUALS, ConditionOperatorEnum.NOT_EQUALS,
+          ConditionOperatorEnum.IS_EMPTY, ConditionOperatorEnum.IS_NOT_EMPTY,
         ];
-      case 'SELECTOR':
-      case 'CHECKBOX':
+      case 'SELECTOR': case 'CHECKBOX':
         return [
-          ConditionOperatorEnum.EQUALS,
-          ConditionOperatorEnum.NOT_EQUALS,
-          ConditionOperatorEnum.IS_EMPTY,
-          ConditionOperatorEnum.IS_NOT_EMPTY,
-        ];
-      case 'STRING':
-      case 'EMAIL':
-      case 'URL':
-      case 'PHONE':
-        return [
-          ConditionOperatorEnum.EQUALS,
-          ConditionOperatorEnum.NOT_EQUALS,
-          ConditionOperatorEnum.CONTAINS,
-          ConditionOperatorEnum.NOT_CONTAINS,
-          ConditionOperatorEnum.IS_EMPTY,
-          ConditionOperatorEnum.IS_NOT_EMPTY,
+          ConditionOperatorEnum.EQUALS, ConditionOperatorEnum.NOT_EQUALS,
+          ConditionOperatorEnum.IS_EMPTY, ConditionOperatorEnum.IS_NOT_EMPTY,
         ];
       default:
         return [
-          ConditionOperatorEnum.EQUALS,
-          ConditionOperatorEnum.NOT_EQUALS,
-          ConditionOperatorEnum.IS_EMPTY,
-          ConditionOperatorEnum.IS_NOT_EMPTY,
+          ConditionOperatorEnum.EQUALS, ConditionOperatorEnum.NOT_EQUALS,
+          ConditionOperatorEnum.CONTAINS, ConditionOperatorEnum.NOT_CONTAINS,
+          ConditionOperatorEnum.IS_EMPTY, ConditionOperatorEnum.IS_NOT_EMPTY,
         ];
     }
   };
 
   const renderValueInput = () => {
-    if (NO_VALUE_OPERATORS.includes(condition.operator)) {
-      return null;
-    }
+    if (NO_VALUE_OPERATORS.includes(condition.operator)) return null;
 
     if (!selectedField) {
       return (
@@ -162,7 +137,6 @@ export const ConditionRow: React.FC<ConditionRowProps> = ({
 
     switch (selectedField.field_type.code) {
       case 'SELECTOR':
-      case 'CHECKBOX':
         return (
           <FormControl size="small" sx={{ flex: 1, minWidth: 150 }}>
             <InputLabel>{loadingOptions ? 'Cargando...' : 'Valor'}</InputLabel>
@@ -173,10 +147,7 @@ export const ConditionRow: React.FC<ConditionRowProps> = ({
               onChange={(e) => onUpdate({ ...condition, value: e.target.value })}
             >
               {selectorOptions.map((opt) => (
-                // opt.id va al value del MenuItem, y opt.value es el texto (según tu interface)
-                <MenuItem key={opt.id} value={opt.id}>
-                  {opt.value}
-                </MenuItem>
+                <MenuItem key={opt.id} value={opt.id}>{opt.value || opt.name}</MenuItem>
               ))}
             </Select>
           </FormControl>
@@ -196,65 +167,62 @@ export const ConditionRow: React.FC<ConditionRowProps> = ({
             </Select>
           </FormControl>
         );
-      case 'NUMBER':
-      case 'INT':
-      case 'MONEY':
-      case 'CALCULATED':
-      case 'RATING':
+      case 'NUMBER': case 'INT':
         return (
           <TextField
-
             size="small"
             type="number"
-            label="Valor"
+            label="Valor numérico"
+            disabled={readOnly}
             value={condition.value ?? ''}
             onChange={(e) => onUpdate({ ...condition, value: Number(e.target.value) })}
-            disabled={readOnly}
             sx={{ flex: 1, minWidth: 150 }}
           />
         );
       case 'DATE': case 'DATE_TIME':
-        const isCurrentDate = condition.value === '{{CURRENT_DATE}}';
+        const isDateTime = selectedField.field_type.code === 'DATE_TIME';
+        // Revisamos si el valor actual es una de nuestras variables mágicas
+        const dynamicOptions = ['{{CURRENT_DATE}}', '{{CURRENT_DATETIME}}', '{{YESTERDAY}}', '{{TOMORROW}}'];
+        const isDynamic = dynamicOptions.includes(String(condition.value));
+        const selectValue = isDynamic ? String(condition.value) : 'EXACT';
+
         return (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1, minWidth: 250 }}>
-            {/* Solo mostramos el TextField si NO está marcada la fecha actual */}
-            {!isCurrentDate && (
+            {/* SELECTOR DE TIPO DE FECHA */}
+            <FormControl size="small" sx={{ minWidth: 140 }}>
+              <Select
+                disabled={readOnly}
+                value={selectValue}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  // Si elige exacta, borramos la variable mágica para que use el calendario
+                  if (val === 'EXACT') onUpdate({ ...condition, value: '' });
+                  else onUpdate({ ...condition, value: val });
+                }}
+              >
+                <MenuItem value="EXACT"><em>Fecha exacta</em></MenuItem>
+                <MenuItem value="{{CURRENT_DATE}}">Hoy</MenuItem>
+                <MenuItem value="{{YESTERDAY}}">Ayer</MenuItem>
+                <MenuItem value="{{TOMORROW}}">Mañana</MenuItem>
+                {isDateTime && <MenuItem value="{{CURRENT_DATETIME}}">Ahora mismo</MenuItem>}
+              </Select>
+            </FormControl>
+
+            {/* INPUT CALENDARIO (Solo se muestra si elige Fecha Exacta) */}
+            {!isDynamic && (
               <TextField
                 size="small"
-                type="date"
-                label="Valor"
+                type={isDateTime ? "datetime-local" : "date"}
                 value={condition.value ?? ''}
                 onChange={(e) => onUpdate({ ...condition, value: e.target.value })}
                 slotProps={{ inputLabel: { shrink: true } }}
                 sx={{ flex: 1 }}
-                disabled={readOnly} // Si tienes el prop readOnly del paso anterior
+                disabled={readOnly}
               />
             )}
-            
-            <Box sx={{ display: 'flex', alignItems: 'center', ml: isCurrentDate ? 0 : 1 }}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    size="small"
-                    checked={isCurrentDate}
-                    onChange={(e) => onUpdate({ 
-                      ...condition, 
-                      value: e.target.checked ? '{{CURRENT_DATE}}' : '' 
-                    })}
-                    disabled={readOnly}
-                  />
-                }
-                label={<Typography variant="body2" sx={{ fontWeight: isCurrentDate ? 600 : 400, color: isCurrentDate ? 'primary.main' : 'text.primary' }}>Fecha de ejecución</Typography>}
-                sx={{ m: 0, mr: 0.5, whiteSpace: 'nowrap' }}
-              />
-              <Tooltip title="Compara con el día exacto en el que se dispara la automatización, NO con la fecha en la que estás creando esta regla.">
-                <InfoOutlinedIcon sx={{ fontSize: 18, color: 'text.secondary', cursor: 'help' }} />
-              </Tooltip>
-            </Box>
           </Box>
         );
-
-        default:
+      default:
         return (
           <TextField
             size="small"
@@ -265,31 +233,25 @@ export const ConditionRow: React.FC<ConditionRowProps> = ({
             sx={{ flex: 1, minWidth: 150 }}
           />
         );
-      }
+    }
   };
 
   return (
     <Paper
-          elevation={0}
-          sx={(theme) => ({
-            p: 2,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 2,
-            flexWrap: 'wrap',
-            bgcolor: alpha(theme.palette['primary'].main, 0.04),
-            border: '1px solid',
-            borderColor: alpha(theme.palette['primary'].main, 0.2),
-            borderRadius: 2,
-          })}
-        >
-      <Chip
-        label="SI"
-        size="small"
-        color="primary"
-        variant="outlined"
-        sx={{ fontWeight: 600 }}
-      />
+      elevation={0}
+      sx={(theme) => ({
+        p: 2,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 2,
+        flexWrap: 'wrap',
+        bgcolor: theme.palette.mode === 'dark' ? 'background.default' : alpha(theme.palette.contrast[50], 0.5),
+        border: '1px solid',
+        borderColor: 'divider',
+        borderRadius: 2,
+      })}
+    >
+      <Chip label="SI" size="small" color="primary" variant="outlined" sx={{ fontWeight: 600 }} />
 
       <FormControl size="small" sx={{ minWidth: 180 }}>
         <InputLabel>Campo</InputLabel>
@@ -301,6 +263,7 @@ export const ConditionRow: React.FC<ConditionRowProps> = ({
             ...condition, 
             field_id: e.target.value as number,
             value: null,
+            operator: getAvailableOperators(allowedFields.find(f => f.id === e.target.value))[0]
           })}
         >
           {allowedFields.map((field) => (
@@ -325,9 +288,7 @@ export const ConditionRow: React.FC<ConditionRowProps> = ({
           onChange={(e) => onUpdate({ 
             ...condition, 
             operator: e.target.value as ConditionOperatorEnum,
-            value: NO_VALUE_OPERATORS.includes(e.target.value as ConditionOperatorEnum) 
-              ? null 
-              : condition.value,
+            value: NO_VALUE_OPERATORS.includes(e.target.value as ConditionOperatorEnum) ? null : condition.value,
           })}
         >
           {getAvailableOperators(selectedField).map((op) => (

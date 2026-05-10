@@ -90,9 +90,6 @@ export const AutomationPage = () => {
 
   return (
     <Box sx={{ bgcolor: 'background.default', minHeight: '100vh' }}>
-      {/* BARRA SUPERIOR MEJORADA
-          top: 64px (ajusta esto si tu navbar mide distinto)
-      */}
       <Paper 
         elevation={0} 
         sx={{ 

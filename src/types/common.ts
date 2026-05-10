@@ -106,10 +106,18 @@ export interface Dictionary {
   "routing_condition_types"?: DictionaryItem[]
   "team_roles"?: DictionaryItem[]
   "lead_states_categories"?: DictionaryItem[],
-  lead_view_visibilities?: DictionaryItem[]
+  "lead_view_visibilities"?: DictionaryItem[],
+  "automation_compatibility_matrix"?: AutomationCompatibility[],
 }
 
 export interface DictionaryItem {
   "code": string,
   "label": string,
+}
+
+export interface AutomationCompatibility {
+  "field_type": {
+    "operators": string[],
+    "actions": string[],
+  }
 }
