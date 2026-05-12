@@ -263,7 +263,7 @@ export const LeadListPage = () => {
                 }
                 <PaginationComponent {...pageComponentProps} />
             </Stack >
-            <GenericModal idModal="columns_selector" modalProps={modalProps} buttonText="Modificar Columnas" maxWidth="md" showButton={false}>
+            <GenericModal idModal="columns_selector" modalProps={modalProps} buttonText="Modificar Columnas" maxWidth="md" fullWidth showButton={false}>
                 <LeadColumnSelector originalList={leadFields} selectedFieldIds={selectedFieldIds!} handleSelectedFieldIds={handleSelectedFieldIds} handleClose={modalProps.handleClose} showField="name" />
             </GenericModal>
         </Stack>
