@@ -1,7 +1,7 @@
 import { memo, useCallback, useMemo } from "react";
+import type { LeadFieldValue } from "src/types/leadFields"
 import { formatMoney } from "src/utils/formatters"
-import type { LeadFieldValue } from "../../../types/leadFields"
-import { AddressValue, BoolValue, DateValue, ListValues, ModalValue, NewTabLink, PasswordValue, RatingValue } from "../LeadValueComponents"
+import { AddressValue, BoolValue, DateValue, ListValues, ModalValue, NewTabLink, PasswordValue, RatingValue } from "../shared/LeadValueComponents"
 
 interface CellValueProps {
     leadId: number,

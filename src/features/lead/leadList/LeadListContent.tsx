@@ -1,12 +1,12 @@
 
 import { memo, useMemo } from "react"
-import type { LeadField } from "../../../types/leadFields"
-import type { Lead } from "../../../types/leads"
+import { LeadTablePresentation } from "./LeadTablePresentation"
+import CommonButton from "src/components/ui/buttons/CommonButton"
+import { useDragAndDrop } from "src/hooks/useDragAndDrop"
+import type { LeadField } from "src/types/leadFields"
+import type { Lead } from "src/types/leads"
 import { Link } from "react-router-dom"
 import { Stack, Typography, ButtonGroup, Badge } from "@mui/material"
-import { LeadTablePresentation } from "./LeadTablePresentation"
-import { useDragAndDrop } from "src/hooks/useDragAndDrop"
-import CommonButton from "src/components/ui/buttons/CommonButton"
 
 interface LeadListContentProps {
     leads: Lead[],
@@ -33,6 +33,9 @@ interface LeadListContentProps {
     presentationMode: string
 }
 
+/**
+ * Wrapper del contenido, realiza la lógica de selectedColumns, y elige el modo de vista deseado.
+ */
 export const LeadListContent = memo(({ leads, leadFields, selectedFieldIds, activeFilters = 0, modalProps, orderProps, handleSelectedFieldIds,
     selectCheckboxProps, presentationMode }: LeadListContentProps) => {
 

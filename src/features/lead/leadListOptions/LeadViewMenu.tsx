@@ -1,24 +1,24 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { deleteView, getLeadViews } from "../leadService";
-import { useListPagination } from "src/hooks/useListPagination";
+import { ControlledRadio } from "src/components/ui/forms/CustomMultipleInputs";
 import PaginationComponent from "src/components/ui/lists/PaginationComponent";
-import FilterAltIcon from '@mui/icons-material/FilterAlt';
-import SortIcon from '@mui/icons-material/Sort';
-import type { LeadView, LeadViewParams } from '../../../types/leads';
-import { type DictionaryItem, type Paginable } from '../../../types/shared';
-import { Button, IconButton, TextField, List, ListItem, ListItemButton, ListItemText, Popover, Stack, Typography } from '@mui/material';
-import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
-import WindowIcon from '@mui/icons-material/Window';
-import TableChartIcon from '@mui/icons-material/TableChart';
-import EditIcon from '@mui/icons-material/Edit'
-import CloseIcon from '@mui/icons-material/Close'
-import { useForm, useWatch } from 'react-hook-form';
-import { getDictionaries } from '../../../services/generalService';
-import { ControlledRadio } from "../../../components/ui/forms/CustomMultipleInputs";
-import { FormErrorMessage } from "../../../components/ui/forms/FormFeedback";
-import { setFormErrors } from "src/utils/forms";
+import { FormErrorMessage } from "src/components/ui/forms/FormFeedback";
+import { ChipTooltip } from 'src/components/ui/details/ChipTooltip';
 import CommonButton from 'src/components/ui/buttons/CommonButton';
-import { ChipTooltip } from '../../../components/ui/details/ChipTooltip';
+import { useListPagination } from "src/hooks/useListPagination";
+import { type DictionaryItem, type Paginable } from 'src/types/shared';
+import type { LeadView, LeadViewParams } from 'src/types/leads';
+import { setFormErrors } from "src/utils/forms";
+import { deleteView, getLeadViews } from "../leadService";
+import { getDictionaries } from 'src/services/generalService';
+import { useForm, useWatch } from 'react-hook-form';
+import { Button, IconButton, TextField, List, ListItem, ListItemButton, ListItemText, Popover, Stack, Typography, Box } from '@mui/material';
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
+import TableChartIcon from '@mui/icons-material/TableChart';
+import FilterAltIcon from '@mui/icons-material/FilterAlt';
+import WindowIcon from '@mui/icons-material/Window';
+import CloseIcon from '@mui/icons-material/Close'
+import SortIcon from '@mui/icons-material/Sort';
+import EditIcon from '@mui/icons-material/Edit'
 
 interface LeadViewMenuProps {
     saveView: (name: string, visibility: string, existingView?: LeadView) => Promise<LeadView> | undefined;
@@ -27,7 +27,7 @@ interface LeadViewMenuProps {
     campaignId: number
 }
 
-export const LeadViewMenu = ({ saveView, loadView, campaignId, currentView }: LeadViewMenuProps) => {
+export const LeadViewMenu = ({ saveView, loadView, campaignId }: LeadViewMenuProps) => {
     const [viewAnchor, setViewAnchor] = React.useState<null | HTMLElement>(null);
     const open = Boolean(viewAnchor);
 
@@ -80,8 +80,6 @@ export const LeadViewMenu = ({ saveView, loadView, campaignId, currentView }: Le
         setViewFormAnchor(null)
     }
 
-    const selectedView = useMemo(() => editView ?? currentView, [editView, currentView])
-
     return (
         <>
             <ChipTooltip title='Vistas' color="primary">
@@ -97,7 +95,7 @@ export const LeadViewMenu = ({ saveView, loadView, campaignId, currentView }: Le
                     horizontal: 'right',
                 }}           >
                 <Stack spacing={1} ref={menuRef}>
-                    <Typography variant="h4" component="h3" sx={{ px: 2, pt: 2 }}>Vistas Creadas</Typography>
+                    <Typography variant="h4" component="h2" sx={{ px: 2, pt: 2 }} >Vistas Creadas</Typography>
                     <List sx={{ maxHeight: "30rem", minWidth: "15rem", maxWidth: "25rem", overflowY: "auto" }} dense >
                         {currentViews?.items && currentViews?.items?.length > 0 &&
                             currentViews.items.map(view => (
@@ -110,10 +108,10 @@ export const LeadViewMenu = ({ saveView, loadView, campaignId, currentView }: Le
                                     }
                                 >
                                     <ListItemButton onClick={() => loadView(view)} sx={{ py: .5 }}>
-                                        <ListItemText sx={{ my: 0, mr: 4 }} secondary={
+                                        <ListItemText sx={{ my: 0, mr: 3 }} secondary={
                                             <Stack spacing={3} direction="row" sx={{ justifyContent: "space-between" }}>
                                                 {visibilities.find(i => i.code === view.visibility)?.label}
-                                                <Stack spacing={.5} direction="row" sx={{ flexWrap: "wrap", color: "text.secondary" }}>
+                                                <Stack direction="row" sx={{ flexWrap: "wrap", color: "text.secondary", mr: .5 }}>
                                                     {view.filters?.filters && view.filters?.filters.length > 0 &&
                                                         <FilterAltIcon fontSize="small" />
                                                     }
@@ -135,12 +133,12 @@ export const LeadViewMenu = ({ saveView, loadView, campaignId, currentView }: Le
                         pageComponentProps.totalPages > 1 &&
                         <PaginationComponent {...pageComponentProps} />
                     }
-                    <Button onClick={() => setViewFormAnchor(menuRef.current)} fullWidth>Crear Vista</Button>
+                    <Box sx={{ px: 2, pb: 2 }}>
+                        <Button onClick={() => setViewFormAnchor(menuRef.current)} fullWidth>Crear Vista</Button>
+                    </Box>
                 </Stack >
             </Popover>
-            <ViewForm existingView={editView} visibilities={visibilities} formAnchor={viewFormAnchor} handleClose={handleCloseForm} handleCreate={handleCreate} >
-                {selectedView && "si."}
-            </ViewForm>
+            <ViewForm existingView={editView} visibilities={visibilities} formAnchor={viewFormAnchor} handleClose={handleCloseForm} handleCreate={handleCreate} />
         </>
     )
 }

@@ -4,7 +4,7 @@ import type { LeadFieldValueDetailed } from "../../../types/leadFields.ts"
 import { useModal } from "src/hooks/useModal.ts"
 import { Accordion, AccordionDetails, AccordionSummary, Divider, Paper, Typography, Stack, IconButton, List, ListItemText } from "@mui/material"
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { AddressValue, BoolValue, CardValue, DateValue, ListValues, ModalValue, NewTabLink, PasswordValue, RatingValue } from "../LeadValueComponents.tsx"
+import { AddressValue, BoolValue, CardValue, DateValue, ListValues, ModalValue, NewTabLink, PasswordValue, RatingValue } from "../shared/LeadValueComponents.tsx"
 import EditIcon from "@mui/icons-material/Edit"
 import { CustomListItem } from "../../../components/ui/lists/CustomListItem.tsx"
 import { LeadFieldTypeIcon } from "../../leadFields/LeadFieldTypeIcon.tsx"

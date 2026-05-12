@@ -1,16 +1,12 @@
 
 import { memo, useCallback, useMemo } from "react"
-import type { LeadField } from "../../../types/leadFields"
-import type { Lead } from "../../../types/leads"
-import { useNavigate } from "react-router-dom"
-import { Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, useTheme, IconButton, Checkbox } from "@mui/material"
-import { alpha, lighten } from "@mui/material/styles"
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { LeadListCellValue } from "./LeadListCellValue"
+import { SelectableTableRow } from "src/components/ui/lists/CustomTableRow"
+import type { LeadField, LeadFieldValue } from "src/types/leadFields"
+import type { Lead } from "src/types/leads"
+import { useNavigate } from "react-router-dom"
+import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, useTheme, Checkbox, TableSortLabel } from "@mui/material"
 import type { Palette } from "@mui/material/styles"
-import type { LeadFieldValue } from "../../../types/leadFields"
-import { SelectableTableRow } from "../../../components/ui/lists/CustomTableRow"
 
 const TABLE_SX = { minWidth: 650 } as const
 
@@ -56,8 +52,8 @@ export const LeadTablePresentation = memo(({ leads, selectedColumns, modalProps,
     const onRowClick = useCallback((id: number) => nav(`/leads/${id}`), [nav])
 
     return (
-        <TableContainer component={Paper}>
-            <Table sx={{ ...TABLE_SX, backgroundColor: lighten(palette.background.paper, .1) }} aria-label="simple table">
+        <TableContainer component={Paper} elevation={4}>
+            <Table sx={{ ...TABLE_SX }} aria-label="lead table">
                 <TableHead>
                     <TableRow>
                         <TableCell padding="checkbox">
@@ -121,36 +117,19 @@ export const LeadTableHeaderRow = memo(({ column, idx, orderProps, dragStyles, d
         ...dragStyles(idx, palette, "row")
     }), [dragStyles, idx, palette])
 
-    const iconButtonSx = useMemo(() => ({
-        backgroundColor: orderProps.orderBy === column.id ? alpha(palette.secondary.light, .7) : "none",
-        color: orderProps.orderBy === column.id ? palette.secondary.contrastText : palette.text.primary,
-        "&:hover": {
-            backgroundColor: palette.secondary.main,
-            color: palette.secondary.contrastText
-        }
-    }), [orderProps.orderBy, column.id, palette.secondary.contrastText, palette.secondary.light, palette.secondary.main, palette.text.primary])
-
     return (
-        <TableCell align="left"
-            {...dragEvents(idx, false)}
-            sx={headerSx}
-        >
-            <Stack spacing={1} direction="row" sx={{ alignItems: "center" }}>
+        <TableCell align="left" {...dragEvents(idx, false)} sx={headerSx}
+            sortDirection={orderProps.orderBy !== column.id ? false :
+                (orderProps.ascending ? "asc" : "desc")} >
+            <TableSortLabel
+                active={orderProps.orderBy === column.id}
+                direction={orderProps.orderBy !== column.id ? "asc" :
+                    (orderProps.ascending ? "asc" : "desc")}
+                onClick={handleOrder}
+            >
                 {column.name}
-                <IconButton size="small" onClick={handleOrder} sx={iconButtonSx}>
-                    {orderProps.orderBy !== column.id &&
-                        <ArrowUpwardIcon fontSize="small" />
-                    }
-                    {orderProps.orderBy === column.id &&
-                        (orderProps.ascending ?
-                            <ArrowUpwardIcon fontSize="small" />
-                            :
-                            <ArrowDownwardIcon fontSize="small" />
-                        )
-                    }
-                </IconButton>
-            </Stack>
-        </TableCell>
+            </TableSortLabel>
+        </TableCell >
     )
 })
 

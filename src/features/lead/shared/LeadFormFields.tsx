@@ -1,14 +1,14 @@
-import { ControlledNumber, ControlledSlider, ControlledSwitch, PasswordField, SingleFileField } from "../../../components/ui/forms/CustomInputs";
-import { AutocompleteLoader, ControlledAutocomplete, ControlledGroupedCheckbox, ControlledRadio } from "../../../components/ui/forms/CustomMultipleInputs";
-import { FormErrorMessage } from "../../../components/ui/forms/FormFeedback";
-import type { Lead } from "../../../types/leads";
-import type { NomenclatorItem } from "../../../types/nomenclators";
-import { type Control, type FieldValues, type Path, type UseFormRegister } from "react-hook-form";
-import dayjs from "dayjs";
-import { FormControl, InputAdornment, InputLabel, OutlinedInput, TextField } from "@mui/material"
 import { useMemo } from "react";
-import { getLeadTitleArray } from "../leadService";
-import type { LeadField } from "../../../types/leadFields";
+import { ControlledNumber, ControlledSlider, ControlledSwitch, PasswordField, SingleFileField } from "src/components/ui/forms/CustomInputs";
+import { AutocompleteLoader, ControlledAutocomplete, ControlledGroupedCheckbox, ControlledRadio } from "src/components/ui/forms/CustomMultipleInputs";
+import { FormErrorMessage } from "src/components/ui/forms/FormFeedback";
+import type { Lead } from "src/types/leads";
+import type { LeadField } from "src/types/leadFields";
+import type { NomenclatorItem } from "src/types/nomenclators";
+import { getLeadTitleArray } from "../leadUtils";
+import { formatDate } from "src/utils/formatters";
+import { type Control, type FieldValues, type Path, type UseFormRegister } from "react-hook-form";
+import { FormControl, InputAdornment, InputLabel, OutlinedInput, TextField } from "@mui/material"
 
 interface BasicFormInput<T extends FieldValues> {
     label?: string,
@@ -41,7 +41,7 @@ export const LeadFormText = <T extends FieldValues>
     ({ register, name, label, type = "text", required = false, size = "medium", errorMessage, autoComplete = "one-time-code", multiline = false }: LeadFormTextInput<T>) => {
     if (type === "date") return (
         <>
-            <TextField {...register(name, { setValueAs: (value) => `${dayjs(value).format("YYYY-MM-DD")}` })}
+            <TextField {...register(name, { setValueAs: (value) => `${formatDate(value, "custom", "YYYY-MM-DD")}` })}
                 label={label} id={name} type={type} required={required} error={!!errorMessage} size={size}
                 autoComplete={autoComplete} slotProps={{ inputLabel: { shrink: true } }} fullWidth />
             {errorMessage &&
@@ -50,7 +50,7 @@ export const LeadFormText = <T extends FieldValues>
         </>)
     if (type === "datetime-local") return (
         <>
-            <TextField {...register(name, { setValueAs: (value) => `${dayjs(value).format("YYYY-MM-DD HH:mm:ss")}` })}
+            <TextField {...register(name, { setValueAs: (value) => `${formatDate(value, "custom", "YYYY-MM-DD HH:mm:ss")}` })}
                 label={label} id={name} type={type} required={required} error={!!errorMessage} size={size}
                 autoComplete={autoComplete} slotProps={{ inputLabel: { shrink: true } }} fullWidth />
             {errorMessage &&

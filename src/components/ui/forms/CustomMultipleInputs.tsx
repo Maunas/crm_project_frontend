@@ -109,7 +109,7 @@ export const AutocompleteLoader = ({ label, size = "medium", ...props }: LoaderP
     return (
         <Autocomplete size={size} options={[]} fullWidth loading disabled
             renderInput={(params) =>
-                <TextField {...params} label={label} fullWidth {...props}
+                <TextField {...params} label={label} fullWidth size={size} {...props}
                     slotProps={{
                         ...params.slotProps,
                         input: {

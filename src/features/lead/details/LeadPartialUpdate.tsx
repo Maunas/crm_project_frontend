@@ -5,13 +5,15 @@ import type { LeadFieldDetailed, LeadFieldValueDetailed } from "../../../types/l
 import { useForm, type Control, type UseFormRegister } from "react-hook-form"
 import { FormErrorMessage } from "../../../components/ui/forms/FormFeedback"
 import type { LeadPostForm } from "../leadForm/LeadForm"
-import { createFormDataFromLead, getLeads, getSelectorField, updateLead } from "../leadService"
+import { getLeads, updateLead } from "../leadService"
 import type { Lead, LeadDetailed } from "../../../types/leads"
-import { LeadFormAddress, LeadFormBool, LeadFormCheckbox, LeadFormFile, LeadFormMoney, LeadFormNumber, LeadFormPassword, LeadFormRating, LeadFormRelatedLead, LeadFormSelector, LeadFormText } from "../leadForm/LeadFormFieldTypes"
+import { LeadFormAddress, LeadFormBool, LeadFormCheckbox, LeadFormFile, LeadFormMoney, LeadFormNumber, LeadFormPassword, LeadFormRating, LeadFormRelatedLead, LeadFormSelector, LeadFormText } from "../shared/LeadFormFields"
 import { useEffect, useState } from "react"
 import type { NomenclatorItem } from "../../../types/nomenclators"
 import { getNomenclatorItems } from "../../nomenclators/nomenclatorService"
 import { LeadFieldTypeIcon } from "../../leadFields/LeadFieldTypeIcon"
+import { getListField } from "src/utils/lists"
+import { createFormDataFromLead } from "../leadUtils"
 
 interface LeadPartialUpdateProps {
     fieldValue: LeadFieldValueDetailed,
@@ -41,9 +43,9 @@ interface PartialFormProps {
 }
 
 const getValue = (fieldValue: LeadFieldValueDetailed) => {
-    if (fieldValue.field.field_type_code === "LEAD") return getSelectorField(fieldValue.related_leads, "id", true) as number[]
+    if (fieldValue.field.field_type_code === "LEAD") return getListField(fieldValue.related_leads, "id", true) as number[]
     if (["SELECTOR_MULTIPLE", "CHECKBOX_MULTIPLE"].includes(fieldValue?.field?.field_subtype_code ?? ""))
-        return getSelectorField(fieldValue.nomenclator_items, "id", true) as number[]
+        return getListField(fieldValue.nomenclator_items, "id", true) as number[]
     if (["SELECTOR_SIMPLE", "CHECKBOX_SIMPLE"].includes(fieldValue?.field?.field_subtype_code ?? ""))
         return fieldValue.nomenclator_items[0].id
     return fieldValue.value

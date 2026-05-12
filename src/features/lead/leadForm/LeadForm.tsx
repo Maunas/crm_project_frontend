@@ -1,16 +1,18 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useMemo, useState } from "react"
 import { FormErrorMessage } from "../../../components/ui/forms/FormFeedback"
-import { LeadFormAddress, LeadFormBool, LeadFormCheckbox, LeadFormFile, LeadFormMoney, LeadFormNumber, LeadFormPassword, LeadFormRating, LeadFormRelatedLead, LeadFormSelector, LeadFormText } from "./LeadFormFieldTypes"
+import { LeadFormAddress, LeadFormBool, LeadFormCheckbox, LeadFormFile, LeadFormMoney, LeadFormNumber, LeadFormPassword, LeadFormRating, LeadFormRelatedLead, LeadFormSelector, LeadFormText } from "../shared/LeadFormFields"
 import type { Lead, LeadPost, LeadPostValue } from "../../../types/leads"
 import type { LeadField, LeadFieldValue } from "../../../types/leadFields"
 import type { NomenclatorItem } from "../../../types/nomenclators"
-import { createFormDataFromLead, getLeads, getSelectorField, setLeadFormErrors, updateSelectorOptions } from "../leadService"
+import { getLeads } from "../leadService"
 import { getLeadFields } from "../../leadFields/leadFieldServices"
 import { getNomenclatorItems } from "../../nomenclators/nomenclatorService"
 import { useFieldArray, useForm, type Control, type Path, type UseFormRegister } from "react-hook-form"
 import { Grid, ButtonGroup, Stack } from "@mui/material"
 import CommonButton from "src/components/ui/buttons/CommonButton"
+import { createFormDataFromLead, setLeadFormErrors, updateSelectorOptions } from "../leadUtils"
+import { getListField } from "src/utils/lists"
 
 //Para permitir mantener los datos de cada campo
 export interface LeadPostFormValues extends LeadPostValue {
@@ -79,11 +81,11 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
                         let value: unknown = fieldValue.value
                         //Si no hay valor, es selector o related_leads. Trae el id, o arreglo de ids
                         if (!value && fieldValue.nomenclator_items.length > 0) {
-                            value = getSelectorField(fieldValue.nomenclator_items, "id",
+                            value = getListField(fieldValue.nomenclator_items, "id",
                                 ["SELECTOR_MULTIPLE", "CHECKBOX_MULTIPLE"].includes(fieldValue.field.field_subtype_code!))
                         }
                         else if (!value && fieldValue.related_leads.length > 0) {
-                            value = getSelectorField(fieldValue.related_leads, "id", true)
+                            value = getListField(fieldValue.related_leads, "id", true)
                         }
                         return ({
                             field_id: fieldValue.field_id,

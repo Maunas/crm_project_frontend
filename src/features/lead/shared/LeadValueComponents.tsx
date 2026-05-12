@@ -1,22 +1,22 @@
-import { Box, IconButton, Link, Rating, Stack, Typography } from '@mui/material'
 import { memo, useCallback, useMemo, useState } from 'react'
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import dayjs from 'dayjs';
-import { ChipTooltip } from '../../components/ui/details/ChipTooltip';
-import DOMPurify from 'dompurify';
-import Markdown from 'react-markdown';
-import { getFieldTypeValue } from 'src/utils/formatters';
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
-import type { NomenclatorItem } from '../../types/nomenclators';
-import type { Lead } from '../../types/leads';
-import { Link as RouterLink } from 'react-router-dom';
+import { ChipTooltip } from 'src/components/ui/details/ChipTooltip';
 import CustomBar from 'src/components/ui/details/CustomProgressBar';
 import GenericModal from 'src/components/layout/container/GenericModal';
 import CommonButton from 'src/components/ui/buttons/CommonButton';
 import CustomChip from 'src/components/ui/details/CustomChip';
-import { getLeadTitleArray } from './leadUtils';
+import type { Lead } from 'src/types/leads';
+import type { DateFormat } from 'src/types/shared';
+import type { NomenclatorItem } from 'src/types/nomenclators';
+import { getLeadTitleArray } from '../leadUtils';
+import { formatDate, getFieldTypeValue } from 'src/utils/formatters';
+import DOMPurify from 'dompurify';
+import Markdown from 'react-markdown';
+import { Link as RouterLink } from 'react-router-dom';
+import { Box, IconButton, Link, Rating, Stack, Typography } from '@mui/material'
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
 
 export const NewTabLink = ({ url, value }: { url: string, value?: string | null }) => {
     if (!value) return null
@@ -37,12 +37,15 @@ const CAPITALIZE_STYLE = { textTransform: "capitalize" }
 
 export const DateValue = ({ date, isDatetime = false, short = false }:
     { date: string, isDatetime?: boolean, short?: boolean }) => {
-    const dayOfWeek = !short ? "dddd " : ""
-    const time = isDatetime ? " HH:mm" : ""
-    const dateFormat = `${dayOfWeek}DD/MM/YYYY${time}`
+    let formatType: DateFormat
+    if (isDatetime) {
+        formatType = short ? "dateTime" : "dateTimeLong"
+    } else {
+        formatType = short ? "date" : "dateLong"
+    }
     return (
         <div style={CAPITALIZE_STYLE}>
-            {dayjs(date).format(dateFormat)}
+            {formatDate(date, formatType)}
         </div>
     )
 }

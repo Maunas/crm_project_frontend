@@ -1,12 +1,13 @@
 import type { LeadPostForm } from "./leadForm/LeadForm"
-import { setFormErrors } from "src/utils/forms"
 import type { ErrorBody, ErrorMessage } from "src/types/shared"
 import type { Lead, LeadDetailed, LeadPostValue } from "src/types/leads"
 import type { LeadField } from "src/types/leadFields"
+import { setFormErrors } from "src/utils/forms"
 import type { FieldArrayWithId, UseFormSetError } from "react-hook-form"
 
 /** 
- * Obtener el título de un lead
+ * Obtener un arreglo con los campos de lead indicados como título, en orden.
+ * @params short: Muestra solo el elemento con title_order = 1
  */
 export const getLeadTitleArray = (lead: Lead | LeadDetailed, short: boolean = false) => {
     if (short) {

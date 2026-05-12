@@ -1,21 +1,21 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import PaginationComponent from 'src/components/ui/lists/PaginationComponent'
-import type { LeadFilter, LeadListParams, ListParams, OrderParams, Paginable } from '../../../types/shared'
-import type { Lead, LeadView, LeadViewParams } from '../../../types/leads'
-import { bulkDeleteLead, createView, getFilteredLeads, getLeads, updateView } from '../leadService'
-import { Link as RouterLink, useSearchParams } from 'react-router-dom'
-import { Typography, Grid, Stack } from '@mui/material'
-import type { LeadField } from '../../../types/leadFields'
-import { getLeadFields } from '../../leadFields/leadFieldServices'
-import LeadColumnSelector from './LeadColumnSelector'
-import { LeadListOptions } from './LeadListOptions'
 import { LeadListContent } from './LeadListContent'
-import { useModal } from 'src/hooks/useModal'
-import { useListPagination } from 'src/hooks/useListPagination'
-import { useOrderList } from 'src/hooks/useOrderList'
-import { useSelectCheckbox } from 'src/hooks/useSelectCheckbox'
-import CommonButton from 'src/components/ui/buttons/CommonButton'
+import LeadColumnSelector from '../leadListOptions/LeadColumnSelector'
+import { LeadListOptions } from '../leadListOptions/LeadListOptions'
+import PaginationComponent from 'src/components/ui/lists/PaginationComponent'
 import GenericModal from 'src/components/layout/container/GenericModal'
+import CommonButton from 'src/components/ui/buttons/CommonButton'
+import { useListPagination } from 'src/hooks/useListPagination'
+import { useSelectCheckbox } from 'src/hooks/useSelectCheckbox'
+import { useOrderList } from 'src/hooks/useOrderList'
+import { useModal } from 'src/hooks/useModal'
+import type { LeadFilter, LeadListParams, ListParams, OrderParams, Paginable } from 'src/types/shared'
+import type { Lead, LeadView, LeadViewParams } from 'src/types/leads'
+import type { LeadField } from 'src/types/leadFields'
+import { bulkDeleteLead, createView, getFilteredLeads, getLeads, updateView } from '../leadService'
+import { getLeadFields } from 'src/features/leadFields/leadFieldServices'
+import { Link as RouterLink, useSearchParams } from 'react-router-dom'
+import { Typography, Stack } from '@mui/material'
 
 const DEFAULT_N_OF_FIELDS = 6
 
@@ -241,32 +241,25 @@ export const LeadListPage = () => {
 
     return (
         <Stack spacing={3}>
-            <Grid container sx={{ justifyContent: "space-between", alignItems: "center" }} spacing="1rem">
+            <Stack useFlexGap direction="row" sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }} spacing={2}>
                 <Typography variant="h1">Lista de Leads</Typography>
                 {areThereLeads &&
-                    <Stack direction="row" sx={{ marginLeft: "auto" }}>
-                        <CommonButton actionType='CREATE' variant="contained" color="primary"
-                            component={RouterLink} to={`/leads/new?workspace=${workspaceId}&campaign=${campaignId}`}>
-                            Agregar Lead
-                        </CommonButton>
-                    </Stack>
+                    <CommonButton actionType='CREATE' variant="contained" color="primary"
+                        component={RouterLink} to={`/leads/new?workspace=${workspaceId}&campaign=${campaignId}`} />
                 }
-            </Grid>
+            </Stack>
             <Stack spacing={2}>
-                <Stack direction="row" sx={{ flexWrap: "wrap", alignItems: "center", justifyContent: "space-between" }} spacing={2} useFlexGap>
-                    <LeadListOptions areThereLeads={areThereLeads} campaignId={campaignId} modalProps={modalProps} campaignSelectorProps={campaignSelectorProps} presentationProps={presentationProps}
-                        filters={filters} headers={{ ...fetchParams, ...orderParams }} setFiltersAndHeaders={setFiltersAndHeaders} viewUpdateProps={viewUpdateProps} selectCheckboxProps={selectCheckboxProps}
-                        bulkDelete={bulkDelete} />
-                </Stack>
-                {
-                    leads && !!campaignId && !!workspaceId ?
-                        <LeadListContent leads={leads.items} leadFields={leadFields} selectedFieldIds={selectedFieldIds} modalProps={modalProps} presentationMode={presentationMode}
-                            activeFilters={filters.length} orderProps={orderProps} handleSelectedFieldIds={handleSelectedFieldIds} selectCheckboxProps={selectCheckboxProps} />
-                        :
-                        <Stack spacing={3} sx={{ alignItems: "center", my: 3 }}>
-                            <Typography variant="h3">No hay leads para presentar</Typography>
-                            <Typography variant="h4">Revisa que haya una campaña seleccionada</Typography>
-                        </Stack>
+                <LeadListOptions areThereLeads={areThereLeads} campaignId={campaignId} modalProps={modalProps} campaignSelectorProps={campaignSelectorProps} presentationProps={presentationProps}
+                    filters={filters} headers={{ ...fetchParams, ...orderParams }} setFiltersAndHeaders={setFiltersAndHeaders} viewUpdateProps={viewUpdateProps} selectCheckboxProps={selectCheckboxProps}
+                    bulkDelete={bulkDelete} />
+                {(leads && campaignId !== null && workspaceId !== null) ?
+                    <LeadListContent leads={leads.items} leadFields={leadFields} selectedFieldIds={selectedFieldIds} modalProps={modalProps} presentationMode={presentationMode}
+                        activeFilters={filters.length} orderProps={orderProps} handleSelectedFieldIds={handleSelectedFieldIds} selectCheckboxProps={selectCheckboxProps} />
+                    :
+                    <Stack spacing={3} sx={{ alignItems: "center", my: 3 }}>
+                        <Typography variant="h3">No hay leads para presentar</Typography>
+                        <Typography variant="h4">Revisa que haya una campaña seleccionada</Typography>
+                    </Stack>
                 }
                 <PaginationComponent {...pageComponentProps} />
             </Stack >

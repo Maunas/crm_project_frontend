@@ -1,5 +1,6 @@
 import dayjs from 'dayjs'
 import 'dayjs/locale/es'
+import type { DateFormat } from 'src/types/shared'
 dayjs.locale('es')
 
 /**
@@ -12,9 +13,7 @@ export const formatMoney = (money: number, languageCode: string = "es-AR", curre
     return new Intl.NumberFormat(languageCode, { style: "currency", currency: currencyCode }).format(money)
 }
 
-type dateFormat = "dateTime" | "dateTimeLong" | "date" | "dateLong" | "time" | "custom"
-
-export const formatDate = (date: string, formatType: dateFormat, customFormat: string = 'dddd DD/MM/YYYY HH:mm:ss') => {
+export const formatDate = (date: string, formatType: DateFormat, customFormat: string = 'dddd DD/MM/YYYY HH:mm:ss') => {
     let format
     switch (formatType) {
         case "dateTime": format = "DD/MM/YYYY HH:mm:ss"

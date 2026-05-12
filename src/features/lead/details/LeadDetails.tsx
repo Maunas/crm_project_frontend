@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { LeadActivities } from "../activities/LeadActivities.tsx"
 import type { LeadDetailed } from "../../../types/leads.ts"
-import { disableLead, enableLead, getLead, getLeadTitleArray } from "../leadService.ts"
+import { disableLead, enableLead, getLead } from "../leadService.ts"
 import { Link as RouterLink, useNavigate, useParams } from "react-router-dom"
 import { Container, Grid, Typography, ButtonGroup, Stack, Breadcrumbs, Link } from "@mui/material"
 import { getCampaign } from "../../campaigns/campaignServices.ts"
@@ -11,6 +11,7 @@ import { LeadTags } from "./LeadTags.tsx"
 import GenericPaper from "src/components/layout/container/GenericPaper.tsx"
 import TitleAndActive from "src/components/ui/details/TitleAndActive.tsx"
 import CommonButton from "src/components/ui/buttons/CommonButton.tsx"
+import { getLeadTitleArray } from "../leadUtils.ts"
 
 export const LeadDetailsLayout = () => {
 

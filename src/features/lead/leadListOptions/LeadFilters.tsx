@@ -1,17 +1,18 @@
 import { memo, useEffect, useMemo, useState } from 'react'
-import type { LeadField } from '../../../types/leadFields'
-import { ControlledCheckbox, ControlledNumber } from '../../../components/ui/forms/CustomInputs'
-import { ControlledAutocomplete } from '../../../components/ui/forms/CustomMultipleInputs'
-import { LeadFormBool, LeadFormMoney, LeadFormNumber, LeadFormRating, LeadFormText } from '../leadForm/LeadFormFieldTypes'
-import { FormErrorMessage } from '../../../components/ui/forms/FormFeedback'
-import type { LeadFilter, LeadListParams } from '../../../types/shared'
-import { getLeadFields } from '../../leadFields/leadFieldServices'
-import { setFormErrors } from 'src/utils/forms'
-import { dictOperatorsMock } from '../../../mocks/operators'
-import { useFieldArray, useForm, useWatch, type Control, type FieldErrors, type Path, type UseFieldArrayRemove, type UseFormRegister } from 'react-hook-form'
-import { alpha, Button, Divider, Grid, Typography, Stack, ButtonGroup, useColorScheme, useTheme, Fade, Box } from '@mui/material'
-import CloseIcon from '@mui/icons-material/Close';
+import { FilterItem } from './LeadFilterItem'
+import { LeadFormBool, LeadFormMoney, LeadFormNumber, LeadFormRating, LeadFormText } from '../shared/LeadFormFields'
+import { ControlledCheckbox, ControlledNumber } from 'src/components/ui/forms/CustomInputs'
+import { ControlledAutocomplete } from 'src/components/ui/forms/CustomMultipleInputs'
+import { FormErrorMessage } from 'src/components/ui/forms/FormFeedback'
 import CommonButton from 'src/components/ui/buttons/CommonButton'
+import type { LeadField } from 'src/types/leadFields'
+import type { LeadFilter, LeadListParams } from 'src/types/shared'
+import { getLeadFields } from 'src/features/leadFields/leadFieldServices'
+import { setFormErrors } from 'src/utils/forms'
+import { dictOperatorsMock } from 'src/mocks/operators'
+import { useFieldArray, useForm, useWatch, type Control, type FieldErrors, type Path, type UseFieldArrayRemove, type UseFormRegister } from 'react-hook-form'
+import { Button, Divider, Grid, Typography, Stack, ButtonGroup, Fade, Box } from '@mui/material'
+import CloseIcon from '@mui/icons-material/Close';
 
 interface LeadListFilters {
     filters: LeadFilter[],
@@ -90,7 +91,7 @@ export const LeadFilters = memo(({ campaignId, filters, applyFilters, onClose }:
                         <>
                             <Divider />
                             <Typography variant="h3">Filtros por Campo</Typography>
-                            <Stack spacing={1} direction="column">
+                            <Stack spacing={1}>
                                 {fields.map((filter, idx) => (
                                     <LeadFiltersItem key={filter.id} idx={idx} control={control} register={register} leadFields={leadFields}
                                         errors={errors} remove={remove} />
@@ -109,7 +110,7 @@ export const LeadFilters = memo(({ campaignId, filters, applyFilters, onClose }:
                                 </CommonButton>
                             }
                             {!!campaignId &&
-                                <CommonButton actionType='CREATE' variant="contained" color="secondary" onClick={() => append({})}>
+                                <CommonButton actionType='CREATE' variant="outlined" color="secondary" onClick={() => append({})}>
                                     Agregar Filtro
                                 </CommonButton>
                             }
@@ -134,9 +135,6 @@ interface LeadFiltersItemProps {
 }
 
 export const LeadFiltersItem = memo(({ idx, leadFields, control, register, errors, remove }: LeadFiltersItemProps) => {
-
-    const { systemMode } = useColorScheme()
-    const theme = useTheme()
 
     const selectedFieldId = useWatch({ name: `filters.${idx}.field_id`, control })
     const selectedField = useMemo(() => leadFields.find(i => i.id === selectedFieldId)
@@ -164,11 +162,8 @@ export const LeadFiltersItem = memo(({ idx, leadFields, control, register, error
     }, [selectedField, operators])
 
     return (
-        <Stack direction="row" spacing={2} sx={{
-            overflow: "hidden", borderRadius: 1,
-            border: `1px solid ${alpha(theme.palette.contrast.light, .5)}`
-        }}>
-            <Stack spacing={2} sx={{ py: 1, pl: 2, flexGrow: 1 }}>
+        <FilterItem direction="row" spacing={2} >
+            <Stack spacing={1} sx={{ py: 1, pl: 2, flexGrow: 1 }}>
                 <Typography variant="body1" sx={{ fontWeight: 600 }}>Filtro N° {idx + 1}</Typography>
                 <Stack direction="row" spacing={.5} useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
                     <Box sx={{ flexGrow: 2, minWidth: "12rem" }}>
@@ -193,17 +188,10 @@ export const LeadFiltersItem = memo(({ idx, leadFields, control, register, error
                     }
                 </Stack>
             </Stack>
-            <Button onClick={() => remove(idx)} sx={{
-                backgroundColor: systemMode === "light" ? alpha(theme.palette.error.light, .3) : alpha(theme.palette.error.darker, .2),
-                color: systemMode === "light" ? theme.palette.error.darker : theme.palette.error.light,
-                borderRadius: 0, minWidth: 0, padding: 2,
-                "&:hover": {
-                    backgroundColor: systemMode === "light" ? alpha(theme.palette.error.light, .4) : alpha(theme.palette.error.darker, .3)
-                }
-            }}>
+            <Button className='delete-filter-btn' onClick={() => remove(idx)}>
                 <CloseIcon />
             </Button>
-        </Stack >
+        </FilterItem >
     )
 })
 

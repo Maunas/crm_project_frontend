@@ -110,3 +110,5 @@ export interface DictionaryItem {
   "code": string,
   "label": string,
 }
+
+export type DateFormat = "dateTime" | "dateTimeLong" | "date" | "dateLong" | "time" | "custom"

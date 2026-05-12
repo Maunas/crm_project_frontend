@@ -4,11 +4,11 @@ import { ControlledAutocomplete, ControlledRadio } from "src/components/ui/forms
 import { EnabledIcon } from "src/components/ui/lists/Icons";
 import CommonButton from "src/components/ui/buttons/CommonButton";
 import { FormErrorMessage } from "src/components/ui/forms/FormFeedback";
-import type { FieldValidationRule, FieldValidationRulePost, FieldValidationRuleTemplate, LeadFieldDetailed } from "src/types/leadFields";
 import { createValidation, deleteValidation, getValidationTemplates, updateValidation } from "./validationService";
+import { getValidationDataByType, setValFormErrors } from "./validationUtils";
+import type { FieldValidationRule, FieldValidationRulePost, FieldValidationRuleTemplate, LeadFieldDetailed } from "src/types/leadFields";
 import { useFieldArray, useForm, useWatch, type Control, type FieldErrors, type UseFieldArrayRemove, type UseFormClearErrors, type UseFormGetValues, type UseFormRegister, type UseFormSetValue } from "react-hook-form";
 import { Divider, Grid, Stack, Typography, ButtonGroup } from "@mui/material";
-import { getValidationDataByType, setValFormErrors } from "./validationUtils";
 
 export interface FieldValidationListPostInstance extends FieldValidationRulePost {
     required_params: string[];

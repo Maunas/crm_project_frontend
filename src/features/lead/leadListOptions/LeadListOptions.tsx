@@ -1,21 +1,21 @@
-import { Autocomplete, Badge, Divider, Grid, Stack, TextField, ToggleButton, ToggleButtonGroup, type AutocompleteRenderInputParams, ButtonGroup } from "@mui/material"
 import { memo, useCallback, useContext, useEffect, useState } from "react"
-import type { Campaign, Workspace } from "../../../types/campaigns"
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import { getWorkspaces } from "../../workspaces/workspaceServices";
-import { getCampaigns } from "../../campaigns/campaignServices";
-import type { UserContextItems } from 'src/stores/UserProvider';
+import { LeadFilters } from "./LeadFilters";
+import { LeadViewMenu } from "./LeadViewMenu";
 import CommonButton from 'src/components/ui/buttons/CommonButton';
 import GenericModal from "src/components/layout/container/GenericModal";
-import { LeadFilters } from "./LeadFilters";
-import type { LeadFilter, LeadListParams } from "../../../types/shared";
-import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
-import WindowIcon from '@mui/icons-material/Window';
-import TableChartIcon from '@mui/icons-material/TableChart';
-import type { Lead, LeadView, LeadViewParams } from "../../../types/leads";
-import { LeadViewMenu } from "./LeadViewMenu";
-import { ChipTooltip } from "../../../components/ui/details/ChipTooltip";
+import { ChipTooltip } from "src/components/ui/details/ChipTooltip";
+import type { LeadFilter, LeadListParams } from "src/types/shared";
+import type { Lead, LeadView, LeadViewParams } from "src/types/leads";
+import type { Campaign, Workspace } from "src/types/campaigns"
+import { getWorkspaces } from "src/features/workspaces/workspaceServices";
+import { getCampaigns } from "src/features/campaigns/campaignServices";
 import { UserContext } from "src/stores/contexts";
+import type { UserContextItems } from 'src/stores/UserProvider';
+import { Autocomplete, Badge, Divider, Grid, Stack, TextField, ToggleButton, ToggleButtonGroup, type AutocompleteRenderInputParams, ButtonGroup } from "@mui/material"
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import TableChartIcon from '@mui/icons-material/TableChart';
+import WindowIcon from '@mui/icons-material/Window';
 
 interface LeadCampaignSelectorsProps {
     workspaceId: string | number | null,
@@ -88,7 +88,7 @@ export const LeadCampaignSelector = memo(({ workspaceId, handleWorkspaceChange, 
     )
 })
 
-interface LeadTableOptionsProps {
+interface LeadListOptionsProps {
     areThereLeads: boolean,
     campaignId: number | string | null,
     filters: LeadFilter[],
@@ -125,7 +125,7 @@ interface LeadTableOptionsProps {
     }
 }
 
-export const LeadListOptions = memo(({ areThereLeads, campaignId, filters, headers, setFiltersAndHeaders, modalProps, campaignSelectorProps, presentationProps, selectCheckboxProps, viewUpdateProps, bulkDelete }: LeadTableOptionsProps) => {
+export const LeadListOptions = memo(({ areThereLeads, campaignId, filters, headers, setFiltersAndHeaders, modalProps, campaignSelectorProps, presentationProps, selectCheckboxProps, viewUpdateProps, bulkDelete }: LeadListOptionsProps) => {
 
     //Al aplicar filtros vuelve a la primera página
     const applyFilters = useCallback((data: { headers: LeadListParams, filters: LeadFilter[] }) => {
@@ -153,16 +153,12 @@ export const LeadListOptions = memo(({ areThereLeads, campaignId, filters, heade
                             <TableChartIcon />
                         </ToggleButton>
                     </ChipTooltip>
-                    <ChipTooltip title='Lista' color="contrast">
-                        <ToggleButton value="LIST" disabled>
-                            <FormatListBulletedIcon />
-                        </ToggleButton>
-                    </ChipTooltip>
-                    <ChipTooltip title='Grilla' color="contrast">
-                        <ToggleButton value="GRID" disabled>
-                            <WindowIcon />
-                        </ToggleButton>
-                    </ChipTooltip>
+                    <ToggleButton value="LIST" disabled>
+                        <FormatListBulletedIcon />
+                    </ToggleButton>
+                    <ToggleButton value="GRID" disabled>
+                        <WindowIcon />
+                    </ToggleButton>
                 </ToggleButtonGroup>
                 <ButtonGroup >
                     {areThereLeads &&
@@ -176,7 +172,6 @@ export const LeadListOptions = memo(({ areThereLeads, campaignId, filters, heade
                         <ChipTooltip title='Campos a Mostrar' color="secondary">
                             <CommonButton variant="outlined" actionType='OPTIONS' color='secondary' onClick={() => modalProps.handleOpen("columns_selector")} />
                         </ChipTooltip>
-
                     }
                     {campaignSelectorProps?.campaignId &&
                         <LeadViewMenu {...viewUpdateProps} campaignId={Number(campaignSelectorProps.campaignId)} />}
@@ -186,13 +181,11 @@ export const LeadListOptions = memo(({ areThereLeads, campaignId, filters, heade
                         </ChipTooltip>
                     }
                 </ButtonGroup>
-
-                <GenericModal idModal="lead_filters" modalProps={modalProps} buttonText="Aplicar Filtros" maxWidth="lg"
+                <GenericModal idModal="lead_filters" modalProps={modalProps} buttonText="Aplicar Filtros" maxWidth="md" fullWidth
                     btnProps={{ actionType: 'FILTER' }} color='secondary' showButton={false} >
                     <LeadFilters applyFilters={applyFilters} filters={{ filters, headers }} campaignId={Number(campaignId)}
                         onClose={() => modalProps.handleClose()} />
                 </GenericModal>
-
             </Grid >
         </Grid>
     )

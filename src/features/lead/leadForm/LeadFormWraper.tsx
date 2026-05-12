@@ -4,11 +4,12 @@ import { FormErrorMessage } from "../../../components/ui/forms/FormFeedback"
 import type { LeadField, LeadFieldDetailed, LeadFieldValue } from "../../../types/leadFields"
 import type { LeadDetailed } from "../../../types/leads"
 import type { Campaign, Workspace } from "../../../types/campaigns"
-import { createLead, getLead, getLeadTitleArray, simulateCreateLead, updateLead } from "../leadService"
+import { createLead, getLead, simulateCreateLead, updateLead } from "../leadService"
 import { getWorkspaces } from "../../workspaces/workspaceServices"
 import { getCampaigns } from "../../campaigns/campaignServices"
 import { useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { Autocomplete, Divider, Grid, Stack, TextField, Typography } from "@mui/material"
+import { getLeadTitleArray } from "../leadUtils"
 
 /** Wrapper para presentar LeadForm de creación en una página. */
 export const CreateLeadFormPage = () => {

@@ -4,7 +4,7 @@ import { LeadDetailsLayout } from "./features/lead/details/LeadDetails";
 import { CampaignDetails } from "./features/campaigns/CampaignDetails";
 import { WorkspaceList } from "./features/workspaces/WorkspaceList";
 import { CreateLeadFormPage, UpdateLeadFormPage } from "./features/lead/leadForm/LeadFormWraper";
-import { LeadListPage } from "./features/lead/leadTable/LeadListPage";
+import { LeadListPage } from "./features/lead/leadList/LeadListPage";
 import { OrganizationList } from "./features/organizations/OrganizationList";
 import { NomenclatorList } from "./features/nomenclators/NomenclatorList";
 import { NomenclatorItemList } from "./features/nomenclators/NomenclatorItemList";
