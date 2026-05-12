@@ -1,10 +1,10 @@
 
 import { ValidationList } from '../validations/ValidationList';
-import TitleAndActive from 'src/components/ui/details/TitleAndActive';
-import CustomChip from 'src/components/ui/details/CustomChip';
-import CommonButton from 'src/components/ui/buttons/CommonButton';
-import HandleActiveButton from 'src/components/ui/buttons/HandleActiveButton';
-import DetailsMetadata from 'src/components/ui/details/DetailsMetadata';
+import TitleAndActive from 'shared/ui/details/TitleAndActive';
+import CustomChip from 'shared/ui/details/CustomChip';
+import CommonButton from 'shared/ui/buttons/CommonButton';
+import HandleActiveButton from 'shared/ui/buttons/HandleActiveButton';
+import DetailsMetadata from 'shared/ui/details/DetailsMetadata';
 import { disableLeadField, enableLeadField } from './leadFieldServices';
 import type { LeadFieldDetailed } from 'src/types/leadFields'
 import type { CampaignDetailed } from 'src/types/campaigns';

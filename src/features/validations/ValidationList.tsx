@@ -1,4 +1,4 @@
-import CommonButton from 'src/components/ui/buttons/CommonButton'
+import CommonButton from 'shared/ui/buttons/CommonButton'
 import type { LeadFieldDetailed } from 'src/types/leadFields'
 import { Box, List, ListItem, ListItemText, Stack, Typography } from '@mui/material'
 import { alpha, useTheme } from '@mui/material/styles'

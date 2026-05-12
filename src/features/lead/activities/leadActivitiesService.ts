@@ -1,5 +1,5 @@
-import type { DeleteResponse, ListParams, Paginable } from "../../../types/shared";
-import type { LeadAudit, LeadComment, LeadCommentPost } from "../../../types/leads";
+import type { LeadAudit, LeadComment, LeadCommentPost } from "src/types/leads";
+import type { DeleteResponse, ListParams, Paginable } from "src/types/shared";
 import axiosCRM from "src/lib/axios";
 
 interface CommentParams extends ListParams {
@@ -24,7 +24,6 @@ export const deleteComment = async (id: number): Promise<DeleteResponse> => {
     const com = await axiosCRM.delete(`lead_comments/${id}`)
     return com.data
 }
-
 
 export const getAudit = async (params?: CommentParams): Promise<Paginable<LeadAudit>> => {
     const aud = await axiosCRM.get("lead-activity-histories", { params })

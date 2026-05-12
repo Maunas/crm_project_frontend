@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { LeadForm } from "./LeadForm"
-import { FormErrorMessage } from "../../../components/ui/forms/FormFeedback"
-import type { LeadField, LeadFieldDetailed, LeadFieldValue } from "../../../types/leadFields"
-import type { LeadDetailed } from "../../../types/leads"
-import type { Campaign, Workspace } from "../../../types/campaigns"
+import { FormErrorMessage } from "shared/ui/forms/FormFeedback"
+import type { LeadField, LeadFieldDetailed, LeadFieldValue } from "src/types/leadFields"
+import type { Campaign, Workspace } from "src/types/campaigns"
+import type { LeadDetailed } from "src/types/leads"
+import { getLeadTitleArray } from "../leadUtils"
 import { createLead, getLead, simulateCreateLead, updateLead } from "../leadService"
-import { getWorkspaces } from "../../workspaces/workspaceServices"
-import { getCampaigns } from "../../campaigns/campaignServices"
+import { getWorkspaces } from "src/features/workspaces/workspaceServices"
+import { getCampaigns } from "src/features/campaigns/campaignServices"
 import { useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { Autocomplete, Divider, Grid, Stack, TextField, Typography } from "@mui/material"
-import { getLeadTitleArray } from "../leadUtils"
 
 /** Wrapper para presentar LeadForm de creación en una página. */
 export const CreateLeadFormPage = () => {
@@ -124,7 +124,7 @@ export const SimulateLeadFormModal = ({ campaign, leadFields, onCancel }: Simula
         <Stack spacing={3}>
             <Typography variant="h1">Simulación de Nuevo Lead: Campaña {campaign.name}</Typography>
             <LeadForm campaignId={campaign.id} existingLeadFields={formattedLeadFields}
-                onSubmit={onSubmit} onCancel={onCancel} submitBtnLabel="Validar Datos" />
+                onSubmit={onSubmit} onCancel={onCancel} submitBtnLabel="Validar" />
         </Stack>
     )
 }

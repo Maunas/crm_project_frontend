@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { ControlledTextInput, RegisteredTextInput } from "src/components/ui/forms/CustomInputs";
-import { ControlledAutocomplete, ControlledRadio } from "src/components/ui/forms/CustomMultipleInputs";
-import { EnabledIcon } from "src/components/ui/lists/Icons";
-import CommonButton from "src/components/ui/buttons/CommonButton";
-import { FormErrorMessage } from "src/components/ui/forms/FormFeedback";
+import { ControlledTextInput, RegisteredTextInput } from "shared/ui/forms/CustomInputs";
+import { ControlledAutocomplete, ControlledRadio } from "shared/ui/forms/CustomMultipleInputs";
+import { EnabledIcon } from "shared/ui/lists/Icons";
+import CommonButton from "shared/ui/buttons/CommonButton";
+import { FormErrorMessage } from "shared/ui/forms/FormFeedback";
 import { createValidation, deleteValidation, getValidationTemplates, updateValidation } from "./validationService";
 import { getValidationDataByType, setValFormErrors } from "./validationUtils";
 import type { FieldValidationRule, FieldValidationRulePost, FieldValidationRuleTemplate, LeadFieldDetailed } from "src/types/leadFields";

@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ControlledRadio } from "src/components/ui/forms/CustomMultipleInputs";
-import PaginationComponent from "src/components/ui/lists/PaginationComponent";
-import { FormErrorMessage } from "src/components/ui/forms/FormFeedback";
-import { ChipTooltip } from 'src/components/ui/details/ChipTooltip';
-import CommonButton from 'src/components/ui/buttons/CommonButton';
+import { ControlledRadio } from "shared/ui/forms/CustomMultipleInputs";
+import PaginationComponent from "shared/ui/lists/PaginationComponent";
+import { FormErrorMessage } from "shared/ui/forms/FormFeedback";
+import { ChipTooltip } from 'shared/ui/details/ChipTooltip';
+import CommonButton from 'shared/ui/buttons/CommonButton';
 import { useListPagination } from "src/hooks/useListPagination";
 import { type DictionaryItem, type Paginable } from 'src/types/shared';
 import type { LeadView, LeadViewParams } from 'src/types/leads';
@@ -11,7 +11,7 @@ import { setFormErrors } from "src/utils/forms";
 import { deleteView, getLeadViews } from "../leadService";
 import { getDictionaries } from 'src/services/generalService';
 import { useForm, useWatch } from 'react-hook-form';
-import { Button, IconButton, TextField, List, ListItem, ListItemButton, ListItemText, Popover, Stack, Typography, Box } from '@mui/material';
+import { IconButton, TextField, List, ListItem, ListItemButton, ListItemText, Popover, Stack, Typography, Box } from '@mui/material';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
@@ -134,7 +134,7 @@ export const LeadViewMenu = ({ saveView, loadView, campaignId }: LeadViewMenuPro
                         <PaginationComponent {...pageComponentProps} />
                     }
                     <Box sx={{ px: 2, pb: 2 }}>
-                        <Button onClick={() => setViewFormAnchor(menuRef.current)} fullWidth>Crear Vista</Button>
+                        <CommonButton actionType="CREATE" variant='text' onClick={() => setViewFormAnchor(menuRef.current)} fullWidth>Crear Vista</CommonButton>
                     </Box>
                 </Stack >
             </Popover>
@@ -223,8 +223,8 @@ export const ViewForm = ({ existingView, visibilities, formAnchor, handleClose, 
                         {errors?.root?.message &&
                             <FormErrorMessage>{errors?.root?.message}</FormErrorMessage>}
                         <Stack spacing={.5}>
-                            <Button onClick={handleClose}>Cancelar</Button>
-                            <Button variant="contained" type="submit">Guardar</Button>
+                            <CommonButton actionType='CLOSE' variant="text" onClick={handleClose}>Cancelar</CommonButton>
+                            <CommonButton actionType={existingView ? "MODIFY" : "CREATE"} variant="contained" type="submit">Guardar</CommonButton>
                         </Stack>
                     </Stack>
                 </form>

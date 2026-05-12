@@ -1,5 +1,5 @@
-import type { DeleteResponse, ListParams, Paginable } from "../../../types/shared";
-import type { Lead, LeadTag, LeadTagDetailed, LeadTagPost } from "../../../types/leads";
+import type { Lead, LeadTag, LeadTagDetailed, LeadTagPost } from "src/types/leads";
+import type { DeleteResponse, ListParams, Paginable } from "src/types/shared";
 import axiosCRM from "src/lib/axios";
 
 export const getTags = async <T extends ListParams>(params?: T)

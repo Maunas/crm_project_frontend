@@ -2,12 +2,12 @@ import { useContext, useEffect, useState } from 'react'
 import { WorkspaceFormSidebar } from './WorkspaceForms';
 import { WorkspaceDetails } from './WorkspaceDetails'
 import { CreateCampaignFormSidebar } from '../campaigns/CampaignForms';
-import { EnabledIcon } from 'src/components/ui/lists/Icons';
-import PaginationComponent from 'src/components/ui/lists/PaginationComponent'
-import { CustomListItem } from 'src/components/ui/lists/CustomListItem';
-import ContainerWithSidebar from 'src/components/layout/container/GenericContainer';
-import CommonButton from 'src/components/ui/buttons/CommonButton';
-import { CommonIconButton } from 'src/components/ui/buttons/CommonIconButton';
+import { EnabledIcon } from 'shared/ui/lists/Icons';
+import PaginationComponent from 'shared/ui/lists/PaginationComponent'
+import { CustomListItem } from 'shared/ui/lists/CustomListItem';
+import ContainerWithSidebar from 'shared/layout/container/GenericContainer';
+import CommonButton from 'shared/ui/buttons/CommonButton';
+import { CommonIconButton } from 'shared/ui/buttons/CommonIconButton';
 import { useSidebar } from 'src/hooks/useSidebar';
 import { useListPagination } from 'src/hooks/useListPagination';
 import { disableWorkspace, enableWorkspace, getWorkspace, getWorkspaces } from './workspaceServices'

@@ -1,17 +1,17 @@
 import { useEffect, useMemo, useState } from "react"
-import { LeadActivities } from "../activities/LeadActivities.tsx"
-import type { LeadDetailed } from "../../../types/leads.ts"
+import { LeadFieldSections } from "./LeadDetailsSections"
+import { LeadTags } from "./LeadTags"
+import { LeadActivities } from "../activities/LeadActivities"
+import GenericPaper from "shared/layout/container/GenericPaper"
+import TitleAndActive from "shared/ui/details/TitleAndActive"
+import CommonButton from "shared/ui/buttons/CommonButton"
+import type { LeadDetailed } from "src/types/leads.ts"
+import type { Campaign } from "src/types/campaigns.ts"
 import { disableLead, enableLead, getLead } from "../leadService.ts"
-import { Link as RouterLink, useNavigate, useParams } from "react-router-dom"
-import { Container, Grid, Typography, ButtonGroup, Stack, Breadcrumbs, Link } from "@mui/material"
-import { getCampaign } from "../../campaigns/campaignServices.ts"
-import type { Campaign } from "../../../types/campaigns.ts"
-import { LeadFieldSections } from "./LeadDetailsSections.tsx"
-import { LeadTags } from "./LeadTags.tsx"
-import GenericPaper from "src/components/layout/container/GenericPaper.tsx"
-import TitleAndActive from "src/components/ui/details/TitleAndActive.tsx"
-import CommonButton from "src/components/ui/buttons/CommonButton.tsx"
+import { getCampaign } from "src/features/campaigns/campaignServices.ts"
 import { getLeadTitleArray } from "../leadUtils.ts"
+import { Link as RouterLink, useNavigate, useParams } from "react-router-dom"
+import { Grid, Typography, ButtonGroup, Stack, Breadcrumbs, Link } from "@mui/material"
 
 export const LeadDetailsLayout = () => {
 
@@ -49,33 +49,29 @@ export const LeadDetailsLayout = () => {
     //reconoce cambios para actualizar la lista de audit
     const [reloadAudit, setReloadAudit] = useState<number>(0)
 
-
     return (
-        <Container maxWidth={false}>
-            <Stack spacing={3}>
-                {campaign &&
-                    <Breadcrumbs aria-label="breadcrumb">
-                        <Link component={RouterLink} to={`/leads?workspace=${campaign?.workspace_id}&campaign=${campaign?.id}`}
-                            sx={{ underline: "hover", fontWeight: 600 }} >
-                            {campaign?.name}
-                        </Link>
-                        <Typography sx={{ color: 'text.primary' }}>{leadTitle?.join(" ") ?? "Lead"}</Typography>
-                    </Breadcrumbs>}
-                {lead &&
-                    <Grid container spacing={3}>
-                        <Grid size={{ xs: 12, md: 4, lg: 4 }} sx={{ minWidth: "20rem" }} >
-                            <LeadInfo lead={lead} handleActive={handleActive} leadTitle={leadTitle} updateLeadInfo={updateLeadInfo} />
-                        </Grid>
-                        <Grid size="grow" sx={{ minWidth: "20rem" }} component={GenericPaper} >
-                            <LeadActivities leadId={lead.id} reloadAudit={reloadAudit} />
-                        </Grid>
-                    </Grid >
-                }
-            </Stack >
-        </Container >
+        <Stack sx={{ px: 3 }} spacing={3}>
+            {campaign &&
+                <Breadcrumbs aria-label="breadcrumb">
+                    <Link component={RouterLink} to={`/leads?workspace=${campaign?.workspace_id}&campaign=${campaign?.id}`}
+                        sx={{ underline: "hover", fontWeight: 600 }} >
+                        {campaign?.name}
+                    </Link>
+                    <Typography sx={{ color: 'text.primary' }}>{leadTitle?.join(" ") ?? "Lead"}</Typography>
+                </Breadcrumbs>}
+            {lead &&
+                <Grid container spacing={3}>
+                    <Grid size={{ xs: 12, md: 4, lg: 4 }} sx={{ minWidth: "20rem" }} >
+                        <LeadInfo lead={lead} handleActive={handleActive} leadTitle={leadTitle} updateLeadInfo={updateLeadInfo} />
+                    </Grid>
+                    <Grid size="grow" sx={{ minWidth: "20rem" }} component={GenericPaper} >
+                        <LeadActivities leadId={lead.id} reloadAudit={reloadAudit} />
+                    </Grid>
+                </Grid >
+            }
+        </Stack >
     )
 }
-
 
 interface LeadInfoProps {
     lead: LeadDetailed,

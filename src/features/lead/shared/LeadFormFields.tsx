@@ -1,7 +1,7 @@
 import { useMemo } from "react";
-import { ControlledNumber, ControlledSlider, ControlledSwitch, PasswordField, SingleFileField } from "src/components/ui/forms/CustomInputs";
-import { AutocompleteLoader, ControlledAutocomplete, ControlledGroupedCheckbox, ControlledRadio } from "src/components/ui/forms/CustomMultipleInputs";
-import { FormErrorMessage } from "src/components/ui/forms/FormFeedback";
+import { ControlledNumber, ControlledSlider, ControlledSwitch, PasswordField, SingleFileField } from "shared/ui/forms/CustomInputs";
+import { AutocompleteLoader, ControlledAutocomplete, ControlledGroupedCheckbox, ControlledRadio } from "shared/ui/forms/CustomMultipleInputs";
+import { FormErrorMessage } from "shared/ui/forms/FormFeedback";
 import type { Lead } from "src/types/leads";
 import type { LeadField } from "src/types/leadFields";
 import type { NomenclatorItem } from "src/types/nomenclators";

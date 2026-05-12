@@ -1,9 +1,9 @@
 import { memo, useCallback, useMemo, useState } from 'react'
-import { ChipTooltip } from 'src/components/ui/details/ChipTooltip';
-import CustomBar from 'src/components/ui/details/CustomProgressBar';
-import GenericModal from 'src/components/layout/container/GenericModal';
-import CommonButton from 'src/components/ui/buttons/CommonButton';
-import CustomChip from 'src/components/ui/details/CustomChip';
+import { ChipTooltip } from 'shared/ui/details/ChipTooltip';
+import CustomBar from 'shared/ui/details/CustomProgressBar';
+import GenericModal from 'shared/layout/container/GenericModal';
+import CommonButton from 'shared/ui/buttons/CommonButton';
+import CustomChip from 'shared/ui/details/CustomChip';
 import type { Lead } from 'src/types/leads';
 import type { DateFormat } from 'src/types/shared';
 import type { NomenclatorItem } from 'src/types/nomenclators';
@@ -19,7 +19,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 
 export const NewTabLink = ({ url, value }: { url: string, value?: string | null }) => {
-    if (!value) return null
+    if (!url) return null
     return <Link href={url} sx={{ textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}
         title={url} target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()}>
         {`${value ? value : url}`}

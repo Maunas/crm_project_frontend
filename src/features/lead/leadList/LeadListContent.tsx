@@ -1,7 +1,7 @@
 
 import { memo, useMemo } from "react"
 import { LeadTablePresentation } from "./LeadTablePresentation"
-import CommonButton from "src/components/ui/buttons/CommonButton"
+import CommonButton from "shared/ui/buttons/CommonButton"
 import { useDragAndDrop } from "src/hooks/useDragAndDrop"
 import type { LeadField } from "src/types/leadFields"
 import type { Lead } from "src/types/leads"

@@ -8,7 +8,7 @@ interface DetailsTitleProps {
 
 const TitleAndActive = ({ active, children }: DetailsTitleProps) => {
     return (
-        <Stack direction="row" spacing={2} useFlexGap sx={{ flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", width: "100%", flexGrow: 1 }}>
+        <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", width: "100%", flexGrow: 1 }}>
             {children}
             {
                 active ? <CustomChip sx={{ marginLeft: "auto" }} color='success' label="Habilitado" /> :

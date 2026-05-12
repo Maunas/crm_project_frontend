@@ -1,8 +1,8 @@
 import { CampaignList } from "../campaigns/CampaignList"
-import TitleAndActive from "src/components/ui/details/TitleAndActive"
-import DetailsMetadata from "src/components/ui/details/DetailsMetadata"
-import CommonButton from "src/components/ui/buttons/CommonButton"
-import HandleActiveButton from "src/components/ui/buttons/HandleActiveButton"
+import TitleAndActive from "shared/ui/details/TitleAndActive"
+import DetailsMetadata from "shared/ui/details/DetailsMetadata"
+import CommonButton from "shared/ui/buttons/CommonButton"
+import HandleActiveButton from "shared/ui/buttons/HandleActiveButton"
 import type { CampaignDetailed, WorkspaceDetailed } from "src/types/campaigns"
 import { Stack, Typography, ButtonGroup, Divider } from "@mui/material"
 

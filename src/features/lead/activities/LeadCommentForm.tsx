@@ -1,18 +1,17 @@
 import { useMemo, useState } from "react"
 import { CommentInstance } from "./LeadComments"
-import { RegisteredTextInput } from "../../../components/ui/forms/CustomInputs"
-import { FormErrorMessage } from "../../../components/ui/forms/FormFeedback"
-import type { LeadComment, LeadCommentPost } from "../../../types/leads"
-import type { ColorTypes } from "../../../types/mui-theme.d"
+import { RegisteredTextInput } from "shared/ui/forms/CustomInputs"
+import { FormErrorMessage } from "shared/ui/forms/FormFeedback"
+import CommonButton from "shared/ui/buttons/CommonButton"
+import type { LeadComment, LeadCommentPost } from "src/types/leads"
+import type { ColorTypes } from "src/types/mui-theme.d"
 import { createComment, updateComment } from "./leadActivitiesService"
+import { setFormErrors } from "src/utils/forms"
+import { COLORS } from "src/utils/constants"
 import { Controller, useForm, type Control } from "react-hook-form"
 import { Box, Grid, IconButton, Stack } from "@mui/material"
+import { alpha, styled, useTheme, type PaletteColor } from "@mui/material/styles"
 import CircleIcon from '@mui/icons-material/Circle';
-import { alpha, styled, useTheme } from "@mui/material/styles"
-import type { PaletteColor } from "@mui/material/styles"
-import CommonButton from "src/components/ui/buttons/CommonButton"
-import { COLORS } from "src/utils/constants"
-import { setFormErrors } from "src/utils/forms"
 
 interface CommentFromNoteProps {
     leadId: number,
@@ -162,11 +161,9 @@ const CommentColorSelector = ({ control, setColor }: CommentColorSelectorProps) 
                                 border: field.value === colorName ? `2px solid ${palette.text.secondary}` : ""
                             }} fontSize="small" />
                         </IconButton>
-                    })
-                    }
+                    })}
                 </Stack>
             )}
         />
-
     )
 }

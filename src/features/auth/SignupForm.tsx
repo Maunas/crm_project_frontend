@@ -1,7 +1,7 @@
 import { useContext } from "react"
 import { PasswordField, RegisteredTextInput } from "../../components/ui/forms/CustomInputs"
 import { FormErrorMessage } from "../../components/ui/forms/FormFeedback"
-import CommonButton from "src/components/ui/buttons/CommonButton"
+import CommonButton from "shared/ui/buttons/CommonButton"
 import type { UserSignup } from "../../types/users"
 import { setFormErrors } from "src/utils/forms"
 import { UserContext } from "src/stores/contexts"

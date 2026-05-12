@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react'
-import CommonButton from 'src/components/ui/buttons/CommonButton'
-import { RegisteredTextInput } from 'src/components/ui/forms/CustomInputs'
-import { FormErrorMessage } from 'src/components/ui/forms/FormFeedback'
+import CommonButton from 'shared/ui/buttons/CommonButton'
+import { RegisteredTextInput } from 'shared/ui/forms/CustomInputs'
+import { FormErrorMessage } from 'shared/ui/forms/FormFeedback'
 import { createOrganization, updateOrganization } from './organizationServices'
 import { setFormErrors } from "src/utils/forms"
 import type { Organization, OrganizationDetailed, OrganizationPost } from 'src/types/campaigns'

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { LeadComments } from './LeadComments';
-import { Box, Stack, Tab, Tabs, Typography } from '@mui/material'
 import { LeadAuditList } from './LeadAudit';
+import { Box, Stack, Tab, Tabs, Typography } from '@mui/material'
 
 interface TabPanelProps {
   children?: React.ReactNode;

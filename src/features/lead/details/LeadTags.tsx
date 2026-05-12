@@ -1,16 +1,17 @@
-import { Box, Button, Checkbox, List, ListItem, ListItemButton, ListItemIcon, Popover, Stack, Typography, IconButton, ListItemText } from '@mui/material'
-import type { LeadDetailed, LeadTag, LeadTagPost } from '../../../types/leads'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import AddIcon from "@mui/icons-material/Add"
-import type { Paginable } from '../../../types/shared'
-import { createTag, deleteTag, getTags, updateLeadTags, updateTag } from './LeadDetailsService'
-import PaginationComponent from 'src/components/ui/lists/PaginationComponent'
-import type { ColorTypes } from '../../../types/mui-theme.d'
-import EditIcon from '@mui/icons-material/Edit'
-import CloseIcon from '@mui/icons-material/Close'
 import { LeadTagForm } from './LeadTagForm'
+import PaginationComponent from 'shared/ui/lists/PaginationComponent'
+import CustomChip from 'shared/ui/details/CustomChip'
 import { useListPagination } from 'src/hooks/useListPagination'
-import CustomChip from 'src/components/ui/details/CustomChip'
+import type { Paginable } from 'src/types/shared'
+import type { LeadDetailed, LeadTag, LeadTagPost } from 'src/types/leads'
+import type { ColorTypes } from 'src/types/mui-theme.d'
+import { createTag, deleteTag, getTags, updateLeadTags, updateTag } from './LeadDetailsService'
+import { Box, Button, Checkbox, List, ListItem, ListItemButton, ListItemIcon, Popover, Stack, Typography, IconButton, ListItemText } from '@mui/material'
+import CloseIcon from '@mui/icons-material/Close'
+import EditIcon from '@mui/icons-material/Edit'
+import AddIcon from "@mui/icons-material/Add"
+import CommonButton from 'shared/ui/buttons/CommonButton'
 
 export const LeadTags = ({ lead, tags, updateLeadInfo }: { lead: LeadDetailed, tags: LeadTag[], updateLeadInfo: (lead: LeadDetailed) => void }) => {
     const [open, setOpen] = useState<boolean>(false)
@@ -92,14 +93,13 @@ export const LeadTags = ({ lead, tags, updateLeadInfo }: { lead: LeadDetailed, t
                                     opacity: open ? 1 : 0,
                                     transition: `opacity 200ms ease-in-out ${open ? "150ms" : "0ms"}`,
                                 }
-                            }}
-                        />
+                            }} />
                     </Button>
                 )}
                 <Button sx={{ p: 0, minWidth: 0 }} size="small" onClick={openTagMenu}>
-                    <CustomChip color="primary" size='small' label={<AddIcon fontSize='inherit' />}
+                    <CustomChip color="primary" size='small' label={<Stack direction="row" spacing={.5}><AddIcon fontSize='inherit' />{tags.length === 0 && "Etiquetas"}</Stack>}
                         sx={{
-                            maxHeight: open ? "5rem" : "0", maxWidth: open ? "10rem" : "0", opacity: open ? 1 : 0,
+                            maxHeight: "5rem", maxWidth: "10rem", display: open ? "flex" : "none",
                             transition: `all 150ms ease-in-out ${open ? "150ms" : "0ms"}`,
                         }} />
                 </Button>
@@ -108,7 +108,6 @@ export const LeadTags = ({ lead, tags, updateLeadInfo }: { lead: LeadDetailed, t
                 <LeadTagsMenu leadId={lead.id} tags={tagList?.items} currentTags={tags} pageComponentProps={pageComponentProps} handleDeleteTag={handleDeleteTag}
                     menuAnchor={menuAnchor} handleClose={closeTagMenu} handleLeadTagUpdate={handleLeadTagUpdate} handleTagsUpdate={handleTagsUpdate} />
             }
-
         </>
     )
 }
@@ -176,11 +175,8 @@ const LeadTagsMenu = ({ leadId, tags, currentTags, menuAnchor, handleClose, page
     }
     return (
         <>
-            <Popover
-                disableScrollLock
-                disableAutoFocus
-                id="tags-menu"
-                anchorEl={menuAnchor}
+            <Popover disableScrollLock disableAutoFocus id="tags-menu"
+                anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={handleClose}
                 anchorOrigin={{
                     vertical: 'bottom',
                     horizontal: 'center',
@@ -189,11 +185,9 @@ const LeadTagsMenu = ({ leadId, tags, currentTags, menuAnchor, handleClose, page
                     vertical: 'top',
                     horizontal: 'center',
                 }}
-                open={Boolean(menuAnchor)}
-                onClose={handleClose}
             >
-                <Stack spacing={1} sx={{ p: 2 }} ref={menuRef}>
-                    <Typography variant="h4" component="h3">Asignar Tags</Typography>
+                <Stack spacing={1} ref={menuRef}>
+                    <Typography variant="h4" component="h3" sx={{ pt: 2, px: 2 }}>Asignar Tags</Typography>
                     <List sx={{ maxHeight: "30rem", minWidth: "15rem", maxWidth: "25rem", overflowY: "auto" }} dense >
                         {
                             tags.map(tag => (
@@ -218,16 +212,13 @@ const LeadTagsMenu = ({ leadId, tags, currentTags, menuAnchor, handleClose, page
                             ))
                         }
                     </List >
-                    {
-                        pageComponentProps.totalPages > 1 &&
+                    {pageComponentProps.totalPages > 1 &&
                         <PaginationComponent {...pageComponentProps} />
                     }
-                    < Stack spacing={.5} sx={{ width: "100%" }
-                    }>
-                        <Button onClick={handleCreateTag} fullWidth>Agregar Tag</Button>
-                        {
-                            isListChanged &&
-                            <Button onClick={handleSaveTags} variant='contained' fullWidth>Guardar</Button>
+                    < Stack spacing={.5} sx={{ width: "100%", pb: 2, px: 2 }}>
+                        <CommonButton actionType='CREATE' onClick={handleCreateTag} variant='text' fullWidth>Agregar Tag</CommonButton>
+                        {isListChanged &&
+                            <CommonButton actionType='SAVE' onClick={handleSaveTags} variant='contained' fullWidth>Guardar</CommonButton>
                         }
                     </Stack >
                 </Stack >
@@ -263,13 +254,8 @@ export const TagFormMenuWrapper = ({ existingTag, formAnchor, handleClose, handl
     }
 
     return (
-        <Popover
-            disableScrollLock
-            disableAutoFocus
-            id="basic-menu"
-            anchorEl={formAnchor}
-            open={Boolean(formAnchor)}
-            onClose={handleClose}
+        <Popover disableScrollLock disableAutoFocus id="basic-menu"
+            anchorEl={formAnchor} open={Boolean(formAnchor)} onClose={handleClose}
             anchorOrigin={{
                 vertical: 'top',
                 horizontal: 'right',

@@ -1,15 +1,15 @@
 import { useMemo, useState } from "react"
-import type { LeadDetailed } from "../../../types/leads.ts"
-import type { LeadFieldValueDetailed } from "../../../types/leadFields.ts"
-import { useModal } from "src/hooks/useModal.ts"
+import { LeadPartialUpdate } from "./LeadPartialUpdate"
+import { AddressValue, BoolValue, CardValue, DateValue, ListValues, ModalValue, NewTabLink, PasswordValue, RatingValue } from "../shared/LeadValueComponents"
+import { LeadFieldTypeIcon } from "src/features/leadFields/LeadFieldTypeIcon"
+import { CustomListItem } from "shared/ui/lists/CustomListItem"
+import type { LeadFieldValueDetailed } from "src/types/leadFields"
+import type { LeadDetailed } from "src/types/leads"
+import { useModal } from "src/hooks/useModal"
+import { formatMoney } from "src/utils/formatters"
 import { Accordion, AccordionDetails, AccordionSummary, Divider, Paper, Typography, Stack, IconButton, List, ListItemText } from "@mui/material"
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { AddressValue, BoolValue, CardValue, DateValue, ListValues, ModalValue, NewTabLink, PasswordValue, RatingValue } from "../shared/LeadValueComponents.tsx"
 import EditIcon from "@mui/icons-material/Edit"
-import { CustomListItem } from "../../../components/ui/lists/CustomListItem.tsx"
-import { LeadFieldTypeIcon } from "../../leadFields/LeadFieldTypeIcon.tsx"
-import { LeadPartialUpdate } from "./LeadPartialUpdate.tsx"
-import { formatMoney } from "src/utils/formatters.ts"
 
 interface LeadDetailsSection {
     name: string,
@@ -26,8 +26,8 @@ export const LeadFieldSections = ({ lead, updateLeadInfo }: { lead: LeadDetailed
     //Filtra leads para obtener los visibles, habilitados y con valor, ordenados por order
     const fieldValues = useMemo(() => {
         if (!lead?.field_values) return []
-        return lead.field_values.filter(i => (i.field.is_visible && i.field.active && i.active &&
-            (i.value || i.nomenclator_items?.length > 0 || i.related_leads?.length > 0)))
+        return lead.field_values.filter(i => (i.field.active && i.active &&
+            ((i.value && i.value !== "") || i.nomenclator_items?.length > 0 || i.related_leads?.length > 0)))
             .sort((a, b) => a.field.order - b.field.order)
     }, [lead])
 
@@ -121,6 +121,8 @@ export const LeadFieldByType = (props: LeadFieldProps) => {
     const value = isSectionInfo ? props.fieldValue.value : props.value
 
     const valueCode = (templateCode && TEMPLATES_WITH_ICONS.includes(templateCode)) ? templateCode : typeCode
+
+    if (typeCode === "URL") console.log(value)
 
     const component = (code?: string) => {
         switch (code) {

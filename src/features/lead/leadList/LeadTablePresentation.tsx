@@ -1,7 +1,7 @@
 
 import { memo, useCallback, useMemo } from "react"
 import { LeadListCellValue } from "./LeadListCellValue"
-import { SelectableTableRow } from "src/components/ui/lists/CustomTableRow"
+import { SelectableTableRow } from "shared/ui/lists/CustomTableRow"
 import type { LeadField, LeadFieldValue } from "src/types/leadFields"
 import type { Lead } from "src/types/leads"
 import { useNavigate } from "react-router-dom"

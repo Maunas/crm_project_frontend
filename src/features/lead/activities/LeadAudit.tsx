@@ -1,22 +1,22 @@
 import { useEffect, useMemo, useState } from "react"
-import type { LeadAudit } from "../../../types/leads"
+import { MetadataShort } from "./LeadComments"
+import { CustomTimelineItem } from "shared/ui/lists/CustomTimelineItem"
+import { CustomListItemAvatar } from "shared/ui/lists/CustomListItem"
+import PaginationComponent from "shared/ui/lists/PaginationComponent"
+import CustomChip from "shared/ui/details/CustomChip"
+import { useListPagination } from "src/hooks/useListPagination"
+import type { ColorTypes } from "src/types/mui-theme.d"
+import type { Paginable } from "src/types/shared"
+import type { LeadAudit } from "src/types/leads"
 import { getAudit } from "./leadActivitiesService"
-import type { Paginable } from "../../../types/shared"
 import { Avatar, Box, Button, Card, CardActionArea, CardActions, CardContent, CardHeader, Collapse, Divider, Stack, Typography } from "@mui/material"
+import Timeline from '@mui/lab/Timeline';
+import { timelineItemClasses } from "@mui/lab/TimelineItem"
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward"
 import EditIcon from "@mui/icons-material/Edit"
 import AddIcon from "@mui/icons-material/Add"
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import WatchLaterIcon from '@mui/icons-material/WatchLater';
-import { CustomListItemAvatar } from "../../../components/ui/lists/CustomListItem"
-import type { ColorTypes } from "../../../types/mui-theme.d"
-import { MetadataShort } from "./LeadComments"
-import { useListPagination } from "../../../hooks/useListPagination"
-import PaginationComponent from "src/components/ui/lists/PaginationComponent"
-import Timeline from '@mui/lab/Timeline';
-import { timelineItemClasses } from "@mui/lab/TimelineItem"
-import CustomChip from "src/components/ui/details/CustomChip"
-import { CustomTimelineItem } from "src/components/ui/lists/CustomTimelineItem"
 
 const MAX_ITEMS_NUM = 3
 
@@ -115,13 +115,11 @@ export const LeadAuditList = ({ leadId, reloadAudit }: { leadId: number, reloadA
   )
 }
 
-
 interface ActivityInfoProps {
   icon: React.ReactNode,
   color: ColorTypes,
   title: string
 }
-
 
 const LeadAuditHeader = ({ activityType, message }: { activityType?: string, message: string }) => {
 

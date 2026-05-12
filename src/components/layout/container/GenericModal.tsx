@@ -1,5 +1,5 @@
 import { memo } from "react"
-import CommonButton, { type CommonBtnProps } from "src/components/ui/buttons/CommonButton"
+import CommonButton, { type CommonBtnProps } from "shared/ui/buttons/CommonButton"
 import { Dialog, type DialogProps } from "@mui/material"
 import GenericPaper from "./GenericPaper"
 

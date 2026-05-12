@@ -1,18 +1,18 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useMemo, useState } from "react"
-import { FormErrorMessage } from "../../../components/ui/forms/FormFeedback"
 import { LeadFormAddress, LeadFormBool, LeadFormCheckbox, LeadFormFile, LeadFormMoney, LeadFormNumber, LeadFormPassword, LeadFormRating, LeadFormRelatedLead, LeadFormSelector, LeadFormText } from "../shared/LeadFormFields"
-import type { Lead, LeadPost, LeadPostValue } from "../../../types/leads"
-import type { LeadField, LeadFieldValue } from "../../../types/leadFields"
-import type { NomenclatorItem } from "../../../types/nomenclators"
+import { FormErrorMessage } from "shared/ui/forms/FormFeedback"
+import CommonButton from "shared/ui/buttons/CommonButton"
+import type { LeadField, LeadFieldValue } from "src/types/leadFields"
+import type { Lead, LeadPost, LeadPostValue } from "src/types/leads"
+import type { NomenclatorItem } from "src/types/nomenclators"
 import { getLeads } from "../leadService"
-import { getLeadFields } from "../../leadFields/leadFieldServices"
-import { getNomenclatorItems } from "../../nomenclators/nomenclatorService"
-import { useFieldArray, useForm, type Control, type Path, type UseFormRegister } from "react-hook-form"
-import { Grid, ButtonGroup, Stack } from "@mui/material"
-import CommonButton from "src/components/ui/buttons/CommonButton"
+import { getNomenclatorItems } from "src/features/nomenclators/nomenclatorService"
+import { getLeadFields } from "src/features/leadFields/leadFieldServices"
 import { createFormDataFromLead, setLeadFormErrors, updateSelectorOptions } from "../leadUtils"
 import { getListField } from "src/utils/lists"
+import { useFieldArray, useForm, type Control, type Path, type UseFormRegister } from "react-hook-form"
+import { Grid, ButtonGroup, Stack } from "@mui/material"
 
 //Para permitir mantener los datos de cada campo
 export interface LeadPostFormValues extends LeadPostValue {
@@ -32,7 +32,7 @@ interface LeadFormProps {
     setCampaignError?: React.Dispatch<React.SetStateAction<string | undefined>>
 }
 
-export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSubmit, submitBtnLabel = "Guardar Lead", onCancel, setCampaignError }: LeadFormProps) => {
+export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSubmit, submitBtnLabel = "Guardar", onCancel, setCampaignError }: LeadFormProps) => {
 
     const defaultValues = useMemo(() => ({
         campaign_id: campaignId,
@@ -123,7 +123,7 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
         <form onSubmit={handleSubmit(submit)}>
             <input type="text" {...register("campaign_id", { setValueAs: value => (value === "" || !value) ? null : Number(value) })} hidden />
             <Stack spacing={2}>
-                <Grid container spacing={1}>
+                <Grid container spacing={.5}>
                     {campaignId &&
                         fields.map((field, idx) =>
                             <Grid size="grow" sx={{ alignItems: "center", minWidth: "20rem" }} key={field.id}>

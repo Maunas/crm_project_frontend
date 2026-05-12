@@ -7,7 +7,7 @@ import type { Nomenclator, NomenclatorItem } from 'src/types/nomenclators';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import type { SearchResults } from 'src/types/shared';
 import { generalSearch } from './searchServices';
-import { GenericContainer } from 'src/components/layout/container/GenericContainer';
+import { GenericContainer } from 'shared/layout/container/GenericContainer';
 
 interface TabPanelProps {
     children?: React.ReactNode;

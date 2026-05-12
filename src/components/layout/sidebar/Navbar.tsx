@@ -1,5 +1,5 @@
 import { memo, useMemo } from 'react';
-import { ChipTooltip } from 'src/components/ui/details/ChipTooltip';
+import { ChipTooltip } from 'shared/ui/details/ChipTooltip';
 import { Link, useLocation } from 'react-router-dom';
 import { List, ListItem, ListItemButton, ListItemIcon, ListItemText, useTheme } from '@mui/material'
 import { alpha } from '@mui/material/styles';

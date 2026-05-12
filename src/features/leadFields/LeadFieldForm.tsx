@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { ControlledCheckbox, ControlledTextInput } from "src/components/ui/forms/CustomInputs";
-import { ControlledAutocomplete, ControlledRadio } from "src/components/ui/forms/CustomMultipleInputs";
-import { FormErrorMessage } from "src/components/ui/forms/FormFeedback";
-import CommonButton from "src/components/ui/buttons/CommonButton";
+import { ControlledCheckbox, ControlledTextInput } from "shared/ui/forms/CustomInputs";
+import { ControlledAutocomplete, ControlledRadio } from "shared/ui/forms/CustomMultipleInputs";
+import { FormErrorMessage } from "shared/ui/forms/FormFeedback";
+import CommonButton from "shared/ui/buttons/CommonButton";
 import { createLeadField, getFieldSections, getFieldTemplates, getFieldTypes, getInputMaskTemplates, updateLeadField } from "./leadFieldServices";
 import { getNomenclators } from "../nomenclators/nomenclatorService";
 import { getCampaigns } from "../campaigns/campaignServices";

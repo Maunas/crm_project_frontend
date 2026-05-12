@@ -1,12 +1,13 @@
 import { useEffect, useMemo } from "react"
-import type { LeadTag, LeadTagPost } from "../../../types/leads"
-import { Controller, useForm, useWatch, type Control, type FieldValues, type Path } from "react-hook-form"
-import { alpha, Button, IconButton, Stack, TextField, useTheme, type PaletteColor } from "@mui/material"
-import type { ColorTypes } from "../../../types/mui-theme.d"
-import { FormErrorMessage } from "../../../components/ui/forms/FormFeedback"
-import CircleIcon from '@mui/icons-material/Circle'
+import { FormErrorMessage } from "shared/ui/forms/FormFeedback"
+import CommonButton from "shared/ui/buttons/CommonButton"
+import type { LeadTag, LeadTagPost } from "src/types/leads"
+import type { ColorTypes } from "src/types/mui-theme.d"
 import { setFormErrors } from "src/utils/forms"
 import { COLORS } from "src/utils/constants"
+import { Controller, useForm, useWatch, type Control, type FieldValues, type Path } from "react-hook-form"
+import { alpha, IconButton, Stack, TextField, useTheme, type PaletteColor } from "@mui/material"
+import CircleIcon from '@mui/icons-material/Circle'
 
 interface LeadTagFormProps {
     existingTag: LeadTag | null,
@@ -54,8 +55,8 @@ export const LeadTagForm = ({ existingTag, onCancel, onSubmit }: LeadTagFormProp
                 </Stack>
                 <ControlledColorPicker control={control} name="color" />
                 <Stack spacing={.5}>
-                    <Button onClick={handleCancel}>Cancelar</Button>
-                    <Button variant="contained" type="submit">Guardar</Button>
+                    <CommonButton actionType="CLOSE" variant="text" onClick={handleCancel}>Cancelar</CommonButton>
+                    <CommonButton actionType={existingTag ? "MODIFY" : "CREATE"} variant="contained" type="submit">Guardar</CommonButton>
                 </Stack>
             </Stack>
         </form>

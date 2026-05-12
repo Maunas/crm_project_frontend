@@ -1,18 +1,18 @@
 import { useEffect, useState, type ReactNode } from "react"
 import { CreateCommentWrapper, UpdateCommentFromNote } from "./LeadCommentForm"
-import PaginationComponent from "src/components/ui/lists/PaginationComponent"
-import type { Metadata, Paginable } from "../../../types/shared"
-import type { LeadComment } from "../../../types/leads"
-import type { ColorTypes } from "../../../types/mui-theme.d"
-import { useListPagination } from "../../../hooks/useListPagination"
+import PaginationComponent from "shared/ui/lists/PaginationComponent"
+import type { Metadata, Paginable } from "src/types/shared"
+import type { ColorTypes } from "src/types/mui-theme.d"
+import type { LeadComment } from "src/types/leads"
+import { useListPagination } from "src/hooks/useListPagination"
 import { deleteComment, getComments } from "./leadActivitiesService"
-import dayjs from "dayjs"
+import { formatDate } from "src/utils/formatters"
 import { Box, Divider, Grid, IconButton, Paper, Stack, Typography } from "@mui/material"
 import { alpha, styled, useTheme } from "@mui/material/styles"
-import EditIcon from '@mui/icons-material/Edit';
-import CloseIcon from '@mui/icons-material/Close';
 import WatchLaterIcon from '@mui/icons-material/WatchLater';
 import PersonIcon from '@mui/icons-material/Person';
+import CloseIcon from '@mui/icons-material/Close';
+import EditIcon from '@mui/icons-material/Edit';
 
 export const LeadComments = ({ leadId }: { leadId: number }) => {
 
@@ -171,17 +171,26 @@ export const MetadataInfo = ({ metadata, onlyCreation = false, onlyUpdate = fals
                 <Grid container spacing={1} sx={{ minWidth: "15rem", alignItems: "center" }} size="grow">
                     {!noIcon && <WatchLaterIcon />}
                     <Stack sx={{ justifyContent: "center" }}>
-                        <Typography variant="body2"><span style={{ fontWeight: "bold" }}>Creado:</span> {dayjs(metadata?.created_at).format("DD/MM/YYYY")}</Typography>
-                        <Typography variant="body2"><span style={{ fontWeight: "bold" }}>Por:</span> {metadata?.created_by}</Typography>
+                        <Typography variant="body2">
+                            <span style={{ fontWeight: "bold" }}>Creado:</span> {formatDate(metadata?.created_at, "date")}
+                        </Typography>
+                        <Typography variant="body2">
+                            <span style={{ fontWeight: "bold" }}>Por:</span> {metadata?.created_by}
+                        </Typography>
                     </Stack>
                 </Grid>}
             {!onlyCreation &&
                 <Grid container spacing={1} sx={{ minWidth: "15rem", alignItems: "center" }} size="grow">
                     {!noIcon && <WatchLaterIcon />}
-                    <Stack sx={{ justifyContent: "center" }}>
-                        <Typography variant="body2"><span style={{ fontWeight: "bold" }}>Modificado:</span> {dayjs(metadata?.updated_at).format("DD/MM/YYYY")}</Typography>
-                        {metadata?.updated_by && <Typography variant="body2"><span style={{ fontWeight: "bold" }}>Por:</span> {metadata?.updated_by}</Typography>}
-                    </Stack>
+                    {metadata?.updated_at &&
+                        <Stack sx={{ justifyContent: "center" }}>
+                            <Typography variant="body2">
+                                <span style={{ fontWeight: "bold" }}>Modificado:</span> {formatDate(metadata?.updated_at, "date")}
+                            </Typography>
+                            {metadata?.updated_by && <Typography variant="body2">
+                                <span style={{ fontWeight: "bold" }}>Por:</span> {metadata?.updated_by}
+                            </Typography>}
+                        </Stack>}
                 </Grid>}
         </Grid>)
 }
@@ -208,7 +217,7 @@ export const MetadataShort = ({ metadata, onlyUser = false, onlyDate = false, no
             <Stack direction="row" spacing={.5}>
                 {!noIcon && <WatchLaterIcon fontSize="small" />}
                 <Typography variant="body2" sx={{ textTransform: "capitalize" }}>
-                    {dayjs(metadata?.updated_at ?? metadata?.created_at).format("dddd DD/MM/YYYY HH:mm")}
+                    {formatDate(metadata?.updated_at ?? metadata?.created_at, "dateTimeLong")}
                 </Typography>
             </Stack>
         }

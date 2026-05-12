@@ -1,9 +1,9 @@
 import { memo, useCallback, useContext, useEffect, useState } from "react"
 import { LeadFilters } from "./LeadFilters";
 import { LeadViewMenu } from "./LeadViewMenu";
-import CommonButton from 'src/components/ui/buttons/CommonButton';
-import GenericModal from "src/components/layout/container/GenericModal";
-import { ChipTooltip } from "src/components/ui/details/ChipTooltip";
+import CommonButton from 'shared/ui/buttons/CommonButton';
+import GenericModal from "shared/layout/container/GenericModal";
+import { ChipTooltip } from "shared/ui/details/ChipTooltip";
 import type { LeadFilter, LeadListParams } from "src/types/shared";
 import type { Lead, LeadView, LeadViewParams } from "src/types/leads";
 import type { Campaign, Workspace } from "src/types/campaigns"
