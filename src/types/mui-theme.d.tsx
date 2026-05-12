@@ -47,6 +47,9 @@ declare module '@mui/material/Chip' {
   interface ChipPropsColorOverrides {
     contrast: true;
   }
+  interface ChipOwnProps {
+    defaultColor?: ColorTypes;
+  }
 }
 declare module '@mui/material/Chip' {
   interface ChipPropsSizeOverrides {
@@ -59,5 +62,21 @@ declare module '@mui/material/Chip' {
 declare module '@mui/material/LinearProgress' {
   interface LinearProgressProps {
     size?: "small" | "medium";
+  }
+}
+declare module '@mui/material/ListItem' {
+  interface ListItemOwnProps {
+    selected?: boolean;
+  }
+}
+declare module '@mui/material/ListItemAvatar' {
+  interface ListItemAvatarProps {
+    color?: ColorTypes;
+  }
+}
+
+declare module '@mui/material/Button' {
+  interface ButtonPropsColorOverrides {
+    contrast: true;
   }
 }

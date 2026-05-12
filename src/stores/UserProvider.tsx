@@ -1,0 +1,104 @@
+import React, { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { getOrganizations } from 'src/features/organizations/organizationServices';
+import { loginUser, signupUser } from 'src/features/auth/userServices';
+import type { Organization, OrganizationDetailed } from 'src/types/campaigns';
+import type { UserData, UserLogin, UserSignup } from 'src/types/users';
+import { SUPERUSER } from 'src/utils/constants';
+import { UserContext } from 'src/stores/contexts';
+import { useNavigate } from 'react-router-dom';
+
+export interface UserContextItems {
+    userOrganizations: OrganizationDetailed[],
+    activeOrganizations: Organization[],
+    activeOrg: Organization | null,
+    setActiveOrg: React.Dispatch<React.SetStateAction<Organization | null>>,
+    setOrganizations: React.Dispatch<React.SetStateAction<OrganizationDetailed[]>>,
+    fetchOrganizations: () => void,
+    user: UserData | null,
+    login: (data: UserLogin) => Promise<void>,
+    signup: (data: UserSignup) => Promise<void>,
+    logout: () => void
+}
+
+export const UserProvider = ({ children }: { children?: ReactNode }) => {
+
+    const nav = useNavigate()
+
+    const [user, setUser] = useState<UserData | null>(() => {
+        const localUser = window.localStorage.getItem("user")
+        return localUser ? JSON.parse(localUser) : null
+    })
+
+    const [organizations, setOrganizations] = React.useState<OrganizationDetailed[]>([]);
+
+    const fetchOrganizations = () => {
+        getOrganizations({ only_active: true, detailed: true, page_size: 0 }).then(orgs => {
+            setOrganizations(orgs.items)
+        })
+    }
+
+    React.useEffect(() => {
+        fetchOrganizations()
+    }, [])
+
+    /*
+    const userOrganizations = useMemo(() => {
+        if (!organizations || !user) return []
+        const userOrganizationAccessIds = user.organizations_access.map(org => org.organization_id)
+        return organizations.filter(org => userOrganizationAccessIds.includes(org.id))
+    }, [user, organizations])
+    */
+
+    const activeOrganizations = useMemo(() => {
+        const active = organizations.filter(org => org.active) as Organization[]
+        active.push(SUPERUSER)
+        return active
+    }, [organizations])
+
+
+
+    useEffect(() => {
+        if (user) window.localStorage.setItem("user", JSON.stringify(user))
+        else window.localStorage.removeItem("user")
+    }, [user])
+
+    const [activeOrg, setActiveOrg] = React.useState<Organization | null>(() => {
+        const localUser = window.localStorage.getItem("selected_org")
+        return localUser ? JSON.parse(localUser) : null
+    });
+
+    React.useEffect(() => {
+        if (activeOrg) window.localStorage.setItem("selected_org", JSON.stringify(activeOrg))
+        else window.localStorage.removeItem("selected_org")
+    }, [activeOrg])
+
+    const login = (data: UserLogin) => {
+        return loginUser(data).then(user => {
+            setUser(user)
+            setActiveOrg(activeOrganizations[0])
+        })
+    }
+
+    const signup = (data: UserSignup) => {
+        return signupUser(data).then(user => {
+            setUser(user)
+        })
+    }
+
+    const logout = () => {
+        alert("Logout")
+        setUser(null)
+        setActiveOrg(null)
+        nav("/login")
+    }
+
+    return (
+        <UserContext.Provider value={{
+            user, login, logout, signup,
+            //To Do: Cuando se realice la seguridad en backend, quitar organizations.
+            userOrganizations: organizations, activeOrganizations, activeOrg, setActiveOrg, setOrganizations, fetchOrganizations
+        }} >
+            {children}
+        </UserContext.Provider>
+    )
+}

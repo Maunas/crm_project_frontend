@@ -1,4 +1,6 @@
-FROM node:20-slim
+ARG NODE_VERSION=24.11.1
+
+FROM node:${NODE_VERSION}-slim
 
 RUN corepack enable
 

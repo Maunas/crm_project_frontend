@@ -1,16 +1,16 @@
 import type { Campaign } from "./campaigns";
-import type { Metadata } from "./common";
+import type { Metadata } from "./shared";
 import type { Lead } from "./leads";
 import type { Nomenclator, NomenclatorItem } from "./nomenclators";
 
 export interface LeadFieldValue {
   id: number;
   field_id: number;
-  value?: string;
+  value?: string | null;
   lead_id: number;
   field: LeadField;
   nomenclator_items: NomenclatorItem[];
-  related_leads: Lead[]
+  related_leads: Lead[],
 }
 
 export interface LeadFieldValueDetailed extends LeadFieldValue, Metadata {
@@ -24,7 +24,7 @@ export interface LeadFieldPost {
   required: boolean;
   is_primary: boolean;
   is_visible: boolean;
-  lead_field_section_id: number | null;
+  lead_field_section_id?: number | null;
   default_value?: string | null;
   input_mask?: string | null;
   mask_template_code?: string | null;
@@ -39,17 +39,21 @@ export interface LeadFieldPost {
   related_campaign_id?: number | null;
   //Calculated
   calculation_expression?: string | null;
+  title_order?: number | null
 }
 
 export interface LeadField extends LeadFieldPost {
   id: number;
+  name: string;
   configuration?: string;
   lead_field_section: LeadFieldSection;
   organization_id: number;
   order: number;
+  title_order: number;
+  field_type_code: string;
   field_type: LeadFieldType,
   field_subtype: LeadFieldType | null,
-  field_template_name: string
+  field_template_name: string | null,
 }
 
 export interface LeadFieldDetailed extends LeadField, Metadata {
@@ -90,17 +94,15 @@ export interface FieldValidationRulePost {
   expression?: string;
   error_message: string;
   template_code?: string | null;
-  template_params?: {[param_name: string]:string};
+  template_params?: { [param_name: string]: string };
   field_id: number;
 }
-
-export const fieldValidationRulePostFields = ["name", "error_message", "template_code", "template_params", "expression", "field_id"]
 
 export interface FieldValidationRule extends FieldValidationRulePost {
   id: number;
 }
 
-export interface FieldValidationRuleDetailed extends FieldValidationRule, Metadata {}
+export interface FieldValidationRuleDetailed extends FieldValidationRule, Metadata { }
 
 export interface FieldValidationRuleTemplate {
   name: string;
@@ -119,4 +121,4 @@ export interface LeadFieldSection extends LeadFieldSectionPost {
   id: number;
 }
 
-export interface LeadFieldSectionDetailed extends LeadFieldSection, Metadata {}
+export interface LeadFieldSectionDetailed extends LeadFieldSection, Metadata { }

@@ -1,0 +1,21 @@
+import CustomChip from './CustomChip'
+import Stack from '@mui/material/Stack'
+
+interface DetailsTitleProps {
+    active: boolean,
+    children?: React.ReactNode,
+}
+
+const TitleAndActive = ({ active, children }: DetailsTitleProps) => {
+    return (
+        <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", width: "100%", flexGrow: 1 }}>
+            {children}
+            {
+                active ? <CustomChip sx={{ marginLeft: "auto" }} color='success' label="Habilitado" /> :
+                    <CustomChip sx={{ marginLeft: "auto" }} color='error' label="Deshabilitado" />
+            }
+        </Stack >
+    )
+}
+
+export default TitleAndActive
