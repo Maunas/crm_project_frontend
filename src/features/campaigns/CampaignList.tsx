@@ -33,7 +33,9 @@ export const CampaignList = ({ workspace, handleSidebar }: CampaignListProps) =>
             <Stack spacing={1} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
                 <Typography variant="h3">Lista de Campañas</Typography>
                 {campaigns && campaigns?.items.length > 0 &&
-                    <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_CMP", workspace)} sx={{ marginLeft: "auto" }} size="small" />
+                    <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_CMP", workspace)} sx={{ marginLeft: "auto" }} size="small" onlyTooltip>
+                        Agregar
+                    </CommonButton>
                 }
             </Stack>
             <CampaignListData campaigns={campaigns.items} />

@@ -245,7 +245,9 @@ export const LeadListPage = () => {
                 <Typography variant="h1">Lista de Leads</Typography>
                 {areThereLeads &&
                     <CommonButton actionType='CREATE' variant="contained" color="primary"
-                        component={RouterLink} to={`/leads/new?workspace=${workspaceId}&campaign=${campaignId}`} />
+                        component={RouterLink} to={`/leads/new?workspace=${workspaceId}&campaign=${campaignId}`} onlyTooltip>
+                        Agregar
+                    </CommonButton>
                 }
             </Stack>
             <Stack spacing={2}>

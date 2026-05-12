@@ -1,13 +1,13 @@
 import { useCallback, useContext } from 'react'
-import OrganizationDetails from './OrganizationDetail'
 import { OrganizationFormSidebar } from './OrganizationForm'
-import { CustomListItem } from '../../components/ui/lists/CustomListItem'
-import { EnabledIcon } from '../../components/ui/lists/Icons'
-import CommonButton from 'shared/ui/buttons/CommonButton'
-import { CommonIconButton } from 'shared/ui/buttons/CommonIconButton'
+import OrganizationDetails from './OrganizationDetail'
 import ContainerWithSidebar from 'shared/layout/container/GenericContainer'
+import { CommonIconButton } from 'shared/ui/buttons/CommonIconButton'
+import { CustomListItem } from 'shared/ui/lists/CustomListItem'
+import CommonButton from 'shared/ui/buttons/CommonButton'
+import { EnabledIcon } from 'shared/ui/lists/Icons'
 import { useSidebar } from 'src/hooks/useSidebar'
-import type { OrganizationDetailed } from '../../types/campaigns'
+import type { OrganizationDetailed } from 'src/types/campaigns'
 import { disableOrganization, enableOrganization, getOrganization } from './organizationServices'
 import { UserContext } from 'src/stores/contexts'
 import type { UserContextItems } from 'src/stores/UserProvider'
@@ -80,7 +80,9 @@ export const OrganizationList = () => {
                 <Stack spacing={2} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
                     <Typography variant="h1">Lista de Organizaciones</Typography>
                     {userOrganizations && userOrganizations?.length > 0 &&
-                        <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_ORG", null)} sx={{ marginLeft: "auto" }} />
+                        <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_ORG", null)} sx={{ marginLeft: "auto" }} onlyTooltip>
+                            Agregar
+                        </CommonButton>
                     }
                 </Stack>
                 <Stack spacing={2}>

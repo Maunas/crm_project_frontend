@@ -1,12 +1,12 @@
-import { Tooltip, type PopperPlacementType } from "@mui/material"
-import { memo, type ReactElement } from "react"
-import { useTheme } from "@mui/material/styles"
-import type { ColorTypes } from "../../../types/mui-theme.d"
+import { memo, type ReactElement, type ReactNode } from "react"
 import CustomChip from "./CustomChip"
+import type { ColorTypes } from "src/types/mui-theme.d"
+import { Tooltip, type PopperPlacementType } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
 
 interface ChipTooltipProps {
     show?: boolean,
-    title: string,
+    title: ReactNode,
     color?: ColorTypes,
     placement?: PopperPlacementType,
     size?: "small" | "medium" | "large" | "xlarge"

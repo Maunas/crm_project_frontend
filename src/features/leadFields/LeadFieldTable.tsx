@@ -65,7 +65,9 @@ export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateE
                                 <SimulateLeadFormModal campaign={campaign} leadFields={sortedFields} onCancel={modalProps.handleClose} />
                             }
                         </GenericModal>
-                        <CommonButton onClick={() => handleSidebar("CREATE_FIELD", null)} actionType="CREATE" />
+                        <CommonButton onClick={() => handleSidebar("CREATE_FIELD", null)} actionType="CREATE" onlyTooltip>
+                            Agregar
+                        </CommonButton>
                     </ButtonGroup>
                 }
             </Stack>
