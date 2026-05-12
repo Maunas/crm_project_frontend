@@ -1,5 +1,5 @@
 import type { Campaign } from "./campaigns";
-import type { Metadata } from "./common";
+import type { Metadata } from "./shared";
 import type { Lead } from "./leads";
 import type { Nomenclator, NomenclatorItem } from "./nomenclators";
 
@@ -97,8 +97,6 @@ export interface FieldValidationRulePost {
   template_params?: { [param_name: string]: string };
   field_id: number;
 }
-
-export const fieldValidationRulePostFields = ["name", "error_message", "template_code", "template_params", "expression", "field_id"]
 
 export interface FieldValidationRule extends FieldValidationRulePost {
   id: number;

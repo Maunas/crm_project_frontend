@@ -64,8 +64,19 @@ declare module '@mui/material/LinearProgress' {
     size?: "small" | "medium";
   }
 }
+declare module '@mui/material/ListItem' {
+  interface ListItemOwnProps {
+    selected?: boolean;
+  }
+}
 declare module '@mui/material/ListItemAvatar' {
   interface ListItemAvatarProps {
     color?: ColorTypes;
+  }
+}
+
+declare module '@mui/material/Button' {
+  interface ButtonPropsColorOverrides {
+    contrast: true;
   }
 }

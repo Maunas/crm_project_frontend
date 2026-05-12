@@ -1,19 +1,19 @@
 import { createBrowserRouter } from "react-router-dom";
-import MainLayout from "./components/common/mainLayout";
 import { NotFound } from "./pages/NotFound";
-import { LeadDetailsLayout } from "./components/lead/details/LeadDetails";
-import { CampaignDetails } from "./components/campaigns/CampaignDetails";
-import { WorkspaceList } from "./components/workspaces/WorkspaceList";
-import { GenericContainer } from "./components/common/layout/GenericContainer";
-import { CreateLeadFormPage, UpdateLeadFormPage } from "./components/lead/leadForm/LeadFormWraper";
-import { LeadListPage } from "./components/lead/leadTable/LeadListPage";
-import { OrganizationList } from "./components/organizations/OrganizationList";
-import { NomenclatorList } from "./components/nomenclators/NomenclatorList";
-import { NomenclatorItemList } from "./components/nomenclators/NomenclatorItemList";
-import { SearchResultsList } from "./components/common/SearchResults";
-import { LoginFormPage } from "./components/users/LoginForm";
-import { UserProvider } from "./components/users/UserProvider";
-import { SignupFormPage } from "./components/users/SignupForm";
+import { LeadDetailsLayout } from "./features/lead/details/LeadDetails";
+import { CampaignDetails } from "./features/campaigns/CampaignDetails";
+import { WorkspaceList } from "./features/workspaces/WorkspaceList";
+import { CreateLeadFormPage, UpdateLeadFormPage } from "./features/lead/leadForm/LeadFormWraper";
+import { LeadListPage } from "./features/lead/leadList/LeadListPage";
+import { OrganizationList } from "./features/organizations/OrganizationList";
+import { NomenclatorList } from "./features/nomenclators/NomenclatorList";
+import { NomenclatorItemList } from "./features/nomenclators/NomenclatorItemList";
+import { LoginFormPage } from "./features/auth/LoginForm";
+import { UserProvider } from "src/stores/UserProvider";
+import { SignupFormPage } from "./features/auth/SignupForm";
+import { SearchResultsList } from "./features/search/SearchResults";
+import { GenericContainer } from "./components/layout/container/GenericContainer";
+import MainLayout from "./app/mainLayout";
 
 export const router = createBrowserRouter([
     {
@@ -42,15 +42,15 @@ export const router = createBrowserRouter([
             },
             {
                 path: "/leads",
-                element: <GenericContainer containerSx={{ minWidth: "85%" }}><LeadListPage /></GenericContainer>
+                element: <GenericContainer sx={{ minWidth: "85%" }}><LeadListPage /></GenericContainer>
             },
             {
                 path: "/leads/new",
-                element: <GenericContainer containerSx={{ minWidth: "85%" }}><CreateLeadFormPage /></GenericContainer>
+                element: <GenericContainer sx={{ minWidth: "85%" }}><CreateLeadFormPage /></GenericContainer>
             },
             {
                 path: "/leads/modify/:id",
-                element: <GenericContainer containerSx={{ minWidth: "85%" }}><UpdateLeadFormPage /></GenericContainer>
+                element: <GenericContainer sx={{ minWidth: "85%" }}><UpdateLeadFormPage /></GenericContainer>
             },
             {
                 path: "/leads/:id",

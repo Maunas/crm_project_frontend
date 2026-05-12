@@ -1,4 +1,4 @@
-import type { Metadata } from "./common";
+import type { Metadata } from "./shared";
 
 //Campaigns
 export interface CampaignPost {
@@ -11,7 +11,7 @@ export interface Campaign extends CampaignPost {
   organization_id: number | null;
 }
 
-export interface CampaignDetailed extends Campaign, Metadata {}
+export interface CampaignDetailed extends Campaign, Metadata { }
 
 //Workspaces
 export interface WorkspacePost {
@@ -34,4 +34,4 @@ export interface OrganizationPost {
 export interface Organization extends OrganizationPost {
   id: number;
 }
-export interface OrganizationDetailed extends Organization, Metadata {}
+export interface OrganizationDetailed extends Organization, Metadata { }
