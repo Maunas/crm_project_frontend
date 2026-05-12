@@ -10,6 +10,7 @@
     "skipLibCheck": true,
     "paths": {
       "src/*": ["./src/*"],
+      "features/*": ["./src/features/*"],
       "shared/*": ["./src/components/*"],
       "assets/*": ["./src/assets/*"]
     },
