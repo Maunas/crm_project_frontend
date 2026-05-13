@@ -72,7 +72,7 @@ export const OrganizationList = () => {
     }, [closeSidebar, handleSidebar, selectedEntity, activeOrg?.id, updateEntityOnList])
 
     return (
-        <ContainerWithSidebar isSidebarOpen={Boolean(sidebarMode)} sidebarComponent={
+        <ContainerWithSidebar isSidebarOpen={Boolean(sidebarMode)} closeSidebar={closeSidebar} sidebarComponent={
             <OrganizationSidebar mode={sidebarMode} entity={selectedEntity} handleSidebar={handleSidebar}
                 closeSidebar={closeSidebar} updateEntityOnList={updateEntityOnList} handleActive={handleActive} />
         }>

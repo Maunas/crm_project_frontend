@@ -89,7 +89,7 @@ export const WorkspaceList = () => {
     }
 
     return (
-        <ContainerWithSidebar isSidebarOpen={Boolean(sidebarMode)} sidebarGridProps={{ size: "grow" }}
+        <ContainerWithSidebar isSidebarOpen={Boolean(sidebarMode)} closeSidebar={closeSidebar} sidebarWidth='45rem'
             sidebarComponent={
                 <WorkspaceSidebar mode={sidebarMode} entity={selectedEntity} handleSidebar={handleSidebar}
                     closeSidebar={closeSidebar} updateEntityOnList={updateEntityOnList}

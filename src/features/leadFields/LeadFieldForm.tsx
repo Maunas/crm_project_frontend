@@ -148,7 +148,7 @@ export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFi
           />
 
           <Stack spacing={.5}>
-            <ButtonGroup fullWidth>
+            <ButtonGroup fullWidth={!existingLF} sx={{ alignSelf: "end" }}>
               <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel}>
                 Cancelar
               </CommonButton>
@@ -205,7 +205,7 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
         type="hidden"
         {...register("campaign_id", { value: campaignId })}
       />
-      <Grid size={12} container sx={{ minWidth: "20rem" }}>
+      <Grid size={12} spacing={.5} container sx={{ minWidth: "20rem" }}>
         <Grid size="grow" sx={{ minWidth: "20rem" }}>
           <ControlledTextInput
             control={control}

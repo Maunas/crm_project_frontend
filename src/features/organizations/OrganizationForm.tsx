@@ -63,6 +63,7 @@ const OrganizationForm = ({ existingOrg, submit, onCancel }: OrganizationProps) 
                 </Typography>
                 <Stack spacing={2} sx={{ alignItems: "start" }}>
                     <Grid container spacing={1} sx={{
+                        width: "100%",
                         justifyContent: "center",
                         alignItems: "center",
                     }}>

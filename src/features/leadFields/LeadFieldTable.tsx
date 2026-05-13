@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react"
+import { memo, useEffect, useMemo } from "react"
 import { SimulateLeadFormModal } from "../lead/leadForm/LeadFormWraper"
 import { EnabledIcon } from "shared/ui/lists/Icons"
 import { SelectableTableRow } from "shared/ui/lists/CustomTableRow"
@@ -24,7 +24,7 @@ const stopPropagationEvent = (e: React.SyntheticEvent, callback: () => void) => 
     return callback()
 }
 
-export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateEntity, handleSidebar }: LeadFieldTableProps) => {
+export const LeadFieldTable = memo(({ campaign, leadFields, updateLeadFields, updateEntity, handleSidebar }: LeadFieldTableProps) => {
 
     useEffect(() => {
         updateLeadFields()
@@ -91,25 +91,7 @@ export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateE
                             {sortedFields
                                 .map((row) => (
                                     <SelectableTableRow key={row.id} onClick={() => handleSidebar("DETAILS_FIELD", row)}>
-                                        <TableCell component="th">{row.order}</TableCell>
-                                        <TableCell component="th">
-                                            <Stack spacing={1} direction="row">
-                                                <EnabledIcon active={row.active} size="small" />
-                                                <Box sx={{ fontWeight: "bold" }}>{row.name} </Box>
-                                            </Stack>
-                                        </TableCell>
-                                        <TableCell align="right">{row.field_type.description}</TableCell>
-                                        <TableCell align="right">{row.field_subtype?.description ?? "---"}</TableCell>
-
-                                        <TableCell align="right">
-                                            <EnabledIcon active={row.required} trueTooltip='Obligatorio' falseTooltip='Opcional' size="small" />
-                                        </TableCell>
-                                        <TableCell align="right">
-                                            <EnabledIcon active={row.is_primary} trueTooltip='Único' falseTooltip='Repetible' size="small" />
-                                        </TableCell>
-                                        <TableCell align="right">
-                                            <EnabledIcon active={row.is_visible} trueTooltip='Visible' falseTooltip='Oculto' size="small" />
-                                        </TableCell>
+                                        <LeadFieldTableCells row={row} />
                                         <TableCell align="right">
                                             <Stack direction="row" sx={{ justifyContent: "end" }} className="table-actions">
                                                 <CommonIconButton actionType="DETAILS" title="Detalle" tooltipSize="small" size="small"
@@ -137,4 +119,31 @@ export const LeadFieldTable = ({ campaign, leadFields, updateLeadFields, updateE
             }
         </Stack>
     )
-}
+})
+
+import React from 'react'
+
+export const LeadFieldTableCells = memo(({ row }: { row: LeadFieldDetailed }) => {
+    return (
+        <>
+            <TableCell component="th">{row.order}</TableCell>
+            <TableCell component="th">
+                <Stack spacing={1} direction="row">
+                    <EnabledIcon active={row.active} size="small" />
+                    <Box sx={{ fontWeight: "bold" }}>{row.name} </Box>
+                </Stack>
+            </TableCell>
+            <TableCell align="right">{row.field_type.description}</TableCell>
+            <TableCell align="right">{row.field_subtype?.description ?? "---"}</TableCell>
+            <TableCell align="right">
+                <EnabledIcon active={row.required} trueTooltip='Obligatorio' falseTooltip='Opcional' size="small" />
+            </TableCell>
+            <TableCell align="right">
+                <EnabledIcon active={row.is_primary} trueTooltip='Único' falseTooltip='Repetible' size="small" />
+            </TableCell>
+            <TableCell align="right">
+                <EnabledIcon active={row.is_visible} trueTooltip='Visible' falseTooltip='Oculto' size="small" />
+            </TableCell>
+        </>
+    )
+})

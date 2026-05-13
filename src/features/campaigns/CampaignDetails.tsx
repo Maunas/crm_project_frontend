@@ -104,7 +104,7 @@ export const CampaignDetails = () => {
     }, [nav, updateEntity])
 
     return (
-        <ContainerWithSidebar isSidebarOpen={Boolean(sidebarMode)} containerSize="xl"
+        <ContainerWithSidebar isSidebarOpen={Boolean(sidebarMode)} closeSidebar={closeSidebar} containerSize="xl" sidebarWidth='45rem'
             sidebarComponent={campaign &&
                 <CampaignDetailSidebar mode={sidebarMode} entity={selectedEntity} campaign={campaign}
                     handleSidebar={handleSidebar} closeSidebar={closeSidebar} updateEntity={updateEntity} />}
