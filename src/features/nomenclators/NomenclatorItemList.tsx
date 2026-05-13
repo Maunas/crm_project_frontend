@@ -1,17 +1,17 @@
 import { memo, useCallback, useContext, useEffect, useState } from 'react'
-import { NomenclatorItemDetails } from './NomenclatorItemDetails'
 import { NomenclatorItemFormSidebar } from './NomenclatorItemForm'
-import { CustomListItem } from 'shared/ui/lists/CustomListItem'
-import PaginationComponent from 'shared/ui/lists/PaginationComponent'
+import { NomenclatorItemDetails } from './NomenclatorItemDetails'
 import ContainerWithSidebar from 'shared/layout/container/GenericContainer'
+import { CommonIconButton } from 'shared/ui/buttons/CommonIconButton'
+import PaginationComponent from 'shared/ui/lists/PaginationComponent'
+import { CustomListItem } from 'shared/ui/lists/CustomListItem'
 import CommonButton from 'shared/ui/buttons/CommonButton'
 import { EnabledIcon } from 'shared/ui/lists/Icons'
-import { CommonIconButton } from 'shared/ui/buttons/CommonIconButton'
 import { disableNomenclatorItem, enableNomenclatorItem, getNomenclator, getNomenclatorItem, getNomenclatorItems } from './nomenclatorService'
-import { useSidebar } from 'src/hooks/useSidebar'
 import { useListPagination } from 'src/hooks/useListPagination'
-import type { Paginable } from 'src/types/shared'
+import { useSidebar } from 'src/hooks/useSidebar'
 import type { NomenclatorDetailed, NomenclatorItemDetailed } from 'src/types/nomenclators'
+import type { Paginable } from 'src/types/shared'
 import { UserContext } from 'src/stores/contexts'
 import type { UserContextItems } from 'src/stores/UserProvider'
 import { Link as RouterLink, useParams, useSearchParams } from 'react-router-dom'
@@ -95,7 +95,7 @@ export const NomenclatorItemList = () => {
     }, [closeSidebar, handleSidebar, selectedEntity, updateEntityOnList])
 
     return (
-        <ContainerWithSidebar isSidebarOpen={Boolean(sidebarMode)} sidebarComponent={
+        <ContainerWithSidebar isSidebarOpen={Boolean(sidebarMode)} closeSidebar={closeSidebar} sidebarComponent={
             <NomenclatorItemSidebar mode={sidebarMode} entity={selectedEntity} handleSidebar={handleSidebar}
                 closeSidebar={closeSidebar} updateEntityOnList={updateEntityOnList} nomenclator={nomenclator}
                 handleActive={handleActive} />
@@ -113,7 +113,9 @@ export const NomenclatorItemList = () => {
                         <Typography variant="h1">Opciones de {nomenclator?.name}</Typography>
                         <ButtonGroup variant="outlined" sx={{ marginLeft: "auto" }} >
                             {nomenclatorItems && nomenclatorItems.items?.length > 0 &&
-                                <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_NOM", null) }} />
+                                <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_NOM", null) }} onlyTooltip>
+                                    Agregar
+                                </CommonButton>
                             }
                         </ButtonGroup>
                     </Stack>

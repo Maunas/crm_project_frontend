@@ -245,7 +245,9 @@ export const LeadListPage = () => {
                 <Typography variant="h1">Lista de Leads</Typography>
                 {areThereLeads &&
                     <CommonButton actionType='CREATE' variant="contained" color="primary"
-                        component={RouterLink} to={`/leads/new?workspace=${workspaceId}&campaign=${campaignId}`} />
+                        component={RouterLink} to={`/leads/new?workspace=${workspaceId}&campaign=${campaignId}`} onlyTooltip>
+                        Agregar
+                    </CommonButton>
                 }
             </Stack>
             <Stack spacing={2}>
@@ -263,7 +265,7 @@ export const LeadListPage = () => {
                 }
                 <PaginationComponent {...pageComponentProps} />
             </Stack >
-            <GenericModal idModal="columns_selector" modalProps={modalProps} buttonText="Modificar Columnas" maxWidth="md" showButton={false}>
+            <GenericModal idModal="columns_selector" modalProps={modalProps} buttonText="Modificar Columnas" maxWidth="md" fullWidth showButton={false}>
                 <LeadColumnSelector originalList={leadFields} selectedFieldIds={selectedFieldIds!} handleSelectedFieldIds={handleSelectedFieldIds} handleClose={modalProps.handleClose} showField="name" />
             </GenericModal>
         </Stack>

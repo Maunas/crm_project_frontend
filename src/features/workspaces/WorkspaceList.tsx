@@ -1,18 +1,18 @@
 import { useContext, useEffect, useState } from 'react'
 import { WorkspaceFormSidebar } from './WorkspaceForms';
 import { WorkspaceDetails } from './WorkspaceDetails'
-import { CreateCampaignFormSidebar } from '../campaigns/CampaignForms';
-import { EnabledIcon } from 'shared/ui/lists/Icons';
+import { CreateCampaignFormSidebar } from 'features/campaigns/CampaignForms';
+import ContainerWithSidebar from 'shared/layout/container/GenericContainer';
+import { CommonIconButton } from 'shared/ui/buttons/CommonIconButton';
 import PaginationComponent from 'shared/ui/lists/PaginationComponent'
 import { CustomListItem } from 'shared/ui/lists/CustomListItem';
-import ContainerWithSidebar from 'shared/layout/container/GenericContainer';
 import CommonButton from 'shared/ui/buttons/CommonButton';
-import { CommonIconButton } from 'shared/ui/buttons/CommonIconButton';
+import { EnabledIcon } from 'shared/ui/lists/Icons';
 import { useSidebar } from 'src/hooks/useSidebar';
 import { useListPagination } from 'src/hooks/useListPagination';
 import { disableWorkspace, enableWorkspace, getWorkspace, getWorkspaces } from './workspaceServices'
-import type { Paginable } from 'src/types/shared'
 import type { CampaignDetailed, WorkspaceDetailed } from 'src/types/campaigns'
+import type { Paginable } from 'src/types/shared'
 import { UserContext } from 'src/stores/contexts';
 import type { UserContextItems } from 'src/stores/UserProvider';
 import { useSearchParams } from 'react-router-dom';
@@ -89,7 +89,7 @@ export const WorkspaceList = () => {
     }
 
     return (
-        <ContainerWithSidebar isSidebarOpen={Boolean(sidebarMode)} sidebarGridProps={{ size: "grow" }}
+        <ContainerWithSidebar isSidebarOpen={Boolean(sidebarMode)} closeSidebar={closeSidebar} sidebarWidth='45rem'
             sidebarComponent={
                 <WorkspaceSidebar mode={sidebarMode} entity={selectedEntity} handleSidebar={handleSidebar}
                     closeSidebar={closeSidebar} updateEntityOnList={updateEntityOnList}
@@ -99,7 +99,9 @@ export const WorkspaceList = () => {
                 <Stack spacing={2} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
                     <Typography variant="h1">Lista de Espacios de Trabajo</Typography>
                     {workspaces && workspaces?.items.length > 0 &&
-                        <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_WSP", null)} sx={{ marginLeft: "auto" }} />
+                        <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_WSP", null)} sx={{ marginLeft: "auto" }} onlyTooltip>
+                            Agregar
+                        </CommonButton>
                     }
                 </Stack>
                 <Stack spacing={2}>

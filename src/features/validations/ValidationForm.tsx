@@ -233,7 +233,7 @@ export const ValidationInstance = ({ idx, templates, register, control, setValue
             <input {...register(`validation_rules.${idx}.field_id`)} readOnly hidden />
             <input {...register(`validation_rules.${idx}.required_params`)} readOnly hidden />
 
-            <Grid container spacing={1} sx={{ justifyContent: "center" }}>
+            <Grid container spacing={1} sx={{ justifyContent: "center", alignItems: "start" }}>
                 <Grid container spacing={1} sx={{ minWidth: "20rem", alignItems: "center" }} size={12} >
                     <Grid size="grow" sx={{ minWidth: "12rem" }}>
                         <RegisteredTextInput

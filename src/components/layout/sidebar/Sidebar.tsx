@@ -102,9 +102,15 @@ export default function LayoutSidebar({ children }: SidebarProps) {
                     <Divider />
                     <Navbar open={open} />
                 </Drawer>
-                <Box component="main" sx={{ flexGrow: 1, overflowY: "auto", overflowX: "hidden", p: 3 }}>
-                    {children}
-                </Box>
+                <Stack direction="row" sx={{ flexGrow: 1, overflow: 'hidden' }}>
+                    <Box
+                        component="main"
+                        id="main-window"
+                        sx={{ flexGrow: 1, overflowY: 'auto', overflowX: 'hidden', p: 3 }}
+                    >
+                        {children}
+                    </Box>
+                </Stack>
             </Stack>
         </Stack>
     );

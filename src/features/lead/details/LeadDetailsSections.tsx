@@ -150,7 +150,7 @@ export const LeadFieldByType = (props: LeadFieldProps) => {
     return (
         <CustomListItem disablePadding secondaryAction={onToggleEdit &&
             <IconButton size="small" edge="end" color="primary" title="Modificar" onClick={onToggleEdit}
-                disabled={typeCode === "CALCULATED"} >
+                disabled={typeCode === "CALCULATED" || !fieldValue?.field.is_visible} >
                 <EditIcon fontSize="small" />
             </IconButton>} >
             <LeadFieldTypeIcon typeCode={valueCode} subtypeCode={subtypeCode} />

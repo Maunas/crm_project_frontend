@@ -76,7 +76,7 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
         if (existingValues) {
             replace(
                 existingValues
-                    .filter(value => value.field.field_type_code !== "CALCULATED")
+                    .filter(value => value.field.field_type_code !== "CALCULATED" && value.field.is_visible)
                     .map(fieldValue => {
                         let value: unknown = fieldValue.value
                         //Si no hay valor, es selector o related_leads. Trae el id, o arreglo de ids
@@ -97,7 +97,7 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
             //Si no hay valores, solo trae los datos de los leadFields.
         } else {
             replace(
-                leadFields?.filter(field => field.field_type_code !== "CALCULATED")
+                leadFields?.filter(field => field.field_type_code !== "CALCULATED" && field.is_visible)
                     .map(field => ({
                         field_id: field.id,
                         fieldData: field
@@ -137,7 +137,7 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
                 </Grid>
                 {errors.root &&
                     <FormErrorMessage>{errors.root.message}</FormErrorMessage>}
-                <ButtonGroup sx={{ marginLeft: "auto" }}>
+                <ButtonGroup sx={{ alignSelf: "end" }}>
                     {onCancel && <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel} >Cancelar</CommonButton>}
                     {campaignId &&
                         <CommonButton actionType={existingValues ? "MODIFY" : "CREATE"}

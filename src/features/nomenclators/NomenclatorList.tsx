@@ -1,19 +1,19 @@
 import { memo, useCallback, useContext, useEffect, useState } from 'react'
 import { NomenclatorFormSidebar } from './NomenclatorForm'
 import { NomenclatorDetails } from './NomenclatorDetails'
-import { CustomListItem } from 'shared/ui/lists/CustomListItem'
-import PaginationComponent from 'shared/ui/lists/PaginationComponent'
 import ContainerWithSidebar from 'shared/layout/container/GenericContainer'
-import CommonButton from 'shared/ui/buttons/CommonButton'
 import { CommonIconButton } from 'shared/ui/buttons/CommonIconButton'
+import PaginationComponent from 'shared/ui/lists/PaginationComponent'
+import { CustomListItem } from 'shared/ui/lists/CustomListItem'
+import CommonButton from 'shared/ui/buttons/CommonButton'
 import { EnabledIcon } from 'shared/ui/lists/Icons'
 import { disableNomenclator, enableNomenclator, getNomenclator, getNomenclators } from './nomenclatorService'
 import { useSidebar } from 'src/hooks/useSidebar'
 import { useListPagination } from 'src/hooks/useListPagination'
-import type { Paginable } from '../../types/shared'
 import type { NomenclatorDetailed } from '../../types/nomenclators'
-import type { UserContextItems } from 'src/stores/UserProvider'
+import type { Paginable } from '../../types/shared'
 import { UserContext } from 'src/stores/contexts'
+import type { UserContextItems } from 'src/stores/UserProvider'
 import { Link as RouterLink, useSearchParams } from 'react-router-dom'
 import { List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -86,7 +86,7 @@ export const NomenclatorList = () => {
     }, [closeSidebar, handleSidebar, selectedEntity, updateEntityOnList])
 
     return (
-        <ContainerWithSidebar isSidebarOpen={Boolean(sidebarMode)} sidebarComponent={
+        <ContainerWithSidebar isSidebarOpen={Boolean(sidebarMode)} closeSidebar={closeSidebar} sidebarComponent={
             <NomenclatorSidebar mode={sidebarMode} entity={selectedEntity} handleSidebar={handleSidebar}
                 closeSidebar={closeSidebar} updateEntityOnList={updateEntityOnList}
                 handleActive={handleActive} />
@@ -96,7 +96,9 @@ export const NomenclatorList = () => {
                     <Typography variant="h1">Lista de Nomencladores</Typography>
                     {nomenclators && nomenclators.items?.length > 0 &&
                         <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_NOM", null) }}
-                            sx={{ marginLeft: "auto" }} />
+                            sx={{ marginLeft: "auto" }} onlyTooltip>
+                            Agregar
+                        </CommonButton>
                     }
                 </Stack>
                 <Stack spacing={2}>
