@@ -113,3 +113,5 @@ export interface DictionaryItem {
 }
 
 export type DateFormat = "dateTime" | "dateTimeLong" | "date" | "dateLong" | "time" | "custom"
+
+export type OptionWithAction<T> = ((T & { isAction: boolean }) | { id: string, name: string, isAction: boolean })

@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react'
-import { FormErrorMessage } from './FormFeedback'
-import { Controller, type Control, type ControllerRenderProps, type FieldValues, type Path } from 'react-hook-form'
 import { Autocomplete, Checkbox, CircularProgress, FormControl, FormControlLabel, FormGroup, FormHelperText, FormLabel, Radio, RadioGroup, TextField } from '@mui/material'
+import { useEffect, useState } from 'react'
+import { Controller, type Control, type ControllerRenderProps, type FieldValues, type Path } from 'react-hook-form'
+import { FormErrorMessage } from './FormFeedback'
+import type { ReactNode } from 'react';
 
 interface BasicMultipleInputProps<Option> {
     label?: string,
@@ -27,10 +28,11 @@ interface ControlledACProps<T extends FieldValues, Option> extends BasicControlF
     autocomplete?: string,
     helper?: string,
     placeholder?: string
+    renderOption?: (props: React.HTMLAttributes<HTMLLIElement>, option: Option) => ReactNode;
 }
 
 export const ControlledAutocomplete = <T extends FieldValues, Option>
-    ({ control, name, label, options, getOptionLabel, getOptionKey, returnField = null,
+    ({ control, name, label, options, getOptionLabel, getOptionKey, returnField = null, renderOption,
         required = false, multiple = false, disabled = false, hidden = false, disableClearable = false,
         errorMessage = null, autocomplete = "one-time-code", helper, placeholder, size = "medium", ...props }: ControlledACProps<T, Option>) => {
 
@@ -68,7 +70,7 @@ export const ControlledAutocomplete = <T extends FieldValues, Option>
         }
     }
 
-    if ((!options || options.length === 0) && !disabled) return <AutocompleteLoader label={label} />
+    if ((!options || options.length === 0) && !disabled) return <AutocompleteLoader label={label} size={size} />
 
     return (
         <Controller name={name} control={control} disabled={disabled}
@@ -77,14 +79,14 @@ export const ControlledAutocomplete = <T extends FieldValues, Option>
                     options={options ?? []} size={size}
                     onChange={(_, value) => handleChange(field, value)}
                     value={handleValue(field)}
-                    getOptionLabel={getOptionLabel} getOptionKey={getOptionKey}
+                    getOptionLabel={getOptionLabel} getOptionKey={getOptionKey} renderOption={renderOption}
                     isOptionEqualToValue={(option, value) => getOptionKey(option) === getOptionKey(value)}
                     fullWidth
                     renderInput={(params) =>
                         <>
                             <TextField {...params} label={label} required={required}
                                 error={!!errorMessage} autoComplete={autocomplete}
-                                placeholder={placeholder} fullWidth
+                                placeholder={placeholder} size={size} fullWidth
                                 {...props}
                             />
                             {helper &&

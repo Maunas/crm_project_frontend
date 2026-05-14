@@ -16,10 +16,12 @@ import { bulkDeleteLead, createView, getFilteredLeads, getLeads, updateView } fr
 import { getLeadFields } from 'src/features/leadFields/leadFieldServices'
 import { Link as RouterLink, useSearchParams } from 'react-router-dom'
 import { Typography, Stack } from '@mui/material'
+import { useLeadNavigation } from '../stores/LeadNavigationContext'
 
 const DEFAULT_N_OF_FIELDS = 6
 
 export const LeadListPage = () => {
+
 
     const [params, setParams] = useSearchParams()
     const { modalProps } = useModal()
@@ -44,6 +46,26 @@ export const LeadListPage = () => {
     }, [])
 
     const areThereLeads = useMemo(() => leads?.items ? leads.items.length > 0 : false, [leads])
+
+
+    //----------------------------setListContext----------------------------
+    const { setListContext } = useLeadNavigation();
+
+    // Efecto para sincronizar con el LeadNavigationContext
+    useEffect(() => {
+        // Verificamos leads y leads.items porque leads es un objeto Paginable
+        if (leads && leads.items && leads.items.length > 0) {
+            // Mapeamos los IDs desde la propiedad "items"
+            const ids = leads.items.map(lead => lead.id);
+
+            // Construimos los parámetros actuales incluyendo la página en la que estamos
+            const currentParams = { ...headerParams, page: leads.page, campaign_id: Number(campaignId) };
+
+            // Enviamos: (IDs, Parámetros, Filtros, Total de Páginas)
+            setListContext(ids, currentParams, filters, leads.total_pages);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [leads, headerParams, filters, setListContext]); // Usamos las dependencias reales de tu componente
 
     //-------------------Selección de Campaña--------------------------
 

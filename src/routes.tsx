@@ -54,19 +54,19 @@ export const router = createBrowserRouter([
                 ),
                 children: [
                     {
-                        path: "/",
+                        path: "/leads/",
                         element: <GenericContainer sx={{ minWidth: "85%" }}><LeadListPage /></GenericContainer>
                     },
                     {
-                        path: "/new",
+                        path: "/leads/new",
                         element: <GenericContainer sx={{ minWidth: "85%" }}><CreateLeadFormPage /></GenericContainer>
                     },
                     {
-                        path: "/modify/:id",
+                        path: "/leads/modify/:id",
                         element: <GenericContainer sx={{ minWidth: "85%" }}><UpdateLeadFormPage /></GenericContainer>
                     },
                     {
-                        path: "/:id",
+                        path: "/leads/:id",
                         Component: LeadDetailsLayout
                     },
                 ]
