@@ -1,16 +1,21 @@
 import React, { memo } from 'react'
 import MaterialUISwitch from './ThemeSlider';
-import { UserContext } from 'src/stores/contexts';
-import { Link } from 'react-router-dom';
-import type { UserContextItems } from 'src/stores/UserProvider';
+import { useUserContext } from 'src/stores/UserContext';
+import { Link, useNavigate } from 'react-router-dom';
 import { Avatar, Box, Button, Divider, FormControlLabel, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Stack, Typography } from '@mui/material'
 import { useColorScheme, useTheme } from '@mui/material/styles';
 import { AccountCircle, Check } from '@mui/icons-material';
 import MoreIcon from '@mui/icons-material/More';
 
 const HeaderMenu = memo(() => {
+    const nav = useNavigate()
 
-    const { user, logout, activeOrganizations, activeOrg, setActiveOrg } = React.useContext<UserContextItems>(UserContext)
+    const { user, logout, activeOrganizations, activeOrg, setActiveOrg } = useUserContext()
+
+    const handleLogout = () => {
+        logout()
+        nav("/login")
+    }
 
     const { setMode } = useColorScheme();
     const { palette } = useTheme();
@@ -83,7 +88,7 @@ const HeaderMenu = memo(() => {
                     label={palette.mode === "dark" ? "Modo Oscuro" : "Modo Claro"}
                 />
             </MenuItem>
-            <MenuItem dense onClick={() => logout()} sx={{ "&:hover": { color: palette.error.main } }}>
+            <MenuItem dense onClick={() => handleLogout()} sx={{ "&:hover": { color: palette.error.main } }}>
                 <ListItemText>
                     Cerrar Sesión
                 </ListItemText>

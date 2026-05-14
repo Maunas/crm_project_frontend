@@ -1,5 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import type { ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import { getFilteredLeads, getLeads } from 'features/lead/leadService';
 import type { LeadFilter, LeadListParams } from 'src/types/shared';
 
@@ -29,25 +28,29 @@ const LeadNavigationContext = createContext<LeadNavigationContextProps | undefin
 
 const STORAGE_KEY = 'crm_lead_navigation_state';
 
+const DEFAULT_STATE = {
+  leadIds: [],
+  filters: [],
+  baseParams: {},
+  minPageLoaded: 1,
+  maxPageLoaded: 1,
+  totalPages: 1,
+}
+
 export const LeadNavigationProvider = ({ children }: { children: ReactNode }) => {
+
+  // Recupera el estado de sessionStorage
   const [navState, setNavState] = useState<NavState>(() => {
-    // Recuperar el estado del sessionStorage al recargar la página (F5)
     const stored = sessionStorage.getItem(STORAGE_KEY);
     if (stored) {
       try {
         return JSON.parse(stored);
       } catch (e) {
         console.error("Error parsing stored lead navigation state", e);
+        return DEFAULT_STATE
       }
     }
-    return {
-      leadIds: [],
-      filters: [],
-      baseParams: null,
-      minPageLoaded: 1,
-      maxPageLoaded: 1,
-      totalPages: 1,
-    };
+    return DEFAULT_STATE;
   });
 
   const [isLoadingNavigation, setIsLoadingNavigation] = useState(false);
@@ -59,7 +62,7 @@ export const LeadNavigationProvider = ({ children }: { children: ReactNode }) =>
     }
   }, [navState]);
 
-  // Sincronizar desde la tabla (LeadList)
+  // Sincronizar desde la tabla (LeadListPage)
   const setListContext = useCallback((
     ids: number[],
     params: LeadListParams,
@@ -86,7 +89,7 @@ export const LeadNavigationProvider = ({ children }: { children: ReactNode }) =>
         ? await getFilteredLeads({ filters: navState.filters }, newParams)
         : await getLeads(newParams);
 
-      const fetchedIds = response.items.map((lead: any) => lead.id);
+      const fetchedIds = response.items.map((lead) => lead.id);
 
       setNavState(prev => ({
         ...prev,

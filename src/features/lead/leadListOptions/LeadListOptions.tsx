@@ -1,16 +1,15 @@
-import { memo, useCallback, useContext, useEffect, useState } from "react"
-import { LeadFilters } from "./LeadFilters";
+import { memo, useCallback, useEffect, useState } from "react"
 import { LeadViewMenu } from "./LeadViewMenu";
-import CommonButton from 'shared/ui/buttons/CommonButton';
+import { LeadFilters } from "./LeadFilters";
 import GenericModal from "shared/layout/container/GenericModal";
 import { ChipTooltip } from "shared/ui/details/ChipTooltip";
-import type { LeadFilter, LeadListParams } from "src/types/shared";
+import CommonButton from 'shared/ui/buttons/CommonButton';
 import type { Lead, LeadView, LeadViewParams } from "src/types/leads";
+import type { LeadFilter, LeadListParams } from "src/types/shared";
 import type { Campaign, Workspace } from "src/types/campaigns"
 import { getWorkspaces } from "src/features/workspaces/workspaceServices";
 import { getCampaigns } from "src/features/campaigns/campaignServices";
-import { UserContext } from "src/stores/contexts";
-import type { UserContextItems } from 'src/stores/UserProvider';
+import { useUserContext } from 'src/stores/UserContext';
 import { Autocomplete, Badge, Divider, Grid, Stack, TextField, ToggleButton, ToggleButtonGroup, type AutocompleteRenderInputParams, ButtonGroup } from "@mui/material"
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
@@ -26,7 +25,7 @@ interface LeadCampaignSelectorsProps {
 
 export const LeadCampaignSelector = memo(({ workspaceId, handleWorkspaceChange, campaignId, handleCampaignChange }: LeadCampaignSelectorsProps) => {
 
-    const { activeOrg } = useContext<UserContextItems>(UserContext)
+    const { activeOrg } = useUserContext()
 
     const [workspaces, setWorkspaces] = useState<Workspace[]>([])
     const [campaigns, setCampaigns] = useState<Campaign[]>([])

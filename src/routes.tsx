@@ -8,7 +8,6 @@ import { OrganizationList } from "features/organizations/OrganizationList";
 import { NomenclatorList } from "features/nomenclators/NomenclatorList";
 import { NomenclatorItemList } from "features/nomenclators/NomenclatorItemList";
 import { LoginFormPage } from "./features/auth/LoginForm";
-import { UserProvider } from "src/stores/UserProvider";
 import { SignupFormPage } from "features/auth/SignupForm";
 import { SearchResultsList } from "features/search/SearchResults";
 import { GenericContainer } from "shared/layout/container/GenericContainer";
@@ -21,17 +20,13 @@ export const router = createBrowserRouter([
     {
         path: "/login",
         element: (
-            <UserProvider>
-                <LoginFormPage />
-            </UserProvider>
+            <LoginFormPage />
         ),
     },
     {
         path: "/signup",
         element: (
-            <UserProvider>
-                <SignupFormPage />
-            </UserProvider>
+            <SignupFormPage />
         ),
     },
     {

@@ -1,4 +1,4 @@
-import { useCallback, useContext } from 'react'
+import { useCallback } from 'react'
 import { OrganizationFormSidebar } from './OrganizationForm'
 import OrganizationDetails from './OrganizationDetail'
 import ContainerWithSidebar from 'shared/layout/container/GenericContainer'
@@ -9,8 +9,7 @@ import { EnabledIcon } from 'shared/ui/lists/Icons'
 import { useSidebar } from 'src/hooks/useSidebar'
 import type { OrganizationDetailed } from 'src/types/campaigns'
 import { disableOrganization, enableOrganization, getOrganization } from './organizationServices'
-import { UserContext } from 'src/stores/contexts'
-import type { UserContextItems } from 'src/stores/UserProvider'
+import { useUserContext } from 'src/stores/UserContext'
 import { useSearchParams } from 'react-router-dom'
 import { List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
 
@@ -18,7 +17,7 @@ export const OrganizationList = () => {
 
     const [params, setParams] = useSearchParams()
 
-    const { userOrganizations, activeOrg, setActiveOrg, fetchOrganizations, setOrganizations } = useContext<UserContextItems>(UserContext)
+    const { userOrganizations, activeOrg, setActiveOrg, fetchOrganizations, setOrganizations } = useUserContext()
 
     const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<OrganizationDetailed>("id", params, setParams, getOrganization, "DETAILS_ORG")
 

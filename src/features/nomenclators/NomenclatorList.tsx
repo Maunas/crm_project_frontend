@@ -1,4 +1,4 @@
-import { memo, useCallback, useContext, useEffect, useState } from 'react'
+import { memo, useCallback, useEffect, useState } from 'react'
 import { NomenclatorFormSidebar } from './NomenclatorForm'
 import { NomenclatorDetails } from './NomenclatorDetails'
 import ContainerWithSidebar from 'shared/layout/container/GenericContainer'
@@ -10,17 +10,16 @@ import { EnabledIcon } from 'shared/ui/lists/Icons'
 import { disableNomenclator, enableNomenclator, getNomenclator, getNomenclators } from './nomenclatorService'
 import { useSidebar } from 'src/hooks/useSidebar'
 import { useListPagination } from 'src/hooks/useListPagination'
-import type { NomenclatorDetailed } from '../../types/nomenclators'
-import type { Paginable } from '../../types/shared'
-import { UserContext } from 'src/stores/contexts'
-import type { UserContextItems } from 'src/stores/UserProvider'
+import type { NomenclatorDetailed } from 'src/types/nomenclators'
+import type { Paginable } from 'src/types/shared'
+import { useUserContext } from 'src/stores/UserContext'
 import { Link as RouterLink, useSearchParams } from 'react-router-dom'
 import { List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 export const NomenclatorList = () => {
 
-    const { activeOrg } = useContext<UserContextItems>(UserContext)
+    const { activeOrg } = useUserContext()
 
     const [nomenclators, setNomenclators] = useState<Paginable<NomenclatorDetailed> | null>(null)
 
