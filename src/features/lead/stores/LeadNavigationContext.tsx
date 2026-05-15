@@ -112,22 +112,6 @@ export const LeadNavigationProvider = ({ children }: { children: ReactNode }) =>
     }
   };
 
-  const isFirstItem = useCallback((currentId: number) => {
-    const currentIdx = navState.leadIds.indexOf(currentId);
-    if (navState.minPageLoaded > 1) return false
-    return currentIdx === 0
-  }, [navState.minPageLoaded, navState.leadIds])
-
-  const isLastItem = useCallback((currentId: number) => {
-    const currentIdx = navState.leadIds.indexOf(currentId);
-    if (navState.maxPageLoaded < navState.totalPages) return false
-    return currentIdx === navState.leadIds.length - 1
-  }, [navState.leadIds, navState.maxPageLoaded, navState.totalPages])
-
-  const isNavigationValid = useCallback((currentId: number) => {
-    const currentIdx = navState.leadIds.indexOf(currentId);
-    return (currentIdx !== -1 && navState.leadIds.length > 0);
-  }, [navState.leadIds])
 
   const getNextLeadId = async (currentId: number): Promise<number | null> => {
     const currentIndex = navState.leadIds.indexOf(currentId);
@@ -137,7 +121,6 @@ export const LeadNavigationProvider = ({ children }: { children: ReactNode }) =>
     if (currentIndex < navState.leadIds.length - 1) {
       return navState.leadIds[currentIndex + 1];
     }
-
     // Si estamos al final del arreglo, verificamos si hay más páginas en el backend
     if (navState.maxPageLoaded < navState.totalPages) {
       const newIds = await fetchAdjacentPage(navState.maxPageLoaded + 1, 'next');
@@ -165,16 +148,31 @@ export const LeadNavigationProvider = ({ children }: { children: ReactNode }) =>
     return null; // Estamos en el primer lead de la página 1
   };
 
+
+  // Funcionalidades para el front end
+  const isFirstItem = useCallback((currentId: number) => {
+    const currentIdx = navState.leadIds.indexOf(currentId);
+    if (currentIdx === -1 || navState.minPageLoaded > 1) return false
+    return currentIdx === 0
+  }, [navState.minPageLoaded, navState.leadIds])
+
+  const isLastItem = useCallback((currentId: number) => {
+    const currentIdx = navState.leadIds.indexOf(currentId);
+    if (currentIdx === -1 || navState.maxPageLoaded < navState.totalPages) return false
+    return currentIdx === navState.leadIds.length - 1
+  }, [navState.leadIds, navState.maxPageLoaded, navState.totalPages])
+
+  const isNavigationValid = useCallback((currentId: number) => {
+    const currentIdx = navState.leadIds.indexOf(currentId);
+    return currentIdx !== -1;
+  }, [navState.leadIds])
+
   return (
     <LeadNavigationContext.Provider value={{
       leadIds: navState.leadIds,
       isLoadingNavigation,
-      setListContext,
-      getNextLeadId,
-      getPrevLeadId,
-      isFirstItem,
-      isLastItem,
-      isNavigationValid
+      setListContext, getNextLeadId, getPrevLeadId,
+      isFirstItem, isLastItem, isNavigationValid
     }}>
       {children}
     </LeadNavigationContext.Provider>

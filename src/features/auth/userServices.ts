@@ -8,7 +8,7 @@ export const getUsers = async ():
     return org.data
 }
 export const loginUser = async (data: UserLogin): Promise<UserData> => {
-    console.log(data)
+    console.info(data)
     const users = await getUsers()
     return users.items[0]
     //if (data.password !== "PASSWORD") throw new Error("Contraseña incorrecta.")
