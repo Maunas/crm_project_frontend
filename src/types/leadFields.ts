@@ -3,6 +3,15 @@ import type { Metadata } from "./shared";
 import type { Lead } from "./leads";
 import type { Nomenclator, NomenclatorItem } from "./nomenclators";
 
+export interface ExcelFormulaTemplate {
+    name_spanish: string;
+    name_english: string;
+    description: string;
+    example: string;
+    category: string;
+    note: string;
+}
+
 export interface LeadFieldValue {
   id: number;
   field_id: number;

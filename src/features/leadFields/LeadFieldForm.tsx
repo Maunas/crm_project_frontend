@@ -11,8 +11,18 @@ import { getFieldDataByType } from "./leadFieldUtils";
 import type { InputMaskTemplate, LeadFieldDetailed, LeadFieldPost, LeadFieldSection, LeadFieldTemplate, LeadFieldTypeDetailed } from "src/types/leadFields";
 import type { Campaign, CampaignDetailed } from "src/types/campaigns";
 import type { Nomenclator } from "src/types/nomenclators";
-import { useForm, useWatch, type Control, type FieldErrors, type UseFormRegister } from "react-hook-form";
-import { Grid, FormGroup, Typography, ButtonGroup, Stack } from "@mui/material";
+import { Controller, useForm, useWatch, type Control, type FieldErrors, type UseFormGetValues, type UseFormRegister, type UseFormSetValue } from "react-hook-form";
+import { Grid, FormGroup, Typography, ButtonGroup, Stack, TextField, InputAdornment, IconButton } from "@mui/material";
+import { getExcelFormulaTemplates } from "./leadFieldServices";
+import type { ExcelFormulaTemplate } from "src/types/leadFields";
+import { FormulaHelperModal } from "src/components/ui/modals/FormulaHelperModal";
+import FunctionsIcon from '@mui/icons-material/Functions';
+import { 
+  FormControl, 
+  InputLabel, 
+  OutlinedInput, 
+  FormHelperText,  
+} from "@mui/material";
 
 
 interface LeadFieldSidebarProps {
@@ -64,7 +74,7 @@ export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFi
   const [fieldTypes, setFieldTypes] = useState<LeadFieldTypeDetailed[]>([]);
   const [nomenclators, setNomenclators] = useState<Nomenclator[]>([]);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-
+  const [excelFormulas, setExcelFormulas] = useState<ExcelFormulaTemplate[]>([]);
 
   useEffect(() => {
     getFieldTemplates().then(setFieldTemplates);
@@ -72,7 +82,10 @@ export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFi
     getFieldSections({ only_active: true, page_size: 0 }).then(res => setFieldSections(res.items));
     getFieldTypes({ detailed: true, page_size: 0 }).then(res => setFieldTypes(res.items));
     getCampaigns({ only_active: true, page_size: 0 }).then(res => setCampaigns(res.items));
+    getExcelFormulaTemplates().then(setExcelFormulas).catch(console.error);
   }, []);
+
+  
 
   useEffect(() => {
     if (!campaign.id) return;
@@ -103,7 +116,7 @@ export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFi
     , [existingLF, campaign])
 
 
-  const { register, control, handleSubmit, reset, formState: { errors }, setError } = useForm<LeadFieldPostCreation>({ defaultValues });
+  const { register, control, handleSubmit, reset, formState: { errors }, setError, setValue, getValues } = useForm<LeadFieldPostCreation>({ defaultValues });
 
   //Activa cuando cambian el LeadField seleccionado o la campaña.
   useEffect(() => { reset(defaultValues) }, [reset, defaultValues])
@@ -145,6 +158,9 @@ export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFi
             nomenclators={nomenclators} campaigns={campaigns} types={fieldTypes}
             errors={errors} register={register} control={control} maskTemplates={maskTemplates}
             campaignId={campaign.id} existingLFId={existingLF?.id}
+            formulas={excelFormulas}
+            setValue={setValue}
+            getValues={getValues}
           />
 
           <Stack spacing={.5}>
@@ -179,12 +195,16 @@ interface LeadFieldFormFieldsProps {
   control: Control<LeadFieldPostCreation>;
   campaignId: number;
   errors: FieldErrors<LeadFieldPostCreation>;
-  existingLFId?: number
+  existingLFId?: number;
+  formulas: ExcelFormulaTemplate[];
+  setValue: UseFormSetValue<LeadFieldPostCreation>;
+  getValues: UseFormGetValues<LeadFieldPostCreation>;
 }
 
 const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenclators, campaigns,
-  register, control, campaignId, existingLFId, errors }: LeadFieldFormFieldsProps) => {
+  register, control, campaignId, existingLFId, errors, formulas, setValue, getValues }: LeadFieldFormFieldsProps) => {
 
+  const [openFormulaModal, setOpenFormulaModal] = useState(false);
   const creationMethod = useWatch({ name: "creation_method", control });
   const inputMaskMethod = useWatch({ name: "input_mask_method", control });
   const creationMethodRadioOptions = [
@@ -338,13 +358,60 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
                 )}
               </>}
             {fieldTypeCode === "CALCULATED" && (
-              <Grid size="grow" sx={{ minWidth: "20rem", justifyContent: "center" }} >
-                <ControlledTextInput
+              <Grid size="grow" sx={{ minWidth: "20rem", justifyContent: "center" }}>
+                <Controller
                   name="calculation_expression"
-                  label="Fórmula"
                   control={control}
-                  errorMessage={errors?.calculation_expression?.message}
-                  required
+                  rules={{ required: "La fórmula es obligatoria" }}
+                  render={({ field: { ref, value, ...fieldParams }, fieldState }) => (
+                    <FormControl fullWidth error={!!fieldState.error} required variant="outlined">
+                      <InputLabel 
+                        htmlFor="formula-input"
+                        shrink={value ? true : undefined} // <--- Sube el título si hay valor
+                      >
+                        Fórmula
+                      </InputLabel>
+                      <OutlinedInput
+                        {...fieldParams}
+                        value={value || ""} // <--- Evita warnings de null a string en React
+                        inputRef={ref}
+                        id="formula-input"
+                        label="Fórmula"
+                        notched={value ? true : undefined} // <--- Corta la línea del borde si hay valor
+                        endAdornment={
+                          <InputAdornment position="end">
+                            <IconButton 
+                              onClick={() => setOpenFormulaModal(true)} 
+                              edge="end"
+                              color="primary"
+                              title="Asistente de Fórmulas"
+                            >
+                              <FunctionsIcon />
+                            </IconButton>
+                          </InputAdornment>
+                        }
+                      />
+                      {fieldState.error && (
+                        <FormHelperText>{fieldState.error.message}</FormHelperText>
+                      )}
+                    </FormControl>
+                  )}
+                />
+
+                {/* El Modal del Asistente */}
+                <FormulaHelperModal
+                  open={openFormulaModal}
+                  onClose={() => setOpenFormulaModal(false)}
+                  formulas={formulas}
+                  onInsert={(formulaName) => {
+                    const currentVal = getValues("calculation_expression") || "";
+                    // Insertamos la formula y dejamos los paréntesis listos
+                    setValue("calculation_expression", `${currentVal}${formulaName}()`, { 
+                        shouldValidate: true, 
+                        shouldDirty: true 
+                    });
+                    setOpenFormulaModal(false);
+                  }}
                 />
               </Grid>
             )}
