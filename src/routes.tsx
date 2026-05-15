@@ -14,6 +14,7 @@ import { SignupFormPage } from "./features/auth/SignupForm";
 import { SearchResultsList } from "./features/search/SearchResults";
 import { GenericContainer } from "./components/layout/container/GenericContainer";
 import MainLayout from "./app/mainLayout";
+import { FormTestPage } from "./pages/FormTestPage";
 
 export const router = createBrowserRouter([
     {
@@ -39,6 +40,10 @@ export const router = createBrowserRouter([
             {
                 path: "/",
                 element: <div>Home Test</div>
+            },
+            {
+                path: "/form-test",
+                element: <GenericContainer sx={{ minWidth: "85%" }}><FormTestPage /></GenericContainer>
             },
             {
                 path: "/leads",
