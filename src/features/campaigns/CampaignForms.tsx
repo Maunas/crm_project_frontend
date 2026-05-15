@@ -74,6 +74,11 @@ interface CampaignProps {
 export const CampaignForm = ({ existingCmp, workspaceId, submit, onCancel }: CampaignProps) => {
 
     const [workspaces, setWorkspaces] = useState<Workspace[] | []>([])
+    const [audiences, setAudiences] = useState<string[] | []>([])
+
+    useEffect(() => {
+        setAudiences(["B2C", "B2B"])
+    }, [])
 
     useEffect(() => {
         getWorkspaces({ only_active: true, page_size: 0 })
@@ -84,6 +89,7 @@ export const CampaignForm = ({ existingCmp, workspaceId, submit, onCancel }: Cam
         name: existingCmp?.name,
         description: existingCmp?.description,
         workspace_id: existingCmp?.workspace_id ?? workspaceId ?? undefined,
+        target_audience: existingCmp?.target_audience ?? undefined,
     }), [existingCmp, workspaceId])
 
     const { register, handleSubmit, reset, control, formState: { errors }, setError }
@@ -120,6 +126,13 @@ export const CampaignForm = ({ existingCmp, workspaceId, submit, onCancel }: Cam
                             <RegisteredTextInput name="description" register={register} label="Descripción"
                                 errorMessage={errors.description?.message} multiline />
                         </Grid>
+                        {!existingCmp &&
+                            <Grid size="grow" sx={{ minWidth: "20rem" }}>
+                                <ControlledAutocomplete control={control} label="Audiencia Objetivo" name="target_audience" options={audiences}
+                                    getOptionLabel={option => option} getOptionKey={option => `${option}`}
+                                    errorMessage={errors?.target_audience?.message} />
+                            </Grid>
+                        }
                     </Grid>
                     {errors?.root &&
                         <FormErrorMessage>{errors?.root?.message}</FormErrorMessage>}
