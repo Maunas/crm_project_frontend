@@ -1,6 +1,6 @@
 import { Box, Typography, Paper, Button, Stack } from "@mui/material";
 import { useForm } from "react-hook-form";
-import { LeadField, FieldSubtypeCode } from "src/types/leadFields";
+import { type LeadField, FieldSubtypeCode } from "src/types/leadFields"; 
 import { LeadFormText, LeadFormNumber, LeadFormSelect, LeadFormDate, LeadFormFile } from "src/features/lead/shared/LeadFormFields";
 import SaveIcon from "@mui/icons-material/Save";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
