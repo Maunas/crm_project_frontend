@@ -1,205 +1,314 @@
 import { Box, Typography, Paper, Button, Stack } from "@mui/material";
 import { useForm } from "react-hook-form";
-import { type LeadField, FieldSubtypeCode } from "src/types/leadFields"; 
-import { LeadFormText, LeadFormNumber, LeadFormSelect, LeadFormDate, LeadFormFile } from "src/features/lead/shared/LeadFormFields";
+import type { LeadField, LeadFieldSection, LeadFieldType } from "src/types/leadFields";
+import { LeadFormText, LeadFormNumber, LeadFormFile } from "src/features/lead/shared/LeadFormFields";
 import SaveIcon from "@mui/icons-material/Save";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 
-// Mock lead fields for testing
+// Helper to create a mock LeadFieldSection
+const mockSection: LeadFieldSection = {
+    id: 1,
+    name: "Información General",
+    organization_id: 1,
+};
+
+// Helper to create a mock LeadFieldType
+const createFieldType = (code: string, description: string): LeadFieldType => ({
+    id: 1,
+    code,
+    description,
+});
+
+// Mock lead fields for testing - matching the actual LeadField interface
 const mockLeadFields: LeadField[] = [
     {
         id: 1,
-        field_name: "company_name",
-        field_label: "Razón Social",
-        field_type_code: "TEXT",
-        field_subtype_code: "TEXT" as FieldSubtypeCode,
-        required: true,
-        is_pii: false,
+        name: "Razón Social",
+        campaign_id: 1,
         order: 1,
+        required: true,
+        is_primary: true,
+        is_visible: true,
+        lead_field_section_id: 1,
         default_value: null,
-        options: null,
-        campaign: 1,
+        input_mask: null,
+        mask_template_code: null,
+        field_template_code: null,
+        field_type_code: "TEXT",
+        field_subtype_code: "TEXT",
+        nomenclator_id: null,
+        related_campaign_id: null,
+        calculation_expression: null,
+        title_order: 1,
+        configuration: undefined,
+        lead_field_section: mockSection,
+        organization_id: 1,
+        field_type: createFieldType("TEXT", "Texto"),
+        field_subtype: createFieldType("TEXT", "Texto simple"),
+        field_template_name: null,
     },
     {
         id: 2,
-        field_name: "cuit",
-        field_label: "CUIT / CUIL",
-        field_type_code: "TEXT",
-        field_subtype_code: "TEXT" as FieldSubtypeCode,
-        required: true,
-        is_pii: false,
+        name: "CUIT / CUIL",
+        campaign_id: 1,
         order: 2,
+        required: true,
+        is_primary: false,
+        is_visible: true,
+        lead_field_section_id: 1,
         default_value: null,
-        options: null,
-        campaign: 1,
+        input_mask: null,
+        mask_template_code: null,
+        field_template_code: null,
+        field_type_code: "TEXT",
+        field_subtype_code: "TEXT",
+        nomenclator_id: null,
+        related_campaign_id: null,
+        calculation_expression: null,
+        title_order: 2,
+        configuration: undefined,
+        lead_field_section: mockSection,
+        organization_id: 1,
+        field_type: createFieldType("TEXT", "Texto"),
+        field_subtype: createFieldType("TEXT", "Texto simple"),
+        field_template_name: null,
     },
     {
         id: 3,
-        field_name: "company_type",
-        field_label: "Tipo de Empresa",
-        field_type_code: "SELECT",
-        field_subtype_code: "SELECT" as FieldSubtypeCode,
-        required: false,
-        is_pii: false,
+        name: "Cantidad de Empleados",
+        campaign_id: 1,
         order: 3,
-        default_value: null,
-        options: [
-            { value: "startup", label: "Startup" },
-            { value: "pyme", label: "PyME" },
-            { value: "enterprise", label: "Enterprise" },
-            { value: "gobierno", label: "Gobierno" },
-        ],
-        campaign: 1,
+        required: false,
+        is_primary: false,
+        is_visible: true,
+        lead_field_section_id: 1,
+        default_value: "0",
+        input_mask: null,
+        mask_template_code: null,
+        field_template_code: null,
+        field_type_code: "NUMBER",
+        field_subtype_code: "INTEGER",
+        nomenclator_id: null,
+        related_campaign_id: null,
+        calculation_expression: null,
+        title_order: null,
+        configuration: undefined,
+        lead_field_section: mockSection,
+        organization_id: 1,
+        field_type: createFieldType("NUMBER", "Número"),
+        field_subtype: createFieldType("INTEGER", "Entero"),
+        field_template_name: null,
     },
     {
         id: 4,
-        field_name: "employees",
-        field_label: "Cantidad de Empleados",
-        field_type_code: "NUMBER",
-        field_subtype_code: "INTEGER" as FieldSubtypeCode,
-        required: false,
-        is_pii: false,
+        name: "Sitio Web",
+        campaign_id: 1,
         order: 4,
-        default_value: "0",
-        options: null,
-        campaign: 1,
+        required: false,
+        is_primary: false,
+        is_visible: true,
+        lead_field_section_id: 1,
+        default_value: null,
+        input_mask: null,
+        mask_template_code: null,
+        field_template_code: null,
+        field_type_code: "TEXT",
+        field_subtype_code: "URL",
+        nomenclator_id: null,
+        related_campaign_id: null,
+        calculation_expression: null,
+        title_order: null,
+        configuration: undefined,
+        lead_field_section: mockSection,
+        organization_id: 1,
+        field_type: createFieldType("TEXT", "Texto"),
+        field_subtype: createFieldType("URL", "URL"),
+        field_template_name: null,
     },
     {
         id: 5,
-        field_name: "website",
-        field_label: "Sitio Web",
-        field_type_code: "TEXT",
-        field_subtype_code: "URL" as FieldSubtypeCode,
-        required: false,
-        is_pii: false,
+        name: "Email",
+        campaign_id: 1,
         order: 5,
+        required: true,
+        is_primary: false,
+        is_visible: true,
+        lead_field_section_id: 1,
         default_value: null,
-        options: null,
-        campaign: 1,
+        input_mask: null,
+        mask_template_code: null,
+        field_template_code: null,
+        field_type_code: "TEXT",
+        field_subtype_code: "EMAIL",
+        nomenclator_id: null,
+        related_campaign_id: null,
+        calculation_expression: null,
+        title_order: null,
+        configuration: undefined,
+        lead_field_section: mockSection,
+        organization_id: 1,
+        field_type: createFieldType("TEXT", "Texto"),
+        field_subtype: createFieldType("EMAIL", "Email"),
+        field_template_name: null,
     },
     {
         id: 6,
-        field_name: "contact_name",
-        field_label: "Nombre del Contacto",
-        field_type_code: "TEXT",
-        field_subtype_code: "TEXT" as FieldSubtypeCode,
-        required: true,
-        is_pii: true,
+        name: "Teléfono",
+        campaign_id: 1,
         order: 6,
+        required: false,
+        is_primary: false,
+        is_visible: true,
+        lead_field_section_id: 1,
         default_value: null,
-        options: null,
-        campaign: 1,
+        input_mask: null,
+        mask_template_code: null,
+        field_template_code: null,
+        field_type_code: "TEXT",
+        field_subtype_code: "PHONE",
+        nomenclator_id: null,
+        related_campaign_id: null,
+        calculation_expression: null,
+        title_order: null,
+        configuration: undefined,
+        lead_field_section: mockSection,
+        organization_id: 1,
+        field_type: createFieldType("TEXT", "Texto"),
+        field_subtype: createFieldType("PHONE", "Teléfono"),
+        field_template_name: null,
     },
     {
         id: 7,
-        field_name: "email",
-        field_label: "Email",
-        field_type_code: "TEXT",
-        field_subtype_code: "EMAIL" as FieldSubtypeCode,
-        required: true,
-        is_pii: true,
+        name: "Próxima Reunión",
+        campaign_id: 1,
         order: 7,
+        required: false,
+        is_primary: false,
+        is_visible: true,
+        lead_field_section_id: 1,
         default_value: null,
-        options: null,
-        campaign: 1,
+        input_mask: null,
+        mask_template_code: null,
+        field_template_code: null,
+        field_type_code: "TEXT",
+        field_subtype_code: "DATE",
+        nomenclator_id: null,
+        related_campaign_id: null,
+        calculation_expression: null,
+        title_order: null,
+        configuration: undefined,
+        lead_field_section: mockSection,
+        organization_id: 1,
+        field_type: createFieldType("TEXT", "Texto"),
+        field_subtype: createFieldType("DATE", "Fecha"),
+        field_template_name: null,
     },
     {
         id: 8,
-        field_name: "phone",
-        field_label: "Teléfono",
-        field_type_code: "TEXT",
-        field_subtype_code: "PHONE" as FieldSubtypeCode,
-        required: false,
-        is_pii: true,
+        name: "Foto de Perfil",
+        campaign_id: 1,
         order: 8,
+        required: false,
+        is_primary: false,
+        is_visible: true,
+        lead_field_section_id: 1,
         default_value: null,
-        options: null,
-        campaign: 1,
+        input_mask: null,
+        mask_template_code: null,
+        field_template_code: null,
+        field_type_code: "FILE",
+        field_subtype_code: "FILE_IMAGE",
+        nomenclator_id: null,
+        related_campaign_id: null,
+        calculation_expression: null,
+        title_order: null,
+        configuration: undefined,
+        lead_field_section: mockSection,
+        organization_id: 1,
+        field_type: createFieldType("FILE", "Archivo"),
+        field_subtype: createFieldType("FILE_IMAGE", "Imagen"),
+        field_template_name: null,
     },
     {
         id: 9,
-        field_name: "next_meeting",
-        field_label: "Próxima Reunión",
-        field_type_code: "DATE",
-        field_subtype_code: "DATE" as FieldSubtypeCode,
-        required: false,
-        is_pii: false,
+        name: "Propuesta Comercial",
+        campaign_id: 1,
         order: 9,
+        required: false,
+        is_primary: false,
+        is_visible: true,
+        lead_field_section_id: 1,
         default_value: null,
-        options: null,
-        campaign: 1,
+        input_mask: null,
+        mask_template_code: null,
+        field_template_code: null,
+        field_type_code: "FILE",
+        field_subtype_code: "FILE_DOCUMENT",
+        nomenclator_id: null,
+        related_campaign_id: null,
+        calculation_expression: null,
+        title_order: null,
+        configuration: undefined,
+        lead_field_section: mockSection,
+        organization_id: 1,
+        field_type: createFieldType("FILE", "Archivo"),
+        field_subtype: createFieldType("FILE_DOCUMENT", "Documento"),
+        field_template_name: null,
     },
     {
         id: 10,
-        field_name: "profile_image",
-        field_label: "Foto de Perfil",
-        field_type_code: "FILE",
-        field_subtype_code: "FILE_IMAGE" as FieldSubtypeCode,
-        required: false,
-        is_pii: false,
+        name: "Notas Internas",
+        campaign_id: 1,
         order: 10,
-        default_value: null,
-        options: null,
-        campaign: 1,
-    },
-    {
-        id: 11,
-        field_name: "proposal_doc",
-        field_label: "Propuesta Comercial",
-        field_type_code: "FILE",
-        field_subtype_code: "FILE_DOCUMENT" as FieldSubtypeCode,
         required: false,
-        is_pii: false,
-        order: 11,
+        is_primary: false,
+        is_visible: true,
+        lead_field_section_id: 1,
         default_value: null,
-        options: null,
-        campaign: 1,
-    },
-    {
-        id: 12,
-        field_name: "notes",
-        field_label: "Notas Internas",
+        input_mask: null,
+        mask_template_code: null,
+        field_template_code: null,
         field_type_code: "TEXT",
-        field_subtype_code: "TEXTAREA" as FieldSubtypeCode,
-        required: false,
-        is_pii: false,
-        order: 12,
-        default_value: null,
-        options: null,
-        campaign: 1,
+        field_subtype_code: "TEXTAREA",
+        nomenclator_id: null,
+        related_campaign_id: null,
+        calculation_expression: null,
+        title_order: null,
+        configuration: undefined,
+        lead_field_section: mockSection,
+        organization_id: 1,
+        field_type: createFieldType("TEXT", "Texto"),
+        field_subtype: createFieldType("TEXTAREA", "Área de texto"),
+        field_template_name: null,
     },
 ];
 
 interface FormData {
-    company_name: string;
-    cuit: string;
-    company_type: string;
-    employees: number;
-    website: string;
-    contact_name: string;
-    email: string;
-    phone: string;
-    next_meeting: string;
-    profile_image: File | null;
-    proposal_doc: File | null;
-    notes: string;
+    field_1: string;
+    field_2: string;
+    field_3: number;
+    field_4: string;
+    field_5: string;
+    field_6: string;
+    field_7: string;
+    field_8: File | null;
+    field_9: File | null;
+    field_10: string;
 }
 
 export const FormTestPage = () => {
     const { register, control, handleSubmit, reset, formState: { errors } } = useForm<FormData>({
         defaultValues: {
-            company_name: "",
-            cuit: "",
-            company_type: "",
-            employees: 0,
-            website: "",
-            contact_name: "",
-            email: "",
-            phone: "",
-            next_meeting: "",
-            profile_image: null,
-            proposal_doc: null,
-            notes: "",
+            field_1: "",
+            field_2: "",
+            field_3: 0,
+            field_4: "",
+            field_5: "",
+            field_6: "",
+            field_7: "",
+            field_8: null,
+            field_9: null,
+            field_10: "",
         }
     });
 
@@ -209,7 +318,7 @@ export const FormTestPage = () => {
     };
 
     const renderField = (field: LeadField) => {
-        const name = field.field_name as keyof FormData;
+        const name = `field_${field.id}` as keyof FormData;
         const errorMessage = errors[name]?.message;
 
         switch (field.field_type_code) {
@@ -219,9 +328,10 @@ export const FormTestPage = () => {
                         key={field.id}
                         register={register}
                         name={name}
-                        label={field.field_label}
+                        label={field.name}
                         required={field.required}
                         errorMessage={errorMessage}
+                        type={field.field_subtype_code === "DATE" ? "date" : field.field_subtype_code === "DATETIME" ? "datetime-local" : "text"}
                         multiline={field.field_subtype_code === "TEXTAREA"}
                     />
                 );
@@ -231,30 +341,7 @@ export const FormTestPage = () => {
                         key={field.id}
                         control={control}
                         name={name}
-                        label={field.field_label}
-                        required={field.required}
-                        errorMessage={errorMessage}
-                    />
-                );
-            case "SELECT":
-                return (
-                    <LeadFormSelect
-                        key={field.id}
-                        control={control}
-                        name={name}
-                        label={field.field_label}
-                        required={field.required}
-                        errorMessage={errorMessage}
-                        options={field.options?.map(opt => ({ value: opt.value, label: opt.label })) || []}
-                    />
-                );
-            case "DATE":
-                return (
-                    <LeadFormDate
-                        key={field.id}
-                        control={control}
-                        name={name}
-                        label={field.field_label}
+                        label={field.name}
                         required={field.required}
                         errorMessage={errorMessage}
                     />
@@ -265,7 +352,7 @@ export const FormTestPage = () => {
                         key={field.id}
                         control={control}
                         name={name}
-                        label={field.field_label}
+                        label={field.name}
                         leadField={field}
                         required={field.required}
                         errorMessage={errorMessage}
@@ -282,10 +369,10 @@ export const FormTestPage = () => {
                 Nuevo Lead - Demo de Formulario
             </Typography>
 
-            <Paper 
-                elevation={0} 
-                sx={{ 
-                    p: 4, 
+            <Paper
+                elevation={0}
+                sx={{
+                    p: 4,
                     borderRadius: 2,
                     bgcolor: "background.paper",
                     border: "1px solid",

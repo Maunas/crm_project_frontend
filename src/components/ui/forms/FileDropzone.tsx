@@ -16,7 +16,7 @@ import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { FormErrorMessage } from './FormFeedback';
 
-type FileSubtype = 'FILE_IMAGE' | 'FILE_DOCUMENT' | string | null;
+type FileSubtype = 'FILE_IMAGE' | 'FILE_DOCUMENT' | string | null | undefined;
 
 interface FileDropzoneProps {
     label?: string;

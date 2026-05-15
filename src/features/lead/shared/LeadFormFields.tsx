@@ -2,14 +2,13 @@ import { useMemo } from "react";
 import { ControlledNumber, ControlledSlider, ControlledSwitch, PasswordField } from "shared/ui/forms/CustomInputs";
 import { AutocompleteLoader, ControlledAutocomplete, ControlledGroupedCheckbox, ControlledRadio } from "shared/ui/forms/CustomMultipleInputs";
 import { FileDropzone } from "shared/ui/forms/FileDropzone";
-import { Controller } from "react-hook-form";
+import { Controller, type Control, type FieldValues, type Path, type UseFormRegister } from "react-hook-form";
 import { FormErrorMessage } from "shared/ui/forms/FormFeedback";
 import type { Lead } from "src/types/leads";
 import type { LeadField } from "src/types/leadFields";
 import type { NomenclatorItem } from "src/types/nomenclators";
 import { getLeadTitleArray } from "../leadUtils";
 import { formatDate } from "src/utils/formatters";
-import { type Control, type FieldValues, type Path, type UseFormRegister } from "react-hook-form";
 import { FormControl, InputAdornment, InputLabel, OutlinedInput, TextField } from "@mui/material"
 
 interface BasicFormInput<T extends FieldValues> {
