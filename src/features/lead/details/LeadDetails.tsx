@@ -11,7 +11,7 @@ import { disableLead, enableLead, getLead } from "../leadService.ts"
 import { getCampaign } from "src/features/campaigns/campaignServices.ts"
 import { getLeadTitleArray } from "../leadUtils.ts"
 import { Link as RouterLink, useNavigate, useParams } from "react-router-dom"
-import { Grid, Typography, ButtonGroup, Stack, Breadcrumbs, Link, Container, Box, CircularProgress, Fab } from "@mui/material"
+import { Grid, Typography, ButtonGroup, Stack, Breadcrumbs, Link, Box, CircularProgress, Fab } from "@mui/material"
 import { useLeadNavigation } from "../stores/LeadNavigationContext.tsx"
 
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
@@ -20,23 +20,30 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 export const LeadDetailsLayout = () => {
 
     const { id } = useParams()
+    const numId = useMemo(() => {
+        if (id === undefined) return id
+        const numId = parseInt(id)
+        if (isNaN(numId)) return undefined
+        return numId
+    }, [id])
     const [lead, setLead] = useState<LeadDetailed | null>(null)
     const [campaign, setCampaign] = useState<Campaign | null>(null)
     const nav = useNavigate()
 
-    const { getNextLeadId, getPrevLeadId, isLoadingNavigation } = useLeadNavigation();
+    const { getNextLeadId, getPrevLeadId, isLoadingNavigation, isFirstItem, isLastItem, isNavigationValid } = useLeadNavigation();
 
     const handleNext = async () => {
-        if (!id) return
-        const nextId = await getNextLeadId(parseInt(id));
+        if (numId === undefined) return
+        const nextId = await getNextLeadId(numId);
         if (nextId) nav(`/leads/${nextId}`);
     };
 
     const handlePrev = async () => {
-        if (!id) return
-        const prevId = await getPrevLeadId(parseInt(id));
+        if (numId === undefined) return
+        const prevId = await getPrevLeadId(numId);
         if (prevId) nav(`/leads/${prevId}`);
     };
+
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             // Evitamos navegar si el usuario está enfocado en un campo de texto
@@ -44,23 +51,22 @@ export const LeadDetailsLayout = () => {
             if (activeTag === 'INPUT' || activeTag === 'TEXTAREA' || activeTag === 'SELECT') {
                 return;
             }
-
             if (e.key === 'ArrowRight') handleNext();
             if (e.key === 'ArrowLeft') handlePrev();
         };
-
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [id]);
+    }, [numId]);
 
     useEffect(() => {
-        if (id) getLead(parseInt(id)).then((lead) => {
+        if (numId === undefined) return
+        getLead(numId).then((lead) => {
             setLead(lead)
             if (!lead.campaign_id) return
             getCampaign(lead.campaign_id).then(setCampaign)
         })
-    }, [id])
+    }, [numId])
 
     const handleActive = (lead: LeadDetailed) => {
         if (!lead.active) enableLead(lead.id).then(() => setLead({ ...lead, active: true }))
@@ -83,22 +89,25 @@ export const LeadDetailsLayout = () => {
     //reconoce cambios para actualizar la lista de audit
     const [reloadAudit, setReloadAudit] = useState<number>(0)
 
-    return (
-        <Container maxWidth={false} sx={{ display: 'flex', gap: 2, alignItems: 'stretch' }}>
+    //TO DO: Error de id no disponible
+    if (numId === undefined) return <p>Id inválido</p>
 
+    return (
+        <Stack direction="row" spacing={2} sx={{ alignItems: 'stretch', px: 2 }}>
             {/* --- COLUMNA IZQUIERDA (Pegajosa) --- */}
-            <Box sx={{ flexShrink: 0, width: '40px', display: 'flex', justifyContent: 'center' }}>
-                <Box sx={{ position: 'sticky', top: '50vh', transform: 'translateY(-50%)', zIndex: 10, height: 'max-content' }}>
-                    <Fab
-                        color="primary"
-                        size="small"
-                        onClick={handlePrev}
-                        disabled={isLoadingNavigation}
-                    >
-                        {isLoadingNavigation ? <CircularProgress size={24} color="inherit" /> : <ArrowBackIosNewIcon />}
-                    </Fab>
-                </Box>
-            </Box>
+            {isNavigationValid(numId) &&
+                <Box sx={{ flexShrink: 0, width: "2.5rem", position: "relative" }}>
+                    <Box sx={{ position: 'sticky', top: '50vh', transform: 'translateY(-50%)', zIndex: 10 }}>
+                        <Fab
+                            color="primary"
+                            size="small"
+                            onClick={handlePrev}
+                            disabled={isLoadingNavigation || isFirstItem(numId)}
+                        >
+                            {isLoadingNavigation ? <CircularProgress size={24} color="inherit" /> : <ArrowBackIosNewIcon />}
+                        </Fab>
+                    </Box>
+                </Box>}
 
             {/* --- CONTENIDO PRINCIPAL --- */}
             <Box sx={{ flexGrow: 1, minWidth: 0 }}>
@@ -125,20 +134,21 @@ export const LeadDetailsLayout = () => {
             </Box>
 
             {/* --- COLUMNA DERECHA (Pegajosa) --- */}
-            <Box sx={{ flexShrink: 0, width: '40px', display: 'flex', justifyContent: 'center' }}>
-                <Box sx={{ position: 'sticky', top: '50vh', transform: 'translateY(-50%)', zIndex: 10, height: 'max-content' }}>
-                    <Fab
-                        color="primary"
-                        size="small"
-                        onClick={handleNext}
-                        disabled={isLoadingNavigation}
-                    >
-                        {isLoadingNavigation ? <CircularProgress size={24} color="inherit" /> : <ArrowForwardIosIcon />}
-                    </Fab>
-                </Box>
-            </Box>
+            {isNavigationValid(numId) &&
+                <Box sx={{ flexShrink: 0, width: '40px' }}>
+                    <Box sx={{ position: 'sticky', top: '50vh', transform: 'translateY(-50%)', zIndex: 10 }}>
+                        <Fab
+                            color="primary"
+                            size="small"
+                            onClick={handleNext}
+                            disabled={isLoadingNavigation || isLastItem(numId)}
+                        >
+                            {isLoadingNavigation ? <CircularProgress size={24} color="inherit" /> : <ArrowForwardIosIcon />}
+                        </Fab>
+                    </Box>
+                </Box>}
 
-        </Container >
+        </Stack >
     )
 }
 

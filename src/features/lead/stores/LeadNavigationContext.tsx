@@ -22,6 +22,9 @@ interface LeadNavigationContextProps {
   ) => void;
   getNextLeadId: (currentId: number) => Promise<number | null>;
   getPrevLeadId: (currentId: number) => Promise<number | null>;
+  isFirstItem: (currentId: number) => boolean;
+  isLastItem: (currentId: number) => boolean;
+  isNavigationValid: (currentId: number) => boolean;
 }
 
 const LeadNavigationContext = createContext<LeadNavigationContextProps | undefined>(undefined);
@@ -109,6 +112,23 @@ export const LeadNavigationProvider = ({ children }: { children: ReactNode }) =>
     }
   };
 
+  const isFirstItem = useCallback((currentId: number) => {
+    const currentIdx = navState.leadIds.indexOf(currentId);
+    if (navState.minPageLoaded > 1) return false
+    return currentIdx === 0
+  }, [navState.minPageLoaded, navState.leadIds])
+
+  const isLastItem = useCallback((currentId: number) => {
+    const currentIdx = navState.leadIds.indexOf(currentId);
+    if (navState.maxPageLoaded < navState.totalPages) return false
+    return currentIdx === navState.leadIds.length - 1
+  }, [navState.leadIds, navState.maxPageLoaded, navState.totalPages])
+
+  const isNavigationValid = useCallback((currentId: number) => {
+    const currentIdx = navState.leadIds.indexOf(currentId);
+    return (currentIdx !== -1 && navState.leadIds.length > 0);
+  }, [navState.leadIds])
+
   const getNextLeadId = async (currentId: number): Promise<number | null> => {
     const currentIndex = navState.leadIds.indexOf(currentId);
     if (currentIndex === -1) return null;
@@ -151,7 +171,10 @@ export const LeadNavigationProvider = ({ children }: { children: ReactNode }) =>
       isLoadingNavigation,
       setListContext,
       getNextLeadId,
-      getPrevLeadId
+      getPrevLeadId,
+      isFirstItem,
+      isLastItem,
+      isNavigationValid
     }}>
       {children}
     </LeadNavigationContext.Provider>
