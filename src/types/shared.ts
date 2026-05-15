@@ -25,6 +25,18 @@ export interface Metadata {
   updated_by?: number;
 }
 
+export interface Creator {
+  id: number;
+  name: string | null;
+  email: string | null;
+}
+
+export interface Updater{
+  id: number;
+  name: string | null;
+  email: string | null;
+}
+
 /**
  * Contienen los parámetros permitidos de cada request.
  */

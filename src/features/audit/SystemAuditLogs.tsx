@@ -1,20 +1,40 @@
 import { useEffect, useState, useMemo } from 'react'
 import { 
     Stack, Typography, Box, Collapse, TextField, IconButton, Paper, 
-    Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-    Select, MenuItem, FormControl
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow
 } from '@mui/material'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
-import { getSystemAudit } from './systemAuditServices'
-import PaginationComponent from 'shared/ui/lists/PaginationComponent'
+
+// Hooks y utilidades
+import { useForm, useWatch } from 'react-hook-form'
 import { useListPagination } from 'src/hooks/useListPagination'
+import PaginationComponent from 'shared/ui/lists/PaginationComponent'
+
+// Servicios y Tipos
+import { getSystemAudit } from './systemAuditServices'
+import { getDictionaries } from 'src/services/generalService'
 import type { SystemAuditLog } from 'src/types/systemAudit'
 import type { Paginable } from 'src/types/shared'
-import { getDictionaries } from 'src/services/generalService'
+
+// Componente que pasaste
+import { ControlledAutocomplete } from 'src/components/ui/forms/CustomMultipleInputs' // <-- Ajusta este path a donde lo tengas
+
+// --- Interfaces para los Filtros ---
+interface AuditFilters {
+    entity_type: string | null;
+    action: string | null;
+    creator_name: string;
+    start_date: string;
+    end_date: string;
+}
+
+interface SelectOption {
+    id: string;
+    label: string;
+}
 
 // --- Componente de Fila ---
-// Agregamos 'mappings' como prop para mostrar nombres amigables
 const AuditTableRow = ({ 
     log, 
     mappings 
@@ -31,35 +51,52 @@ const AuditTableRow = ({
 
     return (
         <>
-            <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
+            <TableRow 
+                onClick={() => hasChanges && setOpen(!open)} // <-- Clic en toda la fila
+                sx={{ 
+                    '& > *': { borderBottom: 'unset' },
+                    cursor: hasChanges ? 'pointer' : 'default', // Cambia el cursor si hay cambios
+                    '&:hover': {
+                        backgroundColor: hasChanges ? 'action.hover' : 'inherit' // Da un feedback visual al pasar el mouse
+                    }
+                }}
+            >
                 <TableCell>{log.id}</TableCell>
                 <TableCell>{entityDisplay}</TableCell>
                 <TableCell>{log.entity_id}</TableCell>
                 <TableCell><b>{actionDisplay}</b></TableCell>
-                <TableCell>{log.created_by ? `#${log.created_by}` : 'Sistema'}</TableCell>
+                <TableCell>{log.creator?.name ? `${log.creator?.name}` : 'Sistema'}</TableCell>
                 <TableCell>{new Date(log.created_at).toLocaleString()}</TableCell>
                 <TableCell align="right">
                     {hasChanges && (
-                        <IconButton size="small" onClick={() => setOpen(!open)}>
+                        <IconButton 
+                            size="small" 
+                            onClick={(e) => {
+                                e.stopPropagation(); // <-- Evita que el clic en el botón active también el clic de la fila
+                                setOpen(!open);
+                            }}
+                        >
                             {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
                         </IconButton>
                     )}
                 </TableCell>
             </TableRow>
-            <TableRow>
-                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={7}>
-                    <Collapse in={open} timeout="auto" unmountOnExit>
-                        <Box sx={{ margin: 2 }}>
-                            <Typography variant="subtitle2" gutterBottom color="primary">Detalle de Cambios:</Typography>
-                            <Paper variant="outlined" sx={{ p: 2, backgroundColor: "#1e1e1e", color: "#a6e22e", overflowX: "auto" }}>
-                                <pre style={{ margin: 0, fontSize: "0.85rem" }}>
-                                    {JSON.stringify(log.changes, null, 2)}
-                                </pre>
-                            </Paper>
-                        </Box>
-                    </Collapse>
-                </TableCell>
-            </TableRow>
+            {hasChanges && (
+                <TableRow>
+                    <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={7}>
+                        <Collapse in={open} timeout="auto" unmountOnExit>
+                            <Box sx={{ margin: 2 }}>
+                                <Typography variant="subtitle2" gutterBottom color="primary">Detalle de Cambios:</Typography>
+                                <Paper variant="outlined" sx={{ p: 2, backgroundColor: "#1e1e1e", color: "#a6e22e", overflowX: "auto" }}>
+                                    <pre style={{ margin: 0, fontSize: "0.85rem" }}>
+                                        {JSON.stringify(log.changes, null, 2)}
+                                    </pre>
+                                </Paper>
+                            </Box>
+                        </Collapse>
+                    </TableCell>
+                </TableRow>
+            )}
         </>
     )
 }
@@ -70,17 +107,21 @@ export const SystemAuditList = () => {
     const [defs, setDefs] = useState<{ entities: any, actions: any } | null>(null)
     const { fetchPage, pageSize, refresh, pageComponentProps } = useListPagination(logs)
 
-    const [filters, setFilters] = useState({
-        entity_type: '',
-        action: '',
-        created_by: '',
-        start_date: '',
-        end_date: ''
+    // 1. Inicializamos React Hook Form para los filtros
+    const { control, register, watch } = useForm<AuditFilters>({
+        defaultValues: {
+            entity_type: null,
+            action: null,
+            creator_name: '',
+            start_date: '',
+            end_date: ''
+        }
     })
 
-    const [debouncedFilters, setDebouncedFilters] = useState(filters)
+    // 2. Observamos todos los cambios del formulario
+    const formValues = watch()
+    const [debouncedFilters, setDebouncedFilters] = useState<AuditFilters>(formValues)
 
-    // Cargar definiciones al montar el componente
     useEffect(() => {
         getDictionaries(["entities", "system_audit_log_actions"]).then(data => {
             setDefs({
@@ -90,13 +131,25 @@ export const SystemAuditList = () => {
         })
     }, [])
 
-    useEffect(() => {
-        const timer = setTimeout(() => setDebouncedFilters(filters), 500)
-        return () => clearTimeout(timer)
-    }, [filters])
+    // Transformamos los diccionarios en arreglos para el ControlledAutocomplete
+    const entityOptions: SelectOption[] = useMemo(() => {
+        if (!defs?.entities) return [];
+        return Object.entries(defs.entities).map(([key, label]) => ({ id: key, label: label as string }));
+    }, [defs]);
 
+    const actionOptions: SelectOption[] = useMemo(() => {
+        if (!defs?.actions) return [];
+        return Object.entries(defs.actions).map(([key, label]) => ({ id: key, label: label as string }));
+    }, [defs]);
+
+    // Debounce: Escucha los cambios de useForm y espera 500ms
     useEffect(() => {
-        // 1. Parámetros base
+        const timer = setTimeout(() => setDebouncedFilters(formValues), 500)
+        return () => clearTimeout(timer)
+    }, [formValues])
+
+    // Petición a la API
+    useEffect(() => {
         const params: any = {
             page: fetchPage,
             page_size: pageSize,
@@ -104,38 +157,14 @@ export const SystemAuditList = () => {
             ascending: false
         }
 
-        // 2. Agregamos explícitamente los filtros si tienen algún valor
-        if (debouncedFilters.entity_type) {
-            params.entity_type = debouncedFilters.entity_type;
-        }
-        
-        if (debouncedFilters.action) {
-            params.action = debouncedFilters.action;
-        }
-        
-        if (debouncedFilters.created_by) {
-            params.created_by = debouncedFilters.created_by;
-        }
+        if (debouncedFilters.entity_type) params.entity_type = debouncedFilters.entity_type;
+        if (debouncedFilters.action) params.action = debouncedFilters.action;
+        if (debouncedFilters.creator_name) params.creator_name = debouncedFilters.creator_name;
+        if (debouncedFilters.start_date) params.start_date = debouncedFilters.start_date;
+        if (debouncedFilters.end_date) params.end_date = debouncedFilters.end_date;
 
-        // FECHAS
-        if (debouncedFilters.start_date) {
-            params.start_date = debouncedFilters.start_date;
-        }
-        
-        if (debouncedFilters.end_date) {
-            params.end_date = debouncedFilters.end_date;
-        }
-
-        // 3. Ejecutamos el endpoint
         getSystemAudit(params).then(setLogs)
-        
     }, [fetchPage, pageSize, refresh, debouncedFilters])
-
-    // Handler unificado para TextField y Select
-    const handleFilterChange = (e: any) => {
-        const { name, value } = e.target;
-        setFilters(prev => ({ ...prev, [name]: value }));
-    }
 
     return (
         <Stack spacing={3} sx={{ p: 3 }}>
@@ -151,59 +180,51 @@ export const SystemAuditList = () => {
                             <TableCell>Acción</TableCell>
                             <TableCell>Usuario</TableCell>
                             <TableCell>Fecha</TableCell>
-                            <TableCell align="right">Detalle</TableCell>
+                            <TableCell align="right"></TableCell>
                         </TableRow>
 
-                        {/* Fila de Filtros Selectores */}
+                        {/* Fila de Filtros */}
                         <TableRow>
                             <TableCell />
-                            <TableCell>
-                                <FormControl fullWidth size="small" variant="standard">
-                                    <Select
-                                        name="entity_type"
-                                        value={filters.entity_type}
-                                        onChange={handleFilterChange}
-                                        displayEmpty
-                                    >
-                                        <MenuItem value=""><em>Todas</em></MenuItem>
-                                        {defs && Object.entries(defs.entities).map(([key, label]: any) => (
-                                            <MenuItem key={key} value={key}>{label}</MenuItem>
-                                        ))}
-                                    </Select>
-                                </FormControl>
+                            <TableCell sx={{ minWidth: "15rem" }}>
+                                <ControlledAutocomplete
+                                    control={control}
+                                    name="entity_type"
+                                    options={entityOptions}
+                                    getOptionLabel={option => option.label}
+                                    getOptionKey={option => option.id}
+                                    returnField="id"
+                                    placeholder="Todas"
+                                    size="small"
+                                    disableClearable={false} // Para poder limpiar el filtro
+                                />
                             </TableCell>
                             <TableCell />
-                            <TableCell>
-                                <FormControl fullWidth size="small" variant="standard">
-                                    <Select
-                                        name="action"
-                                        value={filters.action}
-                                        onChange={handleFilterChange}
-                                        displayEmpty
-                                    >
-                                        <MenuItem value=""><em>Todas</em></MenuItem>
-                                        {defs && Object.entries(defs.actions).map(([key, label]: any) => (
-                                            <MenuItem key={key} value={key}>{label}</MenuItem>
-                                        ))}
-                                    </Select>
-                                </FormControl>
+                            <TableCell sx={{ minWidth: "15rem" }}>
+                                <ControlledAutocomplete
+                                    control={control}
+                                    name="action"
+                                    options={actionOptions}
+                                    getOptionLabel={option => option.label}
+                                    getOptionKey={option => option.id}
+                                    returnField="id"
+                                    placeholder="Todas"
+                                    size="small"
+                                    disableClearable={false}
+                                />
                             </TableCell>
                             <TableCell>
                                 <TextField 
-                                    name="created_by" 
-                                    placeholder="ID" 
+                                    {...register("creator_name")}
+                                    placeholder="Nombre del creador" 
                                     size="small" 
                                     variant="standard"
-                                    value={filters.created_by} 
-                                    onChange={handleFilterChange} 
                                 />
                             </TableCell>
                             <TableCell>
                                 <Stack direction="row" spacing={1}>
-                                    <TextField name="start_date" type="date" size="small" variant="standard"
-                                        value={filters.start_date} onChange={handleFilterChange} InputLabelProps={{ shrink: true }} />
-                                    <TextField name="end_date" type="date" size="small" variant="standard"
-                                        value={filters.end_date} onChange={handleFilterChange} InputLabelProps={{ shrink: true }} />
+                                    <TextField {...register("start_date")} type="date" size="small" variant="standard" InputLabelProps={{ shrink: true }} />
+                                    <TextField {...register("end_date")} type="date" size="small" variant="standard" InputLabelProps={{ shrink: true }} />
                                 </Stack>
                             </TableCell>
                             <TableCell />
@@ -211,9 +232,17 @@ export const SystemAuditList = () => {
                     </TableHead>
 
                     <TableBody>
-                        {logs?.items.map((log) => (
-                            <AuditTableRow key={log.id} log={log} mappings={defs} />
-                        ))}
+                        {logs?.items && logs.items.length > 0 ? (
+                            logs.items.map((log) => (
+                                <AuditTableRow key={log.id} log={log} mappings={defs} />
+                            ))
+                        ) : (
+                            <TableRow>
+                                <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
+                                    <Typography color="text.secondary">No se encontraron resultados...</Typography>
+                                </TableCell>
+                            </TableRow>
+                        )}
                     </TableBody>
                 </Table>
             </TableContainer>
