@@ -1,6 +1,8 @@
 import { useMemo } from "react";
-import { ControlledNumber, ControlledSlider, ControlledSwitch, PasswordField, SingleFileField } from "shared/ui/forms/CustomInputs";
+import { ControlledNumber, ControlledSlider, ControlledSwitch, PasswordField } from "shared/ui/forms/CustomInputs";
 import { AutocompleteLoader, ControlledAutocomplete, ControlledGroupedCheckbox, ControlledRadio } from "shared/ui/forms/CustomMultipleInputs";
+import { FileDropzone } from "shared/ui/forms/FileDropzone";
+import { Controller, type Control } from "react-hook-form";
 import { FormErrorMessage } from "shared/ui/forms/FormFeedback";
 import type { Lead } from "src/types/leads";
 import type { LeadField } from "src/types/leadFields";
@@ -67,11 +69,30 @@ export const LeadFormText = <T extends FieldValues>
         </>)
 }
 
+interface RegPropWithLeadFieldFile<T extends FieldValues> extends Omit<BasicFormInput<T>, "name"> {
+    control: Control<T>
+    name: Path<T>
+    leadField: LeadField
+}
 export const LeadFormFile = <T extends FieldValues>
-    ({ register, name, label, required = false, size = "medium", errorMessage, autoComplete = "one-time-code" }: RegisterFormInput<T>) => {
+    ({ control, name, label, leadField, required = false, size = "medium", errorMessage }: RegPropWithLeadFieldFile<T>) => {
     return (
-        <SingleFileField register={register} name={name} label={label} id={name} size={size}
-            required={required} errorMessage={errorMessage} autoComplete={autoComplete} />
+        <Controller
+            name={name}
+            control={control}
+            render={({ field }) => (
+                <FileDropzone
+                    name={name}
+                    label={label}
+                    required={required}
+                    errorMessage={errorMessage}
+                    subtype={leadField.field_subtype_code}
+                    value={field.value as File | string | null}
+                    onChange={(file) => field.onChange(file)}
+                    size={size}
+                />
+            )}
+        />
     )
 }
 

@@ -174,7 +174,7 @@ const LeadFormFieldType = ({ register, control, leadField, errorMessage, size = 
         case "BOOL":
             return (<LeadFormBool label={label} name={name} control={control} errorMessage={errorMessage} size={size} />)
         case "FILE":
-            return (<LeadFormFile label={label} name={name} register={register}
+            return (<LeadFormFile label={label} name={name} control={control} leadField={leadField}
                 required={leadField.required} errorMessage={errorMessage} size={size} />)
         default:
             return <LeadFormText label={label} name={name} register={register}
