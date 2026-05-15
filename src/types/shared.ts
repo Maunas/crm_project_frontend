@@ -28,6 +28,8 @@ export interface Metadata {
 /**
  * Contienen los parámetros permitidos de cada request.
  */
+
+
 export interface OrderParams {
   order_by?: number | string | null,
   ascending?: boolean
@@ -38,6 +40,9 @@ export interface ListParams extends OrderParams {
   detailed?: boolean,
   page?: number,
   page_size?: number,
+  start_date?: string,
+  end_date?: string,
+  date_field?: string,
 }
 export interface WorkspaceParams extends ListParams {
   organization_id?: number
@@ -47,6 +52,10 @@ export interface CampaignParams extends ListParams {
 }
 export interface LeadListParams extends ListParams {
   campaign_id?: number
+}
+
+export interface SystemAuditParams extends ListParams {
+
 }
 
 /**
@@ -103,7 +112,9 @@ export interface Dictionary {
   "routing_condition_types"?: DictionaryItem[]
   "team_roles"?: DictionaryItem[]
   "lead_states_categories"?: DictionaryItem[],
-  lead_view_visibilities?: DictionaryItem[]
+  "lead_view_visibilities"?: DictionaryItem[],
+  "entities" ?: DictionaryItem[],
+  "system_audit_log_actions"?: DictionaryItem[],
 }
 
 export interface DictionaryItem {

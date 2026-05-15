@@ -14,6 +14,7 @@ import { SignupFormPage } from "./features/auth/SignupForm";
 import { SearchResultsList } from "./features/search/SearchResults";
 import { GenericContainer } from "./components/layout/container/GenericContainer";
 import MainLayout from "./app/mainLayout";
+import { SystemAuditList } from "./features/audit/SystemAuditLogs";
 
 export const router = createBrowserRouter([
     {
@@ -63,6 +64,10 @@ export const router = createBrowserRouter([
             {
                 path: "/nomenclators/",
                 Component: NomenclatorList
+            },
+            {
+                path: "/audit-logs/",
+                Component: SystemAuditList
             },
             {
                 path: "/nomenclators/:nomenclatorId",
