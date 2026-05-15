@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { ControlledNumber, ControlledSlider, ControlledSwitch, PasswordField } from "shared/ui/forms/CustomInputs";
 import { AutocompleteLoader, ControlledAutocomplete, ControlledGroupedCheckbox, ControlledRadio } from "shared/ui/forms/CustomMultipleInputs";
 import { FileDropzone } from "shared/ui/forms/FileDropzone";
-import { Controller, type Control } from "react-hook-form";
+import { Controller } from "react-hook-form";
 import { FormErrorMessage } from "shared/ui/forms/FormFeedback";
 import type { Lead } from "src/types/leads";
 import type { LeadField } from "src/types/leadFields";

@@ -13,7 +13,7 @@ import {
 import CloudUploadOutlinedIcon from '@mui/icons-material/CloudUploadOutlined';
 import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { FormErrorMessage } from './FormFeedback';
 
 type FileSubtype = 'FILE_IMAGE' | 'FILE_DOCUMENT' | string | null;
@@ -250,7 +250,7 @@ export const FileDropzone = ({
                                 },
                             }}
                         >
-                            <DeleteOutlineIcon fontSize={isCompact ? 'small' : 'medium'} />
+                            <DeleteIcon fontSize={isCompact ? 'small' : 'medium'} />
                         </IconButton>
                     </Stack>
                 ) : (
