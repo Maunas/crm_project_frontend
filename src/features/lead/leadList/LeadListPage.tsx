@@ -12,9 +12,9 @@ import { useModal } from 'src/hooks/useModal'
 import type { LeadFilter, LeadListParams, ListParams, OrderParams, Paginable } from 'src/types/shared'
 import type { Lead, LeadView, LeadViewParams } from 'src/types/leads'
 import type { LeadField } from 'src/types/leadFields'
-import { bulkDeleteLead, createView, getFilteredLeads, getLeads, updateView } from '../leadService'
+import { bulkDeleteLead, createView, getFilteredLeads, getLeads, updateView, exportLeads } from '../leadService'
 import { getLeadFields } from 'src/features/leadFields/leadFieldServices'
-import { Link as RouterLink, useSearchParams } from 'react-router-dom'
+import { Link as RouterLink, useNavigate, useSearchParams } from 'react-router-dom'
 import { Typography, Stack } from '@mui/material'
 
 const DEFAULT_N_OF_FIELDS = 6
@@ -23,6 +23,8 @@ export const LeadListPage = () => {
 
     const [params, setParams] = useSearchParams()
     const { modalProps } = useModal()
+
+    const navigate = useNavigate()
 
     const [leads, setLeads] = useState<Paginable<Lead> | null>(null)
 
@@ -239,16 +241,51 @@ export const LeadListPage = () => {
             })
     }, [selectCheckboxProps, campaignId, fetchLeads, fetchPage, filters, headerParams])
 
+
+    //Exportar Leads
+    const handleExport = useCallback(async () => {
+        if (!campaignId) return;
+        try {
+            await exportLeads(Number(campaignId));
+        } catch (error) {
+            console.error("Error al exportar los leads", error);
+        }
+    }, [campaignId]);
+
+    //Importar Leads
+    const handleImport = useCallback(() => {
+        if (!campaignId) return;
+        navigate(`/leads/import?campaign=${campaignId}`);
+    }, [campaignId, navigate]);
+
     return (
         <Stack spacing={3}>
             <Stack useFlexGap direction="row" sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }} spacing={2}>
                 <Typography variant="h1">Lista de Leads</Typography>
-                {areThereLeads &&
-                    <CommonButton actionType='CREATE' variant="contained" color="primary"
-                        component={RouterLink} to={`/leads/new?workspace=${workspaceId}&campaign=${campaignId}`} onlyTooltip>
-                        Agregar
-                    </CommonButton>
-                }
+                <Stack direction="row" spacing={2}>
+                    <CommonButton 
+                            actionType='IMPORT' 
+                            variant="outlined" 
+                            color="secondary" 
+                            onClick={handleImport}
+                            onlyTooltip
+                        >Importar Leads</CommonButton>
+                    {areThereLeads &&
+                        <CommonButton 
+                            actionType='DOWNLOAD' 
+                            variant="outlined" 
+                            color="secondary" 
+                            onClick={handleExport}
+                            onlyTooltip
+                        >Exportar Leads</CommonButton>
+                    }
+                    {areThereLeads &&
+                        <CommonButton actionType='CREATE' variant="contained" color="primary"
+                            component={RouterLink} to={`/leads/new?workspace=${workspaceId}&campaign=${campaignId}`} onlyTooltip>
+                            Agregar
+                        </CommonButton>
+                    }
+                </Stack>
             </Stack>
             <Stack spacing={2}>
                 <LeadListOptions areThereLeads={areThereLeads} campaignId={campaignId} modalProps={modalProps} campaignSelectorProps={campaignSelectorProps} presentationProps={presentationProps}

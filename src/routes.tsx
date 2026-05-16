@@ -14,6 +14,7 @@ import { SignupFormPage } from "./features/auth/SignupForm";
 import { SearchResultsList } from "./features/search/SearchResults";
 import { GenericContainer } from "./components/layout/container/GenericContainer";
 import MainLayout from "./app/mainLayout";
+import { ImportLeadsPage } from "./features/lead/ImportLeadsPage";
 
 export const router = createBrowserRouter([
     {
@@ -55,6 +56,10 @@ export const router = createBrowserRouter([
             {
                 path: "/leads/:id",
                 Component: LeadDetailsLayout
+            },
+            {
+                path: "/leads/import",
+                Component: ImportLeadsPage
             },
             {
                 path: "/campaigns/",
