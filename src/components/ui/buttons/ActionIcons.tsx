@@ -14,7 +14,7 @@ import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import SettingsIcon from '@mui/icons-material/Settings';
 import DownloadIcon from '@mui/icons-material/Download';
-import FileUploadIcon from '@mui/icons-material/UploadFile'
+import UploadIcon from '@mui/icons-material/Upload'
 
 const ACTION_ICONS = {
     NONE: <></>,
@@ -34,7 +34,7 @@ const ACTION_ICONS = {
     LIST: <FormatListBulletedIcon sx={{ display: "block" }} />,
     CHECK: <TaskAltIcon sx={{ display: "block" }} />,
     DOWNLOAD: <DownloadIcon sx={{ display: "block" }} />,
-    IMPORT: <FileUploadIcon sx={{ display: "block" }} />
+    IMPORT: <UploadIcon sx={{ display: "block" }} />
 }
 
 export type ActionType = keyof typeof ACTION_ICONS
