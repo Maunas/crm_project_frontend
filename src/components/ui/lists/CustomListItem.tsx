@@ -37,14 +37,12 @@ export const CustomListItemAvatar = styled(ListItemAvatar)(
         {
             minWidth: "3rem",
             "& .MuiAvatar-root": {
-                borderRadius: ".5rem",
                 backgroundColor: alpha(theme.palette[color].light, .2),
                 color: theme.palette[color].dark
             },
         },
         theme.applyStyles("dark", {
             "& .MuiAvatar-root": {
-                borderRadius: ".5rem",
                 backgroundColor: alpha(theme.palette[color].dark, .2),
                 color: theme.palette[color].light
             },

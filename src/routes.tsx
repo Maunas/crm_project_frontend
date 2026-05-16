@@ -15,6 +15,7 @@ import MainLayout from "./app/mainLayout";
 import { createBrowserRouter, Outlet } from "react-router-dom";
 import { LeadFlowEditor } from "src/features/leadFlows/FlowEditorPage";
 import { LeadNavigationProvider } from 'features/lead/stores/LeadNavigationContext';
+import LeadProperties from "./features/leadProperties/leadPropertiesList";
 
 export const router = createBrowserRouter([
     {
@@ -90,6 +91,10 @@ export const router = createBrowserRouter([
             {
                 path: "/search",
                 Component: SearchResultsList,
+            },
+            {
+                path: "/lead-properties/",
+                Component: LeadProperties,
             },
             {
                 path: "/lead-flow-editor/:id?",
