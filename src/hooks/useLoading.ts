@@ -1,16 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback, useState } from "react"
-export const useLoading = (fetchFn?: (...props: any[]) => Promise<unknown>) => {
+export const useLoading = (asyncFn?: (...props: any[]) => Promise<unknown>) => {
     const [loading, setLoading] = useState<boolean>(false)
 
-    const fetchWithLoading = useCallback((...props: any[]) => {
-        if (!fetchFn) return
+    const fnWithLoading = useCallback((...props: any[]) => {
+        if (!asyncFn) return
         setLoading(true)
-        return fetchFn(...props)
+        return asyncFn(...props)
             .finally(() => setLoading(false))
-    }, [fetchFn])
+    }, [asyncFn])
 
     return {
-        loading, setLoading, fetchWithLoading
+        loading, setLoading, fnWithLoading
     }
 }

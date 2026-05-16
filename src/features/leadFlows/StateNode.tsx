@@ -1,25 +1,25 @@
 import { memo } from 'react'
+import type { StateCategory } from 'src/types/leadFlow'
+import { CATEGORY_CONFIG } from 'src/types/leadFlow'
 import { Handle, Position } from 'reactflow'
 import type { NodeProps } from 'reactflow'
 import { Box, Typography, Chip, IconButton } from '@mui/material'
-import DeleteIcon from '@mui/icons-material/Delete'
-import type { Category } from '../../types/leadFlow'
-import { CATEGORY_CONFIG } from '../../types/leadFlow'
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import CircleIcon from '@mui/icons-material/Circle';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import DeleteIcon from '@mui/icons-material/Delete'
+import CircleIcon from '@mui/icons-material/Circle';
 import CancelIcon from '@mui/icons-material/Cancel';
 
 export interface StateNodeData {
   label: string;
-  category: Category;
+  category: StateCategory;
   isInitial: boolean;
   color?: string;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
 }
 
-const getCategoryIcon = (category: Category) => {
+const getCategoryIcon = (category: StateCategory) => {
   const sx = { fontSize: 14 }; // Tamaño pequeño para que entre bien en el Chip
   switch (category) {
     case 'WON':
@@ -39,7 +39,7 @@ function StateNodeComponent({ id, data, selected }: NodeProps<{ data: StateNodeD
 
   return (
     <Box
-      onDoubleClick={() => onEdit(id)} // <-- AQUÍ ESTÁ EL DOBLE CLIC
+      onDoubleClick={() => onEdit(id)}
       sx={{
         position: 'relative',
         minWidth: 160,
@@ -49,7 +49,7 @@ function StateNodeComponent({ id, data, selected }: NodeProps<{ data: StateNodeD
         borderColor: selected ? 'primary.main' : nodeColor,
         boxShadow: selected ? `0 0 0 2px ${nodeColor}40` : 'none',
         transition: 'all 0.2s ease',
-        cursor: 'pointer', // Indicador visual de que es interactivo
+        cursor: 'pointer',
         '&:hover': {
           boxShadow: `0 4px 20px ${nodeColor}30`,
           '& .node-actions': { opacity: 1 },
@@ -69,22 +69,21 @@ function StateNodeComponent({ id, data, selected }: NodeProps<{ data: StateNodeD
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 1.5, py: 0.75, borderBottom: 1, borderColor: 'divider', backgroundColor: `${nodeColor}15` }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
           {isInitial && <PlayArrowIcon sx={{ fontSize: 16, color: nodeColor }} />}
-          <Chip 
-            icon={getCategoryIcon(category)} 
-            label={categoryConfig?.label || category} 
-            size="small" 
-            sx={{ 
-              height: 20, 
-              fontSize: '0.65rem', 
-              fontWeight: 600, 
-              backgroundColor: `${nodeColor}30`, 
+          <Chip
+            icon={getCategoryIcon(category)}
+            label={categoryConfig?.label || category}
+            size="small"
+            sx={{
+              height: 20,
+              fontSize: '0.65rem',
+              fontWeight: 600,
+              backgroundColor: `${nodeColor}30`,
               color: nodeColor,
-              // Le decimos al ícono que herede el color del texto del Chip
               '& .MuiChip-icon': {
                 color: nodeColor,
                 marginLeft: '4px'
               }
-            }} 
+            }}
           />
         </Box>
       </Box>
@@ -98,8 +97,9 @@ function StateNodeComponent({ id, data, selected }: NodeProps<{ data: StateNodeD
 
       {/* Botón de eliminar (Aparece en Hover) */}
       <Box className="node-actions" sx={{ position: 'absolute', top: -12, right: -12, opacity: 0, transition: 'opacity 0.2s ease' }}>
-        <IconButton size="small" onClick={(e) => { e.stopPropagation(); onDelete(id); }} sx={{ backgroundColor: 'error.main', color: 'white', width: 24, height: 24, '&:hover': { backgroundColor: 'error.dark' } }}>
-          <DeleteIcon sx={{ fontSize: 14 }} />
+        <IconButton size="small" onClick={(e) => { e.stopPropagation(); onDelete(id); }}
+          sx={{ backgroundColor: 'error.dark', color: 'white', width: 24, height: 24, '&:hover': { backgroundColor: 'error.dark' } }}>
+          <DeleteIcon fontSize='small' />
         </IconButton>
       </Box>
 

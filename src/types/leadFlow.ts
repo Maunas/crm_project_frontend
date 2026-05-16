@@ -1,6 +1,6 @@
 import type { Metadata } from "./shared"
 
-export type Category = 'OPEN' | 'WON' | 'LOST'
+export type StateCategory = 'INITIAL' | 'OPEN' | 'WON' | 'LOST'
 
 export interface LeadFlowPost {
   name: string
@@ -17,20 +17,25 @@ export interface LeadFlowDetailed extends LeadFlow, Metadata { }
 export interface LeadStatePost {
   name: string
   lead_flow_id: number
-  category: Category
+  category: StateCategory
   is_initial: boolean
   order?: number
-  color?: string
+  color?: string,
+  position_x?: number,
+  position_y?: number,
 }
 
-export interface LeadState extends LeadStatePost {
+export interface LeadState extends Omit<LeadStatePost, "order"> {
   id: number
   organization_id: number | null
+  order: number | null
 }
+
+export interface LeadStateDetailed extends LeadState, Metadata { }
 
 export interface LeadStateTransitionPost {
   lead_flow_id: number
-  from_lead_state_id: number | null
+  from_state_id: number | null
   to_state_id: number
 }
 
@@ -38,19 +43,34 @@ export interface LeadStateTransition extends LeadStateTransitionPost {
   id: number
 }
 
-// Internal state for the flow editor (with temp IDs before saving)
-export interface FlowState {
+export interface LeadStateTransitionDetailed extends LeadStateTransition, Metadata {
+  from_state: LeadStateDetailed
+  to_state: LeadStateDetailed
+}
+export interface LeadTransitionBulkPost {
+  lead_flow_id: number
+  transitions: {
+    from_state_id: number | null
+    to_state_id: number
+  }[]
+}
+
+/**
+ * Internal state for the flow editor (with temp IDs before saving)
+ */
+
+export interface FlowEditorState {
   tempId: string
   id?: number
   name: string
-  category: Category
+  category: StateCategory
   is_initial: boolean
-  order: number
+  order?: number | null
   color: string
   position: { x: number; y: number }
 }
 
-export interface FlowTransition {
+export interface FlowEditorTransition {
   tempId: string
   id?: number
   fromStateId: string | null // tempId of the from state
@@ -58,7 +78,12 @@ export interface FlowTransition {
 }
 
 // Category configuration for UI
-export const CATEGORY_CONFIG: Record<Category, { label: string; color: string; bgColor: string }> = {
+export const CATEGORY_CONFIG: Record<StateCategory, { label: string; color: string; bgColor: string }> = {
+  INITIAL: {
+    label: 'Inicial',
+    color: '#0ee9e9',
+    bgColor: '#0c6b6e',
+  },
   OPEN: {
     label: 'Abierto',
     color: '#0ea5e9',
@@ -76,7 +101,8 @@ export const CATEGORY_CONFIG: Record<Category, { label: string; color: string; b
   },
 };
 
-export const DEFAULT_STATE_COLORS: Record<Category, string> = {
+export const DEFAULT_STATE_COLORS: Record<StateCategory, string> = {
+  INITIAL: '#3bdaf6',
   OPEN: '#3b82f6',
   WON: '#22c55e',
   LOST: '#ef4444',

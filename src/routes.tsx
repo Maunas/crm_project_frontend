@@ -13,7 +13,7 @@ import { SearchResultsList } from "features/search/SearchResults";
 import { GenericContainer } from "shared/layout/container/GenericContainer";
 import MainLayout from "./app/mainLayout";
 import { createBrowserRouter, Outlet } from "react-router-dom";
-import { LeadFlowEditor } from "features/leadFlows/LeadFlowEditor";
+import { LeadFlowEditor } from "src/features/leadFlows/FlowEditorPage";
 import { LeadNavigationProvider } from 'features/lead/stores/LeadNavigationContext';
 
 export const router = createBrowserRouter([

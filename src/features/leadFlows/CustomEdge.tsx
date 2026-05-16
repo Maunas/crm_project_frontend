@@ -1,11 +1,7 @@
 import { memo } from 'react'
+import { getBezierPath, EdgeLabelRenderer, BaseEdge, } from 'reactflow'
 import type { EdgeProps } from 'reactflow'
-import {
-  getBezierPath,
-  EdgeLabelRenderer,
-  BaseEdge,
-} from 'reactflow'
-import { IconButton } from '@mui/material'
+import { IconButton, useTheme } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 
 interface CustomEdgeData {
@@ -13,18 +9,7 @@ interface CustomEdgeData {
 }
 
 function CustomEdge({
-  id,
-  sourceX,
-  sourceY,
-  targetX,
-  targetY,
-  sourcePosition,
-  targetPosition,
-  style = {},
-  markerEnd,
-  markerStart,
-  data,
-}: EdgeProps<CustomEdgeData>) {
+  sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, style = {}, markerEnd, markerStart, data }: EdgeProps<CustomEdgeData>) {
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
     sourceY,
@@ -35,7 +20,9 @@ function CustomEdge({
     curvature: 0.4,
   })
 
-  const isLocked = data?.isLocked;
+  const theme = useTheme()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const isLocked = (data as any)?.isLocked;
 
   return (
     <>
@@ -46,36 +33,36 @@ function CustomEdge({
         style={{
           ...style,
           strokeWidth: 2.5,
-          stroke: '#3c587e',
+          stroke: theme.palette.contrast.light,
         }}
       />
       <EdgeLabelRenderer>
         {!isLocked && (
-        <div
-          style={{
-            position: 'absolute',
-            transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
-            fontSize: 12,
-            pointerEvents: 'all',
-          }}
-          className="nodrag nopan"
-        >
-          <IconButton
-            size="small"
-            onClick={() => data?.onDelete?.()}
-            sx={{
-              bgcolor: 'white',
-              boxShadow: 1,
-              width: 24,
-              height: 24,
-              '&:hover': {
-                bgcolor: '#fee2e2',
-              },
+          <div
+            style={{
+              position: 'absolute',
+              transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
+              fontSize: 12,
+              pointerEvents: 'all',
             }}
+            className="nodrag nopan"
           >
-            <CloseIcon sx={{ fontSize: 14, color: '#ef4444' }} />
-          </IconButton>
-        </div>)}
+            <IconButton
+              size="small"
+              onClick={() => data?.onDelete?.()}
+              sx={{
+                bgcolor: 'white',
+                boxShadow: 1,
+                width: 24,
+                height: 24,
+                '&:hover': {
+                  bgcolor: `${theme.palette.error.lighter}`,
+                },
+              }}
+            >
+              <CloseIcon sx={{ fontSize: 14, color: theme.palette.error.darker }} />
+            </IconButton>
+          </div>)}
       </EdgeLabelRenderer>
     </>
   )

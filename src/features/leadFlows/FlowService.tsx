@@ -1,66 +1,69 @@
-import type { LeadFlowParams, DeleteResponse, EnableResponse, Paginable } from "src/types/shared"
-import type { LeadFlowDetailed, FlowState, FlowTransition, LeadFlow, LeadFlowPost } from '../../types/leadFlow'
-import { API_BASE_URL, axiosCRM } from "src/lib/axios"
+import type { LeadFlowParams, DeleteResponse, Paginable, FlowStateParams } from "src/types/shared"
+import type { LeadFlowDetailed, LeadFlow, LeadFlowPost, LeadState, LeadStateDetailed, LeadStateTransition, LeadStateTransitionDetailed, LeadStatePost, LeadTransitionBulkPost, FlowEditorTransition } from '../../types/leadFlow'
+import { axiosCRM } from "src/lib/axios"
 
 
 /******************************** Lead Flows ************************************/
 export const getLeadFlows = async<T extends LeadFlowParams>(params?: T):
     Promise<Paginable<T["detailed"] extends true ? LeadFlowDetailed : LeadFlow>> => {
-    const leadFlows = await axiosCRM.get(`${API_BASE_URL}/lead_flows`, { params })
+    const leadFlows = await axiosCRM.get(`/lead_flows`, { params })
     return leadFlows.data
 }
 
 export const getLeadFlow = async (id: number): Promise<LeadFlowDetailed> => {
-    const leadFlow = await axiosCRM.get(`${API_BASE_URL}/lead_flows/${id}`)
+    const leadFlow = await axiosCRM.get(`/lead_flows/${id}`)
     return leadFlow.data
 }
 
-export const postLeadFlow = async (leadFlow: Omit<LeadFlowPost, "id">): Promise<LeadFlow> => {
-    const response = await axiosCRM.post(`${API_BASE_URL}/lead_flows`, leadFlow)
+export const postLeadFlow = async (leadFlow: LeadFlowPost): Promise<LeadFlow> => {
+    const response = await axiosCRM.post(`/lead_flows`, leadFlow)
+    return response.data
+}
+
+export const updateLeadFlow = async (flowId: number, flowData: LeadFlowPost): Promise<LeadFlow> => {
+    const response = await axiosCRM.put(`/lead_flows/${flowId}`, flowData)
     return response.data
 }
 
 export const deleteLeadFlow = async (id: number): Promise<DeleteResponse> => {
-    const response = await axiosCRM.delete(`${API_BASE_URL}/lead_flows/${id}`)
+    const response = await axiosCRM.delete(`/lead_flows/${id}`)
     return response.data
 }
 
-export const getLeadFlowStates = async (leadFlowId: number): Promise<Paginable<FlowState>> => {
-    const response = await axiosCRM.get(`${API_BASE_URL}/lead_states?lead_flow_id=${leadFlowId}`)
+export const getLeadFlowStates = async <T extends FlowStateParams>(params?: T):
+    Promise<Paginable<T["detailed"] extends true ? LeadStateDetailed : LeadState>> => {
+    const response = await axiosCRM.get(`/lead_states`, { params })
     return response.data
 }
 
-export const getLeadFlowTransitions = async (leadFlowId: number): Promise<Paginable<FlowTransition>> => {
-    const response = await axiosCRM.get(`${API_BASE_URL}/lead_state_transitions?lead_flow_id=${leadFlowId}`)
+export const postLeadState = async (state: LeadStatePost): Promise<LeadState> => {
+    const response = await axiosCRM.post(`/lead_states`, state)
     return response.data
 }
 
-export const postLeadState = async (state: any): Promise<FlowState> => {
-    const response = await axiosCRM.post(`${API_BASE_URL}/lead_states`, state)
+export const updateLeadState = async (stateId: number, stateData: LeadStatePost): Promise<LeadState> => {
+    const response = await axiosCRM.put(`/lead_states/${stateId}`, stateData)
     return response.data
 }
 
-export const postLeadStateTransitionsBulk = async (data: { lead_flow_id: number, transitions: any[] }): Promise<any> => {
-    const response = await axiosCRM.post(`${API_BASE_URL}/lead_state_transitions/bulk`, data)
+export const getLeadFlowTransitions = async  <T extends FlowStateParams>(params?: T):
+    Promise<Paginable<T["detailed"] extends true ? LeadStateTransitionDetailed : LeadStateTransition>> => {
+    const response = await axiosCRM.get(`/lead_state_transitions`, { params })
     return response.data
 }
 
-export const updateLeadState = async (stateId: number, stateData: any): Promise<FlowState> => {
-    const response = await axiosCRM.put(`${API_BASE_URL}/lead_states/${stateId}`, stateData)
+export const postLeadStateTransitionsBulk = async (data: LeadTransitionBulkPost): Promise<unknown> => {
+    const response = await axiosCRM.post(`/lead_state_transitions/bulk`, data)
     return response.data
 }
 
-export const updateLeadStateTransitionBulk = async (transitionData: any): Promise<FlowTransition> => {
-    const response = await axiosCRM.put(`${API_BASE_URL}/lead_state_transitions/bulk`, transitionData)
+
+export const updateLeadStateTransitionBulk = async (data: LeadTransitionBulkPost): Promise<FlowEditorTransition> => {
+    const response = await axiosCRM.put(`/lead_state_transitions/bulk`, data)
     return response.data
 }
 
-export const updateLeadFlow = async (flowId: number, flowData: any): Promise<LeadFlow> => {
-    const response = await axiosCRM.put(`${API_BASE_URL}/lead_flows/${flowId}`, flowData)
-    return response.data
-}
-
-export const saveLeadFlowGraph = async (payload: any): Promise<{ message: string, id: number }> => {
-    const response = await axiosCRM.post(`${API_BASE_URL}/lead_flows/graph`, payload);
+export const saveLeadFlowGraph = async (payload: unknown): Promise<{ message: string, id: number }> => {
+    const response = await axiosCRM.post(`/lead_flows/graph`, payload);
     return response.data;
 };

@@ -82,12 +82,12 @@ export const LeadDetailsLayout = () => {
         }
     }, [])
 
-    const { loading, setLoading, fetchWithLoading } = useLoading(fetch)
+    const { loading, setLoading, fnWithLoading } = useLoading(fetch)
 
     useEffect(() => {
         if (!numId) return
-        fetchWithLoading(numId)
-    }, [numId, fetchWithLoading])
+        fnWithLoading(numId)
+    }, [numId, fnWithLoading])
 
     const handleActive = (lead: LeadDetailed) => {
         if (!lead.active) enableLead(lead.id).then(() => setLead({ ...lead, active: true }))
