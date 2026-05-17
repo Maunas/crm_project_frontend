@@ -7,6 +7,7 @@ export interface ExcelFormulaTemplate {
     name_spanish: string;
     name_english: string;
     description: string;
+    syntax: string;
     example: string;
     category: string;
     note: string;

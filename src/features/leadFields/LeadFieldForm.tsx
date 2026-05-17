@@ -15,7 +15,7 @@ import { Controller, useForm, useWatch, type Control, type FieldErrors, type Use
 import { Grid, FormGroup, Typography, ButtonGroup, Stack, TextField, InputAdornment, IconButton } from "@mui/material";
 import { getExcelFormulaTemplates } from "./leadFieldServices";
 import type { ExcelFormulaTemplate } from "src/types/leadFields";
-import { FormulaHelperModal } from "src/components/ui/modals/FormulaHelperModal";
+import { FormulaHelperPanel } from "src/components/ui/modals/FormulaHelperModal";
 import FunctionsIcon from '@mui/icons-material/Functions';
 import { 
   FormControl, 
@@ -358,7 +358,7 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
                 )}
               </>}
             {fieldTypeCode === "CALCULATED" && (
-              <Grid size="grow" sx={{ minWidth: "20rem", justifyContent: "center" }}>
+              <Grid size="grow" sx={{ minWidth: "20rem", display: "flex", flexDirection: "column" }}>
                 <Controller
                   name="calculation_expression"
                   control={control}
@@ -367,23 +367,23 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
                     <FormControl fullWidth error={!!fieldState.error} required variant="outlined">
                       <InputLabel 
                         htmlFor="formula-input"
-                        shrink={value ? true : undefined} // <--- Sube el título si hay valor
+                        shrink={value ? true : undefined}
                       >
                         Fórmula
                       </InputLabel>
                       <OutlinedInput
                         {...fieldParams}
-                        value={value || ""} // <--- Evita warnings de null a string en React
+                        value={value || ""}
                         inputRef={ref}
                         id="formula-input"
                         label="Fórmula"
-                        notched={value ? true : undefined} // <--- Corta la línea del borde si hay valor
+                        notched={value ? true : undefined}
                         endAdornment={
                           <InputAdornment position="end">
                             <IconButton 
-                              onClick={() => setOpenFormulaModal(true)} 
+                              onClick={() => setOpenFormulaModal(!openFormulaModal)} // <-- Ahora hace Toggle (Abre/Cierra)
                               edge="end"
-                              color="primary"
+                              color={openFormulaModal ? "secondary" : "primary"} // <-- Cambia de color si está abierto
                               title="Asistente de Fórmulas"
                             >
                               <FunctionsIcon />
@@ -398,19 +398,17 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
                   )}
                 />
 
-                {/* El Modal del Asistente */}
-                <FormulaHelperModal
+                {/* El Panel Colapsable del Asistente */}
+                <FormulaHelperPanel
                   open={openFormulaModal}
-                  onClose={() => setOpenFormulaModal(false)}
                   formulas={formulas}
                   onInsert={(formulaName) => {
                     const currentVal = getValues("calculation_expression") || "";
-                    // Insertamos la formula y dejamos los paréntesis listos
                     setValue("calculation_expression", `${currentVal}${formulaName}()`, { 
                         shouldValidate: true, 
                         shouldDirty: true 
                     });
-                    setOpenFormulaModal(false);
+                    // ¡Se eliminó el setOpenFormulaModal(false) para que el usuario pueda seguir leyendo el panel!
                   }}
                 />
               </Grid>

@@ -1,25 +1,21 @@
 import { useMemo, useState } from "react";
 import { 
-    Dialog, DialogTitle, DialogContent, TextField, InputAdornment, 
-    Accordion, AccordionSummary, AccordionDetails, Typography, 
-    Stack, Button, Chip, Box, IconButton 
+    TextField, InputAdornment, Accordion, AccordionSummary, 
+    AccordionDetails, Typography, Stack, Button, Chip, Box, Paper, Collapse 
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import CloseIcon from "@mui/icons-material/Close";
 import type { ExcelFormulaTemplate } from "src/types/leadFields";
 
-interface FormulaHelperModalProps {
+interface FormulaHelperPanelProps {
     open: boolean;
-    onClose: () => void;
     formulas: ExcelFormulaTemplate[];
     onInsert: (formulaName: string) => void;
 }
 
-export const FormulaHelperModal = ({ open, onClose, formulas, onInsert }: FormulaHelperModalProps) => {
+export const FormulaHelperPanel = ({ open, formulas, onInsert }: FormulaHelperPanelProps) => {
     const [search, setSearch] = useState("");
 
-    // Filtrar las fórmulas por la búsqueda (español, inglés o descripción)
     const filteredFormulas = useMemo(() => {
         if (!search) return formulas;
         const s = search.toLowerCase();
@@ -30,7 +26,6 @@ export const FormulaHelperModal = ({ open, onClose, formulas, onInsert }: Formul
         );
     }, [formulas, search]);
 
-    // Agrupar las fórmulas por categoría
     const groupedFormulas = useMemo(() => {
         const groups: Record<string, ExcelFormulaTemplate[]> = {};
         filteredFormulas.forEach(f => {
@@ -41,14 +36,10 @@ export const FormulaHelperModal = ({ open, onClose, formulas, onInsert }: Formul
     }, [filteredFormulas]);
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-            <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                Asistente de Fórmulas
-                <IconButton onClick={onClose} size="small"><CloseIcon /></IconButton>
-            </DialogTitle>
-            
-            <DialogContent dividers sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <Collapse in={open} timeout="auto" unmountOnExit sx={{ width: '100%' }}>
+            <Paper variant="outlined" sx={{ mt: 1, p: 2, maxHeight: '400px', display: 'flex', flexDirection: 'column', gap: 2, bgcolor: 'background.default' }}>
                 <TextField
+                    size="small"
                     fullWidth
                     placeholder="Buscar fórmula..."
                     value={search}
@@ -56,28 +47,28 @@ export const FormulaHelperModal = ({ open, onClose, formulas, onInsert }: Formul
                     InputProps={{
                         startAdornment: (
                             <InputAdornment position="start">
-                                <SearchIcon />
+                                <SearchIcon fontSize="small" />
                             </InputAdornment>
                         ),
                     }}
                 />
 
-                <Box sx={{ overflowY: "auto", flexGrow: 1 }}>
+                <Box sx={{ overflowY: "auto", flexGrow: 1, pr: 1 }}>
                     {Object.keys(groupedFormulas).length === 0 ? (
                         <Typography color="text.secondary" textAlign="center" mt={4}>
                             No se encontraron fórmulas.
                         </Typography>
                     ) : (
                         Object.entries(groupedFormulas).map(([category, catFormulas]) => (
-                            <Accordion key={category} defaultExpanded={search.length > 0}>
+                            <Accordion key={category} defaultExpanded={search.length > 0} disableGutters variant="outlined" sx={{ mb: 1 }}>
                                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                                     <Typography fontWeight="bold">{category}</Typography>
                                 </AccordionSummary>
                                 <AccordionDetails>
                                     <Stack spacing={2}>
                                         {catFormulas.map((f) => (
-                                            <Box key={f.name_english} sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
-                                                <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+                                            <Box key={f.name_english} sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1, bgcolor: 'background.paper' }}>
+                                                <Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={2}>
                                                     <Stack spacing={0.5}>
                                                         <Stack direction="row" spacing={1} alignItems="center">
                                                             <Typography variant="subtitle1" fontWeight="bold">
@@ -85,12 +76,22 @@ export const FormulaHelperModal = ({ open, onClose, formulas, onInsert }: Formul
                                                             </Typography>
                                                             <Chip label={f.name_spanish} size="small" variant="outlined" color="primary" />
                                                         </Stack>
-                                                        <Typography variant="body2">{f.description}</Typography>
+                                                        
+                                                        <Typography variant="body2" sx={{ mb: 1 }}>
+                                                            {f.description}
+                                                        </Typography>
+                                                        
+                                                        {/* --- NUEVO: Sintaxis --- */}
+                                                        <Typography variant="body2" sx={{ fontFamily: 'monospace', color: 'primary.main', fontWeight: 'bold' }}>
+                                                            {f.syntax}
+                                                        </Typography>
+                                                        
                                                         <Typography variant="body2" sx={{ fontFamily: 'monospace', bgcolor: 'action.hover', p: 0.5, borderRadius: 1 }}>
                                                             Ej: {f.example}
                                                         </Typography>
+                                                        
                                                         {f.note && (
-                                                            <Typography variant="caption" color="text.secondary">
+                                                            <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
                                                                 Nota: {f.note}
                                                             </Typography>
                                                         )}
@@ -99,6 +100,7 @@ export const FormulaHelperModal = ({ open, onClose, formulas, onInsert }: Formul
                                                         variant="contained" 
                                                         size="small"
                                                         onClick={() => onInsert(f.name_english)}
+                                                        sx={{ flexShrink: 0 }}
                                                     >
                                                         Insertar
                                                     </Button>
@@ -111,7 +113,7 @@ export const FormulaHelperModal = ({ open, onClose, formulas, onInsert }: Formul
                         ))
                     )}
                 </Box>
-            </DialogContent>
-        </Dialog>
+            </Paper>
+        </Collapse>
     );
 };
