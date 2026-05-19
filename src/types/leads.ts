@@ -15,12 +15,16 @@ export interface Lead {
   id: number;
   campaign_id?: number;
   field_values: LeadFieldValue[];
-  organization_id?: number,
-  tags: LeadTag[]
+  organization_id?: number;
+  tags: LeadTag[];
+  picture_avatar_url?: string | null;
+  assigned_to_user_id?: number | null;
+  team_id?: number | null;
+  contact_state_id?: number | null;
+  current_state_id?: number | null;
 }
 export interface LeadDetailed extends Lead, Metadata {
   field_values: LeadFieldValueDetailed[];
-
 }
 
 export interface LeadCommentPost {

@@ -78,3 +78,15 @@ export const deleteView = async (id: number): Promise<DeleteResponse> => {
   const view = await axiosCRM.delete(`lead_views/${id}`);
   return view.data;
 };
+
+export const changeStateLead = async (lead_id: number, state_id: number): Promise<LeadDetailed> => {
+  const body = {"new_state_id": state_id}
+  const response = await axiosCRM.post(`leads/${lead_id}/change_state`, body);
+  return response.data;
+};
+
+export const changeContactStateLead = async (lead_id: number, state_id: number): Promise<LeadDetailed> => {
+  const body = {"contact_state_id": state_id}
+  const response = await axiosCRM.put(`leads/${lead_id}`, body);
+  return response.data;
+};

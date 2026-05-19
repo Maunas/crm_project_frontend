@@ -8,13 +8,14 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-  "typecheck": "tsc --noEmit -p tsconfig.app.json",
-  "precheck": "pnpm lint && pnpm typecheck"
+    "typecheck": "tsc --noEmit -p tsconfig.app.json",
+    "precheck": "pnpm lint && pnpm typecheck"
   },
   "dependencies": {
     "@base-ui/react": "1.3.0",
     "@emotion/react": "11.14.0",
     "@emotion/styled": "11.14.1",
+    "@hello-pangea/dnd": "^18.0.1",
     "@mui/icons-material": "9.0.0",
     "@mui/lab": "9.0.0-beta.2",
     "@mui/material": "9.0.0",

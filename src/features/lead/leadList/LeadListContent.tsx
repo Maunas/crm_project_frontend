@@ -7,6 +7,7 @@ import type { LeadField } from "src/types/leadFields"
 import type { Lead } from "src/types/leads"
 import { Link } from "react-router-dom"
 import { Stack, Typography, ButtonGroup, Badge } from "@mui/material"
+import { LeadBoardPresentation } from "./board/LeadBoardPresentation"
 
 interface LeadListContentProps {
     leads: Lead[],
@@ -30,14 +31,16 @@ interface LeadListContentProps {
         removeItem: (item: Lead) => void;
         removeAllItems: () => void;
     },
-    presentationMode: string
+    presentationMode: string,
+    campaignId: number | string,
+    filters: any
 }
 
 /**
  * Wrapper del contenido, realiza la lógica de selectedColumns, y elige el modo de vista deseado.
  */
 export const LeadListContent = memo(({ leads, leadFields, selectedFieldIds, activeFilters = 0, modalProps, orderProps, handleSelectedFieldIds,
-    selectCheckboxProps, presentationMode }: LeadListContentProps) => {
+    selectCheckboxProps, presentationMode, campaignId, filters }: LeadListContentProps) => {
 
     //Filtra los objetos LeadField para seguir el orden del arreglo de ids.
     const selectedColumns = useMemo(() => {
@@ -86,6 +89,11 @@ export const LeadListContent = memo(({ leads, leadFields, selectedFieldIds, acti
 
     switch (presentationMode) {
         case "LIST": return <p>Lista</p>
+        case "BOARD": 
+            return <LeadBoardPresentation 
+                    campaignId={campaignId} 
+                    activeFilters={filters} 
+                />
         case "GRID": return <p>Grid</p>
         default: return <LeadTablePresentation leads={leads} selectedColumns={selectedColumns}
             dragProps={dragProps} orderProps={orderProps} modalProps={modalProps} selectCheckboxProps={selectCheckboxProps} />

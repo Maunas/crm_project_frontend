@@ -256,7 +256,7 @@ export const LeadListPage = () => {
                     bulkDelete={bulkDelete} />
                 {(leads && campaignId !== null && workspaceId !== null) ?
                     <LeadListContent leads={leads.items} leadFields={leadFields} selectedFieldIds={selectedFieldIds} modalProps={modalProps} presentationMode={presentationMode}
-                        activeFilters={filters.length} orderProps={orderProps} handleSelectedFieldIds={handleSelectedFieldIds} selectCheckboxProps={selectCheckboxProps} />
+                        activeFilters={filters.length} orderProps={orderProps} handleSelectedFieldIds={handleSelectedFieldIds} selectCheckboxProps={selectCheckboxProps} campaignId={campaignId} filters={filters}/>
                     :
                     <Stack spacing={3} sx={{ alignItems: "center", my: 3 }}>
                         <Typography variant="h3">No hay leads para presentar</Typography>
