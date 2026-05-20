@@ -19,7 +19,7 @@ interface BasicControlFormInput<T extends FieldValues, Option> extends BasicMult
 }
 
 interface ControlledACProps<T extends FieldValues, Option> extends BasicControlFormInput<T, Option> {
-    getOptionLabel: (option: Option) => string,
+    getOptionLabel?: (option: Option) => string,
     getOptionKey: (option: Option) => string,
     disabled?: boolean,
     hidden?: boolean,

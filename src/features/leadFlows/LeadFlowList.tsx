@@ -51,7 +51,7 @@ export const LeadFlowList = ({ closeSidebar, property }: FlowListProps) => {
         <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
             <Typography variant="h4">No se han encontrado flujos de estado...</Typography>
             <CommonButton actionType="CREATE" onClick={() => nav("/lead-flow-editor")} variant="contained">Abrir Editor</CommonButton>
-            <CommonButton actionType="CLOSE" onClick={closeSidebar} sx={{ alignSelf: "end" }}>Cerrar</CommonButton>
+            <CommonButton actionType="CLOSE" variant="outlined" onClick={closeSidebar} sx={{ alignSelf: "end" }}>Cerrar</CommonButton>
         </Stack>
     )
 }

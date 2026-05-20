@@ -1,16 +1,14 @@
-import { useEffect, useState } from 'react';
 import GenericModal from 'src/components/layout/container/GenericModal';
 import CommonButton from 'src/components/ui/buttons/CommonButton';
 import { useModal } from 'src/hooks/useModal';
-import { CATEGORY_CONFIG, DEFAULT_STATE_COLORS } from 'src/types/leadFlow'
+import { CATEGORY_CONFIG } from 'src/types/leadFlow'
 import type { StateCategory, LeadStatePost } from 'src/types/leadFlow'
-import {
-  Box, Typography, TextField, FormControl, InputLabel, Select, MenuItem, FormControlLabel, Switch, Paper, Divider, Stack, ButtonGroup,
-} from '@mui/material';
+import { Box, Typography, Paper, Divider, Stack } from '@mui/material';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import CancelIcon from '@mui/icons-material/Cancel';
 import CircleIcon from '@mui/icons-material/Circle';
+import StateForm from './StateDialogForm';
 
 interface SidebarProps {
   onAddState: (state: Omit<LeadStatePost, 'lead_flow_id'>) => void;
@@ -153,121 +151,17 @@ export function Sidebar({ onAddState, hasInitialState, isLocked = false }: Sideb
               actionType='CREATE'
               fullWidth
               variant="contained"
-              onClick={() => handleOpen("create")}
+              onClick={() => handleOpen("create-state")}
             >
               Crear Estado
             </CommonButton>
           </Box>
         </Stack>
       </Box>
-      <GenericModal idModal="create" modalProps={modalProps} showButton={false}
+      <GenericModal idModal="create-state" modalProps={modalProps} showButton={false}
         maxWidth="xs" fullWidth>
-        <NewStateForm canCreateInitial={canCreateInitial} onAddState={onAddState} handleClose={handleClose} />
+        <StateForm hasInitialState={hasInitialState} onSave={onAddState} onClose={handleClose} />
       </GenericModal>
     </>
   );
-}
-
-interface StateForm {
-  canCreateInitial: boolean,
-  onAddState: (state: Omit<LeadStatePost, "lead_flow_id">) => void
-  handleClose: () => void;
-}
-
-export const NewStateForm = ({ canCreateInitial, onAddState, handleClose }: StateForm) => {
-  const [newStateName, setNewStateName] = useState('');
-  const [newStateCategory, setNewStateCategory] = useState<StateCategory>('OPEN');
-  const [newStateIsInitial, setNewStateIsInitial] = useState(false);
-  const [newStateColor, setNewStateColor] = useState('');
-
-  const handleCloseWrapper = () => {
-    setNewStateName('');
-    setNewStateCategory('OPEN');
-    setNewStateIsInitial(false);
-    setNewStateColor('');
-    handleClose();
-  }
-
-  const handleCreateState = (e: React.SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    if (!newStateName.trim()) return;
-    onAddState({
-      name: newStateName,
-      category: newStateCategory,
-      is_initial: newStateIsInitial,
-      color: newStateColor || undefined,
-    });
-    handleCloseWrapper()
-  };
-
-  useEffect(() => {
-    setNewStateColor(CATEGORY_CONFIG[newStateCategory].color)
-  }, [newStateCategory])
-
-  return (
-    <form onSubmit={handleCreateState}>
-      <Stack spacing={3}>
-        <Typography variant='h2' >Crear Nuevo Estado</Typography>
-        <Stack spacing={2} sx={{ alignItems: "start" }}>
-          <TextField
-            label="Nombre"
-            value={newStateName}
-            onChange={(e) => setNewStateName(e.target.value)}
-            fullWidth autoFocus
-          />
-          <FormControl fullWidth>
-            <InputLabel>Categoria</InputLabel>
-            <Select
-              value={newStateCategory}
-              label="Categoria"
-              onChange={(e) => setNewStateCategory(e.target.value as StateCategory)}
-            >
-              {CATEGORY_ITEMS.map(({ category }) => (
-                <MenuItem key={category} value={category}>
-                  <Stack direction="row" spacing={1.5} useFlexGap sx={{ alignItems: 'center' }}>
-                    <Box
-                      sx={{
-                        width: 12, height: 12,
-                        borderRadius: '50%',
-                        backgroundColor: CATEGORY_CONFIG[category].color,
-                      }}
-                    />
-                    {CATEGORY_CONFIG[category].label}
-                  </Stack>
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          {canCreateInitial && (
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={newStateIsInitial}
-                  onChange={(e) => setNewStateIsInitial(e.target.checked)}
-                />
-              }
-              label="Es estado inicial"
-            />
-          )}
-          <TextField
-            label="Color (opcional)"
-            type="color"
-            value={newStateColor || DEFAULT_STATE_COLORS[newStateCategory]}
-            onChange={e => setNewStateColor(e.target.value)}
-            fullWidth
-          />
-        </Stack>
-        <ButtonGroup sx={{ alignSelf: "end" }}>
-          <CommonButton actionType='CLOSE' variant="text" onClick={() => handleCloseWrapper()}>Cancelar</CommonButton>
-          <CommonButton actionType='CREATE'
-            variant="contained"
-            type='submit'
-            disabled={!newStateName.trim()}>
-            Crear
-          </CommonButton>
-        </ButtonGroup>
-      </Stack>
-    </form>
-  )
 }

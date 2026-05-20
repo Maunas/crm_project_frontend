@@ -1,9 +1,8 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { StateNode } from './StateNode';
-import StateDialog from './StateDialog';
 import CustomEdge from './CustomEdge';
 import { Sidebar } from './Sidebar';
-import CommonButton from 'src/components/ui/buttons/CommonButton';
+import CommonButton from 'shared/ui/buttons/CommonButton';
 import { DEFAULT_STATE_COLORS, type StateCategory, type FlowEditorState, type FlowEditorTransition } from 'src/types/leadFlow';
 import type { SimpleErrorBody } from 'src/types/shared'
 import ReactFlow, { useNodesState, useEdgesState, Controls, Background, BackgroundVariant, MarkerType, ConnectionMode, MiniMap, } from 'reactflow'; // O '@xyflow/react'
@@ -321,14 +320,15 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
 
       </Stack>
       {/* Diálogo de Edición */}
-      <StateDialog
-        open={Boolean(editingState)}
-        onClose={() => setEditingState(null)}
-        onSave={handleSaveState}
-        state={editingState}
-        hasInitialState={hasInitialState}
-      />
-
+      <GenericModal idModal='update-state' open={Boolean(editingState)} maxWidth="xs" fullWidth
+        modalProps={{ handleClose: () => setEditingState(null) }} showButton={false} >
+        <StateForm
+          existingState={editingState}
+          hasInitialState={hasInitialState}
+          onSave={handleSaveState}
+          onClose={() => setEditingState(null)}
+        />
+      </GenericModal>
       <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={() => setSnackbar(p => ({ ...p, open: false }))} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
         <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
       </Snackbar>
@@ -338,6 +338,8 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
 
 import React from 'react'
 import { useLoading } from 'src/hooks/useLoading';
+import GenericModal from 'src/components/layout/container/GenericModal';
+import StateForm from './StateDialogForm';
 
 interface HeaderProps {
   initialName: string,
