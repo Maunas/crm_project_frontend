@@ -1,11 +1,9 @@
-import React, { useEffect, useMemo, useState, type ReactNode } from 'react'
+import React, { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { getOrganizations } from 'src/features/organizations/organizationServices';
 import { loginUser, signupUser } from 'src/features/auth/userServices';
 import type { Organization, OrganizationDetailed } from 'src/types/campaigns';
 import type { UserData, UserLogin, UserSignup } from 'src/types/users';
 import { SUPERUSER } from 'src/utils/constants';
-import { UserContext } from 'src/stores/contexts';
-import { useNavigate } from 'react-router-dom';
 
 export interface UserContextItems {
     userOrganizations: OrganizationDetailed[],
@@ -20,9 +18,9 @@ export interface UserContextItems {
     logout: () => void
 }
 
-export const UserProvider = ({ children }: { children?: ReactNode }) => {
+const UserContext = createContext<UserContextItems | undefined>({} as UserContextItems)
 
-    const nav = useNavigate()
+export const UserProvider = ({ children }: { children?: ReactNode }) => {
 
     const [user, setUser] = useState<UserData | null>(() => {
         const localUser = window.localStorage.getItem("user")
@@ -89,7 +87,6 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
         alert("Logout")
         setUser(null)
         setActiveOrg(null)
-        nav("/login")
     }
 
     return (
@@ -102,3 +99,11 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
         </UserContext.Provider>
     )
 }
+
+export const useUserContext = () => {
+    const context = useContext(UserContext);
+    if (context === undefined) {
+        throw new Error('useContext debe usarse dentro de un UserContextProvider');
+    }
+    return context;
+};

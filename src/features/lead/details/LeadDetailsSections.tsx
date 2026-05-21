@@ -122,7 +122,6 @@ export const LeadFieldByType = (props: LeadFieldProps) => {
 
     const valueCode = (templateCode && TEMPLATES_WITH_ICONS.includes(templateCode)) ? templateCode : typeCode
 
-    if (typeCode === "URL") console.log(value)
 
     const component = (code?: string) => {
         switch (code) {

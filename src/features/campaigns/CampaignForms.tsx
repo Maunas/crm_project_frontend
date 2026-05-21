@@ -11,6 +11,12 @@ import type { LeadFieldPost } from "src/types/leadFields"
 import { setFormErrors } from "src/utils/forms"
 import { useForm } from "react-hook-form"
 import { ButtonGroup, Grid, Stack, Typography } from "@mui/material"
+import type { LeadFlow } from "../../types/leadFlow"
+import { useNavigate } from "react-router-dom"
+import EditIcon from "@mui/icons-material/Edit"
+import { IconButton, Box } from "@mui/material"
+import type { OptionWithAction } from "src/types/shared"
+import { getLeadFlows } from "../leadFlows/leadFlowServices/FlowService"
 
 interface UpdateCampaignSidebarProps {
     existingCmp: CampaignDetailed,
@@ -74,23 +80,56 @@ interface CampaignProps {
 export const CampaignForm = ({ existingCmp, workspaceId, submit, onCancel }: CampaignProps) => {
 
     const [workspaces, setWorkspaces] = useState<Workspace[] | []>([])
+    const [leadFlows, setLeadFlows] = useState<LeadFlow[] | []>([])
+    const navigate = useNavigate();
 
     useEffect(() => {
         getWorkspaces({ only_active: true, page_size: 0 })
             .then(res => setWorkspaces(res.items))
     }, [])
 
+    useEffect(() => {
+        getLeadFlows({ only_active: true, page_size: 0 })
+            .then(res => setLeadFlows(res.items))
+    }, [])
+
+    const flowsWithOptions = useMemo<OptionWithAction<LeadFlow>[]>(() => {
+        return [
+            ...(leadFlows as OptionWithAction<LeadFlow>[]),
+            { id: 'CREATE_ACTION', name: ' + Agregar nuevo flujo...', isAction: true }
+        ];
+    }, [leadFlows]);
+
+
     const defaultValues = useMemo(() => ({
         name: existingCmp?.name,
         description: existingCmp?.description,
         workspace_id: existingCmp?.workspace_id ?? workspaceId ?? undefined,
+        lead_flow_id: existingCmp?.lead_flow_id
     }), [existingCmp, workspaceId])
 
-    const { register, handleSubmit, reset, control, formState: { errors }, setError }
+    const { register, handleSubmit, reset, control, formState: { errors }, setError, getValues }
         = useForm<CampaignPost>({ defaultValues })
 
+
+    /**Guarda lo escrito y la URL para continuar la creación de la campaña. */
+    const handleNavigateToFlow = (flowId?: number) => {
+        sessionStorage.setItem('campaign_draft', JSON.stringify(getValues()));
+        sessionStorage.setItem('flow_return_url', window.location.pathname);
+        onCancel();
+        navigate(flowId ? `/lead-flow-editor/${flowId}` : '/lead-flow-editor');
+    }
+
     //Reinicia los defaultValues si se cambia la campaña que se está creando/modificando.
-    useEffect(() => { reset(defaultValues) }, [reset, defaultValues])
+    useEffect(() => {
+        const draft = sessionStorage.getItem('campaign_draft');
+        if (draft) {
+            reset(JSON.parse(draft));
+            sessionStorage.removeItem('campaign_draft');
+        } else {
+            reset(defaultValues);
+        }
+    }, [reset, defaultValues])
 
     const onSubmit = (data: CampaignPost) => {
         submit(data)
@@ -120,7 +159,69 @@ export const CampaignForm = ({ existingCmp, workspaceId, submit, onCancel }: Cam
                             <RegisteredTextInput name="description" register={register} label="Descripción"
                                 errorMessage={errors.description?.message} multiline />
                         </Grid>
-                    </Grid>
+                        <Grid size="grow" sx={{ minWidth: "20rem" }}>
+                            <ControlledAutocomplete
+                                control={control} label="Flujo de Estados"
+                                name="lead_flow_id" options={flowsWithOptions}
+                                getOptionLabel={option => option.name!} getOptionKey={option => `${option.id}`}
+                                returnField="id" errorMessage={errors?.lead_flow_id?.message} required
+                                renderOption={(props, option) => {
+                                    // Comprobamos si es nuestra opción inyectada
+                                    const isAction = option.isAction;
+                                    return (
+                                        <Box
+                                            component="li" {...props}
+                                            onMouseDown={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                            }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                e.preventDefault();
+                                                if (isAction) {
+                                                    handleNavigateToFlow();
+                                                } else {
+                                                    props.onClick?.(e); // Acción: Seleccionar Flujo normal
+                                                }
+                                            }}
+                                            sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                width: '100%',
+                                                ...(isAction && {
+                                                    color: 'primary.main',
+                                                    fontWeight: 'bold',
+                                                    borderTop: '1px solid',
+                                                    borderColor: 'divider',
+                                                    mt: 0.5,
+                                                    bgcolor: 'action.hover'
+                                                })
+                                            }}
+                                        >
+                                            <Typography sx={{ flexGrow: 1 }}>
+                                                {option.name}
+                                            </Typography>
+
+                                            {!isAction && (
+                                                <IconButton
+                                                    size="small"
+                                                    onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        e.preventDefault();
+                                                        handleNavigateToFlow(option.id as number);
+                                                    }}
+                                                    sx={{ ml: 1 }}
+                                                >
+                                                    <EditIcon fontSize="small" color="action" />
+                                                </IconButton>
+                                            )}
+                                        </Box>
+                                    );
+                                }}
+                            />
+                        </Grid>
+                    </Grid >
                     {errors?.root &&
                         <FormErrorMessage>{errors?.root?.message}</FormErrorMessage>}
                     <ButtonGroup sx={{ alignSelf: "end" }}>
@@ -131,8 +232,8 @@ export const CampaignForm = ({ existingCmp, workspaceId, submit, onCancel }: Cam
                             Guardar
                         </CommonButton>
                     </ButtonGroup>
-                </Stack>
-            </Stack>
-        </form>
+                </Stack >
+            </Stack >
+        </form >
     )
 }

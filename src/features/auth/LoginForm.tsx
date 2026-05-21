@@ -1,18 +1,17 @@
-import { useContext } from "react"
-import { PasswordField, RegisteredTextInput } from "../../components/ui/forms/CustomInputs"
+import { PasswordField, RegisteredTextInput } from "shared/ui/forms/CustomInputs"
+import { FormErrorMessage } from "shared/ui/forms/FormFeedback"
 import CommonButton from "shared/ui/buttons/CommonButton"
-import { FormErrorMessage } from "../../components/ui/forms/FormFeedback"
-import type { UserLogin } from "../../types/users"
+import type { UserLogin } from "src/types/users"
 import { setFormErrors } from "src/utils/forms"
-import { UserContext } from "src/stores/contexts"
-import { useForm } from "react-hook-form"
+import { useUserContext } from "src/stores/UserContext"
 import { Link, useNavigate } from "react-router-dom"
+import { useForm } from "react-hook-form"
 import { Button, ButtonGroup, Grid, Paper, Stack, Typography } from "@mui/material"
 
 
 export const LoginFormPage = () => {
 
-  const { login } = useContext(UserContext)
+  const { login } = useUserContext()
   const nav = useNavigate()
 
   const submit = (data: UserLogin) => {

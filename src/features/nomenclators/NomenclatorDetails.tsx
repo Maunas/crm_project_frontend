@@ -1,10 +1,9 @@
-import { useContext } from "react"
-import TitleAndActive from "shared/ui/details/TitleAndActive"
-import CommonButton from "shared/ui/buttons/CommonButton"
 import HandleActiveButton from "shared/ui/buttons/HandleActiveButton"
 import DetailsMetadata from "shared/ui/details/DetailsMetadata"
+import TitleAndActive from "shared/ui/details/TitleAndActive"
+import CommonButton from "shared/ui/buttons/CommonButton"
 import type { NomenclatorDetailed } from "src/types/nomenclators"
-import { UserContext } from "src/stores/contexts"
+import { useUserContext } from "src/stores/UserContext"
 import { Link as RouterLink } from "react-router-dom"
 import { ButtonGroup, Divider, Link, Stack, Typography } from "@mui/material"
 
@@ -17,7 +16,7 @@ interface NomenclatorDetailsProps {
 
 export const NomenclatorDetails = ({ entity, closeSidebar, handleSidebar, handleActive }: NomenclatorDetailsProps) => {
 
-    const { activeOrg } = useContext(UserContext)
+    const { activeOrg } = useUserContext()
 
     if (entity) return (
         <Stack spacing={3} >

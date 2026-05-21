@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { WorkspaceFormSidebar } from './WorkspaceForms';
 import { WorkspaceDetails } from './WorkspaceDetails'
 import { CreateCampaignFormSidebar } from 'features/campaigns/CampaignForms';
@@ -13,8 +13,7 @@ import { useListPagination } from 'src/hooks/useListPagination';
 import { disableWorkspace, enableWorkspace, getWorkspace, getWorkspaces } from './workspaceServices'
 import type { CampaignDetailed, WorkspaceDetailed } from 'src/types/campaigns'
 import type { Paginable } from 'src/types/shared'
-import { UserContext } from 'src/stores/contexts';
-import type { UserContextItems } from 'src/stores/UserProvider';
+import { useUserContext } from 'src/stores/UserContext';
 import { useSearchParams } from 'react-router-dom';
 import { List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
 
@@ -28,7 +27,7 @@ export const WorkspaceList = () => {
 
     const { fetchPage, pageSize, refresh, pageComponentProps } = useListPagination(workspaces)
 
-    const { activeOrg } = useContext<UserContextItems>(UserContext)
+    const { activeOrg } = useUserContext()
 
     useEffect(() => {
         getWorkspaces({ detailed: true, page_size: pageSize, only_active: false, page: fetchPage }).then(setWorkspaces)

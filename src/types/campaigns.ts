@@ -5,6 +5,7 @@ export interface CampaignPost {
   name: string;
   description?: string;
   workspace_id: number;
+  lead_flow_id?: number;
 }
 export interface Campaign extends CampaignPost {
   id: number;

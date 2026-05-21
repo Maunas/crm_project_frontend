@@ -13,6 +13,7 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import SettingsIcon from '@mui/icons-material/Settings';
+import { CircularProgress } from '@mui/material';
 
 const ACTION_ICONS = {
     NONE: <></>,
@@ -31,6 +32,7 @@ const ACTION_ICONS = {
     SIGNUP: <PersonAddIcon sx={{ display: "block" }} />,
     LIST: <FormatListBulletedIcon sx={{ display: "block" }} />,
     CHECK: <TaskAltIcon sx={{ display: "block" }} />,
+    LOADING: <CircularProgress size={24} sx={{ display: "block" }} />,
 }
 
 export type ActionType = keyof typeof ACTION_ICONS

@@ -38,6 +38,8 @@ export interface ListParams extends OrderParams {
   detailed?: boolean,
   page?: number,
   page_size?: number,
+  search?: string,
+  search_fields?: string
 }
 export interface WorkspaceParams extends ListParams {
   organization_id?: number
@@ -48,24 +50,45 @@ export interface CampaignParams extends ListParams {
 export interface LeadListParams extends ListParams {
   campaign_id?: number
 }
+export interface LeadFlowParams extends ListParams {
+  organization_id?: number
+}
+export interface FlowStateParams extends LeadFlowParams {
+  lead_flow_id: number
+}
 
 /**
  * Contiene los formatos de mensaje de error.
  */
-export interface ErrorMessage<T> {
-  field: Path<T>,
-  message: string
-}
-export interface ErrorBody<T> {
+export interface SimpleErrorBody {
   message?: string //Error en el cuerpo
   detail?: string //Error en el cuerpo
   response?: {
     data: {
       detail: string | //Si el error no tiene identificador
-      ErrorMessage<T> | //Un solo error de formulario
-      [ErrorMessage<T>] //Lista de errores de formulario
+      SimpleErrorMessage | [SimpleErrorMessage]
+      message?: string
     }
   }
+}
+export interface SimpleErrorMessage {
+  field: string,
+  message: string
+}
+
+export interface ErrorBody<T> extends Omit<SimpleErrorBody, "response"> {
+  response?: {
+    data: {
+      detail: string | //Si el error no tiene identificador
+      ErrorMessage<T> | //Un solo error de formulario
+      [ErrorMessage<T>] //Lista de errores de formulario
+      message?: string
+    }
+  }
+}
+export interface ErrorMessage<T> {
+  field: Path<T>,
+  message: string
 }
 
 export interface DeleteResponse {
@@ -82,7 +105,6 @@ export interface EnableResponse {
   actived: boolean
 }
 
-
 export interface SearchResults {
   leads: Lead[],
   campaigns: Campaign[],
@@ -90,7 +112,6 @@ export interface SearchResults {
   nomenclators: Nomenclator[],
   nomenclator_items: NomenclatorItem[],
 }
-
 
 export interface LeadFilter {
   "field_id"?: number,
@@ -112,3 +133,5 @@ export interface DictionaryItem {
 }
 
 export type DateFormat = "dateTime" | "dateTimeLong" | "date" | "dateLong" | "time" | "custom"
+
+export type OptionWithAction<T> = ((T & { isAction: boolean }) | { id: string, name: string, isAction: boolean })
