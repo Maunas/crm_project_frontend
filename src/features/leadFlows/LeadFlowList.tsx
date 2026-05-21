@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { useListPagination } from 'src/hooks/useListPagination'
 import type { LeadFlowDetailed } from 'src/types/leadFlow'
 import type { Paginable } from 'src/types/shared'
-import { getLeadFlows } from './FlowService'
 import { Avatar, Grid, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
 import { CustomListItem, CustomListItemAvatar } from 'src/components/ui/lists/CustomListItem'
 import type { LeadPropertiesItem } from '../leadProperties/leadPropertiesList'
@@ -11,6 +10,7 @@ import CommonButton from 'src/components/ui/buttons/CommonButton'
 import PaginationComponent from 'src/components/ui/lists/PaginationComponent'
 import { CommonIconButton } from 'src/components/ui/buttons/CommonIconButton'
 import { EnabledIcon } from 'src/components/ui/lists/Icons'
+import { getLeadFlows } from './leadFlowServices/FlowService'
 
 
 interface FlowListProps {

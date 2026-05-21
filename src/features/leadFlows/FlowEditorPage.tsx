@@ -2,10 +2,10 @@ import { useCallback, useEffect, useState } from 'react';
 import FlowEditor from './FlowEditor';
 import { useLoading } from 'src/hooks/useLoading';
 import type { FlowEditorState, FlowEditorTransition } from 'src/types/leadFlow';
-import { getLeadFlow, getLeadFlowStates, getLeadFlowTransitions, saveLeadFlowGraph } from './FlowService';
-import { mapFlowStates, mapFlowTransitions } from './leadFlowUtils';
+import { mapFlowStates, mapFlowTransitions } from './leadFlowServices/leadFlowUtils';
 import { useParams } from 'react-router-dom';
 import { Box, CircularProgress } from '@mui/material';
+import { getLeadFlow, getLeadFlowStates, getLeadFlowTransitions, saveLeadFlowGraph } from './leadFlowServices/FlowService';
 
 interface GraphData {
   id?: number | null,

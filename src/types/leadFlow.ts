@@ -1,6 +1,6 @@
 import type { Metadata } from "./shared"
 
-export type StateCategory = 'INITIAL' | 'OPEN' | 'WON' | 'LOST'
+export type StateCategory = 'OPEN' | 'WON' | 'LOST'
 
 export interface LeadFlowPost {
   name: string
@@ -76,34 +76,3 @@ export interface FlowEditorTransition {
   fromStateId: string | null // tempId of the from state
   toStateId: string // tempId of the to state
 }
-
-// Category configuration for UI
-export const CATEGORY_CONFIG: Record<StateCategory, { label: string; color: string; bgColor: string }> = {
-  INITIAL: {
-    label: 'Inicial',
-    color: '#0ee9e9',
-    bgColor: '#0c6b6e',
-  },
-  OPEN: {
-    label: 'Abierto',
-    color: '#0ea5e9',
-    bgColor: '#0c4a6e',
-  },
-  WON: {
-    label: 'Éxito',
-    color: '#22c55e',
-    bgColor: '#14532d',
-  },
-  LOST: {
-    label: 'Fracaso',
-    color: '#ef4444',
-    bgColor: '#7f1d1d',
-  },
-};
-
-export const DEFAULT_STATE_COLORS: Record<StateCategory, string> = {
-  INITIAL: '#3bdaf6',
-  OPEN: '#3b82f6',
-  WON: '#22c55e',
-  LOST: '#ef4444',
-};

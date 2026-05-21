@@ -1,14 +1,14 @@
 import GenericModal from 'src/components/layout/container/GenericModal';
 import CommonButton from 'src/components/ui/buttons/CommonButton';
 import { useModal } from 'src/hooks/useModal';
-import { CATEGORY_CONFIG } from 'src/types/leadFlow'
+import StateForm from './StateDialogForm';
 import type { StateCategory, LeadStatePost } from 'src/types/leadFlow'
 import { Box, Typography, Paper, Divider, Stack } from '@mui/material';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import CancelIcon from '@mui/icons-material/Cancel';
 import CircleIcon from '@mui/icons-material/Circle';
-import StateForm from './StateDialogForm';
+import { CATEGORY_CONFIG, DEFAULT_STATE_COLORS } from './leadFlowServices/leadFlowUtils';
 
 interface SidebarProps {
   onAddState: (state: Omit<LeadStatePost, 'lead_flow_id'>) => void;
@@ -19,17 +19,17 @@ interface SidebarProps {
 const CATEGORY_ITEMS: { category: StateCategory; icon: React.ReactNode; description: string }[] = [
   {
     category: 'OPEN',
-    icon: <CircleIcon sx={{ fontSize: 20, color: CATEGORY_CONFIG.OPEN.color }} />,
+    icon: <CircleIcon sx={{ fontSize: 20, color: DEFAULT_STATE_COLORS.OPEN }} />,
     description: 'Estado intermedio del flujo',
   },
   {
     category: 'WON',
-    icon: <EmojiEventsIcon sx={{ fontSize: 20, color: CATEGORY_CONFIG.WON.color }} />,
+    icon: <EmojiEventsIcon sx={{ fontSize: 20, color: DEFAULT_STATE_COLORS.WON }} />,
     description: 'Lead convertido exitosamente',
   },
   {
     category: 'LOST',
-    icon: <CancelIcon sx={{ fontSize: 20, color: CATEGORY_CONFIG.LOST.color }} />,
+    icon: <CancelIcon sx={{ fontSize: 20, color: DEFAULT_STATE_COLORS.LOST }} />,
     description: 'Lead perdido o rechazado',
   },
 ];
@@ -87,16 +87,16 @@ export function Sidebar({ onAddState, hasInitialState, isLocked = false }: Sideb
                   sx={{
                     p: 1.5, mb: 2, cursor: 'grab',
                     border: 1, borderColor: 'divider',
-                    backgroundColor: `${CATEGORY_CONFIG.INITIAL.color}10`,
+                    backgroundColor: `${DEFAULT_STATE_COLORS.INITIAL}10`,
                     '&:hover': {
-                      borderColor: CATEGORY_CONFIG.INITIAL.color,
-                      backgroundColor: `${CATEGORY_CONFIG.INITIAL.color}20`,
+                      borderColor: DEFAULT_STATE_COLORS.INITIAL,
+                      backgroundColor: `${DEFAULT_STATE_COLORS.INITIAL}20`,
                     },
                     '&:active': { cursor: 'grabbing' },
                   }}
                 >
                   <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-                    <PlayArrowIcon sx={{ fontSize: 20, color: CATEGORY_CONFIG.INITIAL.color }} />
+                    <PlayArrowIcon sx={{ fontSize: 20, color: DEFAULT_STATE_COLORS.INITIAL }} />
                     <Stack>
                       <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
                         Inicial

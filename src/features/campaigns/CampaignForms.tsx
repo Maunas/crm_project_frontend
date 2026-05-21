@@ -12,11 +12,11 @@ import { setFormErrors } from "src/utils/forms"
 import { useForm } from "react-hook-form"
 import { ButtonGroup, Grid, Stack, Typography } from "@mui/material"
 import type { LeadFlow } from "../../types/leadFlow"
-import { getLeadFlows } from "../leadFlows/FlowService"
 import { useNavigate } from "react-router-dom"
 import EditIcon from "@mui/icons-material/Edit"
 import { IconButton, Box } from "@mui/material"
 import type { OptionWithAction } from "src/types/shared"
+import { getLeadFlows } from "../leadFlows/leadFlowServices/FlowService"
 
 interface UpdateCampaignSidebarProps {
     existingCmp: CampaignDetailed,

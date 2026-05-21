@@ -3,8 +3,8 @@ import { ControlledSwitch, RegisteredTextInput } from 'shared/ui/forms/CustomInp
 import { ControlledAutocomplete } from 'shared/ui/forms/CustomMultipleInputs'
 import { FormErrorMessage } from 'shared/ui/forms/FormFeedback'
 import CommonButton from 'shared/ui/buttons/CommonButton'
-import { CATEGORY_CONFIG, DEFAULT_STATE_COLORS } from 'src/types/leadFlow'
 import type { StateCategory } from 'src/types/leadFlow'
+import { DEFAULT_STATE_COLORS } from './leadFlowServices/leadFlowUtils'
 import { useForm, useWatch } from 'react-hook-form'
 import { Stack, Typography, ButtonGroup } from '@mui/material'
 
@@ -46,7 +46,7 @@ export default function StateForm({ existingState, onClose, onSave, hasInitialSt
     name: existingState?.name ?? "",
     category: existingState?.category ?? "OPEN",
     is_initial: existingState?.is_initial ?? false,
-    color: existingState?.color ?? '#2196f3'
+    color: existingState?.color ?? DEFAULT_STATE_COLORS.OPEN
   }), [existingState])
 
   const { register, control, reset, setValue, formState: { errors }, setError, handleSubmit } = useForm<EditorStatePost>({ defaultValues })
@@ -58,18 +58,25 @@ export default function StateForm({ existingState, onClose, onSave, hasInitialSt
   }, [reset, defaultValues])
 
   const newCategory = useWatch({ name: "category", control })
+  const isInitial = useWatch({ name: "is_initial", control })
 
   useEffect(() => {
     if (isEditing) return
-    setValue("color", CATEGORY_CONFIG[newCategory].color)
+    setValue("color", DEFAULT_STATE_COLORS[newCategory])
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [newCategory])
+
+  useEffect(() => {
+    if (isEditing) return
+    if (isInitial) setValue("color", DEFAULT_STATE_COLORS.INITIAL)
+    else setValue("color", DEFAULT_STATE_COLORS[newCategory])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isInitial])
 
   const canSelectInitial = !hasInitialState || (isEditing && existingState?.is_initial)
 
   const handleSave = (data: EditorStatePost) => {
     try {
-      console.log(data)
       if (!data.name || !data.name.trim()) throw new Error("El nombre no puede estar vacío.")
       if (!canSelectInitial && data.is_initial) throw new Error("Ya hay un estado inicial.")
       onSave(data)

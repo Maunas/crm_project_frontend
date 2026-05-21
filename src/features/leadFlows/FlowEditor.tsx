@@ -3,7 +3,7 @@ import { StateNode } from './StateNode';
 import CustomEdge from './CustomEdge';
 import { Sidebar } from './Sidebar';
 import CommonButton from 'shared/ui/buttons/CommonButton';
-import { DEFAULT_STATE_COLORS, type StateCategory, type FlowEditorState, type FlowEditorTransition } from 'src/types/leadFlow';
+import { type StateCategory, type FlowEditorState, type FlowEditorTransition } from 'src/types/leadFlow';
 import type { SimpleErrorBody } from 'src/types/shared'
 import ReactFlow, { useNodesState, useEdgesState, Controls, Background, BackgroundVariant, MarkerType, ConnectionMode, MiniMap, } from 'reactflow'; // O '@xyflow/react'
 import type { Connection, Edge, Node, NodeChange, ReactFlowInstance } from 'reactflow';
@@ -150,7 +150,8 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
       name: isInitial ? 'Inicial' : 'Nuevo Estado',
       category,
       is_initial: isInitial,
-      color: DEFAULT_STATE_COLORS[category as StateCategory] || '#3b82f6',
+      color: isInitial ? DEFAULT_STATE_COLORS.INITIAL :
+        (DEFAULT_STATE_COLORS[category as StateCategory] || DEFAULT_STATE_COLORS.OPEN),
       order: states.length,
       position,
     };
@@ -340,6 +341,7 @@ import React from 'react'
 import { useLoading } from 'src/hooks/useLoading';
 import GenericModal from 'src/components/layout/container/GenericModal';
 import StateForm from './StateDialogForm';
+import { DEFAULT_STATE_COLORS } from './leadFlowServices/leadFlowUtils';
 
 interface HeaderProps {
   initialName: string,

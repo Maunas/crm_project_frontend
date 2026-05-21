@@ -1,6 +1,6 @@
 import { memo } from 'react'
 import type { StateCategory } from 'src/types/leadFlow'
-import { CATEGORY_CONFIG } from 'src/types/leadFlow'
+import { CATEGORY_CONFIG } from './leadFlowServices/leadFlowUtils'
 import { Handle, Position } from 'reactflow'
 import type { NodeProps } from 'reactflow'
 import { Box, Typography, Chip, IconButton } from '@mui/material'
