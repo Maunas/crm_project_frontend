@@ -1,18 +1,18 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import GenericModal from 'shared/layout/container/GenericModal';
+import StateForm, { FlowEditorHeader } from './LeadFlowForms';
 import { StateNode } from './StateNode';
 import CustomEdge from './CustomEdge';
 import { Sidebar } from './Sidebar';
-import CommonButton from 'shared/ui/buttons/CommonButton';
-import { type StateCategory, type FlowEditorState, type FlowEditorTransition } from 'src/types/leadFlow';
+import type { StateCategory, FlowEditorState, FlowEditorTransition } from 'src/types/leadFlow';
 import type { SimpleErrorBody } from 'src/types/shared'
-import ReactFlow, { useNodesState, useEdgesState, Controls, Background, BackgroundVariant, MarkerType, ConnectionMode, MiniMap, } from 'reactflow'; // O '@xyflow/react'
+import { DEFAULT_STATE_COLORS } from './leadFlowServices/leadFlowUtils';
+import ReactFlow, { useNodesState, useEdgesState, Controls, Background, BackgroundVariant, MarkerType, ConnectionMode, MiniMap, } from 'reactflow';
 import type { Connection, Edge, Node, NodeChange, ReactFlowInstance } from 'reactflow';
-import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import 'reactflow/dist/style.css';
-import { Box, Paper, Typography, Snackbar, Alert, TextField, Stack, IconButton } from '@mui/material';
+import { Box, Snackbar, Alert, Stack } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 const nodeTypes = { stateNode: StateNode };
 const edgeTypes = { customEdge: CustomEdge };
@@ -211,19 +211,34 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
 
   const handleDeleteTransition = (tempId: string) => {
     setTransitions(prev => {
-      const updated = prev.filter((t) => t.tempId !== tempId);
+      const updated = prev.filter(t => t.tempId !== tempId);
       syncEdgesToTransitions(updated);
       return updated;
     });
   };
 
   const onConnect = useCallback((connection: Connection) => {
-    if (!connection.source || !connection.target) return;
-    const newTransition: FlowEditorTransition = { tempId: uuidv4(), fromStateId: connection.source, toStateId: connection.target };
+    const source = connection.source
+    const target = connection.target
+    if (!source || !target) return;
+    const newTransition: FlowEditorTransition = { tempId: uuidv4(), fromStateId: source, toStateId: target };
+    const newReverseTransition: FlowEditorTransition = { tempId: uuidv4(), fromStateId: target, toStateId: source };
     setTransitions(prev => {
-      const updated = [...prev, newTransition];
-      syncEdgesToTransitions(updated);
-      return updated;
+      //Si no encuentra una igual, se crea
+      if (!prev.find(t => t.fromStateId === source && t.toStateId === target)) {
+        const updated = [...prev, newTransition];
+        syncEdgesToTransitions(updated);
+        return updated;
+      }
+      //Si está repetida, se crea la relación inversa
+      if (!prev.find(t => t.fromStateId === target && t.toStateId === source)) {
+        const updated = [...prev, newReverseTransition];
+        syncEdgesToTransitions(updated);
+        return updated;
+      }
+      //Si está repetida, y ya tiene inversa, no se crea
+      return prev
+
     });
   }, [syncEdgesToTransitions]);
 
@@ -335,79 +350,4 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
       </Snackbar>
     </Stack>
   );
-}
-
-import React from 'react'
-import { useLoading } from 'src/hooks/useLoading';
-import GenericModal from 'src/components/layout/container/GenericModal';
-import StateForm from './StateDialogForm';
-import { DEFAULT_STATE_COLORS } from './leadFlowServices/leadFlowUtils';
-
-interface HeaderProps {
-  initialName: string,
-  initialDescription: string,
-  handleSaveFlow: (flowName: string, flowDescription: string) => Promise<void>,
-  statesLength: number
-}
-
-export const FlowEditorHeader = ({ initialName, initialDescription, statesLength, handleSaveFlow }: HeaderProps) => {
-
-  const [flowName, setFlowName] = useState<string>('')
-  const [flowDescription, setFlowDescription] = useState<string>('')
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setFlowDescription(initialDescription)
-    setFlowName(initialName)
-  }, [initialName, initialDescription])
-
-  const navigate = useNavigate();
-
-  const { loading, fnWithLoading } = useLoading(() => handleSaveFlow(flowName, flowDescription))
-
-  // Vuelve al formulario, con los datos guardados del sessionStorage.
-  const handleBack = () => {
-    const returnUrl = sessionStorage.getItem('flow_return_url');
-    if (returnUrl) {
-      sessionStorage.removeItem('flow_return_url');
-      navigate(returnUrl);
-    } else {
-      navigate(-1);
-    }
-  };
-
-  return (
-    <Stack component={Paper} direction="row" spacing={4} useFlexGap
-      sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider', alignItems: 'center', justifyContent: 'space-between', borderRadius: 0, flexWrap: "wrap" }}>
-      <Stack spacing={2} direction="row" sx={{ alignItems: 'center' }}>
-        <IconButton onClick={handleBack} sx={{ color: 'text.secondary' }}>
-          <ArrowBackIcon />
-        </IconButton>
-        <Typography variant="h2" component="h1" sx={{ fontWeight: "bold" }} color="text.primary">
-          Editor de Flujo
-        </Typography>
-      </Stack>
-
-      <Stack spacing={1} direction="row" useFlexGap sx={{ flex: 1, flexWrap: "wrap" }}>
-        <TextField
-          size="small"
-          label="Nombre"
-          value={flowName}
-          onChange={(e) => setFlowName(e.target.value)}
-          sx={{ flex: 1, minWidth: "10rem" }}
-        />
-        <TextField
-          size="small"
-          label="Descripción (Opcional)"
-          value={flowDescription}
-          onChange={(e) => setFlowDescription(e.target.value)}
-          sx={{ flex: 2, minWidth: "10rem" }}
-        />
-      </Stack>
-
-      <CommonButton actionType={loading ? "LOADING" : "SAVE"} onClick={fnWithLoading} disabled={loading || statesLength === 0} sx={{ ml: "auto" }}>
-        {loading ? 'Guardando...' : 'Guardar Flujo'}
-      </CommonButton>
-    </Stack>
-  )
 }

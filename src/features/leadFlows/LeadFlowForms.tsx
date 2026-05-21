@@ -1,12 +1,15 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ControlledSwitch, RegisteredTextInput } from 'shared/ui/forms/CustomInputs'
 import { ControlledAutocomplete } from 'shared/ui/forms/CustomMultipleInputs'
 import { FormErrorMessage } from 'shared/ui/forms/FormFeedback'
 import CommonButton from 'shared/ui/buttons/CommonButton'
+import { useLoading } from 'src/hooks/useLoading';
 import type { StateCategory } from 'src/types/leadFlow'
 import { DEFAULT_STATE_COLORS } from './leadFlowServices/leadFlowUtils'
 import { useForm, useWatch } from 'react-hook-form'
-import { Stack, Typography, ButtonGroup } from '@mui/material'
+import { useNavigate } from 'react-router-dom'
+import { Stack, Typography, ButtonGroup, Paper, IconButton, TextField } from '@mui/material'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 
 export const CATEGORY_OPTIONS = [
   {
@@ -39,7 +42,7 @@ interface StateDialogProps {
   onSave: (state: EditorStatePost) => void,
   hasInitialState: boolean
 }
-
+/**Formulario de creación/modificación de States */
 export default function StateForm({ existingState, onClose, onSave, hasInitialState }: StateDialogProps) {
 
   const defaultValues = useMemo(() => ({
@@ -112,5 +115,77 @@ export default function StateForm({ existingState, onClose, onSave, hasInitialSt
         </ButtonGroup>
       </Stack>
     </form>
+  )
+}
+
+
+interface HeaderProps {
+  initialName: string,
+  initialDescription: string,
+  handleSaveFlow: (flowName: string, flowDescription: string) => Promise<void>,
+  statesLength: number
+}
+/**
+ *  Header con formulario de guardado de Graph
+ */
+export const FlowEditorHeader = ({ initialName, initialDescription, statesLength, handleSaveFlow }: HeaderProps) => {
+
+  const [flowName, setFlowName] = useState<string>('')
+  const [flowDescription, setFlowDescription] = useState<string>('')
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setFlowDescription(initialDescription)
+    setFlowName(initialName)
+  }, [initialName, initialDescription])
+
+  const navigate = useNavigate();
+
+  const { loading, fnWithLoading } = useLoading(() => handleSaveFlow(flowName, flowDescription))
+
+  // Vuelve al formulario, con los datos guardados del sessionStorage.
+  const handleBack = () => {
+    const returnUrl = sessionStorage.getItem('flow_return_url');
+    if (returnUrl) {
+      sessionStorage.removeItem('flow_return_url');
+      navigate(returnUrl);
+    } else {
+      navigate(-1);
+    }
+  };
+
+  return (
+    <Stack component={Paper} direction="row" spacing={4} useFlexGap
+      sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider', alignItems: 'center', justifyContent: 'space-between', borderRadius: 0, flexWrap: "wrap" }}>
+      <Stack spacing={2} direction="row" sx={{ alignItems: 'center' }}>
+        <IconButton onClick={handleBack} sx={{ color: 'text.secondary' }}>
+          <ArrowBackIcon />
+        </IconButton>
+        <Typography variant="h2" component="h1" sx={{ fontWeight: "bold" }} color="text.primary">
+          Editor de Flujo
+        </Typography>
+      </Stack>
+
+      <Stack spacing={1} direction="row" useFlexGap sx={{ flex: 1, flexWrap: "wrap" }}>
+        <TextField
+          size="small"
+          label="Nombre"
+          value={flowName}
+          onChange={(e) => setFlowName(e.target.value)}
+          sx={{ flex: 1, minWidth: "10rem" }}
+        />
+        <TextField
+          size="small"
+          label="Descripción (Opcional)"
+          value={flowDescription}
+          onChange={(e) => setFlowDescription(e.target.value)}
+          sx={{ flex: 2, minWidth: "10rem" }}
+        />
+      </Stack>
+
+      <CommonButton actionType={loading ? "LOADING" : "SAVE"} onClick={fnWithLoading} disabled={loading || statesLength === 0} sx={{ ml: "auto" }}>
+        {loading ? 'Guardando...' : 'Guardar Flujo'}
+      </CommonButton>
+    </Stack>
   )
 }

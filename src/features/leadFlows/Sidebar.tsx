@@ -1,7 +1,7 @@
 import GenericModal from 'src/components/layout/container/GenericModal';
 import CommonButton from 'src/components/ui/buttons/CommonButton';
 import { useModal } from 'src/hooks/useModal';
-import StateForm from './StateDialogForm';
+import StateForm from './LeadFlowForms';
 import type { StateCategory, LeadStatePost } from 'src/types/leadFlow'
 import { Box, Typography, Paper, Divider, Stack } from '@mui/material';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
