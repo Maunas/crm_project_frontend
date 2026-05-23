@@ -11,8 +11,9 @@ import ReactFlow, { useNodesState, useEdgesState, Controls, Background, Backgrou
 import type { Connection, Edge, Node, NodeChange, ReactFlowInstance } from 'reactflow';
 import { v4 as uuidv4 } from 'uuid';
 import 'reactflow/dist/style.css';
-import { Box, Snackbar, Alert, Stack } from '@mui/material';
+import { Box, Stack } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { showToast } from 'src/utils/feedback';
 
 const nodeTypes = { stateNode: StateNode };
 const edgeTypes = { customEdge: CustomEdge };
@@ -53,7 +54,6 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
   }, [initialStates, initialTransitions]);
 
   const [editingState, setEditingState] = useState<FlowEditorState | null>(null);
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' }>({ open: false, message: '', severity: 'info' });
 
   const hasInitialState = useMemo(() => (
     states.some(s => s.is_initial && s.tempId !== editingState?.tempId)
@@ -133,7 +133,7 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
 
     const { category, isInitial } = JSON.parse(dataStr);
     if (isInitial && states.some(s => s.is_initial)) {
-      setSnackbar({ open: true, message: 'Solo puede haber un estado inicial', severity: 'error' });
+      showToast("Solo puede haber un estado inicial", "error")
       return;
     }
 
@@ -254,12 +254,13 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
   }, [onNodesChange]);
 
   const handleSaveFlow = async (flowName: string, flowDescription: string) => {
-    if (!flowName.trim()) return setSnackbar({ open: true, message: 'Debe ingresar un nombre para el flujo', severity: 'error' });
+    if (!flowName.trim()) { showToast("Debe ingresar un nombre para el flujo", "error"); return }
     const initialStates = states.filter(s => s.is_initial);
-    if (initialStates.length !== 1) return setSnackbar({ open: true, message: 'Debe haber exactamente un estado inicial', severity: 'error' });
+    if (initialStates.length !== 1) { showToast("Debe haber exactamente un estado inicial", "error"); return }
     try {
       await onSave(flowName, flowDescription, states, transitions);
-      setSnackbar({ open: true, message: 'Flujo guardado correctamente', severity: 'success' });
+      showToast("Flujo guardado correctamente", "success")
+      return
     } catch (error) {
       const errorMsgBody = error as SimpleErrorBody
       console.error("Error del servidor:", errorMsgBody.response?.data);
@@ -280,11 +281,7 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
       } else if (data?.message) {
         finalMessage = data.message;
       }
-      setSnackbar({
-        open: true,
-        message: finalMessage,
-        severity: 'error'
-      });
+      showToast(finalMessage, "error")
     }
   };
 
@@ -345,9 +342,6 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
           onClose={() => setEditingState(null)}
         />
       </GenericModal>
-      <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={() => setSnackbar(p => ({ ...p, open: false }))} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
-        <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
-      </Snackbar>
     </Stack>
   );
 }
