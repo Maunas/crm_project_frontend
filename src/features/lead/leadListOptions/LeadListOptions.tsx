@@ -104,8 +104,8 @@ interface LeadListOptionsProps {
         handlePresentation: (mode: "string") => void;
     },
     modalProps: {
-        open: string | number | boolean;
-        handleOpen: (idModal: string | number) => void;
+        openModalId?: string;
+        handleOpen: (idModal: string) => void;
         handleClose: () => void;
     },
     selectCheckboxProps: {
@@ -180,7 +180,7 @@ export const LeadListOptions = memo(({ areThereLeads, campaignId, filters, heade
                         </ChipTooltip>
                     }
                 </ButtonGroup>
-                <GenericModal idModal="lead_filters" modalProps={modalProps} buttonText="Aplicar Filtros" maxWidth="md" fullWidth
+                <GenericModal idModal="lead_filters" {...modalProps} buttonText="Aplicar Filtros" maxWidth="md" fullWidth
                     btnProps={{ actionType: 'FILTER' }} color='secondary' showButton={false} >
                     <LeadFilters applyFilters={applyFilters} filters={{ filters, headers }} campaignId={Number(campaignId)}
                         onClose={() => modalProps.handleClose()} />

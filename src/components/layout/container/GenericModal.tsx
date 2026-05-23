@@ -5,11 +5,9 @@ import GenericPaper from "./GenericPaper"
 
 interface GenericModalProps extends Omit<DialogProps, "open"> {
     idModal: string,
-    modalProps: {
-        openModalId?: string,
-        handleOpen?: (idModal: string) => void,
-        handleClose: () => void
-    },
+    openModalId?: string,
+    handleOpen?: (idModal: string) => void,
+    handleClose: () => void,
     open?: boolean,
     showButton?: boolean,
     buttonText?: string,
@@ -24,7 +22,7 @@ interface GenericModalProps extends Omit<DialogProps, "open"> {
  * @param open Booleano que (en true) ignora la comparación de idModal para abrirlo.
  * @param showButton Booleano, define si renderiza el botón de apertura.
  */
-const GenericModal = memo(({ idModal, open = false, modalProps: { openModalId, handleOpen, handleClose }, children,
+const GenericModal = memo(({ idModal, open = false, openModalId, handleOpen, handleClose, children,
     showButton = true, buttonText = "Abrir Modal", btnProps = {}, ...props
 }: GenericModalProps) => {
     return (

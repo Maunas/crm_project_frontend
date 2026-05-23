@@ -108,7 +108,7 @@ export const RatingValue = memo(({ value, subtype, counter = false, tooltip = fa
 interface ModalProps {
     modalProps?: {
         open: string | number | boolean;
-        handleOpen: (idModal: string | number) => void;
+        handleOpen: (idModal: string) => void;
         handleClose: () => void;
     }
     idModal: string,

@@ -11,7 +11,7 @@ interface CellValueProps {
     shortLeadTitle?: boolean,
     modalProps?: {
         open: string | number | boolean;
-        handleOpen: (idModal: string | number) => void;
+        handleOpen: (idModal: string) => void;
         handleClose: () => void;
     }
 }
@@ -45,7 +45,7 @@ export const LeadListCellValue = memo(({ fieldValue, type, subtype, modalProps, 
         case "DATE_TIME": return <DateValue date={`${value}`} isDatetime short />
         case "PASSWORD": return <PasswordValue value={`${value}`} />
         case "FILE": case "RICH_TEXT": return <ModalValue value={`${value}`} size="small"
-            idModal={`file-${fieldValue?.id}`} modalProps={modalProps}
+            idModal={`file-${fieldValue?.id}`} {...modalProps}
             type={type} subtype={subtype!} />
         case "BOOL": return <BoolValue value={`${value}`} size="small" />
         // En tabla priorizamos performance: texto compacto en vez de Chips

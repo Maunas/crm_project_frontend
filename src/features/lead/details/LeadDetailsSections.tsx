@@ -60,7 +60,7 @@ export const LeadFieldSections = ({ lead, updateLeadInfo }: { lead: LeadDetailed
                         <List>
                             {section?.fields.map((fieldValue, idx) =>
                                 updatingFieldId !== fieldValue.field.id ?
-                                    <LeadFieldByType key={`field-${idx}`} fieldValue={fieldValue} modalProps={modalProps}
+                                    <LeadFieldByType key={`field-${idx}`} fieldValue={fieldValue} {...modalProps}
                                         onToggleEdit={() => setUpdatingFieldId(fieldValue.field.id)} />
                                     : <LeadPartialUpdate key={`field-${idx}`} fieldValue={fieldValue} updateLeadInfo={updateLeadInfo}
                                         onClose={() => setUpdatingFieldId(null)} lead={lead} />
@@ -98,7 +98,7 @@ type LeadFieldProps = {
     onToggleEdit: () => void,
     modalProps: {
         open: string | number | boolean;
-        handleOpen: (idModal: string | number) => void;
+        handleOpen: (idModal: string) => void;
         handleClose: () => void;
     },
 }

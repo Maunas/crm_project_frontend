@@ -59,7 +59,7 @@ export const LeadFieldTable = memo(({ campaign, leadFields, updateLeadFields, up
                 <Typography variant="h2">Lista de Campos de Lead</Typography>
                 {sortedFields.length > 0 &&
                     <ButtonGroup sx={{ marginLeft: "auto" }}>
-                        <GenericModal modalProps={modalProps} idModal="simulateLead" buttonText='Vista previa de formulario' maxWidth="xl" fullWidth
+                        <GenericModal {...modalProps} idModal="simulateLead" buttonText='Vista previa de formulario' maxWidth="xl" fullWidth
                             btnProps={{ actionType: "DETAILS", variant: "outlined" }} sx={{ minWidth: "80vw" }} >
                             {campaign &&
                                 <SimulateLeadFormModal campaign={campaign} leadFields={sortedFields} onCancel={modalProps.handleClose} />

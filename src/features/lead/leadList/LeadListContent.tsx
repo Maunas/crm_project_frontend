@@ -14,8 +14,8 @@ interface LeadListContentProps {
     selectedFieldIds: number[],
     activeFilters: number,
     modalProps: {
-        open: string | number | boolean;
-        handleOpen: (idModal: string | number) => void;
+        openModalId?: string;
+        handleOpen: (idModal: string) => void;
         handleClose: () => void;
     },
     orderProps: {

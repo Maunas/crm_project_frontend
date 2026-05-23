@@ -92,7 +92,7 @@ export interface ErrorMessage<T> {
 }
 
 export interface DeleteResponse {
-  action: string
+  action: "deleted" | "disabled"
 }
 
 export interface BulkDeleteResponse {

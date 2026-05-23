@@ -158,7 +158,7 @@ export function Sidebar({ onAddState, hasInitialState, isLocked = false }: Sideb
           </Box>
         </Stack>
       </Box>
-      <GenericModal idModal="create-state" modalProps={modalProps} showButton={false}
+      <GenericModal idModal="create-state" {...modalProps} showButton={false}
         maxWidth="xs" fullWidth>
         <StateForm hasInitialState={hasInitialState} onSave={onAddState} onClose={handleClose} />
       </GenericModal>

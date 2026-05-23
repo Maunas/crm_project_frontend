@@ -1,5 +1,5 @@
-import type { LeadFlowParams, DeleteResponse, Paginable, FlowStateParams } from "src/types/shared"
-import type { LeadFlowDetailed, LeadFlow, LeadFlowPost, LeadState, LeadStateDetailed, LeadStateTransition, LeadStateTransitionDetailed, LeadStatePost, LeadTransitionBulkPost, FlowEditorTransition } from '../../types/leadFlow'
+import type { LeadFlowParams, DeleteResponse, Paginable, FlowStateParams, EnableResponse } from "src/types/shared"
+import type { LeadFlowDetailed, LeadFlow, LeadFlowPost, LeadState, LeadStateDetailed, LeadStateTransition, LeadStateTransitionDetailed, LeadStatePost, LeadTransitionBulkPost, FlowEditorTransition } from 'src/types/leadFlow'
 import { axiosCRM } from "src/lib/axios"
 
 
@@ -27,6 +27,11 @@ export const updateLeadFlow = async (flowId: number, flowData: LeadFlowPost): Pr
 
 export const deleteLeadFlow = async (id: number): Promise<DeleteResponse> => {
     const response = await axiosCRM.delete(`/lead_flows/${id}`)
+    return response.data
+}
+
+export const enableLeadFlow = async (id: number): Promise<EnableResponse> => {
+    const response = await axiosCRM.put(`/lead_flows/active/${id}`)
     return response.data
 }
 
