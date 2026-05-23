@@ -9,10 +9,11 @@ import CustomChip from 'src/components/ui/details/CustomChip'
 interface LeadBoardCardProps {
     lead: Lead;
     index: number;
+    // Nueva prop para recibir el observer del scroll infinito
+    observerRef?: (node: HTMLDivElement | null) => void;
 }
 
-export const LeadBoardCard = ({ lead, index }: LeadBoardCardProps) => {
-    // Obtenemos los campos principales a mostrar
+export const LeadBoardCard = ({ lead, index, observerRef }: LeadBoardCardProps) => {
     const titleArray = getLeadTitleArray(lead);
     const mainTitle = titleArray[0] || "Sin nombre";
     const subTitle = titleArray.slice(1).join(" • ");
@@ -21,21 +22,27 @@ export const LeadBoardCard = ({ lead, index }: LeadBoardCardProps) => {
         <Draggable draggableId={String(lead.id)} index={index}>
             {(provided, snapshot) => (
                 <Card
-                    ref={provided.innerRef}
+                    // UNIMOS LOS DOS REFS (El de la librería DND y nuestro Observer de scroll)
+                    ref={(node) => {
+                        provided.innerRef(node);
+                        if (observerRef) observerRef(node);
+                    }}
                     {...provided.draggableProps}
                     {...provided.dragHandleProps}
                     elevation={snapshot.isDragging ? 8 : 1}
                     sx={{
                         p: 2,
+                        mb: 1.5, // USAMOS MARGIN BOTTOM AQUÍ EN VEZ DEL GAP DEL STACK PADRE
                         borderRadius: 2,
                         cursor: 'grab',
                         backgroundColor: 'background.paper',
-                        transform: snapshot.isDragging ? 'rotate(3deg)' : 'none',
-                        transition: 'transform 0.1s ease',
+                        // ELIMINAMOS transform Y transition DE AQUÍ PARA EVITAR CONFLICTOS
                     }}
+                    // VITAL: Esto aplica las físicas exactas calculadas por la librería (evita el salto lateral)
+                    style={provided.draggableProps.style}
                 >
+                    {/* El contenido interno de la tarjeta puede usar Stack sin problemas */}
                     <Stack spacing={1.5}>
-                        {/* Cabecera: Avatar y Título */}
                         <Stack direction="row" spacing={1.5} alignItems="center">
                             <Avatar 
                                 src={lead.picture_avatar_url || undefined} 
@@ -55,7 +62,6 @@ export const LeadBoardCard = ({ lead, index }: LeadBoardCardProps) => {
                             </Box>
                         </Stack>
 
-                        {/* Etiquetas (Tags) */}
                         {lead.tags && lead.tags.length > 0 && (
                             <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
                                 {lead.tags.map(tag => (
@@ -69,9 +75,7 @@ export const LeadBoardCard = ({ lead, index }: LeadBoardCardProps) => {
                             </Stack>
                         )}
 
-                        {/* Footer de la tarjeta: Estado del funnel y Usuario/Equipo */}
                         <Stack direction="row" justifyContent="space-between" alignItems="center">
-                            {/* Opcional: mostrar current_state del Flow Estricto */}
                             {lead.current_state_id ? (
                                 <Chip label={`Estado #${lead.current_state_id}`} size="small" variant="outlined" />
                             ) : <Box />}

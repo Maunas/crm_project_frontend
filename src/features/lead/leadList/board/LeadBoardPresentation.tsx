@@ -1,63 +1,107 @@
-import { useEffect, useState, useCallback } from 'react';
-import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
-import type {DropResult} from '@hello-pangea/dnd';
-import { Stack, Box, Typography, CircularProgress } from '@mui/material';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import type { DropResult } from '@hello-pangea/dnd';
+import { Box, CircularProgress } from '@mui/material';
+import { getLeadContactStates, updateLeadContactState } from 'src/services/leadContactStateService';
 import type { LeadContactState } from 'src/types/leadContactState';
 import { LeadBoardColumn } from './LeadBoardColumn';
-import { updateLead, changeContactStateLead } from '../../leadService';
-import { getLeadContactStates, updateLeadContactState } from 'src/services/leadContactStateService';
+import { changeContactStateLead } from '../../leadService';
 
 interface LeadBoardPresentationProps {
     campaignId: number | string;
-    activeFilters: any[]; // Pásale los filtros activos si quieres que el tablero también se filtre
+    activeFilters: any[];
 }
 
 export const LeadBoardPresentation = ({ campaignId, activeFilters }: LeadBoardPresentationProps) => {
     const [columns, setColumns] = useState<LeadContactState[]>([]);
     const [loading, setLoading] = useState(true);
+    
+    // ESTADOS NUEVOS PARA EL SCROLL GLOBAL
+    const [isDragging, setIsDragging] = useState(false);
+    const scrollContainerRef = useRef<HTMLElement | null>(null);
 
-    // 1. Traer los estados (columnas) de la organización
+    // 1. Cargar estados
     useEffect(() => {
         getLeadContactStates({ page_size: 0, only_active: true })
-            .then(res => {
-                setColumns(res.items);
-            })
+            .then(res => setColumns(res.items))
             .finally(() => setLoading(false));
     }, []);
 
-    
+    // 2. Motor de Auto-Scroll Global Mejorado
+    useEffect(() => {
+        if (!isDragging) return; 
 
-    // 2. Gestionar el final del arrastre (Tarjetas o Columnas)
+        let animationFrameId: number;
+        let currentMouseX = -1; 
+
+        const handleMouseMove = (e: MouseEvent) => {
+            currentMouseX = e.clientX;
+        };
+
+        const autoScroll = () => {
+            if (scrollContainerRef.current && currentMouseX !== -1) {
+                const container = scrollContainerRef.current;
+                
+                // Obtenemos las coordenadas exactas del tablero en la pantalla
+                const rect = container.getBoundingClientRect();
+
+                // AUMENTAMOS la zona sensible a 200px (es más cómodo)
+                const scrollZone = 200; 
+                const speed = 20; // Aumentamos un pelín la velocidad (opcional)
+
+                // Verificamos si el mouse está en la zona izquierda DEL TABLERO
+                if (currentMouseX > rect.left && currentMouseX < rect.left + scrollZone) {
+                    container.scrollLeft -= speed;
+                } 
+                // Verificamos si el mouse está en la zona derecha DEL TABLERO
+                else if (currentMouseX < rect.right && currentMouseX > rect.right - scrollZone) {
+                    container.scrollLeft += speed;
+                }
+            }
+            animationFrameId = requestAnimationFrame(autoScroll);
+        };
+
+        window.addEventListener('mousemove', handleMouseMove);
+        animationFrameId = requestAnimationFrame(autoScroll);
+
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            cancelAnimationFrame(animationFrameId);
+        };
+    }, [isDragging]);
+
+    // 3. Evento al INICIAR el arrastre
+    const onDragStart = useCallback(() => {
+        setIsDragging(true);
+    }, []);
+
+    // 4. Gestionar el final del arrastre
     const onDragEnd = useCallback(async (result: DropResult) => {
+        setIsDragging(false); // Apagamos el scroll automático
         const { destination, source, draggableId, type } = result;
 
         if (!destination) return;
         if (destination.droppableId === source.droppableId && destination.index === source.index) return;
 
-        // =================================================================
-        // CASO A: ARRASTRE DE COLUMNAS (Mover Estados)
-        // =================================================================
+        // ARRASTRE DE COLUMNAS
         if (type === 'column') {
             const reorderedColumns = Array.from(columns);
             const [movedColumn] = reorderedColumns.splice(source.index, 1);
             reorderedColumns.splice(destination.index, 0, movedColumn);
 
-            // Reasignamos el orden localmente basándonos en sus nuevos índices (UI Optimista)
             const updatedColumnsWithOrder = reorderedColumns.map((col, idx) => ({
                 ...col,
-                order: idx + 1 // O la lógica secuencial que prefieras de tu backend
+                order: idx + 1
             }));
 
             setColumns(updatedColumnsWithOrder);
 
-            // Persistir el nuevo orden en el backend enviando un FormData
             try {
                 const targetColumnId = Number(draggableId);
-                const newOrderValue = destination.index + 1; // Ajusta según empiece en 0 o 1 en tu BD
-
+                const newOrderValue = destination.index + 1; 
                 const formData = new FormData();
-                formData.append('order', newOrderOrderValue.toString());
-                formData.append('name', movedColumn.name); // Asegurar campos requeridos si aplica
+                formData.append('order', newOrderValue.toString());
+                formData.append('name', movedColumn.name); 
 
                 await updateLeadContactState(formData, targetColumnId);
             } catch (error) {
@@ -66,9 +110,7 @@ export const LeadBoardPresentation = ({ campaignId, activeFilters }: LeadBoardPr
             return;
         }
 
-        // =================================================================
-        // CASO B: ARRASTRE DE TARJETAS (Mover Leads - Lógica Existente)
-        // =================================================================
+        // ARRASTRE DE TARJETAS (Leads)
         const leadId = Number(draggableId);
         const sourceId = source.droppableId;
         const destinationId = destination.droppableId;
@@ -95,12 +137,15 @@ export const LeadBoardPresentation = ({ campaignId, activeFilters }: LeadBoardPr
     if (loading) return <CircularProgress sx={{ display: 'block', margin: 'auto', mt: 4 }} />;
 
     return (
-        <DragDropContext onDragEnd={onDragEnd}>
-            {/* Contenedor principal Droppable para las columnas (tipo horizontal) */}
+        <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
             <Droppable droppableId="all-columns" direction="horizontal" type="column">
                 {(provided) => (
                     <Box
-                        ref={provided.innerRef}
+                        // UNIMOS EL REF DE LA LIBRERÍA Y EL NUESTRO PARA EL SCROLL
+                        ref={(node) => {
+                            provided.innerRef(node);
+                            scrollContainerRef.current = node;
+                        }}
                         {...provided.droppableProps}
                         sx={{ 
                             display: 'flex', 
@@ -122,7 +167,6 @@ export const LeadBoardPresentation = ({ campaignId, activeFilters }: LeadBoardPr
                                         {...draggableProvided.draggableProps}
                                         sx={{ height: '100%' }}
                                     >
-                                        {/* Pasamos el dragHandleProps únicamente a la cabecera interna del componente */}
                                         <LeadBoardColumn 
                                             column={column} 
                                             campaignId={campaignId}

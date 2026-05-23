@@ -18,6 +18,12 @@ export const LeadBoardColumn = ({ column, campaignId, activeFilters, dragHandleP
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [loading, setLoading] = useState(false);
+    const [totalCount, setTotalCount] = useState(0);
+
+    const leadsRef = useRef<Lead[]>([]);
+    useEffect(() => {
+        leadsRef.current = leads;
+    }, [leads]);
     
     // Referencia para el intersection observer (scroll infinito)
     const observer = useRef<IntersectionObserver | null>(null);
@@ -42,6 +48,7 @@ export const LeadBoardColumn = ({ column, campaignId, activeFilters, dragHandleP
             .then(res => {
                 setLeads(prev => page === 1 ? res.items : [...prev, ...res.items]);
                 setHasMore(res.page < res.total_pages);
+                setTotalCount(res.total);
             })
             .finally(() => setLoading(false));
     }, [campaignId, column.id, page, activeFilters]);
@@ -61,21 +68,26 @@ export const LeadBoardColumn = ({ column, campaignId, activeFilters, dragHandleP
             }
 
             if (sourceId === String(column.id)) {
-                setLeads(prevLeads => {
-                    const leadToMove = prevLeads.find(l => l.id === leadId);
-                    if (leadToMove) {
-                        window.dispatchEvent(new CustomEvent('receive-lead', {
-                            detail: { lead: { ...leadToMove, contact_state_id: Number(destinationId) }, destinationId, destinationIndex }
-                        }));
-                    }
-                    return prevLeads.filter(l => l.id !== leadId);
-                });
+                // 1. Buscamos el lead de forma pura y síncrona con useRef
+                const leadToMove = leadsRef.current.find(l => l.id === leadId);
+                
+                // 2. Disparamos el evento AFUERA del setLeads (soluciona el bug del +2)
+                if (leadToMove) {
+                    window.dispatchEvent(new CustomEvent('receive-lead', {
+                        detail: { lead: { ...leadToMove, contact_state_id: Number(destinationId) }, destinationId, destinationIndex }
+                    }));
+                }
+
+                // 3. Modificamos el estado normalmente
+                setTotalCount(prev => Math.max(0, prev - 1));
+                setLeads(prevLeads => prevLeads.filter(l => l.id !== leadId));
             }
         };
 
         const handleReceiveLead = (e: any) => {
             const { lead, destinationId, destinationIndex } = e.detail;
             if (destinationId === String(column.id)) {
+                setTotalCount(prev => prev + 1); 
                 setLeads(prevLeads => {
                     const newLeads = Array.from(prevLeads);
                     if (!newLeads.find(l => l.id === lead.id)) {
@@ -105,7 +117,6 @@ export const LeadBoardColumn = ({ column, campaignId, activeFilters, dragHandleP
             borderTop: `4px solid ${column.color || '#ccc'}`,
             height: '100%'
         }}>
-            {/* CABECERA: Acoplamos dragHandleProps aquí para arrastrar la columna desde el título */}
             <Box 
                 {...dragHandleProps} 
                 sx={{ 
@@ -118,11 +129,10 @@ export const LeadBoardColumn = ({ column, campaignId, activeFilters, dragHandleP
                 }}
             >
                 <Typography variant="subtitle1" fontWeight="bold">
-                    {column.name} ({leads.length})
+                    {column.name} ({totalCount})
                 </Typography>
             </Box>
 
-            {/* ZONA DROPPABLE INTERNA (Para las Tarjetas de Leads) */}
             <Droppable droppableId={String(column.id)} type="card">
                 {(provided, snapshot) => (
                     <Box
@@ -136,18 +146,21 @@ export const LeadBoardColumn = ({ column, campaignId, activeFilters, dragHandleP
                             transition: 'background-color 0.2s ease',
                         }}
                     >
-                        <Stack spacing={1.5}>
-                            {leads.map((lead, index) => {
-                                const isLast = index === leads.length - 1;
-                                return (
-                                    <div ref={isLast ? lastLeadElementRef : null} key={lead.id}>
-                                        <LeadBoardCard lead={lead} index={index} />
-                                    </div>
-                                );
-                            })}
-                            {provided.placeholder}
-                            {loading && <CircularProgress size={24} sx={{ alignSelf: 'center', my: 2 }} />}
-                        </Stack>
+                        {/* 1. QUITAMOS EL STACK Y USAMOS SOLO EL ARRAY */}
+                        {leads.map((lead, index) => {
+                            const isLast = index === leads.length - 1;
+                            return (
+                                <LeadBoardCard 
+                                    key={lead.id} 
+                                    lead={lead} 
+                                    index={index}
+                                    // 2. PASAMOS LA REF DIRECTAMENTE A LA TARJETA
+                                    observerRef={isLast ? lastLeadElementRef : undefined}
+                                />
+                            );
+                        })}
+                        {provided.placeholder}
+                        {loading && <CircularProgress size={24} sx={{ display: 'block', margin: 'auto', my: 2 }} />}
                     </Box>
                 )}
             </Droppable>
