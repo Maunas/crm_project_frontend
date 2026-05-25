@@ -14,6 +14,7 @@ import { deleteLeadFlow, enableLeadFlow, getLeadFlows } from './leadFlowServices
 import { useLoading } from 'src/hooks/useLoading'
 import LoadingScreenWrapper from 'src/components/feedback/LoadingScreen'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
+import ConfirmationDialog from 'src/components/feedback/ConfirmationDialog'
 
 
 interface FlowListProps {
@@ -68,6 +69,8 @@ export const LeadFlowList = ({ closeSidebar, property }: FlowListProps) => {
 
 export const LeadFlowListData = ({ flows, updateList }: { flows: LeadFlowDetailed[], updateList: () => Promise<void> }) => {
 
+    const [disableFlow, setDisableFlow] = useState<LeadFlowDetailed | null>(null)
+
     const handleEnableDisable = (id: number, isActive: boolean) => {
         if (!isActive) {
             return enableLeadFlow(id)
@@ -87,29 +90,40 @@ export const LeadFlowListData = ({ flows, updateList }: { flows: LeadFlowDetaile
     }
 
     return (
-        <Grid container sx={{ marginInline: 1, alignItems: "stretch" }}>
-            {flows.map((flow, idx) =>
-                <Grid key={`flow-${idx}`} size="grow" sx={{ minWidth: "15rem", minHeight: "100%" }}>
-                    <CustomListItem disablePadding sx={{ height: "100%" }} secondaryAction={
-                        <Stack direction="row" sx={{ alignItems: "center" }}>
-                            <CommonIconButton actionType='MODIFY' title="Editar" tooltipSize="small" size="small"
-                                component={Link} to={`/lead-flow-editor/${flow.id}`} />
-                            <CommonIconButton actionType={flow.active ? "DISABLE" : "ENABLE"} title={flow.active ? "Deshabilitar" : "Habilitar"}
-                                tooltipSize="small" size="small" color={flow.active ? "error" : "success"}
-                                onClick={() => handleEnableDisable(flow.id, flow.active)} />
-                        </Stack>}>
-                        <ListItemButton component={Link} to={`/lead-flow-editor/${flow.id}`} sx={{ height: "100%" }} >
-                            <ListItemText sx={{ mr: 4 }} primary={
-                                <Stack spacing={1} direction="row" color="inherit" sx={{ width: "100%", alignItems: "center" }}>
-                                    <EnabledIcon active={flow.active} />
-                                    <Typography sx={{ fontWeight: "bold" }} color="inherit">{flow.name}</Typography>
-                                </Stack>
-                            }
-                                secondary={flow.description} />
-                        </ListItemButton>
-                    </CustomListItem>
-                </Grid>
-            )}
-        </Grid >
+        <>
+            <Grid container sx={{ marginInline: 1, alignItems: "stretch" }}>
+                {flows.map((flow, idx) =>
+                    <Grid key={`flow-${idx}`} size="grow" sx={{ minWidth: "15rem", minHeight: "100%" }}>
+                        <CustomListItem disablePadding sx={{ height: "100%" }} secondaryAction={
+                            <Stack direction="row" sx={{ alignItems: "center" }}>
+                                <CommonIconButton actionType='MODIFY' title="Editar" tooltipSize="small" size="small"
+                                    component={Link} to={`/lead-flow-editor/${flow.id}`} />
+                                <CommonIconButton actionType={flow.active ? "DISABLE" : "ENABLE"} title={flow.active ? "Deshabilitar" : "Habilitar"}
+                                    tooltipSize="small" size="small" color={flow.active ? "error" : "success"}
+                                    onClick={() => setDisableFlow(flow)} />
+                            </Stack>}>
+                            <ListItemButton component={Link} to={`/lead-flow-editor/${flow.id}`} sx={{ height: "100%" }} >
+                                <ListItemText sx={{ mr: 4 }} primary={
+                                    <Stack spacing={1} direction="row" color="inherit" sx={{ width: "100%", alignItems: "center" }}>
+                                        <EnabledIcon active={flow.active} />
+                                        <Typography sx={{ fontWeight: "bold" }} color="inherit">{flow.name}</Typography>
+                                    </Stack>
+                                }
+                                    secondary={flow.description} />
+                            </ListItemButton>
+                        </CustomListItem>
+                    </Grid>
+                )}
+            </Grid >
+            {disableFlow &&
+                <ConfirmationDialog idModal='conf-delete' handleClose={() => setDisableFlow(null)} open={Boolean(disableFlow)}
+                    onConfirm={() => handleEnableDisable(disableFlow?.id, disableFlow?.active)} >
+                    <Stack spacing={2}>
+                        <Typography variant="h3">¿Seguro que desea deshabilitar el flujo?</Typography>
+                        <Typography variant="body1" >Si no tiene campañas asignadas, se eliminará permanentemente.</Typography>
+                    </Stack>
+                </ConfirmationDialog>
+            }
+        </>
     )
 }
