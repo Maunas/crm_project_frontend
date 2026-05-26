@@ -106,9 +106,9 @@ export const RatingValue = memo(({ value, subtype, counter = false, tooltip = fa
 })
 
 interface ModalProps {
-    modalProps?: {
-        open: string | number | boolean;
-        handleOpen: (idModal: string) => void;
+    modalProps: {
+        opneModalId?: string;
+        handleOpen?: (idModal: string) => void;
         handleClose: () => void;
     }
     idModal: string,
@@ -127,7 +127,7 @@ export const ModalValue = ({ modalProps, idModal, type, subtype, value, size = "
         }
     }
     return (
-        <GenericModal idModal={idModal} modalProps={modalProps!} btnProps={{ size: size, actionType: 'DETAILS' }}
+        <GenericModal idModal={idModal} {...modalProps} btnProps={{ size: size, actionType: 'DETAILS' }}
             buttonText={getBtnText()} sx={{ minWidth: "80vw" }} >
             <ModalValueContent type={type} subtype={subtype} value={value} />
             <CommonButton actionType='CLOSE' variant="outlined" sx={{ marginLeft: "auto" }} onClick={() => modalProps!.handleClose()}>

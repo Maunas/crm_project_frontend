@@ -3,7 +3,6 @@ import type { ActionType } from "./ActionIcons"
 import { ChipTooltip } from "../details/ChipTooltip"
 import ACTION_ICONS from "./ActionIcons"
 import type { ColorTypes } from "src/types/mui-theme.d"
-import type { LinkProps } from "react-router-dom"
 import { IconButton, type IconButtonProps } from "@mui/material"
 
 interface CommonIconButtonProps extends Omit<IconButtonProps, "color"> {
@@ -11,7 +10,7 @@ interface CommonIconButtonProps extends Omit<IconButtonProps, "color"> {
     title: string,
     size?: "small" | "medium"
     tooltipSize?: "small" | "medium" | "large" | "xlarge",
-    component?: React.ForwardRefExoticComponent<LinkProps & React.RefAttributes<HTMLAnchorElement>>,
+    component?: React.ElementType,
     to?: string,
     color?: ColorTypes
 }

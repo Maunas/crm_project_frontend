@@ -117,11 +117,17 @@ export const LeadFlowListData = ({ flows, updateList }: { flows: LeadFlowDetaile
             </Grid >
             {disableFlow &&
                 <ConfirmationDialog idModal='conf-delete' handleClose={() => setDisableFlow(null)} open={Boolean(disableFlow)}
-                    onConfirm={() => handleEnableDisable(disableFlow?.id, disableFlow?.active)} >
-                    <Stack spacing={2}>
-                        <Typography variant="h3">¿Seguro que desea deshabilitar el flujo?</Typography>
-                        <Typography variant="body1" >Si no tiene campañas asignadas, se eliminará permanentemente.</Typography>
-                    </Stack>
+                    onConfirm={() => handleEnableDisable(disableFlow?.id, disableFlow?.active)}>
+                    {disableFlow.active ?
+                        <Stack spacing={2}>
+                            <Typography variant="h3">¿Seguro que desea deshabilitar el flujo?</Typography>
+                            <Typography variant="body1" >Si no tiene campañas asignadas, se eliminará permanentemente.</Typography>
+                        </Stack>
+                        :
+                        <Stack spacing={2}>
+                            <Typography variant="h3">¿Seguro que desea habilitar el flujo?</Typography>
+                        </Stack>
+                    }
                 </ConfirmationDialog>
             }
         </>
