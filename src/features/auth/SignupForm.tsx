@@ -7,6 +7,7 @@ import { useUserContext } from "src/stores/UserContext"
 import { Link, useNavigate } from "react-router-dom"
 import { useForm } from "react-hook-form"
 import { Button, ButtonGroup, Grid, Paper, Stack, Typography } from "@mui/material"
+import { useLoading } from "src/hooks/useLoading"
 
 export const SignupFormPage = () => {
 
@@ -15,7 +16,6 @@ export const SignupFormPage = () => {
 
   const submit = (data: UserSignup) => {
     return signup(data).then(() => {
-      alert("Cuenta Creada")
       nav("/")
     })
   }
@@ -36,12 +36,14 @@ const SignupForm = ({ submit, onCancel }: SignupFormProps) => {
   const { register, handleSubmit, formState: { errors }, setError } = useForm<UserSignup>()
 
   const onSubmit = (data: UserSignup) => {
-    submit(data)
+    return submit(data)
       .catch(e => setFormErrors(e, setError))
   }
 
+  const { fnWithLoading, loading } = useLoading(onSubmit)
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(fnWithLoading)}>
       <Stack spacing={3}>
         <Typography variant="h1" sx={{ textAlign: "center" }}>
           CRM
@@ -70,7 +72,7 @@ const SignupForm = ({ submit, onCancel }: SignupFormProps) => {
               <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel} fullWidth>
                 Cancelar
               </CommonButton>
-              <CommonButton actionType="SIGNUP" variant="contained" type="submit" fullWidth>
+              <CommonButton actionType="SIGNUP" variant="contained" type="submit" loading={loading} fullWidth>
                 Crear Cuenta
               </CommonButton>
             </ButtonGroup>

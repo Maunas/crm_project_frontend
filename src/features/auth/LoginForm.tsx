@@ -7,6 +7,7 @@ import { useUserContext } from "src/stores/UserContext"
 import { Link, useNavigate } from "react-router-dom"
 import { useForm } from "react-hook-form"
 import { Button, ButtonGroup, Grid, Paper, Stack, Typography } from "@mui/material"
+import { useLoading } from "src/hooks/useLoading"
 
 
 export const LoginFormPage = () => {
@@ -16,7 +17,6 @@ export const LoginFormPage = () => {
 
   const submit = (data: UserLogin) => {
     return login(data).then(() => {
-      alert("Sesión Iniciada")
       nav("/")
     })
   }
@@ -38,12 +38,14 @@ const LoginForm = ({ submit, onCancel }: LoginFormProps) => {
   const { register, handleSubmit, formState: { errors }, setError } = useForm<UserLogin>()
 
   const onSubmit = (data: UserLogin) => {
-    submit(data)
+    return submit(data)
       .catch(e => setFormErrors(e, setError))
   }
 
+  const { fnWithLoading, loading } = useLoading(onSubmit)
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(fnWithLoading)}>
       <Stack spacing={3}>
         <Typography variant="h1" sx={{ textAlign: "center" }}>
           CRM
@@ -72,7 +74,7 @@ const LoginForm = ({ submit, onCancel }: LoginFormProps) => {
               <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel} fullWidth>
                 Cancelar
               </CommonButton>
-              <CommonButton actionType="LOGIN" variant="contained" type="submit" fullWidth>
+              <CommonButton actionType="LOGIN" variant="contained" type="submit" loading={loading} fullWidth>
                 Iniciar Sesión
               </CommonButton>
             </ButtonGroup>

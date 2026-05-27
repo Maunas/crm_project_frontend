@@ -125,6 +125,10 @@ const DISABLE_TIMEOUT_SEC = 3
  * @param onConfirm Función a ejecutar al confirmar la acción. Se aplica por defecto tras un timeout, y cierra el modal.
  * @param entityTypeName tipo de entidad, con su artículo. Ej: "la campaña"
  * @param onlyDelete flag, modifica el contenido para solo mencionar la eliminación.
+ * 
+ * @example <DisableConfirmDialog idModal='conf-id' entity={deletingCmp} 
+ * clearEntity={() => setDeletingCmp(null)} entityTypeName="la campaña" 
+ * onConfirm={() => handleActiveCampaign(deletingCmp!)} />
  */
 export const DisableConfirmDialog = <T extends DisableableEntity,>({ entity, clearEntity, idModal, onCancel, onConfirm,
     entityTypeName = "la entidad", onlyDelete = false }: DisableConfirmDialog<T>) => {

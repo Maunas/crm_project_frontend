@@ -3,6 +3,11 @@ import type { Lead } from "./leads";
 import type { Campaign, Workspace } from "./campaigns";
 import type { Nomenclator, NomenclatorItem } from "./nomenclators";
 
+export interface DisableableEntity {
+  active: boolean,
+  name?: string
+}
+
 /**
  * Define la estructura de una lista con paginación. Se llama como: Paginable<Lead>.
  */

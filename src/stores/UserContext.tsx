@@ -4,6 +4,7 @@ import { loginUser, signupUser } from 'src/features/auth/userServices';
 import type { Organization, OrganizationDetailed } from 'src/types/campaigns';
 import type { UserData, UserLogin, UserSignup } from 'src/types/users';
 import { SUPERUSER } from 'src/utils/constants';
+import { showToast } from 'src/utils/feedback';
 
 export interface UserContextItems {
     userOrganizations: OrganizationDetailed[],
@@ -74,17 +75,20 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
         return loginUser(data).then(user => {
             setUser(user)
             setActiveOrg(activeOrganizations[0])
+            showToast("Sesión iniciada con éxito", "success")
         })
     }
 
     const signup = (data: UserSignup) => {
         return signupUser(data).then(user => {
             setUser(user)
+            setActiveOrg(activeOrganizations[0])
+            showToast("Cuenta creada con éxito", "success")
         })
     }
 
     const logout = () => {
-        alert("Logout")
+        showToast("Sesión cerrada con éxito", "success")
         setUser(null)
         setActiveOrg(null)
     }
