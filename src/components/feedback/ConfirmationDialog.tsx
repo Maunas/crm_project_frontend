@@ -3,6 +3,7 @@ import CommonButton from "shared/ui/buttons/CommonButton"
 import { type DialogProps, ButtonGroup, Stack, LinearProgress, Typography } from "@mui/material"
 import GenericModal from "../layout/container/GenericModal"
 import type { DisableableEntity } from "src/types/shared"
+import { useLoading } from "src/hooks/useLoading"
 
 interface GenericConfirmDialogProps extends Omit<DialogProps, "open"> {
     idModal: string,
@@ -37,6 +38,8 @@ export const GenericConfirmDialog = memo(({ idModal, open = false, openModalId, 
     const currentTimeout = useRef<number | undefined>(undefined)
     const currentInterval = useRef<number | undefined>(undefined)
 
+    const { fnWithLoading: confirmLoad, loading } = useLoading(onConfirm)
+
     const handleDialogClose = useCallback(() => {
         if (onCancel) onCancel()
         handleClose()
@@ -44,7 +47,8 @@ export const GenericConfirmDialog = memo(({ idModal, open = false, openModalId, 
 
     const handleDialogConfirm = () => {
         const finishTimeout = () => {
-            return onConfirm()
+            if (!confirmLoad) return
+            return confirmLoad()
                 .then(handleDialogClose)
                 .finally(cancelTimeout)
         }
@@ -83,7 +87,7 @@ export const GenericConfirmDialog = memo(({ idModal, open = false, openModalId, 
                         {closeText ?? "Cerrar"}
                     </CommonButton>
                     {(!activeTimeout || noTimeout) &&
-                        <CommonButton actionType="CHECK" onClick={handleDialogConfirm}>
+                        <CommonButton actionType="CHECK" onClick={handleDialogConfirm} loading={loading}>
                             {confirmText ?? "Confirmar"}
                         </CommonButton>
                     }
@@ -138,10 +142,11 @@ export const DisableConfirmDialog = <T extends DisableableEntity,>({ entity, cle
 
     const dialogTitle = `¿Desea ${titleAction} ${entityTypeName}${entity?.name && ` "${entity.name}"`}?`
 
-    const dialogSubtitle = onlyDelete ? "El elemento se eliminará definitivamente del sistema."
+    const dialogSubtitle = onlyDelete
+        ? <>El elemento se <span style={{ fontWeight: "bold", textDecoration: "underline" }}>eliminará</span> definitivamente del sistema.</>
         : entity?.active ?
-            "Si no tiene elementos asignados, se eliminará definitivamente del sistema."
-            : "Si lo habilita, será accesible a todo usuario autorizado."
+            <>Si no tiene elementos asignados, se <span style={{ fontWeight: "bold", textDecoration: "underline" }}>eliminará</span> definitivamente del sistema.</>
+            : <>Si lo habilita, será accesible a todo usuario autorizado.</>
 
     return (
         <GenericConfirmDialog idModal={idModal} open={Boolean(entity)} handleClose={clearEntity}

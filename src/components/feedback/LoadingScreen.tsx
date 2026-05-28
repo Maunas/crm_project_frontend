@@ -1,5 +1,6 @@
 import { CircularProgress, Stack, type StackProps } from '@mui/material'
 import type { ReactNode } from 'react'
+import GenericPaper from '../layout/container/GenericPaper'
 
 interface LoadingScreenProps extends StackProps {
     loading?: boolean,
@@ -9,11 +10,13 @@ interface LoadingScreenProps extends StackProps {
 export const LoadingScreenWrapper = ({ loading = false, loadingIcon, children }: LoadingScreenProps) => {
 
     if (loading) return (
-        <Stack sx={{ height: "30rem", alignItems: "center", justifyContent: "center" }}>
-            {loadingIcon ?? <CircularProgress />}
-        </Stack>
+        <GenericPaper elevation={0}>
+            <Stack sx={{ height: "20rem", alignItems: "center", justifyContent: "center" }}>
+                {loadingIcon ?? <CircularProgress />}
+            </Stack>
+        </GenericPaper>
     )
-    return <>{children}</>
+    return children
 }
 
 export default LoadingScreenWrapper

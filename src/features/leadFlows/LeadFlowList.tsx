@@ -3,18 +3,18 @@ import { useListPagination } from 'src/hooks/useListPagination'
 import type { LeadFlowDetailed } from 'src/types/leadFlow'
 import type { Paginable } from 'src/types/shared'
 import { Avatar, Grid, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
-import { CustomListItem, CustomListItemAvatar } from 'src/components/ui/lists/CustomListItem'
+import { CustomListItem, CustomListItemAvatar } from 'shared/ui/lists/CustomListItem'
 import type { LeadPropertiesItem } from '../leadProperties/leadPropertiesList'
 import { Link, useNavigate } from 'react-router-dom'
-import CommonButton from 'src/components/ui/buttons/CommonButton'
-import PaginationComponent from 'src/components/ui/lists/PaginationComponent'
-import { CommonIconButton } from 'src/components/ui/buttons/CommonIconButton'
-import { EnabledIcon } from 'src/components/ui/lists/Icons'
+import CommonButton from 'shared/ui/buttons/CommonButton'
+import PaginationComponent from 'shared/ui/lists/PaginationComponent'
+import { CommonIconButton } from 'shared/ui/buttons/CommonIconButton'
+import { EnabledIcon } from 'shared/ui/lists/Icons'
 import { deleteLeadFlow, enableLeadFlow, getLeadFlows } from './leadFlowServices/FlowService'
 import { useLoading } from 'src/hooks/useLoading'
-import LoadingScreenWrapper from 'src/components/feedback/LoadingScreen'
+import LoadingScreenWrapper from 'shared/feedback/LoadingScreen'
+import { DisableConfirmDialog } from 'shared/feedback/ConfirmationDialog'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
-import ConfirmationDialog from 'src/components/feedback/ConfirmationDialog'
 
 
 interface FlowListProps {
@@ -116,19 +116,8 @@ export const LeadFlowListData = ({ flows, updateList }: { flows: LeadFlowDetaile
                 )}
             </Grid >
             {disableFlow &&
-                <ConfirmationDialog idModal='conf-delete' handleClose={() => setDisableFlow(null)} open={Boolean(disableFlow)}
-                    onConfirm={() => handleEnableDisable(disableFlow?.id, disableFlow?.active)}>
-                    {disableFlow.active ?
-                        <Stack spacing={2}>
-                            <Typography variant="h3">¿Seguro que desea deshabilitar el flujo?</Typography>
-                            <Typography variant="body1" >Si no tiene campañas asignadas, se eliminará permanentemente.</Typography>
-                        </Stack>
-                        :
-                        <Stack spacing={2}>
-                            <Typography variant="h3">¿Seguro que desea habilitar el flujo?</Typography>
-                        </Stack>
-                    }
-                </ConfirmationDialog>
+                <DisableConfirmDialog idModal='conf-delete-flow' entity={disableFlow} clearEntity={() => setDisableFlow(null)} entityTypeName="el flujo"
+                    onConfirm={() => handleEnableDisable(disableFlow?.id, disableFlow?.active)} />
             }
         </>
     )

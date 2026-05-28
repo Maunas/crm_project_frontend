@@ -27,7 +27,7 @@ export const WorkspaceDetails = ({ entity, closeSidebar, handleSidebar, handleAc
                 <Stack spacing={3} >
                     <Divider />
                     {entity.campaigns &&
-                        <CampaignList workspace={entity} handleSidebar={handleSidebar} />
+                        <CampaignList workspace={entity} handleSidebar={handleSidebar} closeSidebar={closeSidebar} />
                     }
                     <Divider />
                 </Stack>

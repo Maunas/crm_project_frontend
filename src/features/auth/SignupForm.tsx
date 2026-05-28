@@ -2,12 +2,12 @@ import { PasswordField, RegisteredTextInput } from "shared/ui/forms/CustomInputs
 import { FormErrorMessage } from "shared/ui/forms/FormFeedback"
 import CommonButton from "shared/ui/buttons/CommonButton"
 import type { UserSignup } from "src/types/users"
+import { useLoading } from "src/hooks/useLoading"
 import { setFormErrors } from "src/utils/forms"
 import { useUserContext } from "src/stores/UserContext"
 import { Link, useNavigate } from "react-router-dom"
 import { useForm } from "react-hook-form"
 import { Button, ButtonGroup, Grid, Paper, Stack, Typography } from "@mui/material"
-import { useLoading } from "src/hooks/useLoading"
 
 export const SignupFormPage = () => {
 

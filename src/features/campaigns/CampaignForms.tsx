@@ -1,22 +1,21 @@
 import { useEffect, useMemo, useState } from "react"
-import { RegisteredTextInput } from "shared/ui/forms/CustomInputs"
 import { ControlledAutocomplete } from "shared/ui/forms/CustomMultipleInputs"
+import { RegisteredTextInput } from "shared/ui/forms/CustomInputs"
 import { FormErrorMessage } from "shared/ui/forms/FormFeedback"
 import CommonButton from "shared/ui/buttons/CommonButton"
+import { useLoading } from "src/hooks/useLoading"
 import type { CampaignDetailed, CampaignPost, Workspace, WorkspaceDetailed } from "src/types/campaigns"
+import type { OptionWithAction } from "src/types/shared"
+import type { LeadFlow } from "src/types/leadFlow"
 import { createCampaign, updateCampaign } from "./campaignServices"
 import { getWorkspace, getWorkspaces } from "../workspaces/workspaceServices"
-import { createLeadField } from "../leadFields/leadFieldServices"
-import type { LeadFieldPost } from "src/types/leadFields"
-import { setFormErrors } from "src/utils/forms"
-import { useForm } from "react-hook-form"
-import { ButtonGroup, Grid, Stack, Typography } from "@mui/material"
-import type { LeadFlow } from "../../types/leadFlow"
-import { useNavigate } from "react-router-dom"
-import EditIcon from "@mui/icons-material/Edit"
-import { IconButton, Box } from "@mui/material"
-import type { OptionWithAction } from "src/types/shared"
 import { getLeadFlows } from "../leadFlows/leadFlowServices/FlowService"
+import { setFormErrors } from "src/utils/forms"
+import { showToast } from "src/utils/feedback"
+import { useForm } from "react-hook-form"
+import { useNavigate } from "react-router-dom"
+import { ButtonGroup, Grid, Stack, Typography, IconButton, Box } from "@mui/material"
+import EditIcon from "@mui/icons-material/Edit"
 
 interface UpdateCampaignSidebarProps {
     existingCmp: CampaignDetailed,
@@ -31,6 +30,7 @@ export const UpdateCampaignFormSidebar = ({ existingCmp, updateEntityOnList, clo
             .then(res => {
                 updateEntityOnList(res)
                 closeSidebar()
+                showToast(`Campaña "${res.name}" actualizada con éxito`)
             })
     }
     return <CampaignForm existingCmp={existingCmp} submit={submit} onCancel={closeSidebar} />
@@ -43,26 +43,13 @@ interface CreateCampaignSidebarProps {
 //Wrapper de CampaignForm para crear desde un Sidebar
 export const CreateCampaignFormSidebar = ({ handleSidebar, workspace }: CreateCampaignSidebarProps) => {
 
-    const requiredFields: Omit<LeadFieldPost, "campaign_id">[] = [
-        {
-            "order": 1,
-            "required": true,
-            "is_primary": false,
-            "is_visible": true,
-            "field_template_code": "FIRST_NAME",
-            "title_order": 1
-        },
-    ]
-
     const submit = (data: CampaignPost) => {
         return createCampaign(data)
             .then(res => {
                 //Busca el workspace y muestra su detalle.
+                showToast(`Campaña "${res.name}" creada con éxito`)
                 getWorkspace(res.workspace_id)
                     .then(wsp => handleSidebar("DETAILS_WSP", wsp))
-                //Crea los campo requeridos.
-                Promise.all(requiredFields.map(field => createLeadField({ ...field, campaign_id: res.id })))
-                    .catch(e => { console.error(e) })
             })
     }
     const handleClose = () => handleSidebar("DETAILS_WSP", workspace)
@@ -92,8 +79,8 @@ export const CampaignForm = ({ existingCmp, workspaceId, submit, onCancel }: Cam
         getLeadFlows({ only_active: true, page_size: 0 })
             .then(res => setLeadFlows(res.items))
     }, [])
-
     const flowsWithOptions = useMemo<OptionWithAction<LeadFlow>[]>(() => {
+
         return [
             ...(leadFlows as OptionWithAction<LeadFlow>[]),
             { id: 'CREATE_ACTION', name: ' + Agregar nuevo flujo...', isAction: true }
@@ -132,12 +119,14 @@ export const CampaignForm = ({ existingCmp, workspaceId, submit, onCancel }: Cam
     }, [reset, defaultValues])
 
     const onSubmit = (data: CampaignPost) => {
-        submit(data)
+        return submit(data)
             .catch(e => setFormErrors(e, setError))
     }
 
+    const { fnWithLoading, loading } = useLoading(onSubmit)
+
     return (
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(fnWithLoading)}>
             <Stack spacing={3}>
                 <Typography variant="h2">
                     {!existingCmp ? "Crear Campaña" : `Modificar Campaña ${existingCmp.name}`}
@@ -159,68 +148,69 @@ export const CampaignForm = ({ existingCmp, workspaceId, submit, onCancel }: Cam
                             <RegisteredTextInput name="description" register={register} label="Descripción"
                                 errorMessage={errors.description?.message} multiline />
                         </Grid>
-                        <Grid size="grow" sx={{ minWidth: "20rem" }}>
-                            <ControlledAutocomplete
-                                control={control} label="Flujo de Estados"
-                                name="lead_flow_id" options={flowsWithOptions}
-                                getOptionLabel={option => option.name!} getOptionKey={option => `${option.id}`}
-                                returnField="id" errorMessage={errors?.lead_flow_id?.message} required
-                                renderOption={(props, option) => {
-                                    // Comprobamos si es nuestra opción inyectada
-                                    const isAction = option.isAction;
-                                    return (
-                                        <Box
-                                            component="li" {...props}
-                                            onMouseDown={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                            }}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                e.preventDefault();
-                                                if (isAction) {
-                                                    handleNavigateToFlow();
-                                                } else {
-                                                    props.onClick?.(e); // Acción: Seleccionar Flujo normal
-                                                }
-                                            }}
-                                            sx={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                width: '100%',
-                                                ...(isAction && {
-                                                    color: 'primary.main',
-                                                    fontWeight: 'bold',
-                                                    borderTop: '1px solid',
-                                                    borderColor: 'divider',
-                                                    mt: 0.5,
-                                                    bgcolor: 'action.hover'
-                                                })
-                                            }}
-                                        >
-                                            <Typography sx={{ flexGrow: 1 }}>
-                                                {option.name}
-                                            </Typography>
+                        {!existingCmp &&
+                            <Grid size="grow" sx={{ minWidth: "20rem" }}>
+                                <ControlledAutocomplete
+                                    control={control} label="Flujo de Estados"
+                                    name="lead_flow_id" options={flowsWithOptions}
+                                    getOptionLabel={option => option.name!} getOptionKey={option => `${option.id}`}
+                                    returnField="id" errorMessage={errors?.lead_flow_id?.message} required
+                                    renderOption={(props, option) => {
+                                        // Comprobamos si es nuestra opción inyectada
+                                        const isAction = option.isAction;
+                                        return (
+                                            <Box
+                                                component="li" {...props}
+                                                onMouseDown={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                }}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    e.preventDefault();
+                                                    if (isAction) {
+                                                        handleNavigateToFlow();
+                                                    } else {
+                                                        props.onClick?.(e); // Acción: Seleccionar Flujo normal
+                                                    }
+                                                }}
+                                                sx={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    width: '100%',
+                                                    ...(isAction && {
+                                                        color: 'primary.main',
+                                                        fontWeight: 'bold',
+                                                        borderTop: '1px solid',
+                                                        borderColor: 'divider',
+                                                        mt: 0.5,
+                                                        bgcolor: 'action.hover'
+                                                    })
+                                                }}
+                                            >
+                                                <Typography sx={{ flexGrow: 1 }}>
+                                                    {option.name}
+                                                </Typography>
 
-                                            {!isAction && (
-                                                <IconButton
-                                                    size="small"
-                                                    onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        e.preventDefault();
-                                                        handleNavigateToFlow(option.id as number);
-                                                    }}
-                                                    sx={{ ml: 1 }}
-                                                >
-                                                    <EditIcon fontSize="small" color="action" />
-                                                </IconButton>
-                                            )}
-                                        </Box>
-                                    );
-                                }}
-                            />
-                        </Grid>
+                                                {!isAction && (
+                                                    <IconButton
+                                                        size="small"
+                                                        onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            e.preventDefault();
+                                                            handleNavigateToFlow(option.id as number);
+                                                        }}
+                                                        sx={{ ml: 1 }}
+                                                    >
+                                                        <EditIcon fontSize="small" color="action" />
+                                                    </IconButton>
+                                                )}
+                                            </Box>
+                                        );
+                                    }}
+                                />
+                            </Grid>}
                     </Grid >
                     {errors?.root &&
                         <FormErrorMessage>{errors?.root?.message}</FormErrorMessage>}
@@ -228,7 +218,7 @@ export const CampaignForm = ({ existingCmp, workspaceId, submit, onCancel }: Cam
                         <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel}>
                             Cancelar
                         </CommonButton>
-                        <CommonButton actionType={existingCmp ? "MODIFY" : "CREATE"} variant="contained" type="submit">
+                        <CommonButton actionType={existingCmp ? "MODIFY" : "CREATE"} variant="contained" type="submit" loading={loading}>
                             Guardar
                         </CommonButton>
                     </ButtonGroup>

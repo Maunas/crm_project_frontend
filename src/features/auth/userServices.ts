@@ -1,5 +1,5 @@
-import type { Paginable } from "../../types/shared"
-import type { UserData, UserLogin, UserSignup } from "../../types/users"
+import type { Paginable } from "src/types/shared"
+import type { UserData, UserLogin, UserSignup } from "src/types/users"
 import axiosCRM from "src/lib/axios"
 
 export const getUsers = async ():

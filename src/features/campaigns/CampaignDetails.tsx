@@ -1,19 +1,23 @@
 import { useCallback, useEffect, useState } from 'react'
 import { UpdateCampaignFormSidebar } from './CampaignForms'
-import { LeadFieldTable } from '../leadFields/LeadFieldTable'
-import { LeadFieldDetail } from '../leadFields/LeadFieldDetail'
-import { LeadFieldFormSidebar } from '../leadFields/LeadFieldForm'
 import { ValidationFormSidebar } from '../validations/ValidationForm'
+import { LeadFieldFormSidebar } from '../leadFields/LeadFieldForm'
+import { LeadFieldDetail } from '../leadFields/LeadFieldDetail'
+import { LeadFieldTable } from '../leadFields/LeadFieldTable'
 import ContainerWithSidebar from 'shared/layout/container/GenericContainer'
+import { DisableConfirmDialog } from 'shared/feedback/ConfirmationDialog'
+import HandleActiveButton from 'shared/ui/buttons/HandleActiveButton'
+import LoadingScreenWrapper from 'shared/feedback/LoadingScreen'
+import DetailsMetadata from 'shared/ui/details/DetailsMetadata'
 import TitleAndActive from 'shared/ui/details/TitleAndActive'
 import CommonButton from 'shared/ui/buttons/CommonButton'
-import HandleActiveButton from 'shared/ui/buttons/HandleActiveButton'
-import DetailsMetadata from 'shared/ui/details/DetailsMetadata'
 import { useSidebar } from 'src/hooks/useSidebar'
-import type { CampaignDetailed } from 'src/types/campaigns'
+import { useLoading } from 'src/hooks/useLoading'
 import type { LeadFieldDetailed } from 'src/types/leadFields'
+import type { CampaignDetailed } from 'src/types/campaigns'
 import { disableCampaign, enableCampaign, getCampaign } from './campaignServices'
 import { getLeadField, getLeadFields } from '../leadFields/leadFieldServices'
+import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { Link as RouterLink, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Typography, ButtonGroup, Link, Breadcrumbs, Stack, Divider } from '@mui/material'
 
@@ -27,13 +31,20 @@ export const CampaignDetails = () => {
 
     const nav = useNavigate()
 
+    const fetchCmpDetails = (id: number) => {
+        return getCampaign(id).then(res => {
+            setCampaign(res)
+        })
+    }
+
+    const { fnWithLoading: fetchCmpLoad, loading } = useLoading(fetchCmpDetails)
+
     useEffect(() => {
         closeSidebar()
         if (!id) return
-        getCampaign(parseInt(id)).then(res => {
-            setCampaign(res)
-        })
-    }, [id, closeSidebar])
+        fetchCmpLoad(Number(id))
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [id])
 
     //Necesaria la lista en este componente, en lugar de LeadFieldTable,
     // para facilitar la modificación de la lista desde el sidebar.
@@ -89,64 +100,78 @@ export const CampaignDetails = () => {
             updateEntity("UPDATE_CMP", { ...campaign, active: !campaign.active })
         }
         if (campaign.active) {
-            disableCampaign(campaign.id!)
+            return disableCampaign(campaign.id!)
                 .then(res => {
-                    if (res.action === "disabled") updateActive()
+                    if (res.action === "disabled") {
+                        updateActive()
+                        showToast(`"${campaign.name}" deshabilitado con éxito.`)
+                    }
                     else {
-                        alert("Eliminado")
                         nav("/campaigns")
+                        showToast(`"${campaign.name}" eliminado definitivamente.`)
                     }
                 })
+                .catch(e => showCommonErrorToast(e))
         } else {
-            enableCampaign(campaign.id!)
-                .then(updateActive)
+            return enableCampaign(campaign.id!)
+                .then(() => {
+                    updateActive()
+                    showToast(`"${campaign.name}" habilitado con éxito.`)
+                })
+                .catch(e => showCommonErrorToast(e))
         }
     }, [nav, updateEntity])
 
+    const [deletingCmp, setDeletingCmp] = useState<CampaignDetailed | null>(null)
+
     return (
-        <ContainerWithSidebar isSidebarOpen={Boolean(sidebarMode)} closeSidebar={closeSidebar} containerSize="xl" sidebarWidth='45rem'
-            sidebarComponent={campaign &&
-                <CampaignDetailSidebar mode={sidebarMode} entity={selectedEntity} campaign={campaign}
-                    handleSidebar={handleSidebar} closeSidebar={closeSidebar} updateEntity={updateEntity} />}
-        >
-            <Stack spacing={3}>
-                <Stack spacing={2}>
-                    <Breadcrumbs aria-label="breadcrumb">
-                        <Link component={RouterLink} to="/campaigns" underline="hover" color="inherit">
-                            Espacios de Trabajo
-                        </Link>
+        <LoadingScreenWrapper loading={loading}>
+            <ContainerWithSidebar isSidebarOpen={Boolean(sidebarMode)} closeSidebar={closeSidebar} containerSize="xl" sidebarWidth='45rem'
+                sidebarComponent={campaign &&
+                    <CampaignDetailSidebar mode={sidebarMode} entity={selectedEntity} campaign={campaign}
+                        handleSidebar={handleSidebar} closeSidebar={closeSidebar} updateEntity={updateEntity} />}
+            >
+                <Stack spacing={3}>
+                    <Stack spacing={2}>
+                        <Breadcrumbs aria-label="breadcrumb">
+                            <Link component={RouterLink} to="/campaigns" underline="hover" color="inherit">
+                                Espacios de Trabajo
+                            </Link>
+                            {campaign &&
+                                <Typography sx={{ color: 'text.primary' }}>{campaign.name}</Typography>}
+                        </Breadcrumbs>
                         {campaign &&
-                            <Typography sx={{ color: 'text.primary' }}>{campaign.name}</Typography>}
-                    </Breadcrumbs>
+                            <TitleAndActive active={campaign.active} >
+                                <Typography variant="h1">{campaign.name}</Typography>
+                            </TitleAndActive>
+                        }
+                    </Stack>
                     {campaign &&
-                        <TitleAndActive active={campaign.active} >
-                            <Typography variant="h1">{campaign.name}</Typography>
-                        </TitleAndActive>
+                        <Stack spacing={2} >
+                            {campaign.description &&
+                                <Typography variant="body1">{campaign.description}</Typography>
+                            }
+                            <DetailsMetadata entity={campaign} />
+                            <Divider />
+                            <Stack spacing={2} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
+                                <Typography variant="h2">Acciones</Typography>
+                                <ButtonGroup sx={{ marginLeft: "auto" }}>
+                                    <HandleActiveButton active={campaign.active} handleActive={() => setDeletingCmp(campaign)} />
+                                    <CommonButton onClick={() => handleSidebar("UPDATE_CMP", null)} actionType="MODIFY">Modificar</CommonButton>
+                                    <CommonButton component={RouterLink} variant='outlined' to={`/leads?workspace=${campaign.workspace_id}&campaign=${campaign.id}`}
+                                        actionType="LIST">Ver Lista de Leads</CommonButton>
+                                </ButtonGroup>
+                            </Stack>
+                            <Divider />
+                            <LeadFieldTable campaign={campaign} leadFields={leadFields} updateLeadFields={updateLeadFields}
+                                handleSidebar={handleSidebar} updateEntity={updateEntity} />
+                        </Stack>
                     }
                 </Stack>
-                {campaign &&
-                    <Stack spacing={2} >
-                        {campaign.description &&
-                            <Typography variant="body1">{campaign.description}</Typography>
-                        }
-                        <DetailsMetadata entity={campaign} />
-                        <Divider />
-                        <Stack spacing={2} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
-                            <Typography variant="h2">Acciones</Typography>
-                            <ButtonGroup sx={{ marginLeft: "auto" }}>
-                                <HandleActiveButton active={campaign.active} handleActive={() => handleActiveCampaign(campaign)} />
-                                <CommonButton onClick={() => handleSidebar("UPDATE_CMP", null)} actionType="MODIFY">Modificar</CommonButton>
-                                <CommonButton component={RouterLink} variant='outlined' to={`/leads?workspace=${campaign.workspace_id}&campaign=${campaign.id}`}
-                                    actionType="LIST">Ver Lista de Leads</CommonButton>
-                            </ButtonGroup>
-                        </Stack>
-                        <Divider />
-                        <LeadFieldTable campaign={campaign} leadFields={leadFields} updateLeadFields={updateLeadFields}
-                            handleSidebar={handleSidebar} updateEntity={updateEntity} />
-                    </Stack>
-                }
-            </Stack>
-        </ContainerWithSidebar >
+                <DisableConfirmDialog idModal='conf-delete-cmp-det' entity={deletingCmp} clearEntity={() => setDeletingCmp(null)} entityTypeName="la campaña"
+                    onConfirm={() => handleActiveCampaign(deletingCmp!)} />
+            </ContainerWithSidebar >
+        </LoadingScreenWrapper>
     )
 }
 
