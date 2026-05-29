@@ -49,11 +49,13 @@ export const CampaignDetails = () => {
     // para facilitar la modificación de la lista desde el sidebar.
     const [leadFields, setLeadFields] = useState<LeadFieldDetailed[] | null>(null)
 
-    const updateLeadFields = useCallback(() => {
-        getLeadFields({
+    const fetchLeadFields = useCallback(() => {
+        return getLeadFields({
             detailed: true, campaign_id: Number(id), only_active: false, page_size: 0
         }).then(res => setLeadFields(res.items))
     }, [setLeadFields, id])
+
+    const { loading: fieldsLoading, fnWithLoading: fetchFieldsLoad } = useLoading(fetchLeadFields)
 
     //Define como actualizar la lista dependiendo de la acción realizada. 
     // Para CREATE se vuelve a hacer fetch de la página para no arruinar la paginación
@@ -78,7 +80,7 @@ export const CampaignDetails = () => {
                 })
             }
             case "CREATE_FIELD": {
-                return updateLeadFields()
+                return fetchFieldsLoad()
             }
             case "DELETE_FIELD": {
                 return setLeadFields(prevList => {
@@ -92,7 +94,7 @@ export const CampaignDetails = () => {
                 })
             }
         }
-    }, [campaign, closeSidebar, selectedEntity, updateLeadFields, handleSidebar])
+    }, [campaign, closeSidebar, selectedEntity, fetchFieldsLoad, handleSidebar])
 
     const handleActiveCampaign = useCallback((campaign: CampaignDetailed) => {
         const updateActive = () => {
@@ -127,7 +129,7 @@ export const CampaignDetails = () => {
         <LoadingScreenWrapper loading={loading}>
             <ContainerWithSidebar isSidebarOpen={Boolean(sidebarMode)} closeSidebar={closeSidebar} containerSize="xl" sidebarWidth='45rem'
                 sidebarComponent={campaign &&
-                    <CampaignDetailSidebar mode={sidebarMode} entity={selectedEntity} campaign={campaign}
+                    <CampaignDetailSidebar mode={sidebarMode} entity={selectedEntity} campaign={campaign} leadFieldListLength={leadFields?.length}
                         handleSidebar={handleSidebar} closeSidebar={closeSidebar} updateEntity={updateEntity} />}
             >
                 <Stack spacing={3}>
@@ -162,7 +164,7 @@ export const CampaignDetails = () => {
                                 </ButtonGroup>
                             </Stack>
                             <Divider />
-                            <LeadFieldTable campaign={campaign} leadFields={leadFields} updateLeadFields={updateLeadFields}
+                            <LeadFieldTable campaign={campaign} leadFields={leadFields} updateLeadFields={fetchFieldsLoad} loading={fieldsLoading}
                                 handleSidebar={handleSidebar} updateEntity={updateEntity} />
                         </Stack>
                     }
@@ -181,14 +183,15 @@ interface SidebarProps {
     handleSidebar: (mode: string, entity: LeadFieldDetailed | null) => void,
     closeSidebar: () => void,
     updateEntity: (mode: string, entity: CampaignDetailed | LeadFieldDetailed) => void,
+    leadFieldListLength?: number
 }
-const CampaignDetailSidebar = ({ mode, entity, campaign, handleSidebar, closeSidebar, updateEntity }: SidebarProps) => {
+const CampaignDetailSidebar = ({ mode, entity, campaign, handleSidebar, closeSidebar, updateEntity, leadFieldListLength }: SidebarProps) => {
     switch (mode) {
         case "UPDATE_CMP":
             return <UpdateCampaignFormSidebar existingCmp={campaign}
                 closeSidebar={closeSidebar} updateEntityOnList={(entity) => updateEntity(mode, entity)} />
         case "DETAILS_FIELD":
-            return <LeadFieldDetail leadField={entity as LeadFieldDetailed}
+            return <LeadFieldDetail leadField={entity as LeadFieldDetailed} leadFieldListLength={leadFieldListLength}
                 closeSidebar={closeSidebar} handleSidebar={handleSidebar} updateEntity={updateEntity} />
         case "CREATE_FIELD":
             return <LeadFieldFormSidebar campaign={campaign} closeSidebar={closeSidebar} handleSidebar={handleSidebar}

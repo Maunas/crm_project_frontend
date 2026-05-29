@@ -13,6 +13,8 @@ import type { Campaign, CampaignDetailed } from "src/types/campaigns";
 import type { Nomenclator } from "src/types/nomenclators";
 import { useForm, useWatch, type Control, type FieldErrors, type UseFormRegister } from "react-hook-form";
 import { Grid, FormGroup, Typography, ButtonGroup, Stack } from "@mui/material";
+import { showToast } from "src/utils/feedback";
+import { useLoading } from "src/hooks/useLoading";
 
 
 interface LeadFieldSidebarProps {
@@ -35,11 +37,15 @@ export const LeadFieldFormSidebar = ({ existingLF, campaign, updateEntityOnList,
     }
     if (!existingLF) {
       return createLeadField(data).then(res => {
-        if (reset) updateEntityOnList(res) //No cierra el sidebar
+        showToast(`El campo "${res.name}" se ha creado con éxito`)
+        if (reset) updateEntityOnList(res)
         else updateInfo(res)
       })
     } else {
-      return updateLeadField(data, existingLF.id).then(updateInfo)
+      return updateLeadField(data, existingLF.id).then(res => {
+        showToast(`El campo "${res.name}" se ha actuializado con éxito`)
+        updateInfo(res)
+      })
     }
   }
   return <LeadFieldForm existingLF={existingLF} campaign={campaign} submit={submit} onCancel={closeSidebar} />
@@ -120,8 +126,10 @@ export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFi
       });
   }
 
+  const { loading, fnWithLoading: saveFieldLoad } = useLoading(onSaveLeadField)
+
   const onSubmitAndReset = async (data: LeadFieldPostCreation) => {
-    return onSaveLeadField(data, true)
+    return saveFieldLoad(data, true)
       .then(() => {
         reset(defaultValues);
       })
@@ -129,7 +137,7 @@ export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFi
 
 
   return (
-    <form onSubmit={handleSubmit((data) => onSaveLeadField(data))}>
+    <form onSubmit={handleSubmit(saveFieldLoad)}>
       <Stack spacing={3}>
         {!existingLF ? (
           <Typography variant="h1">
@@ -149,15 +157,15 @@ export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFi
 
           <Stack spacing={.5}>
             <ButtonGroup fullWidth={!existingLF} sx={{ alignSelf: "end" }}>
-              <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel}>
+              <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel} disabled={loading} color="error">
                 Cancelar
               </CommonButton>
-              <CommonButton actionType={existingLF ? "MODIFY" : "CREATE"} variant="contained" type="submit">
+              <CommonButton actionType={existingLF ? "MODIFY" : "CREATE"} variant="contained" type="submit" loading={loading}>
                 Guardar
               </CommonButton>
             </ButtonGroup>
             {!existingLF && (
-              <CommonButton actionType="CREATE" variant="contained" onClick={handleSubmit(onSubmitAndReset)} >
+              <CommonButton actionType="CREATE" variant="contained" onClick={handleSubmit(onSubmitAndReset)} loading={loading} >
                 Guardar y crear otro
               </CommonButton>
             )}

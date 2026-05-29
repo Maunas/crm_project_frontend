@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo } from "react"
+import { memo, useEffect, useMemo, useState } from "react"
 import { SimulateLeadFormModal } from "../lead/leadForm/LeadFormWraper"
 import { EnabledIcon } from "shared/ui/lists/Icons"
 import { SelectableTableRow } from "shared/ui/lists/CustomTableRow"
@@ -17,6 +17,7 @@ interface LeadFieldTableProps {
     updateLeadFields: () => void,
     updateEntity: (mode: string, entity: CampaignDetailed | LeadFieldDetailed) => void,
     handleSidebar: (mode: string, entity: LeadFieldDetailed | null) => void,
+    loading: boolean
 }
 
 const stopPropagationEvent = (e: React.SyntheticEvent, callback: () => void) => {
@@ -24,13 +25,14 @@ const stopPropagationEvent = (e: React.SyntheticEvent, callback: () => void) => 
     return callback()
 }
 
-export const LeadFieldTable = memo(({ campaign, leadFields, updateLeadFields, updateEntity, handleSidebar }: LeadFieldTableProps) => {
+export const LeadFieldTable = memo(({ campaign, leadFields, updateLeadFields, updateEntity, handleSidebar, loading = false }: LeadFieldTableProps) => {
 
     useEffect(() => {
         updateLeadFields()
     }, [campaign, updateLeadFields])
 
-    const handleActive = (field: LeadFieldDetailed) => {
+    const handleActive = async (field: LeadFieldDetailed | null) => {
+        if (!field || !field.id) return
         const updateActive = () => {
             updateEntity("UPDATE_FIELD", { ...field, active: !field.active })
             handleSidebar("KEEP", { ...field, active: !field.active })
@@ -38,11 +40,24 @@ export const LeadFieldTable = memo(({ campaign, leadFields, updateLeadFields, up
         if (field.active) {
             disableLeadField(field.id)
                 .then(res => {
-                    if (res.action === "disabled") updateActive()
-                    else updateEntity("DELETE_FIELD", field)
+                    if (res.action === "disabled") {
+                        updateActive()
+                        showToast(`El campo "${field.name}" se ha deshabilitado con éxito`)
+                    }
+                    else {
+                        updateEntity("DELETE_FIELD", field)
+                        showToast(`El campo "${field.name}" se ha eliminado definitivamente`)
+                    }
                 })
+                .catch(e => showCommonErrorToast(e))
+
         }
-        else enableLeadField(field.id).then(updateActive)
+        else enableLeadField(field.id).then(() => {
+            updateActive()
+            showToast(`El campo "${field.name}" se ha habilitado con éxito`)
+        })
+            .catch(e => showCommonErrorToast(e))
+
     }
 
     const { modalProps } = useModal()
@@ -51,6 +66,8 @@ export const LeadFieldTable = memo(({ campaign, leadFields, updateLeadFields, up
         if (!leadFields || leadFields?.length === 0) return []
         return [...leadFields].sort((a, b) => a.order - b.order)
     }, [leadFields])
+
+    const [deletingField, setDeletingField] = useState<LeadFieldDetailed | null>(null)
 
     return (
         <Stack spacing={3}>
@@ -71,57 +88,63 @@ export const LeadFieldTable = memo(({ campaign, leadFields, updateLeadFields, up
                     </ButtonGroup>
                 }
             </Stack>
-
-            {sortedFields.length > 0 ?
-                <TableContainer component={Paper} elevation={4}  >
-                    <Table aria-label="simple table" size='small' >
-                        <TableHead >
-                            <TableRow sx={{ "& .MuiTableCell-root": { fontWeight: 600 } }}>
-                                <TableCell></TableCell>
-                                <TableCell>Nombre</TableCell>
-                                <TableCell align="right">Tipo</TableCell>
-                                <TableCell align="right">Subtipo</TableCell>
-                                <TableCell align="right">Obligatorio</TableCell>
-                                <TableCell align="right">Único</TableCell>
-                                <TableCell align="right">Visible</TableCell>
-                                <TableCell align="right">Acciones</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {sortedFields
-                                .map((row) => (
-                                    <SelectableTableRow key={row.id} onClick={() => handleSidebar("DETAILS_FIELD", row)}>
-                                        <LeadFieldTableCells row={row} />
-                                        <TableCell align="right">
-                                            <Stack direction="row" sx={{ justifyContent: "end" }} className="table-actions">
-                                                <CommonIconButton actionType="DETAILS" title="Detalle" tooltipSize="small" size="small"
-                                                    onClick={(e) => stopPropagationEvent(e, () => handleSidebar("DETAILS_FIELD", row))} />
-                                                {row.order > 1 &&
-                                                    <>
-                                                        <CommonIconButton actionType="MODIFY" title="Modificar" tooltipSize="small" size="small"
-                                                            onClick={(e) => stopPropagationEvent(e, () => handleSidebar("UPDATE_FIELD", row))} />
-                                                        <CommonIconButton actionType={row.active ? "DISABLE" : "ENABLE"} tooltipSize="small" size="small"
-                                                            title={row.active ? "Deshabilitar" : "Habilitar"}
-                                                            onClick={(e) => stopPropagationEvent(e, () => handleActive(row))} color={row.active ? "error" : "success"} />
-                                                    </>}
-                                            </Stack>
-                                        </TableCell>
-                                    </SelectableTableRow>
-                                ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-                :
-                <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
-                    <Typography variant="h4">No se han encontrado campos para esta campaña...</Typography>
-                    <CommonButton onClick={() => handleSidebar("CREATE_FIELD", null)} actionType="CREATE">Agregar</CommonButton>
-                </Stack>
-            }
+            <LoadingScreenWrapper loading={loading}>
+                {sortedFields.length > 0 ?
+                    <TableContainer component={Paper} elevation={4}  >
+                        <Table aria-label="simple table" size='small' >
+                            <TableHead >
+                                <TableRow sx={{ "& .MuiTableCell-root": { fontWeight: 600 } }}>
+                                    <TableCell></TableCell>
+                                    <TableCell>Nombre</TableCell>
+                                    <TableCell align="right">Tipo</TableCell>
+                                    <TableCell align="right">Subtipo</TableCell>
+                                    <TableCell align="right">Obligatorio</TableCell>
+                                    <TableCell align="right">Único</TableCell>
+                                    <TableCell align="right">Visible</TableCell>
+                                    <TableCell align="right">Acciones</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {sortedFields
+                                    .map((row) => (
+                                        <SelectableTableRow key={row.id} onClick={() => handleSidebar("DETAILS_FIELD", row)}>
+                                            <LeadFieldTableCells row={row} />
+                                            <TableCell align="right">
+                                                <Stack direction="row" sx={{ justifyContent: "end" }} className="table-actions">
+                                                    <CommonIconButton actionType="DETAILS" title="Detalle" tooltipSize="small" size="small"
+                                                        onClick={(e) => stopPropagationEvent(e, () => handleSidebar("DETAILS_FIELD", row))} />
+                                                    {sortedFields.length > 1 &&
+                                                        <>
+                                                            <CommonIconButton actionType="MODIFY" title="Modificar" tooltipSize="small" size="small"
+                                                                onClick={(e) => stopPropagationEvent(e, () => handleSidebar("UPDATE_FIELD", row))} />
+                                                            <CommonIconButton actionType={row.active ? "DISABLE" : "ENABLE"} tooltipSize="small" size="small"
+                                                                title={row.active ? "Deshabilitar" : "Habilitar"}
+                                                                onClick={(e) => stopPropagationEvent(e, () => setDeletingField(row))} color={row.active ? "error" : "success"} />
+                                                        </>}
+                                                </Stack>
+                                            </TableCell>
+                                        </SelectableTableRow>
+                                    ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                    :
+                    <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
+                        <Typography variant="h4">No se han encontrado campos para esta campaña...</Typography>
+                        <CommonButton onClick={() => handleSidebar("CREATE_FIELD", null)} actionType="CREATE">Agregar</CommonButton>
+                    </Stack>
+                }
+            </LoadingScreenWrapper>
+            <DisableConfirmDialog entity={deletingField} clearEntity={() => setDeletingField(null)} idModal='dis-field-det'
+                onConfirm={() => handleActive(deletingField)} entityTypeName="el campo" />
         </Stack>
     )
 })
 
 import React from 'react'
+import LoadingScreenWrapper from "src/components/feedback/LoadingScreen"
+import { DisableConfirmDialog } from "src/components/feedback/ConfirmationDialog"
+import { showCommonErrorToast, showToast } from "src/utils/feedback"
 
 export const LeadFieldTableCells = memo(({ row }: { row: LeadFieldDetailed }) => {
     return (

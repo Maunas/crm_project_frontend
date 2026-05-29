@@ -70,14 +70,14 @@ const LoginForm = ({ submit, onCancel }: LoginFormProps) => {
           }
           <Stack spacing={1}>
             <ButtonGroup fullWidth>
-              <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel} fullWidth>
+              <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel} fullWidth disabled={loading}>
                 Cancelar
               </CommonButton>
               <CommonButton actionType="LOGIN" variant="contained" type="submit" loading={loading} fullWidth>
                 Iniciar Sesión
               </CommonButton>
             </ButtonGroup>
-            <Button fullWidth variant="text" component={Link} to="/signup">Crear Cuenta</Button>
+            <Button fullWidth variant="text" component={Link} to="/signup" disabled={loading} >Crear Cuenta</Button>
           </Stack>
         </Stack>
       </Stack>

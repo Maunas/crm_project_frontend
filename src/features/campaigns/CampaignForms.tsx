@@ -215,7 +215,7 @@ export const CampaignForm = ({ existingCmp, workspaceId, submit, onCancel }: Cam
                     {errors?.root &&
                         <FormErrorMessage>{errors?.root?.message}</FormErrorMessage>}
                     <ButtonGroup sx={{ alignSelf: "end" }}>
-                        <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel}>
+                        <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel} disabled={loading}>
                             Cancelar
                         </CommonButton>
                         <CommonButton actionType={existingCmp ? "MODIFY" : "CREATE"} variant="contained" type="submit" loading={loading}>

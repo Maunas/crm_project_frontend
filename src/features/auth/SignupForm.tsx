@@ -69,14 +69,14 @@ const SignupForm = ({ submit, onCancel }: SignupFormProps) => {
           }
           <Stack spacing={1}>
             <ButtonGroup fullWidth>
-              <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel} fullWidth>
+              <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel} disabled={loading} fullWidth>
                 Cancelar
               </CommonButton>
               <CommonButton actionType="SIGNUP" variant="contained" type="submit" loading={loading} fullWidth>
                 Crear Cuenta
               </CommonButton>
             </ButtonGroup>
-            <Button fullWidth variant="text" component={Link} to="/login">Iniciar Sesión</Button>
+            <Button fullWidth variant="text" component={Link} to="/login" disabled={loading} >Iniciar Sesión</Button>
           </Stack>
         </Stack>
       </Stack>
