@@ -21,7 +21,7 @@ export interface CommonBtnProps extends MuiButtonProps {
 
 /**Version de Button que aclara el texto en outlined (dark mode) para aumentar su legibilidad.  */
 const LightButton = styled(Button)(({ theme, color = "primary", variant = "contained" }) => {
-    if (variant !== "outlined") return []
+    if (!["outlined", "text"].includes(variant)) return []
     return [
         theme.applyStyles('dark', {
             color: theme.palette[color as ColorTypes].light
@@ -37,9 +37,12 @@ const CommonButton = ({ actionType = "NONE", onlyTooltip = false, loading = fals
 
     const styleIcon = (actionType: ActionType) => {
         if (actionType === "NONE") return ACTION_ICONS.NONE
+        if (actionType === "LOADING") return cloneElement(
+            ACTION_ICONS[actionType], { size: (btnProps.size === "small" ? 18 : 24), sx: { ml: 0 } }
+        )
         return cloneElement(
             ACTION_ICONS[actionType],
-            { fontSize: btnProps.size, sx: { ml: 0 } }
+            { fontSize: btnProps.size }
         )
     }
 

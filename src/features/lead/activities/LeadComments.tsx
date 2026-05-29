@@ -1,16 +1,19 @@
-import { useEffect, useState, type ReactNode } from "react"
+import { useCallback, useEffect, useState, type ReactNode } from "react"
 import { CreateCommentWrapper, UpdateCommentFromNote } from "./LeadCommentForm"
+import { DisableConfirmDialog } from "shared/feedback/ConfirmationDialog"
 import PaginationComponent from "shared/ui/lists/PaginationComponent"
-import type { Metadata, Paginable } from "src/types/shared"
+import { MetadataShort } from "shared/ui/details/DetailsMetadata"
+import LoadingScreenWrapper from "shared/feedback/LoadingScreen"
+import GenericPaper from "shared/layout/container/GenericPaper"
+import { useListPagination } from "src/hooks/useListPagination"
+import { useLoading } from "src/hooks/useLoading"
 import type { ColorTypes } from "src/types/mui-theme.d"
 import type { LeadComment } from "src/types/leads"
-import { useListPagination } from "src/hooks/useListPagination"
+import type { Paginable } from "src/types/shared"
 import { deleteComment, getComments } from "./leadActivitiesService"
-import { formatDate } from "src/utils/formatters"
+import { showCommonErrorToast, showToast } from "src/utils/feedback"
 import { Box, Divider, Grid, IconButton, Paper, Stack, Typography } from "@mui/material"
-import { alpha, styled, useTheme } from "@mui/material/styles"
-import WatchLaterIcon from '@mui/icons-material/WatchLater';
-import PersonIcon from '@mui/icons-material/Person';
+import { alpha, styled } from "@mui/material/styles"
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
 
@@ -20,22 +23,31 @@ export const LeadComments = ({ leadId }: { leadId: number }) => {
     const [selectedCommentId, setSelectedCommentId] = useState<number | null>(null)
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(comments, 12)
 
-    useEffect(() => {
-        getComments({ detailed: true, lead_id: leadId, page: fetchPage, page_size: pageSize })
+    const fetchComments = useCallback(async (leadId: number, fetchPage: number, pageSize: number) => {
+        if (!leadId) return
+        return getComments({ detailed: true, lead_id: leadId, page: fetchPage, page_size: pageSize })
             .then(setComments)
-    }, [fetchPage, pageSize, leadId])
+            .catch(e => showCommonErrorToast(e))
+    }, [])
 
-    const onDeleteComment = (comId: number) => {
-        deleteComment(comId).then(() => {
-            getComments({ detailed: true, lead_id: leadId, page: fetchPage, page_size: pageSize })
-                .then(setComments)
-        })
+    const { fnWithLoading: fetchComLoad, loading } = useLoading(fetchComments)
+
+    useEffect(() => {
+        fetchComLoad(leadId, fetchPage, pageSize)
+    }, [fetchComLoad, fetchPage, pageSize, leadId])
+
+    const onDeleteComment = (delId: number) => {
+        return deleteComment(delId)
+            .then(() => {
+                showToast("Comentario eliminado definitivamente.")
+                fetchComments(leadId, fetchPage, pageSize)
+            })
+            .catch(e => showCommonErrorToast(e, "No se ha podido eliminar el comentario"))
     }
     const onCreateComment = () => {
-        getComments({ detailed: true, lead_id: leadId, page: fetchPage, page_size: pageSize })
-            .then(setComments)
+        return fetchComments(leadId, fetchPage, pageSize)
     }
-    const onUpdateComment = (newCom: LeadComment) => {
+    const onUpdateCommentList = (newCom: LeadComment) => {
         const newComments = [...(comments?.items ?? [])]
         const commentListIdx = newComments.findIndex(listCom => listCom.id === newCom.id)
         if (commentListIdx === -1) return
@@ -44,38 +56,40 @@ export const LeadComments = ({ leadId }: { leadId: number }) => {
         setSelectedCommentId(null)
     }
 
-    const { palette } = useTheme()
+    const [deletingCom, setDeletingCom] = useState<LeadComment | null>(null)
 
     return (
-        <Stack spacing={2} sx={{ height: "100%" }}>
-            <Stack spacing={2} sx={{
-                borderRadius: 3, px: 3, py: 2, flexGrow: 1, justifyContent: "space-between",
-                bgcolor: alpha(palette.background.default, .5), alignItems: "end"
-            }}
-            >
-                <Grid container spacing={2} sx={{
-                    justifyContent: "end", alignItems: "start", alignContent: "start",
-                    width: "100%", minWidth: "20rem"
+        <LoadingScreenWrapper loading={loading}>
+            <Stack spacing={2} sx={{ height: "100%" }}>
+                <Stack spacing={2} component={GenericPaper} elevation={0} sx={{
+                    flexGrow: 1, justifyContent: "space-between", alignItems: "end"
                 }}>
-                    {comments?.items.map(com =>
-                        <Grid key={com.id} size="grow" sx={{ minWidth: "20rem" }} >
-                            {com.id !== selectedCommentId ? (
-                                <CommentInstance comment={com} onEdit={() => setSelectedCommentId(com.id)}
-                                    onDelete={() => onDeleteComment(com.id)} title={<MetadataShort metadata={com} onlyUser />}
-                                    footerContent={<MetadataShort metadata={com} onlyDate containerProps={{ sx: { ml: "auto" } }} />} >
-                                    {com.content}
-                                </CommentInstance>
-                            )
-                                : <UpdateCommentFromNote leadId={leadId} existingComment={com} onUpdate={onUpdateComment} onClose={() => setSelectedCommentId(null)} />
-                            }
-                        </Grid>
-                    )}
-                </Grid>
-                <PaginationComponent {...pageComponentProps} />
+                    <Grid container spacing={2} sx={{
+                        justifyContent: "end", alignItems: "start", alignContent: "start",
+                        width: "100%", minWidth: "20rem"
+                    }}>
+                        {comments?.items.map(com =>
+                            <Grid key={com.id} size="grow" sx={{ minWidth: "20rem" }}>
+                                {com.id !== selectedCommentId ? (
+                                    <CommentInstance comment={com} onEdit={() => setSelectedCommentId(com.id)}
+                                        onDelete={() => setDeletingCom(com)} title={<MetadataShort metadata={com} onlyUser />}
+                                        footerContent={<MetadataShort metadata={com} onlyDate containerProps={{ sx: { ml: "auto" } }} />} >
+                                        {com.content}
+                                    </CommentInstance>
+                                )
+                                    : <UpdateCommentFromNote leadId={leadId} existingComment={com} onUpdate={onUpdateCommentList} onClose={() => setSelectedCommentId(null)} />
+                                }
+                            </Grid>
+                        )}
+                    </Grid>
+                    <PaginationComponent {...pageComponentProps} />
+                </Stack>
+                <Divider />
+                <CreateCommentWrapper leadId={leadId} onCreate={onCreateComment} />
             </Stack>
-            <Divider />
-            <CreateCommentWrapper leadId={leadId} onCreate={onCreateComment} />
-        </Stack>
+            <DisableConfirmDialog idModal="del-com" onConfirm={() => onDeleteComment(deletingCom!.id)} entity={deletingCom}
+                clearEntity={() => setDeletingCom(null)} entityTypeName="el comentario" onlyDelete />
+        </LoadingScreenWrapper>
     )
 }
 
@@ -153,73 +167,4 @@ export const CommentInstance = ({ comment, title, color, footerContent, onEdit, 
             }
         </CommentNote>
     )
-}
-
-
-interface MetadataShortProps {
-    metadata: Metadata,
-    onlyCreation?: boolean,
-    onlyUpdate?: boolean,
-    noIcon?: boolean,
-    containerProps?: object
-}
-
-export const MetadataInfo = ({ metadata, onlyCreation = false, onlyUpdate = false, noIcon = false, containerProps }: MetadataShortProps) => {
-    return (
-        <Grid {...containerProps}>
-            {!onlyUpdate &&
-                <Grid container spacing={1} sx={{ minWidth: "15rem", alignItems: "center" }} size="grow">
-                    {!noIcon && <WatchLaterIcon />}
-                    <Stack sx={{ justifyContent: "center" }}>
-                        <Typography variant="body2">
-                            <span style={{ fontWeight: "bold" }}>Creado:</span> {formatDate(metadata?.created_at, "date")}
-                        </Typography>
-                        <Typography variant="body2">
-                            <span style={{ fontWeight: "bold" }}>Por:</span> {metadata?.created_by}
-                        </Typography>
-                    </Stack>
-                </Grid>}
-            {!onlyCreation &&
-                <Grid container spacing={1} sx={{ minWidth: "15rem", alignItems: "center" }} size="grow">
-                    {!noIcon && <WatchLaterIcon />}
-                    {metadata?.updated_at &&
-                        <Stack sx={{ justifyContent: "center" }}>
-                            <Typography variant="body2">
-                                <span style={{ fontWeight: "bold" }}>Modificado:</span> {formatDate(metadata?.updated_at, "date")}
-                            </Typography>
-                            {metadata?.updated_by && <Typography variant="body2">
-                                <span style={{ fontWeight: "bold" }}>Por:</span> {metadata?.updated_by}
-                            </Typography>}
-                        </Stack>}
-                </Grid>}
-        </Grid>)
-}
-
-interface MetadataShortProps {
-    metadata: Metadata,
-    onlyUser?: boolean,
-    onlyDate?: boolean,
-    noIcon?: boolean,
-    containerProps?: object
-}
-
-export const MetadataShort = ({ metadata, onlyUser = false, onlyDate = false, noIcon = false, containerProps }: MetadataShortProps) => {
-    return <Grid spacing={.5} container sx={{ alignItems: "center" }} {...containerProps}>
-        {!onlyDate &&
-            <Stack direction="row" spacing={.5}>
-                {!noIcon && <PersonIcon fontSize="small" />}
-                <Typography variant="body2" sx={{ fontWeight: "bold" }}>Por</Typography>
-                <Typography variant="body2">{metadata?.created_by ?? metadata?.updated_by}</Typography>
-            </Stack>
-        }
-        {!onlyDate && !onlyUser && "-"}
-        {!onlyUser &&
-            <Stack direction="row" spacing={.5}>
-                {!noIcon && <WatchLaterIcon fontSize="small" />}
-                <Typography variant="body2" sx={{ textTransform: "capitalize" }}>
-                    {formatDate(metadata?.updated_at ?? metadata?.created_at, "dateTimeLong")}
-                </Typography>
-            </Stack>
-        }
-    </Grid>
 }

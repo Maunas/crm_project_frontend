@@ -1,29 +1,36 @@
 import { useMemo, useState } from "react"
 import { LeadPartialUpdate } from "./LeadPartialUpdate"
 import { AddressValue, BoolValue, CardValue, DateValue, ListValues, ModalValue, NewTabLink, PasswordValue, RatingValue } from "../shared/LeadValueComponents"
-import { LeadFieldTypeIcon } from "src/features/leadFields/LeadFieldTypeIcon"
+import { LeadFieldTypeIcon } from "features/leadFields/LeadFieldTypeIcon"
+import { CommonIconButton } from "shared/ui/buttons/CommonIconButton"
 import { CustomListItem } from "shared/ui/lists/CustomListItem"
 import type { LeadFieldValueDetailed } from "src/types/leadFields"
 import type { LeadDetailed } from "src/types/leads"
 import { useModal } from "src/hooks/useModal"
+import { getFieldIconTypeCode } from "features/leadFields/leadFieldUtils"
 import { formatMoney } from "src/utils/formatters"
-import { Accordion, AccordionDetails, AccordionSummary, Divider, Paper, Typography, Stack, IconButton, List, ListItemText } from "@mui/material"
+import { Accordion, AccordionDetails, AccordionSummary, Divider, Typography, Stack, List, ListItemText, Box } from "@mui/material"
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import EditIcon from "@mui/icons-material/Edit"
 
 interface LeadDetailsSection {
     name: string,
     fields: LeadFieldValueDetailed[]
 }
 
-export const LeadFieldSections = ({ lead, updateLeadInfo }: { lead: LeadDetailed, updateLeadInfo: (lead: LeadDetailed, reloadAudits?: boolean) => void }) => {
+interface LeadFieldSectionsProps {
+    lead: LeadDetailed,
+    updateLeadInfo: (lead: LeadDetailed, reloadAudits?: boolean) => void
+}
 
+export const LeadFieldSections = ({ lead, updateLeadInfo }: LeadFieldSectionsProps) => {
+
+    //Para datos que necesitan un modal
     const { modalProps } = useModal()
 
     //Para seleccionar el campo para actualización parcial
     const [updatingFieldId, setUpdatingFieldId] = useState<number | null>(null)
 
-    //Filtra leads para obtener los visibles, habilitados y con valor, ordenados por order
+    //Filtra leads para obtener los habilitados y con valor, ordenados por order
     const fieldValues = useMemo(() => {
         if (!lead?.field_values) return []
         return lead.field_values.filter(i => (i.field.active && i.active &&
@@ -33,13 +40,12 @@ export const LeadFieldSections = ({ lead, updateLeadInfo }: { lead: LeadDetailed
 
     //Separa los fieldValues por sección
     const leadSections: LeadDetailsSection[] = useMemo(() => {
-        const sections = new Map()
+        const sections = new Map<number, LeadDetailsSection>()
         fieldValues.forEach(fieldValue => {
             const section = fieldValue?.field?.lead_field_section
             if (!section) return
             if (sections.has(section.id)) {
-                const currentSection = sections.get(section.id)
-                sections.set(section.id, { ...currentSection, fields: [...currentSection.fields, fieldValue] })
+                sections.get(section.id)!.fields.push(fieldValue)
             } else {
                 sections.set(section.id, { name: section.name, fields: [fieldValue] })
             }
@@ -47,11 +53,20 @@ export const LeadFieldSections = ({ lead, updateLeadInfo }: { lead: LeadDetailed
         return Array.from(sections.values())
     }, [fieldValues])
 
+    const [expanded, setExpanded] = useState<number | null>(0)
+
+    const onExpand = (idx: number) => (
+        (_: unknown, exp: boolean) => {
+            if (!exp) setExpanded(null)
+            else setExpanded(idx)
+        }
+    )
+
     return (
-        <Paper sx={{ borderRadius: 1 }}>
+        <Box>
             {leadSections.map((section, idx) =>
-                <Accordion key={`sect-${idx}`} defaultExpanded={idx === 0} disableGutters>
-                    <AccordionSummary sx={{ height: "4rem" }} expandIcon={<ArrowDropDownIcon />}
+                <Accordion expanded={expanded === idx} onChange={onExpand(idx)} key={`section-${idx}`}>
+                    <AccordionSummary expandIcon={<ArrowDropDownIcon />}
                         aria-controls={`panel${idx + 1}-content`} id={`panel${idx + 1}-header`}>
                         <Typography variant="h2">{section.name}</Typography>
                     </AccordionSummary>
@@ -60,32 +75,31 @@ export const LeadFieldSections = ({ lead, updateLeadInfo }: { lead: LeadDetailed
                         <List>
                             {section?.fields.map((fieldValue, idx) =>
                                 updatingFieldId !== fieldValue.field.id ?
-                                    <LeadFieldByType key={`field-${idx}`} fieldValue={fieldValue} {...modalProps}
+                                    <LeadFieldContent key={`field-${idx}`} fieldValue={fieldValue} modalProps={modalProps}
                                         onToggleEdit={() => setUpdatingFieldId(fieldValue.field.id)} />
                                     : <LeadPartialUpdate key={`field-${idx}`} fieldValue={fieldValue} updateLeadInfo={updateLeadInfo}
-                                        onClose={() => setUpdatingFieldId(null)} lead={lead} />
+                                        onClose={(id: number) => setUpdatingFieldId(prev => prev === id ? null : prev)} lead={lead} />
                             )}
                         </List >
                     </AccordionDetails>
                 </Accordion >
             )}
-            <Accordion disableGutters>
+            <Accordion expanded={expanded === -1} onChange={onExpand(-1)}>
                 <AccordionSummary sx={{ height: "4rem" }} expandIcon={<ArrowDropDownIcon />}
-                    aria-controls="panel0-content" id="panel0-header"
-                >
+                    aria-controls="panel0-content" id="panel0-header">
                     <Typography variant="h2">Creación de Lead</Typography>
                 </AccordionSummary>
                 <AccordionDetails sx={{ paddingTop: 0 }}>
                     <Divider sx={{ marginBottom: 2 }} />
                     <List>
-                        <LeadFieldByType value={lead?.created_at} fieldName="Fecha de Creación" type="DATE_TIME" />
+                        <LeadFieldContent value={lead?.created_at} fieldName="Fecha de Creación" type="DATE_TIME" />
                         {lead?.updated_at &&
-                            <LeadFieldByType value={lead?.updated_at} fieldName="Fecha de Última Modificación" type="DATE_TIME" />
+                            <LeadFieldContent value={lead?.updated_at} fieldName="Fecha de Última Modificación" type="DATE_TIME" />
                         }
                     </List>
                 </AccordionDetails>
             </Accordion>
-        </Paper>
+        </Box>
     )
 }
 
@@ -97,17 +111,14 @@ type LeadFieldProps = {
     fieldValue: LeadFieldValueDetailed,
     onToggleEdit: () => void,
     modalProps: {
-        open: string | number | boolean;
+        openModalId?: string;
         handleOpen: (idModal: string) => void;
         handleClose: () => void;
     },
 }
-
-const TEMPLATES_WITH_ICONS = ["INSTAGRAM_USER", "POSTAL_CODE", "CREDIT_CARD_SIMPLE"]
-
 // props + type permite separar entre value/type/fieldname para metadatos, o el resto para las secciones. Se discrimina por value
 // En secciones se recuperan los datos desde fieldValue
-export const LeadFieldByType = (props: LeadFieldProps) => {
+export const LeadFieldContent = (props: LeadFieldProps) => {
 
     const isSectionInfo = "fieldValue" in props
 
@@ -120,7 +131,7 @@ export const LeadFieldByType = (props: LeadFieldProps) => {
     const fieldName = isSectionInfo ? props.fieldValue.field.name : props.fieldName
     const value = isSectionInfo ? props.fieldValue.value : props.value
 
-    const valueCode = (templateCode && TEMPLATES_WITH_ICONS.includes(templateCode)) ? templateCode : typeCode
+    const iconCode = getFieldIconTypeCode(typeCode, templateCode)
 
 
     const component = (code?: string) => {
@@ -147,16 +158,17 @@ export const LeadFieldByType = (props: LeadFieldProps) => {
     }
 
     return (
-        <CustomListItem disablePadding secondaryAction={onToggleEdit &&
-            <IconButton size="small" edge="end" color="primary" title="Modificar" onClick={onToggleEdit}
-                disabled={typeCode === "CALCULATED" || !fieldValue?.field.is_visible} >
-                <EditIcon fontSize="small" />
-            </IconButton>} >
-            <LeadFieldTypeIcon typeCode={valueCode} subtypeCode={subtypeCode} />
+        <CustomListItem disablePadding
+            secondaryAction={onToggleEdit &&
+                <CommonIconButton title="Modificar" actionType="MODIFY" onClick={onToggleEdit}
+                    size="small" tooltipSize="small" color="primary"
+                    disabled={typeCode === "CALCULATED" || !fieldValue?.field.is_visible} />
+            } >
+            <LeadFieldTypeIcon typeCode={iconCode} subtypeCode={subtypeCode} />
             <ListItemText sx={{ mr: 6 }}>
-                <Stack spacing={.5}>
+                <Stack>
                     <Typography variant="subtitle2" color="textSecondary">{fieldName}</Typography>
-                    {component(typeCode)}
+                    {component(iconCode)}
                 </Stack>
             </ListItemText>
         </CustomListItem>

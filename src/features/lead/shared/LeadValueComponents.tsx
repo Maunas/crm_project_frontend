@@ -106,8 +106,8 @@ export const RatingValue = memo(({ value, subtype, counter = false, tooltip = fa
 })
 
 interface ModalProps {
-    modalProps: {
-        opneModalId?: string;
+    modalProps?: {
+        openModalId?: string;
         handleOpen?: (idModal: string) => void;
         handleClose: () => void;
     }
@@ -126,6 +126,8 @@ export const ModalValue = ({ modalProps, idModal, type, subtype, value, size = "
             default: return "Ver Contenido"
         }
     }
+    if (!modalProps) return
+
     return (
         <GenericModal idModal={idModal} {...modalProps} btnProps={{ size: size, actionType: 'DETAILS' }}
             buttonText={getBtnText()} sx={{ minWidth: "80vw" }} >

@@ -1,14 +1,15 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { LeadFormAddress, LeadFormBool, LeadFormCheckbox, LeadFormFile, LeadFormMoney, LeadFormNumber, LeadFormPassword, LeadFormRating, LeadFormRelatedLead, LeadFormSelector, LeadFormText } from "../shared/LeadFormFields"
+import LoadingScreenWrapper from "shared/feedback/LoadingScreen"
 import { FormErrorMessage } from "shared/ui/forms/FormFeedback"
 import CommonButton from "shared/ui/buttons/CommonButton"
+import { useLoading } from "src/hooks/useLoading"
 import type { LeadField, LeadFieldValue } from "src/types/leadFields"
 import type { Lead, LeadPost, LeadPostValue } from "src/types/leads"
 import type { NomenclatorItem } from "src/types/nomenclators"
 import { getLeads } from "../leadService"
-import { getNomenclatorItems } from "src/features/nomenclators/nomenclatorService"
-import { getLeadFields } from "src/features/leadFields/leadFieldServices"
+import { getNomenclatorItems } from "features/nomenclators/nomenclatorService"
+import { getLeadFields } from "features/leadFields/leadFieldServices"
 import { createFormDataFromLead, setLeadFormErrors, updateSelectorOptions } from "../leadUtils"
 import { getListField } from "src/utils/lists"
 import { useFieldArray, useForm, type Control, type Path, type UseFormRegister } from "react-hook-form"
@@ -48,8 +49,11 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
     const { fields, replace } = useFieldArray({ name: "values", control })
 
     const submit = (data: LeadPostForm) => {
-        onSubmit(createFormDataFromLead(data)).catch(e => setLeadFormErrors(fields, e, setError))
+        return onSubmit(createFormDataFromLead(data))
+            .catch(e => setLeadFormErrors(fields, e, setError))
     }
+
+    const { loading: submitLoading, fnWithLoading: submitLoad } = useLoading(submit)
 
     //Setea el mensaje de error al selector, en el caso de createLead
     useEffect(() => {
@@ -58,20 +62,8 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
 
     const [leadFields, setLeadFields] = useState<LeadField[]>(existingLeadFields ?? [])
 
-    //Actualiza los leadFields respecto al campaignId seleccionado. Si ya hay existingLeadFields, no busca.
-    useEffect(() => {
-        if (campaignId == null) return
-        if (existingLeadFields) {
-            setLeadFields(existingLeadFields)
-            return
-        }
-        getLeadFields({ only_active: true, campaign_id: campaignId, "page_size": 0 }).then(res =>
-            setLeadFields(res.items.sort((a, b) => a.order - b.order))
-        )
-    }, [campaignId, existingLeadFields])
-
     //Cuando se cargan los leadFields, se formatean y ubican en fieldArray
-    useEffect(() => {
+    const loadFieldValues = useCallback((newLeadFields: LeadField[], existingValues?: LeadFieldValue[]) => {
         //Si ya hay valores, formatea los values para asignarlos al fieldArray. Asigna listas de ids a value.
         if (existingValues) {
             replace(
@@ -97,13 +89,34 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
             //Si no hay valores, solo trae los datos de los leadFields.
         } else {
             replace(
-                leadFields?.filter(field => field.field_type_code !== "CALCULATED" && field.is_visible)
+                newLeadFields?.filter(field => field.field_type_code !== "CALCULATED" && field.is_visible)
                     .map(field => ({
                         field_id: field.id,
                         fieldData: field
                     }) as LeadPostFormValues))
         }
-    }, [replace, leadFields, existingValues])
+    }, [replace])
+
+    //Actualiza los leadFields respecto al campaignId seleccionado. Si ya hay existingLeadFields, no busca.
+    const fetchLeadFields = useCallback(async (campaignId: number, existingLeadFields?: LeadField[], existingValues?: LeadFieldValue[]) => {
+        if (campaignId == null) return
+        if (existingLeadFields) {
+            setLeadFields(existingLeadFields)
+            loadFieldValues(existingLeadFields, existingValues)
+            return
+        }
+        return getLeadFields({ only_active: true, campaign_id: campaignId, "page_size": 0 }).then(res => {
+            const leadFields = res.items.sort((a, b) => a.order - b.order)
+            setLeadFields(leadFields)
+            loadFieldValues(leadFields, existingValues)
+        })
+    }, [loadFieldValues])
+
+    const { loading: fieldsLoading, fnWithLoading: fetchFieldsLoad } = useLoading(fetchLeadFields)
+
+    useEffect(() => {
+        fetchFieldsLoad(campaignId, existingLeadFields, existingValues)
+    }, [fetchFieldsLoad, campaignId, existingLeadFields, existingValues])
 
     // Objetos que contienen todos los leads de campañas relacionadas, y todos los nomencladores necesarios para el formulario.
     // Se identifican en un Map or sus ids.
@@ -117,34 +130,37 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
         updateSelectorOptions(leadFields, "nomenclator_id", selectors, ["SELECTOR", "CHECKBOX"],
             (nomenclator_id: number) => getNomenclatorItems({ only_active: true, nomenclator_id: nomenclator_id, page_size: 0 }).then((res) => res.items))
             .then(map => setSelectors(map)).catch(() => setError("root", { message: "No se ha podido obtener la lista del selector" }))
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [leadFields, setError])
 
     return (
-        <form onSubmit={handleSubmit(submit)}>
-            <input type="text" {...register("campaign_id", { setValueAs: value => (value === "" || !value) ? null : Number(value) })} hidden />
-            <Stack spacing={2}>
-                <Grid container spacing={.5}>
-                    {campaignId &&
-                        fields.map((field, idx) =>
-                            <Grid size="grow" sx={{ alignItems: "center", minWidth: "20rem" }} key={field.id}>
-                                <LeadFormFieldType register={register} name={`values.${idx}.value`} control={control}
-                                    leadField={field.fieldData} relatedLeads={relatedLeads.get(field?.fieldData?.related_campaign_id ?? -1)}
-                                    selectors={selectors.get(field?.fieldData?.nomenclator_id ?? -1)}
-                                    errorMessage={errors?.values?.[idx]?.value?.message} />
-                            </Grid>
-                        )
-                    }
-                </Grid>
-                {errors.root &&
-                    <FormErrorMessage>{errors.root.message}</FormErrorMessage>}
-                <ButtonGroup sx={{ alignSelf: "end" }}>
-                    {onCancel && <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel} >Cancelar</CommonButton>}
-                    {campaignId &&
-                        <CommonButton actionType={existingValues ? "MODIFY" : "CREATE"}
-                            type="submit" variant="contained">{submitBtnLabel}</CommonButton>}
-                </ButtonGroup>
-            </Stack>
-        </form>
+        <LoadingScreenWrapper loading={fieldsLoading}>
+            <form onSubmit={handleSubmit(submitLoad)}>
+                <input type="text" {...register("campaign_id", { setValueAs: value => (value === "" || !value) ? null : Number(value) })} hidden />
+                <Stack spacing={2}>
+                    <Grid container spacing={.5}>
+                        {campaignId &&
+                            fields.map((field, idx) =>
+                                <Grid size="grow" sx={{ alignItems: "center", minWidth: "20rem" }} key={field.id}>
+                                    <LeadFormFieldType register={register} name={`values.${idx}.value`} control={control}
+                                        leadField={field.fieldData} relatedLeads={relatedLeads.get(field?.fieldData?.related_campaign_id ?? -1)}
+                                        selectors={selectors.get(field?.fieldData?.nomenclator_id ?? -1)}
+                                        errorMessage={errors?.values?.[idx]?.value?.message} />
+                                </Grid>
+                            )
+                        }
+                    </Grid>
+                    {errors.root &&
+                        <FormErrorMessage>{errors.root.message}</FormErrorMessage>}
+                    <ButtonGroup sx={{ alignSelf: "end" }}>
+                        {onCancel && <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel} disabled={submitLoading}>Cancelar</CommonButton>}
+                        {campaignId &&
+                            <CommonButton actionType={existingValues ? "MODIFY" : "CREATE"} loading={submitLoading}
+                                type="submit" variant="contained">{submitBtnLabel}</CommonButton>}
+                    </ButtonGroup>
+                </Stack>
+            </form>
+        </LoadingScreenWrapper>
     )
 }
 

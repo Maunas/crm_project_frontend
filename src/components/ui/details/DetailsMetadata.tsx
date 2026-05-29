@@ -1,6 +1,8 @@
-import { Grid, Typography } from "@mui/material";
+import { Grid, Stack, Typography } from "@mui/material";
 import type { Metadata } from "src/types/shared";
 import { formatDate } from "src/utils/formatters";
+import WatchLaterIcon from '@mui/icons-material/WatchLater';
+import PersonIcon from '@mui/icons-material/Person';
 
 interface DetailsMetadataProps<T extends Metadata> {
     entity: T
@@ -28,4 +30,39 @@ export default function DetailsMetadata<T extends Metadata>({ entity }: DetailsM
             </Grid>
         }
     </Grid>);
+}
+
+
+interface MetadataShortProps {
+    metadata: Metadata,
+    onlyUser?: boolean,
+    onlyDate?: boolean,
+    noIcon?: boolean,
+    containerProps?: object
+}
+/**
+ * Versión de una sola linea.
+ * Muestra los datos de la última modificación, o creación si no se ha modificado.
+ * */
+export const MetadataShort = ({ metadata, onlyUser = false, onlyDate = false, noIcon = false, containerProps }: MetadataShortProps) => {
+    return (
+        <Grid spacing={.5} container sx={{ alignItems: "center" }} {...containerProps}>
+            {!onlyDate &&
+                <Stack direction="row" spacing={.5}>
+                    {!noIcon && <PersonIcon fontSize="small" />}
+                    <Typography variant="body2" sx={{ fontWeight: "bold" }}>Por</Typography>
+                    <Typography variant="body2">{metadata?.created_by ?? metadata?.updated_by}</Typography>
+                </Stack>
+            }
+            {(!onlyDate && !onlyUser) && "-"}
+            {!onlyUser &&
+                <Stack direction="row" spacing={.5}>
+                    {!noIcon && <WatchLaterIcon fontSize="small" />}
+                    <Typography variant="body2" sx={{ textTransform: "capitalize" }}>
+                        {formatDate(metadata?.updated_at ?? metadata?.created_at, "dateTimeLong")}
+                    </Typography>
+                </Stack>
+            }
+        </Grid>
+    )
 }

@@ -140,7 +140,7 @@ export const DisableConfirmDialog = <T extends DisableableEntity,>({ entity, cle
     const titleAction = `${onlyDelete ? "eliminar"
         : (entity?.active ? "deshabilitar" : "habilitar")}`
 
-    const dialogTitle = `¿Desea ${titleAction} ${entityTypeName}${entity?.name && ` "${entity.name}"`}?`
+    const dialogTitle = `¿Desea ${titleAction} ${entityTypeName}${entity?.name ? ` "${entity.name}"` : ""}?`
 
     const dialogSubtitle = onlyDelete
         ? <>El elemento se <span style={{ fontWeight: "bold", textDecoration: "underline" }}>eliminará</span> definitivamente del sistema.</>

@@ -31,11 +31,10 @@ export const CampaignDetails = () => {
 
     const nav = useNavigate()
 
-    const fetchCmpDetails = (id: number) => {
-        return getCampaign(id).then(res => {
+    const fetchCmpDetails = useCallback((id: number) => (
+        getCampaign(id).then(res => {
             setCampaign(res)
-        })
-    }
+        })), [])
 
     const { fnWithLoading: fetchCmpLoad, loading } = useLoading(fetchCmpDetails)
 

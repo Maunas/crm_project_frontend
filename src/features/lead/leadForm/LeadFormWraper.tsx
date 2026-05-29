@@ -8,6 +8,7 @@ import { getLeadTitleArray } from "../leadUtils"
 import { createLead, getLead, simulateCreateLead, updateLead } from "../leadService"
 import { getWorkspaces } from "src/features/workspaces/workspaceServices"
 import { getCampaigns } from "src/features/campaigns/campaignServices"
+import { showToast } from "src/utils/feedback"
 import { useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { Autocomplete, Divider, Grid, Stack, TextField, Typography } from "@mui/material"
 
@@ -25,7 +26,7 @@ export const CreateLeadFormPage = () => {
     const nav = useNavigate()
 
     useEffect(() => {
-        getWorkspaces({ "page_size": 0, only_active: true }).then(res => {
+        getWorkspaces({ page_size: 0, only_active: true }).then(res => {
             setWorkspaces(res.items)
             const paramWspId = params.get("workspace")
             if (!paramWspId) return
@@ -35,6 +36,7 @@ export const CreateLeadFormPage = () => {
         })
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
+
 
     useEffect(() => {
         if (!selectedWorkspace) return
@@ -50,7 +52,10 @@ export const CreateLeadFormPage = () => {
     }, [selectedWorkspace])
 
     const onSubmit = useCallback((data: FormData) => {
-        return createLead(data).then(lead => nav(`/leads/${lead.id}`))
+        return createLead(data).then(lead => {
+            nav(`/leads/${lead.id}`)
+            showToast(`el lead fue creado con éxito`)
+        })
     }, [nav])
 
     return (
@@ -109,7 +114,7 @@ export const SimulateLeadFormModal = ({ campaign, leadFields, onCancel }: Simula
 
     const onSubmit = useCallback((data: FormData) => {
         return simulateCreateLead(data)
-            .then(() => alert("El formulario se envió correctamente."))
+            .then(() => showToast(`Formulario enviado con éxito`))
     }, [])
 
     //Convierte arreglo de LeadFieldDetailed a arreglo de LeadField
@@ -159,7 +164,11 @@ export const UpdateLeadFormPage = () => {
     }, [formattedLeadValues])
 
     const onSubmit = useCallback((data: FormData) => {
-        return updateLead(data, lead!.id).then(lead => nav(`/leads/${lead.id}`))
+        return updateLead(data, lead!.id)
+            .then(lead => {
+                showToast(`el lead fue modificado con éxito`)
+                nav(`/leads/${lead.id}`)
+            })
     }, [nav, lead])
 
     const leadTitle = useMemo(() => {

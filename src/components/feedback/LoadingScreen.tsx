@@ -7,14 +7,12 @@ interface LoadingScreenProps extends StackProps {
     loadingIcon?: ReactNode,
 }
 
-export const LoadingScreenWrapper = ({ loading = false, loadingIcon, children }: LoadingScreenProps) => {
+export const LoadingScreenWrapper = ({ loading = false, loadingIcon, children, ...props }: LoadingScreenProps) => {
 
     if (loading) return (
-        <GenericPaper elevation={0}>
-            <Stack sx={{ height: "20rem", alignItems: "center", justifyContent: "center" }}>
-                {loadingIcon ?? <CircularProgress />}
-            </Stack>
-        </GenericPaper>
+        <Stack component={GenericPaper} elevation={0} {...props} sx={{ height: "20rem", alignItems: "center", justifyContent: "center", ...props.sx }}>
+            {loadingIcon ?? <CircularProgress />}
+        </Stack>
     )
     return children
 }

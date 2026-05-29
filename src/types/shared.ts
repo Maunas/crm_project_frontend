@@ -4,7 +4,7 @@ import type { Campaign, Workspace } from "./campaigns";
 import type { Nomenclator, NomenclatorItem } from "./nomenclators";
 
 export interface DisableableEntity {
-  active: boolean,
+  active?: boolean,
   name?: string
 }
 

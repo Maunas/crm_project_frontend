@@ -23,6 +23,7 @@ export const getLeadTitleArray = (lead: Lead | LeadDetailed, short: boolean = fa
     }
 }
 
+
 /********************************************  FormData  ***********************************************/
 
 /**

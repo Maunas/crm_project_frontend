@@ -4,8 +4,13 @@ import { alpha, lighten, styled } from '@mui/material/styles'
 /**
  * Solo muestra los secondaryAction si se está haciendo hover.
  */
-export const CustomListItem = styled(ListItem)(
-    ({ selected = false, theme }) => {
+export const CustomListItem = styled(ListItem,
+    {
+        shouldForwardProp: (prop) =>
+            prop !== "alwaysShowSecondary" && prop !== "selected",
+    }
+)(
+    ({ selected = false, alwaysShowSecondary = false, theme }) => {
         const selectedStyle = selected ?
             [
                 {
@@ -19,16 +24,18 @@ export const CustomListItem = styled(ListItem)(
                 })
             ] : {}
 
+
         return [
             selectedStyle,
-            {
+            (!alwaysShowSecondary && {
                 "& .MuiListItem-secondaryAction": {
                     display: "none"
                 },
                 "&:hover .MuiListItem-secondaryAction": {
                     display: "block"
                 },
-            }]
+            })
+        ]
     }
 )
 
