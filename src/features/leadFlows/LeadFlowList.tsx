@@ -15,13 +15,15 @@ import { useLoading } from 'src/hooks/useLoading'
 import LoadingScreenWrapper from 'shared/feedback/LoadingScreen'
 import { DisableConfirmDialog } from 'shared/feedback/ConfirmationDialog'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
-
+import { useUserContext } from 'src/stores/UserContext'
 
 interface FlowListProps {
     closeSidebar: () => void,
     property: LeadPropertiesItem | null
 }
 export const LeadFlowList = ({ closeSidebar, property }: FlowListProps) => {
+
+    const { activeOrg } = useUserContext()
 
     const [flows, setFlows] = useState<Paginable<LeadFlowDetailed> | null>(null)
     const nav = useNavigate()
@@ -36,7 +38,7 @@ export const LeadFlowList = ({ closeSidebar, property }: FlowListProps) => {
 
     useEffect(() => {
         fnWithLoading(fetchPage, pageSize)
-    }, [fetchPage, pageSize, fnWithLoading])
+    }, [fetchPage, pageSize, fnWithLoading, activeOrg])
 
     return (
         <Stack spacing={2}>

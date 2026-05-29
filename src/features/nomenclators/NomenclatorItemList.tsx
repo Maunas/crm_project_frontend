@@ -120,12 +120,14 @@ export const NomenclatorItemList = () => {
     }, [closeSidebar, handleSidebar, selectedEntity, updateEntityOnList])
 
     const [deletingItem, setDeletingItem] = useState<NomenclatorItemDetailed | null>(null)
-
+    const handleDeletingItem = (deletingItem: NomenclatorItemDetailed) => {
+        setDeletingItem(deletingItem)
+    }
     return (
         <ContainerWithSidebar isSidebarOpen={Boolean(sidebarMode)} closeSidebar={closeSidebar} sidebarComponent={
             <NomenclatorItemSidebar mode={sidebarMode} entity={selectedEntity} handleSidebar={handleSidebar}
                 closeSidebar={closeSidebar} updateEntityOnList={updateEntityOnList} nomenclator={nomenclator}
-                handleActive={handleActive} />
+                handleActive={handleDeletingItem} />
         }>
             <Stack spacing={2}>
                 <Breadcrumbs aria-label="breadcrumb">
@@ -160,7 +162,7 @@ export const NomenclatorItemList = () => {
                                                             <CommonIconButton actionType='MODIFY' title='Modificar' onClick={() => handleSidebar("UPDATE_NOM", nom)} tooltipSize='small' size='small' />
                                                             <CommonIconButton actionType={nom.active ? "DISABLE" : "ENABLE"} tooltipSize="small" size='small'
                                                                 title={nom.active ? "Deshabilitar" : "Habilitar"}
-                                                                onClick={() => setDeletingItem(nom)} color={nom.active ? "error" : "success"} />
+                                                                onClick={() => handleDeletingItem(nom)} color={nom.active ? "error" : "success"} />
                                                         </>}
                                                 </Stack>
                                             }>
@@ -212,7 +214,7 @@ interface SidebarProps {
         mode: string,
     ) => void,
     handleSidebar: (mode: string, entity: NomenclatorItemDetailed | null) => void,
-    handleActive: (entity: NomenclatorItemDetailed) => Promise<void>
+    handleActive: (entity: NomenclatorItemDetailed) => void
 }
 export const NomenclatorItemSidebar = memo(({ mode, entity, nomenclator, closeSidebar, updateEntityOnList, handleSidebar, handleActive }: SidebarProps) => {
 

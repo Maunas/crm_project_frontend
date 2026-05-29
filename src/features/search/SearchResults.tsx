@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Box, Button, List, ListItem, ListItemButton, ListItemText, Stack, Tab, Tabs, Typography } from '@mui/material'
 import type { Lead } from 'src/types/leads';
@@ -8,6 +8,8 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import type { SearchResults } from 'src/types/shared';
 import { generalSearch } from './searchServices';
 import { GenericContainer } from 'shared/layout/container/GenericContainer';
+import { useLoading } from 'src/hooks/useLoading';
+import LoadingScreenWrapper from 'src/components/feedback/LoadingScreen';
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -52,10 +54,17 @@ export const SearchResultsList = () => {
         return queryParam ? queryParam : null
     }, [searchParams])
 
-    useEffect(() => {
+    const fetchResults = useCallback(async (query: string) => {
         if (!query) return setResults(null)
-        generalSearch(query).then(setResults)
-    }, [query])
+        return generalSearch(query)
+            .then(setResults)
+    }, [])
+
+    const { loading, fnWithLoading: searchLoad } = useLoading(fetchResults)
+
+    useEffect(() => {
+        searchLoad(query)
+    }, [searchLoad, query])
 
     const totalResults = useMemo(() => {
         if (!results) return 0
@@ -82,7 +91,7 @@ export const SearchResultsList = () => {
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const tabs: SearchResultsTabs<any>[] = [
+    const tabs: SearchResultsTabs<any>[] = useMemo(() => [
         {
             label: "Leads", id: "search-leads", "aria-controls": "search-tab-leads", length: results?.leads?.length ?? 0, list: results?.leads ?? [],
             getPrimaryText: (item: Lead) => `${item.field_values[0].value} ${item.field_values[1].value}`, getDetailsLink: (item: Lead) => `/leads/${item.id}`
@@ -103,7 +112,7 @@ export const SearchResultsList = () => {
             label: "Ítems de Nomenclador", id: "search-nomenclator_items", "aria-controls": "search-tab-nomenclator_items", length: results?.nomenclator_items?.length ?? 0,
             list: results?.nomenclator_items ?? [], getPrimaryText: (item: NomenclatorItem) => `${item.value}`, getDetailsLink: (item: NomenclatorItem) => `/nomenclators/${item.nomenclator_id}?selected=${item.id}`
         },
-    ]
+    ], [results])
 
     const getLengthText = (length: number) => {
         if (length === 0) return "Sin resultados"
@@ -115,38 +124,39 @@ export const SearchResultsList = () => {
         <GenericContainer maxWidth="xl">
             <Stack spacing={3}>
                 <Typography variant="h1">Resultado de la Búsqueda: "{query}"</Typography>
-                {totalResults > 0 ?
-                    <Box sx={{ width: '100%' }}>
-                        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                            <Tabs value={openTab} onChange={handleChange} aria-label="basic tabs example"
-                                variant="scrollable" scrollButtons="auto">
-                                {tabs.map(tab => {
-                                    return (<Tab id={tab.id} aria-controls={tab["aria-controls"]} key={`tab-${tab.id}`}
-                                        disabled={tab.length === 0}
-                                        label={
-                                            <>
-                                                <Typography variant="body1" sx={{ fontWeight: 600 }}>{tab.label}</Typography>
-                                                <Typography variant="body2" sx={{ fontStyle: "italic" }}>{getLengthText(tab.length)}</Typography>
-                                            </>
-                                        }
-                                    />)
-                                })}
-                            </Tabs>
+                <LoadingScreenWrapper loading={loading}>
+                    {totalResults > 0 ?
+                        <Box sx={{ width: '100%' }}>
+                            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                                <Tabs value={openTab} onChange={handleChange} aria-label="basic tabs example"
+                                    variant="scrollable" scrollButtons="auto">
+                                    {tabs.map(tab => {
+                                        return (<Tab id={tab.id} aria-controls={tab["aria-controls"]} key={`tab-${tab.id}`}
+                                            disabled={tab.length === 0}
+                                            label={
+                                                <>
+                                                    <Typography variant="body1" sx={{ fontWeight: 600 }}>{tab.label}</Typography>
+                                                    <Typography variant="body2" sx={{ fontStyle: "italic" }}>{getLengthText(tab.length)}</Typography>
+                                                </>
+                                            }
+                                        />)
+                                    })}
+                                </Tabs>
+                            </Box>
+                            {tabs.map((tab, idx) => {
+                                return (
+                                    <CustomTabPanel value={openTab} index={idx} key={`content-${tab.id}`}>
+                                        <SearchList list={tab.list} listId={tab.id}
+                                            getPrimaryText={tab.getPrimaryText} getSecondaryText={tab.getSecondaryText} getDetailsLink={tab.getDetailsLink} />
+                                    </CustomTabPanel>
+                                )
+                            })
+                            }
                         </Box>
-                        {tabs.map((tab, idx) => {
-                            return (
-                                <CustomTabPanel value={openTab} index={idx} key={`content-${tab.id}`}>
-                                    <SearchList list={tab.list} listId={tab.id}
-                                        getPrimaryText={tab.getPrimaryText} getSecondaryText={tab.getSecondaryText} getDetailsLink={tab.getDetailsLink} />
-                                </CustomTabPanel>
-                            )
-                        })
-                        }
-                    </Box>
-                    :
-                    <Typography variant="h3" sx={{ textAlign: "center" }}>No se han encontrado resultados para la búsqueda.</Typography>
-                }
-
+                        :
+                        <Typography variant="h3" sx={{ textAlign: "center" }}>No se han encontrado resultados para la búsqueda.</Typography>
+                    }
+                </LoadingScreenWrapper>
             </Stack>
         </GenericContainer>
     )

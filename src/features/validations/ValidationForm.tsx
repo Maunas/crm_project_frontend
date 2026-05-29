@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
-import { ControlledTextInput, RegisteredTextInput } from "shared/ui/forms/CustomInputs";
 import { ControlledAutocomplete, ControlledRadio } from "shared/ui/forms/CustomMultipleInputs";
-import { EnabledIcon } from "shared/ui/lists/Icons";
-import CommonButton from "shared/ui/buttons/CommonButton";
+import { ControlledTextInput, RegisteredTextInput } from "shared/ui/forms/CustomInputs";
 import { FormErrorMessage } from "shared/ui/forms/FormFeedback";
+import CommonButton from "shared/ui/buttons/CommonButton";
+import { EnabledIcon } from "shared/ui/lists/Icons";
+import { useLoading } from "src/hooks/useLoading";
+import type { FieldValidationRule, FieldValidationRulePost, FieldValidationRuleTemplate, LeadFieldDetailed } from "src/types/leadFields";
 import { createValidation, deleteValidation, getValidationTemplates, updateValidation } from "./validationService";
 import { getValidationDataByType, setValFormErrors } from "./validationUtils";
-import type { FieldValidationRule, FieldValidationRulePost, FieldValidationRuleTemplate, LeadFieldDetailed } from "src/types/leadFields";
+import { showToast } from "src/utils/feedback";
 import { useFieldArray, useForm, useWatch, type Control, type FieldErrors, type UseFieldArrayRemove, type UseFormClearErrors, type UseFormGetValues, type UseFormRegister, type UseFormSetValue } from "react-hook-form";
 import { Divider, Grid, Stack, Typography, ButtonGroup } from "@mui/material";
 
@@ -31,7 +33,7 @@ export interface ValidationSidebarProps {
 }
 
 export const ValidationFormSidebar = ({ leadField, updateEntityOnList, handleSidebar }: ValidationSidebarProps) => {
-    const onSubmit = (val: FieldValidationListPostInstance) => {
+    const submit = (val: FieldValidationListPostInstance) => {
         if (val.to_delete && val.id) return deleteValidation(val.id)
         if (val.id) {
             return updateValidation(getValidationDataByType(val, val.creation_method === "template"), val.id)
@@ -40,18 +42,25 @@ export const ValidationFormSidebar = ({ leadField, updateEntityOnList, handleSid
         }
     }
     //Actualiza el leadfield, abre el detalle
-    const onSubmitAll = (val: FieldValidationRule[]) => {
+    const submitAll = (val: FieldValidationRule[], fulfilledRequests: number) => {
         const newLeadField = { ...leadField, validation_rules: val }
         updateEntityOnList(newLeadField)
         handleSidebar("DETAILS_FIELD", newLeadField)
+        showToast(`${fulfilledRequests > 1 ? `Se han guardado con éxito ${fulfilledRequests} validaciones` : "Se ha guardado con éxito 1 validación"}`)
     }
     //Actualiza el leadField, el formulario queda abierto
-    const onErrorAll = (val: FieldValidationRule[]) => {
+    const onErrorAll = (val: FieldValidationRule[], fulfilledRequests: number) => {
         updateEntityOnList({ ...leadField, validation_rules: val })
+        showToast(`Ha habido un error en el formulario. \n
+                    ${fulfilledRequests === 0 ? ""
+                : fulfilledRequests > 1
+                    ? `Se han guardado con éxito ${fulfilledRequests} validaciones`
+                    : "Se ha guardado con éxito 1 validación"}`,
+            "error")
     }
 
     return (
-        <ValidationRuleForm leadField={leadField} onSubmit={onSubmit} onSubmitAll={onSubmitAll} onErrorAll={onErrorAll}
+        <ValidationRuleForm leadField={leadField} submit={submit} submitAll={submitAll} onErrorAll={onErrorAll}
             onCancel={() => handleSidebar("DETAILS_FIELD", leadField)} />
     )
 }
@@ -59,12 +68,12 @@ export const ValidationFormSidebar = ({ leadField, updateEntityOnList, handleSid
 interface ValidationRuleFormProps {
     leadField: LeadFieldDetailed
     onCancel: () => void
-    onSubmit: (data: FieldValidationListPostInstance) => Promise<FieldValidationRule | { action: string; }>
-    onSubmitAll: (data: FieldValidationRule[]) => void
-    onErrorAll: (data: FieldValidationRule[]) => void
+    submit: (data: FieldValidationListPostInstance) => Promise<FieldValidationRule | { action: string; }>
+    submitAll: (data: FieldValidationRule[], fulfilledRequests: number) => void
+    onErrorAll: (data: FieldValidationRule[], fulfilledRequests: number) => void
 }
 
-export const ValidationRuleForm = ({ leadField, onSubmit, onSubmitAll, onErrorAll, onCancel }: ValidationRuleFormProps) => {
+export const ValidationRuleForm = ({ leadField, submit, submitAll, onErrorAll, onCancel }: ValidationRuleFormProps) => {
 
     const setCreationMethod = (validation_rules: FieldValidationRule[]) => {
         return validation_rules.map(val => ({
@@ -90,20 +99,19 @@ export const ValidationRuleForm = ({ leadField, onSubmit, onSubmitAll, onErrorAl
         getValidationTemplates().then(setTemplates);
     }, []);
 
-    const submit = async (data: FieldValidationListPost) => {
-        let errorFlag = false
+    const onSubmit = async (data: FieldValidationListPost) => {
         const idxToDelete: number[] = []
         const newLeadFieldValidationList: FieldValidationRule[] = [] //Para la lista dentro del detalle de leadField
 
         //Promise.allSettled guarda los resultados de todas las peticiones, sin interrumpir si falla.
-        await Promise.allSettled(
+        const responses = await Promise.allSettled(
             data.validation_rules.map((val, idx) => {
-                return onSubmit(val)
+                return submit(val)
                     .then(savedVal => {
                         //Si no elimina, guarda los datos nuevos de los campos creados para habilitar su modificación
                         if (!val.to_delete && "id" in savedVal) {
                             setValue(`validation_rules.${idx}`, { ...val, ...savedVal })
-                            setValue(`validation_rules.${idx}.creation_method`, "manual")
+                            setValue(`validation_rules.${idx}.creation_method`, savedVal.template_code ? "template" : "manual")
                             newLeadFieldValidationList.push(savedVal)
                         }
                         else idxToDelete.push(idx) //Guarda los indices a eliminar
@@ -112,49 +120,61 @@ export const ValidationRuleForm = ({ leadField, onSubmit, onSubmitAll, onErrorAl
                         setValFormErrors(idx, val.creation_method === "template", e, setError)
                         //Si falla la modificación, guarda el valor anterior al formulario
                         if (val.id) newLeadFieldValidationList.push(leadField.validation_rules[idx])
-                        errorFlag = true
                         throw (e)
                     })
             })
         )
+
+        const fulfilledRequests = responses.reduce((acc, cur) => cur.status === "fulfilled" ? acc + 1 : acc, 0)
+        const failedRequests = responses.length - fulfilledRequests
+
         //Se eliminan todos los campos a la vez, despues de setear todos los errores, para evitar inconsistencias.
         remove(idxToDelete)
-        return errorFlag ? onErrorAll(newLeadFieldValidationList) : onSubmitAll(newLeadFieldValidationList)
+        return failedRequests > 0 ? onErrorAll(newLeadFieldValidationList, fulfilledRequests) : submitAll(newLeadFieldValidationList, fulfilledRequests)
     }
 
+    const { loading, fnWithLoading: submitLoad } = useLoading(onSubmit)
+
     return (
-        <Stack spacing={3}>
-            <Typography variant="h2">{leadField.name}</Typography>
-            <Stack spacing={2}>
-                <Typography variant="h3">Reglas de Validación</Typography>
-                <Divider />
-                {fields?.length > 0 ?
-                    fields.map((field, idx) => (
-                        <ValidationInstance key={field.array_id} idx={idx} templates={templates}
-                            register={register} control={control} setValue={setValue} remove={remove} getValues={getValues}
-                            errors={errors} clearErrors={clearErrors} />
-                    ))
-                    : <Typography variant="h5" sx={{ textAlign: "center" }}>No hay validaciones cargadas</Typography>
-                }
-                <ButtonGroup sx={{ alignSelf: "end" }}>
-                    <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel}>Cancelar</CommonButton>
-                    <CommonButton actionType="CREATE" variant="outlined" onClick={() =>
-                        append({
-                            name: "",
-                            error_message: "",
-                            creation_method: "template",
-                            template_params: {},
-                            required_params: [],
-                            field_id: leadField.id,
-                            to_delete: false
-                        })
-                    } color="secondary">
-                        Agregar
-                    </CommonButton>
-                    <CommonButton actionType="MODIFY" onClick={handleSubmit(submit)}>Guardar</CommonButton>
-                </ButtonGroup>
+        <form onSubmit={handleSubmit(submitLoad)}>
+            <Stack spacing={3}>
+                <Typography variant="h2">{leadField.name}</Typography>
+                <Stack spacing={2}>
+                    <Typography variant="h3">Reglas de Validación</Typography>
+                    <Divider />
+                    {fields?.length > 0 ?
+                        fields.map((field, idx) => (
+                            <ValidationInstance key={field.array_id} idx={idx} templates={templates}
+                                register={register} control={control} setValue={setValue} remove={remove} getValues={getValues}
+                                errors={errors} clearErrors={clearErrors} />
+                        ))
+                        : <Typography variant="h5" sx={{ textAlign: "center" }}>No hay validaciones cargadas</Typography>
+                    }
+                    <ButtonGroup sx={{ alignSelf: "end" }}>
+                        <CommonButton actionType="CLOSE" variant="text" color="error" disabled={loading} onClick={onCancel}>
+                            Cancelar
+                        </CommonButton>
+                        <CommonButton actionType="CREATE" variant="outlined" disabled={loading} color="secondary"
+                            onClick={() =>
+                                append({
+                                    name: "",
+                                    error_message: "",
+                                    creation_method: "template",
+                                    template_params: {},
+                                    required_params: [],
+                                    field_id: leadField.id,
+                                    to_delete: false
+                                })
+                            }>
+                            Agregar
+                        </CommonButton>
+                        <CommonButton actionType="MODIFY" type="submit" loading={loading}>
+                            Guardar
+                        </CommonButton>
+                    </ButtonGroup>
+                </Stack>
             </Stack>
-        </Stack>
+        </form>
     );
 };
 

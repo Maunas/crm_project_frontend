@@ -5,7 +5,7 @@ import Typography from '@mui/material/Typography';
 import MuiAppBar, { type AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
 import { styled } from '@mui/material/styles';
 import MenuIcon from '@mui/icons-material/Menu';
-import { HeaderSearchBar } from 'src/features/search/GeneralSearchBar';
+import { HeaderSearchBar } from 'features/search/GeneralSearchBar';
 import { drawerWidth } from './Sidebar';
 import UserInfo from './HeaderMenu';
 

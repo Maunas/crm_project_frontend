@@ -35,9 +35,10 @@ const OrganizationDetails = ({ entity, closeSidebar, handleSidebar, handleActive
                 }
                 <Divider />
                 <ButtonGroup fullWidth>
-                    {activeOrg?.id !== entity.id &&
-                        <CommonButton actionType="CHECK" color="info" variant='outlined' onClick={() => setActiveOrg(entity)} >Seleccionar como Activo</CommonButton>}
-                    <CommonButton actionType="LIST" component={Link} to={`/campaigns`} >Ver Espacios de Trabajo</CommonButton>
+                    {activeOrg?.id !== entity.id ?
+                        <CommonButton actionType="CHECK" color="info" variant='outlined' onClick={() => setActiveOrg(entity)} >Seleccionar como Activo</CommonButton>
+                        : <CommonButton actionType="LIST" component={Link} to={`/campaigns`} >Ver Espacios de Trabajo</CommonButton>
+                    }
                 </ButtonGroup>
                 <Divider />
                 <DetailsMetadata entity={entity} />

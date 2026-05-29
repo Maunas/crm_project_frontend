@@ -106,12 +106,15 @@ export const NomenclatorList = () => {
     }, [closeSidebar, handleSidebar, selectedEntity, updateEntityOnList])
 
     const [deletingNom, setDeletingNom] = useState<NomenclatorDetailed | null>(null)
+    const handleDeletingNom = (deletingNom: NomenclatorDetailed) => {
+        setDeletingNom(deletingNom)
+    }
 
     return (
         <ContainerWithSidebar isSidebarOpen={Boolean(sidebarMode)} closeSidebar={closeSidebar} sidebarComponent={
             <NomenclatorSidebar mode={sidebarMode} entity={selectedEntity} handleSidebar={handleSidebar}
                 closeSidebar={closeSidebar} updateEntityOnList={updateEntityOnList}
-                handleActive={handleActive} />
+                handleActive={handleDeletingNom} />
         }>
             <Stack spacing={3}>
                 <Stack direction="row" useFlexGap spacing={2} sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
@@ -138,7 +141,7 @@ export const NomenclatorList = () => {
                                                         <CommonIconButton actionType='MODIFY' title='Modificar' onClick={() => handleSidebar("UPDATE_NOM", nom)} tooltipSize='small' size="small" />
                                                         <CommonIconButton actionType={nom.active ? "DISABLE" : "ENABLE"} tooltipSize="small" size="small"
                                                             title={nom.active ? "Deshabilitar" : "Habilitar"}
-                                                            onClick={() => setDeletingNom(nom)} color={nom.active ? "error" : "success"} />
+                                                            onClick={() => handleDeletingNom(nom)} color={nom.active ? "error" : "success"} />
                                                     </>}
                                             </Stack>
                                         }>
@@ -190,7 +193,7 @@ interface SidebarProps {
         mode: string,
     ) => void,
     handleSidebar: (mode: string, entity: NomenclatorDetailed | null) => void,
-    handleActive: (entity: NomenclatorDetailed) => Promise<void>
+    handleActive: (entity: NomenclatorDetailed) => void
 }
 const NomenclatorSidebar = memo(({ mode, entity, closeSidebar, updateEntityOnList, handleSidebar, handleActive }: SidebarProps) => {
 

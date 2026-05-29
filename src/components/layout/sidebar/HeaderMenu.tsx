@@ -6,11 +6,12 @@ import { Avatar, Box, Button, Divider, FormControlLabel, IconButton, ListItemIco
 import { useColorScheme, useTheme } from '@mui/material/styles';
 import { AccountCircle, Check } from '@mui/icons-material';
 import MoreIcon from '@mui/icons-material/More';
+import LoadingScreenWrapper from 'src/components/feedback/LoadingScreen';
 
 const HeaderMenu = memo(() => {
     const nav = useNavigate()
 
-    const { user, logout, activeOrganizations, activeOrg, setActiveOrg } = useUserContext()
+    const { user, logout, activeOrganizations, activeOrg, setActiveOrg, loadingOrgs } = useUserContext()
 
     const handleLogout = () => {
         logout()
@@ -67,19 +68,21 @@ const HeaderMenu = memo(() => {
                 <ListItemText>Organizaciones</ListItemText>
                 <Divider />
             </MenuItem>
-            {
-                activeOrganizations?.map(org => {
-                    return <MenuItem dense key={org.id} onClick={() => setActiveOrg(org)}>
-                        {org.id === activeOrg?.id &&
-                            <ListItemIcon>
-                                <Check />
-                            </ListItemIcon>
-                        }
-                        <ListItemText inset={org.id !== activeOrg?.id} primary={org.name}>
-                        </ListItemText>
-                    </MenuItem>
-                })
-            }
+            <LoadingScreenWrapper loading={loadingOrgs} sx={{ minWidth: "15rem", height: "10rem" }}>
+                {
+                    activeOrganizations?.map(org => {
+                        return <MenuItem dense key={org.id} onClick={() => setActiveOrg(org)}>
+                            {org.id === activeOrg?.id &&
+                                <ListItemIcon>
+                                    <Check />
+                                </ListItemIcon>
+                            }
+                            <ListItemText inset={org.id !== activeOrg?.id} primary={org.name}>
+                            </ListItemText>
+                        </MenuItem>
+                    })
+                }
+            </LoadingScreenWrapper>
             <Divider />
             <MenuItem >
                 <FormControlLabel sx={{ width: "9rem" }}

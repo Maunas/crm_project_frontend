@@ -6,21 +6,17 @@ import type { NomenclatorDetailed } from "src/types/nomenclators"
 import { useUserContext } from "src/stores/UserContext"
 import { Link as RouterLink } from "react-router-dom"
 import { ButtonGroup, Divider, Link, Stack, Typography } from "@mui/material"
-import { useState } from "react"
-import { DisableConfirmDialog } from "src/components/feedback/ConfirmationDialog"
 
 interface NomenclatorDetailsProps {
     entity: NomenclatorDetailed | null,
     closeSidebar: () => void,
     handleSidebar: (mode: string, entity: NomenclatorDetailed | null) => void,
-    handleActive: (entity: NomenclatorDetailed) => Promise<void>
+    handleActive: (entity: NomenclatorDetailed) => void
 }
 
 export const NomenclatorDetails = ({ entity, closeSidebar, handleSidebar, handleActive }: NomenclatorDetailsProps) => {
 
     const { activeOrg } = useUserContext()
-
-    const [deletingNom, setDeletingNom] = useState<NomenclatorDetailed | null>(null)
 
     if (entity) return (
         <Stack spacing={3} >
@@ -46,15 +42,13 @@ export const NomenclatorDetails = ({ entity, closeSidebar, handleSidebar, handle
                 <ButtonGroup sx={{ alignSelf: "end" }}>
                     <CommonButton onClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
                     {(entity.organization_id || activeOrg?.id === 0) &&
-                        <HandleActiveButton active={entity.active} handleActive={() => setDeletingNom(entity)} />
+                        <HandleActiveButton active={entity.active} handleActive={() => handleActive(entity)} />
                     }
                     {(entity.organization_id || activeOrg?.id === 0) &&
                         <CommonButton onClick={() => handleSidebar("UPDATE_NOM", entity)} actionType="MODIFY" >Modificar</CommonButton>
                     }
                 </ButtonGroup>
             </Stack>
-            <DisableConfirmDialog entity={deletingNom} clearEntity={() => setDeletingNom(null)} idModal="dis-nom-det"
-                onConfirm={() => handleActive(deletingNom!)} entityTypeName='el nomenclador' />
         </Stack>
     )
 }

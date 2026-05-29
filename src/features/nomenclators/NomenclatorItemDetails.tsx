@@ -5,21 +5,17 @@ import CommonButton from "shared/ui/buttons/CommonButton"
 import type { NomenclatorItemDetailed } from "src/types/nomenclators"
 import { useUserContext } from "src/stores/UserContext"
 import { ButtonGroup, Divider, Link, Stack, Typography } from "@mui/material"
-import { useState } from "react"
-import { DisableConfirmDialog } from "src/components/feedback/ConfirmationDialog"
 
 interface NomenclatorDetailsProps {
     item: NomenclatorItemDetailed | null,
     closeSidebar: () => void,
     handleSidebar: (mode: string, item: NomenclatorItemDetailed | null) => void,
-    handleActive: (item: NomenclatorItemDetailed) => Promise<void>
+    handleActive: (item: NomenclatorItemDetailed) => void
 }
 
 export const NomenclatorItemDetails = ({ item, closeSidebar, handleSidebar, handleActive }: NomenclatorDetailsProps) => {
 
     const { activeOrg } = useUserContext()
-
-    const [deletingItem, setDeletingItem] = useState<NomenclatorItemDetailed | null>(null)
 
     if (item) return (
         <Stack spacing={3} >
@@ -42,15 +38,13 @@ export const NomenclatorItemDetails = ({ item, closeSidebar, handleSidebar, hand
                 <ButtonGroup sx={{ alignSelf: "end" }}>
                     <CommonButton onClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
                     {(item.organization_id || activeOrg?.id === 0) &&
-                        <HandleActiveButton active={item.active} handleActive={() => setDeletingItem(item)} />
+                        <HandleActiveButton active={item.active} handleActive={() => handleActive(item)} />
                     }
                     {(item.organization_id || activeOrg?.id === 0) &&
                         <CommonButton onClick={() => handleSidebar("UPDATE_NOM", item)} actionType="MODIFY" >Modificar</CommonButton>
                     }
                 </ButtonGroup>
             </Stack>
-            <DisableConfirmDialog entity={deletingItem} clearEntity={() => setDeletingItem(null)} idModal='dis-item-det' nameField='value'
-                onConfirm={() => handleActive(deletingItem!)} entityTypeName='la opción' />
         </Stack>
     )
 }
