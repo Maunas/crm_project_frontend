@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { LeadListContent } from './LeadListContent'
 import LeadColumnSelector from '../leadListOptions/LeadColumnSelector'
 import { LeadListOptions } from '../leadListOptions/LeadListOptions'
+import { DisableBulkConfirmDialog } from 'shared/feedback/ConfirmationDialog'
 import PaginationComponent from 'shared/ui/lists/PaginationComponent'
 import LoadingScreenWrapper from 'shared/feedback/LoadingScreen'
 import GenericModal from 'shared/layout/container/GenericModal'
@@ -16,10 +17,10 @@ import type { Lead, LeadView, LeadViewParams } from 'src/types/leads'
 import type { LeadField } from 'src/types/leadFields'
 import { bulkDeleteLead, createView, getFilteredLeads, getLeads, updateView } from '../leadService'
 import { getLeadFields } from 'src/features/leadFields/leadFieldServices'
-import { showCommonErrorToast } from 'src/utils/feedback'
+import { showCommonErrorToast, showToast } from 'src/utils/feedback'
+import { useLeadNavigation } from '../stores/LeadNavigationContext'
 import { Link as RouterLink, useSearchParams } from 'react-router-dom'
 import { Typography, Stack } from '@mui/material'
-import { useLeadNavigation } from '../stores/LeadNavigationContext'
 
 const DEFAULT_N_OF_FIELDS = 6
 
@@ -127,7 +128,7 @@ export const LeadListPage = () => {
     //----------------------------------Filtros----------------------------------
 
     //Al aplicar filtros vuelve a la primera página
-    const setFiltersAndHeaders = useCallback((filters: LeadFilter[], newParams: LeadListParams) => {
+    const setFiltersAndHeaders = useCallback(async (filters: LeadFilter[], newParams: LeadListParams) => {
         if (!campaignId) return null
         return fetchLeadLoad(1, filters, { ...newParams, ...orderParams }, campaignId).then(() => {
             setFetchParams(newParams)
@@ -202,7 +203,7 @@ export const LeadListPage = () => {
         return updateView(newView, existingView.id)
     }
 
-    const saveView = useCallback((name: string, visibility: string, existingView?: LeadView) => {
+    const saveView = useCallback(async (name: string, visibility: string, existingView?: LeadView) => {
         if (!campaignId) return
         if (existingView) return updateViewName(name, existingView)
         const newView = {
@@ -260,14 +261,23 @@ export const LeadListPage = () => {
 
     const selectCheckboxProps = useSelectCheckbox<Lead>()
 
-    const bulkDelete = useCallback(() => {
+    const bulkDelete = useCallback(async () => {
         if (!campaignId) return
         return bulkDeleteLead({ ids: Array.from(selectCheckboxProps.checkedItems.keys()) })
-            .then(() => {
+            .then(res => {
                 fetchLeadLoad(fetchPage, filters, headerParams, campaignId)
                 selectCheckboxProps.removeAllItems()
+                const delLength = res.deleted.length
+                const failLength = res.failed.length
+                showToast(`
+                    ${delLength > 0 ? `Se han eliminado ${delLength} lead${delLength > 1 ? "s" : ""}\n` : ""}
+                    ${failLength > 0 ? `No se ha podido eliminar ${failLength} lead${failLength > 1 ? "s" : ""}` : ""}
+                    `)
             })
+            .catch(e => showCommonErrorToast(e))
     }, [selectCheckboxProps, campaignId, fetchLeadLoad, fetchPage, filters, headerParams])
+
+    const [bulkDeleteOpen, setBulkDeleteOpen] = useState<boolean>(false)
 
     return (
         <Stack spacing={3}>
@@ -283,7 +293,7 @@ export const LeadListPage = () => {
             <Stack spacing={2}>
                 <LeadListOptions areThereLeads={areThereLeads} campaignId={campaignId} modalProps={modalProps} campaignSelectorProps={campaignSelectorProps} presentationProps={presentationProps}
                     filters={filters} headers={{ ...fetchParams, ...orderParams }} setFiltersAndHeaders={setFiltersAndHeaders} viewUpdateProps={viewUpdateProps} selectCheckboxProps={selectCheckboxProps}
-                    bulkDelete={bulkDelete} />
+                    bulkDelete={async () => setBulkDeleteOpen(true)} />
                 <LoadingScreenWrapper loading={loading}>
                     {(leads && campaignId !== null && workspaceId !== null) ?
                         <>
@@ -299,6 +309,8 @@ export const LeadListPage = () => {
                     }
                 </LoadingScreenWrapper>
             </Stack >
+            <DisableBulkConfirmDialog open={bulkDeleteOpen} onClose={() => setBulkDeleteOpen(false)} idModal="bulk-del-leads"
+                onlyDelete entityTypeName="los leads seleccionados" onConfirm={bulkDelete} isDisabling />
             <GenericModal idModal="columns_selector" {...modalProps} buttonText="Modificar Columnas" maxWidth="md" fullWidth showButton={false}>
                 <LeadColumnSelector originalList={leadFields} selectedFieldIds={selectedFieldIds!} handleSelectedFieldIds={handleSelectedFieldIds} handleClose={modalProps.handleClose} showField="name" />
             </GenericModal>

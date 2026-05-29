@@ -118,7 +118,6 @@ interface DisableConfirmDialog<T extends DisableableEntity> extends Omit<DialogP
     onConfirm: () => Promise<void>,
     entityTypeName?: string,
     onlyDelete?: boolean,
-    title?: string,
 }
 
 const DISABLE_TIMEOUT_SEC = 3
@@ -155,6 +154,50 @@ export const DisableConfirmDialog = <T extends DisableableEntity,>({ entity, cle
                 <Typography variant="h3">{dialogTitle}</Typography>
                 <Typography variant="body1">{dialogSubtitle}</Typography>
             </>}
+        </GenericConfirmDialog>
+    )
+}
+
+interface DisableBulkConfirmDialog extends Omit<DialogProps, "open"> {
+    open: boolean,
+    onClose: () => void,
+    idModal: string,
+    isDisabling: boolean,
+    onCancel?: () => void,
+    onConfirm: () => Promise<void>,
+    entityTypeName?: string,
+    onlyDelete?: boolean,
+}
+/**
+ * Componente de Dialog de Confirmación, específicamente para habilitar/deshabilitar múltiples entidades.
+ * @param onCancel Función a ejecutar al presionar el botón "Cerrar". Siempre cierra el modal al final.
+ * @param onConfirm Función a ejecutar al confirmar la acción. Se aplica por defecto tras un timeout, y cierra el modal.
+ * @param entityTypeName tipo de entidad, con su artículo. Ej: "las campañas seleccionadas"
+ * @param onlyDelete flag, modifica el contenido para solo mencionar la eliminación.
+ * 
+ * @example <DisableBulkConfirmDialog idModal='conf-id' open={open} 
+ * onClose={() => setOpen(false)} entityTypeName="las campañas seleccionadas" 
+ * onConfirm={() => handleBulkActiveCampaign()} />
+ */
+export const DisableBulkConfirmDialog = ({ open, onClose, isDisabling, idModal, onCancel, onConfirm,
+    entityTypeName = "las entidades seleccionadas", onlyDelete = false }: DisableBulkConfirmDialog) => {
+
+    const titleAction = `${onlyDelete ? "eliminar"
+        : (isDisabling ? "deshabilitar" : "habilitar")}`
+
+    const dialogTitle = `¿Desea ${titleAction} ${entityTypeName}?`
+
+    const dialogSubtitle = onlyDelete
+        ? <>Los elementos se <span style={{ fontWeight: "bold", textDecoration: "underline" }}>eliminarán</span> definitivamente del sistema.</>
+        : isDisabling ?
+            <>Si no tienen elementos asignados, se <span style={{ fontWeight: "bold", textDecoration: "underline" }}>eliminarán</span> definitivamente del sistema.</>
+            : <>Si los habilita, serán accesibles a todo usuario autorizado.</>
+
+    return (
+        <GenericConfirmDialog idModal={idModal} open={open} handleClose={onClose}
+            onCancel={onCancel} onConfirm={onConfirm} confirmTimeoutSec={DISABLE_TIMEOUT_SEC}>
+            <Typography variant="h3">{dialogTitle}</Typography>
+            <Typography variant="body1">{dialogSubtitle}</Typography>
         </GenericConfirmDialog>
     )
 }

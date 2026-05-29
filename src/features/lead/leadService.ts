@@ -1,4 +1,4 @@
-import type { DeleteResponse, EnableResponse, LeadFilter, LeadListParams, ListParams, Paginable } from "src/types/shared";
+import type { BulkDeleteResponse, DeleteResponse, EnableResponse, LeadFilter, LeadListParams, ListParams, Paginable } from "src/types/shared";
 import type { Lead, LeadDetailed, LeadView, LeadViewDetailed, LeadViewPost } from "src/types/leads";
 import axiosCRM from "src/lib/axios";
 
@@ -43,7 +43,7 @@ export const disableLead = async (id: number): Promise<DeleteResponse> => {
 };
 
 
-export const bulkDeleteLead = async (body: { ids: number[] }): Promise<DeleteResponse[]> => {
+export const bulkDeleteLead = async (body: { ids: number[] }): Promise<BulkDeleteResponse> => {
   const res = await axiosCRM.post(`leads/bulk-delete`, body);
   return res.data;
 };
