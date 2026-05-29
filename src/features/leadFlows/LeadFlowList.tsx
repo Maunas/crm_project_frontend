@@ -39,31 +39,35 @@ export const LeadFlowList = ({ closeSidebar, property }: FlowListProps) => {
     }, [fetchPage, pageSize, fnWithLoading])
 
     return (
-        <LoadingScreenWrapper loading={loading}>
-            {(flows?.items && flows.items.length > 0) ?
-                <Stack spacing={2}>
-                    <Stack spacing={1} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
-                        {property &&
-                            <CustomListItemAvatar color={property.color}><Avatar variant="rounded" >
-                                {property.icon}
-                            </Avatar></CustomListItemAvatar>}
-                        <Typography variant="h3">Lista de Flujos de Estado</Typography>
-                        <CommonButton actionType="CREATE" onClick={() => nav("/lead-flow-editor")} sx={{ marginLeft: "auto" }} size="small" onlyTooltip>
-                            Abrir Editor
-                        </CommonButton>
+        <Stack spacing={2}>
+            <Stack spacing={1} direction="row" useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
+                {property &&
+                    <CustomListItemAvatar color={property.color}><Avatar variant="rounded" >
+                        {property.icon}
+                    </Avatar></CustomListItemAvatar>}
+                <Typography variant="h3">Lista de Flujos de Estado</Typography>
+                {(flows?.items && flows.items.length > 0) &&
+                    <CommonButton actionType="CREATE" onClick={() => nav("/lead-flow-editor")} sx={{ marginLeft: "auto" }} size="small" onlyTooltip>
+                        Abrir Editor
+                    </CommonButton>}
+            </Stack>
+            <LoadingScreenWrapper loading={loading}>
+                {(flows?.items && flows.items.length > 0) ?
+                    <Stack spacing={2}>
+                        <LeadFlowListData flows={flows.items} updateList={() => fetchFlows(fetchPage, pageSize)} />
+                        <PaginationComponent {...pageComponentProps} />
+                        <CommonButton actionType="CLOSE" onClick={closeSidebar} sx={{ alignSelf: "end" }}>Cerrar</CommonButton>
                     </Stack>
-                    <LeadFlowListData flows={flows.items} updateList={() => fetchFlows(fetchPage, pageSize)} />
-                    <PaginationComponent {...pageComponentProps} />
-                    <CommonButton actionType="CLOSE" onClick={closeSidebar} sx={{ alignSelf: "end" }}>Cerrar</CommonButton>
-                </Stack>
-                :
-                <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center", height: "30rem" }}>
-                    <Typography variant="h4">No se han encontrado flujos de estado...</Typography>
-                    <CommonButton actionType="CREATE" onClick={() => nav("/lead-flow-editor")} variant="contained">Abrir Editor</CommonButton>
-                    <CommonButton actionType="CLOSE" variant="outlined" onClick={closeSidebar} sx={{ alignSelf: "end" }}>Cerrar</CommonButton>
-                </Stack>
-            }
-        </LoadingScreenWrapper>
+                    :
+                    <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center", height: "30rem" }}>
+                        <Typography variant="h4">No se han encontrado flujos de estado...</Typography>
+                        <CommonButton actionType="CREATE" onClick={() => nav("/lead-flow-editor")} variant="contained">Abrir Editor</CommonButton>
+                        <CommonButton actionType="CLOSE" variant="outlined" onClick={closeSidebar} sx={{ alignSelf: "end" }}>Cerrar</CommonButton>
+                    </Stack>
+                }
+            </LoadingScreenWrapper>
+        </Stack>
+
     )
 }
 

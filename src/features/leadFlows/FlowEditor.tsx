@@ -259,7 +259,7 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
     if (initialStates.length !== 1) { showToast("Debe haber exactamente un estado inicial", "error"); return }
     try {
       await onSave(flowName, flowDescription, states, transitions);
-      showToast("Flujo guardado correctamente", "success")
+      showToast(`Flujo "${flowName}" guardado con éxito`)
       return
     } catch (error) {
       const errorMsgBody = error as SimpleErrorBody
@@ -289,7 +289,8 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
     // Contenedor principal que previene el scroll vertical de la ventana entera
     <Stack sx={{ height: '100%', backgroundColor: 'background.default' }}>
       {/* Header Superior con el Input y Botón Guardar */}
-      <FlowEditorHeader initialName={initialFlowName} initialDescription={initialFlowDescription} handleSaveFlow={handleSaveFlow} statesLength={states?.length} />
+      <FlowEditorHeader initialName={initialFlowName} initialDescription={initialFlowDescription}
+        handleSaveFlow={handleSaveFlow} statesLength={states?.length} />
 
       <Stack direction="row" sx={{ flex: 1 }}>
         {/* Barra lateral de Drag & Drop */}
@@ -334,7 +335,7 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
       </Stack>
       {/* Diálogo de Edición */}
       <GenericModal idModal='update-state' open={Boolean(editingState)} maxWidth="xs" fullWidth
-        modalProps={{ handleClose: () => setEditingState(null) }} showButton={false} >
+        handleClose={() => setEditingState(null)} showButton={false} >
         <StateForm
           existingState={editingState}
           hasInitialState={hasInitialState}

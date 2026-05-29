@@ -5,7 +5,6 @@ import type { Nomenclator, NomenclatorItem } from "./nomenclators";
 
 export interface DisableableEntity {
   active?: boolean,
-  name?: string
 }
 
 /**

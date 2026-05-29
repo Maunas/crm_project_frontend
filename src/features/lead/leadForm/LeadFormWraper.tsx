@@ -9,6 +9,7 @@ import { createLead, getLead, simulateCreateLead, updateLead } from "../leadServ
 import { getWorkspaces } from "src/features/workspaces/workspaceServices"
 import { getCampaigns } from "src/features/campaigns/campaignServices"
 import { showToast } from "src/utils/feedback"
+import { useUserContext } from "src/stores/UserContext"
 import { useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { Autocomplete, Divider, Grid, Stack, TextField, Typography } from "@mui/material"
 
@@ -16,6 +17,8 @@ import { Autocomplete, Divider, Grid, Stack, TextField, Typography } from "@mui/
 export const CreateLeadFormPage = () => {
 
     const [params] = useSearchParams()
+
+    const { activeOrg } = useUserContext()
 
     const [campaigns, setCampaigns] = useState<Campaign[]>([])
     const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null)
@@ -35,7 +38,7 @@ export const CreateLeadFormPage = () => {
             setSelectedWorkspace(paramWsp)
         })
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    }, [activeOrg])
 
 
     useEffect(() => {

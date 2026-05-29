@@ -4,6 +4,7 @@ import { type DialogProps, ButtonGroup, Stack, LinearProgress, Typography } from
 import GenericModal from "../layout/container/GenericModal"
 import type { DisableableEntity } from "src/types/shared"
 import { useLoading } from "src/hooks/useLoading"
+import type { Path } from "react-hook-form"
 
 interface GenericConfirmDialogProps extends Omit<DialogProps, "open"> {
     idModal: string,
@@ -112,6 +113,7 @@ export const GenericConfirmDialog = memo(({ idModal, open = false, openModalId, 
 
 interface DisableConfirmDialog<T extends DisableableEntity> extends Omit<DialogProps, "open"> {
     entity: T | null,
+    nameField?: Path<T>,
     clearEntity: () => void,
     idModal: string,
     onCancel?: () => void,
@@ -133,18 +135,18 @@ const DISABLE_TIMEOUT_SEC = 3
  * clearEntity={() => setDeletingCmp(null)} entityTypeName="la campaña" 
  * onConfirm={() => handleActiveCampaign(deletingCmp!)} />
  */
-export const DisableConfirmDialog = <T extends DisableableEntity,>({ entity, clearEntity, idModal, onCancel, onConfirm,
+export const DisableConfirmDialog = <T extends DisableableEntity,>({ entity, clearEntity, idModal, onCancel, onConfirm, nameField = "name" as Path<T>,
     entityTypeName = "la entidad", onlyDelete = false }: DisableConfirmDialog<T>) => {
 
     const titleAction = `${onlyDelete ? "eliminar"
         : (entity?.active ? "deshabilitar" : "habilitar")}`
 
-    const dialogTitle = `¿Desea ${titleAction} ${entityTypeName}${entity?.name ? ` "${entity.name}"` : ""}?`
+    const dialogTitle = `¿Desea ${titleAction} ${entityTypeName}${entity?.[nameField] ? ` "${entity[nameField]}"` : ""}?`
 
     const dialogSubtitle = onlyDelete
         ? <>El elemento se <span style={{ fontWeight: "bold", textDecoration: "underline" }}>eliminará</span> definitivamente del sistema.</>
         : entity?.active ?
-            <>Si no tiene elementos asignados, se <span style={{ fontWeight: "bold", textDecoration: "underline" }}>eliminará</span> definitivamente del sistema.</>
+            <>Si no tiene leads asignados, se <span style={{ fontWeight: "bold", textDecoration: "underline" }}>eliminará</span> definitivamente del sistema.</>
             : <>Si lo habilita, será accesible a todo usuario autorizado.</>
 
     return (
@@ -190,7 +192,7 @@ export const DisableBulkConfirmDialog = ({ open, onClose, isDisabling, idModal, 
     const dialogSubtitle = onlyDelete
         ? <>Los elementos se <span style={{ fontWeight: "bold", textDecoration: "underline" }}>eliminarán</span> definitivamente del sistema.</>
         : isDisabling ?
-            <>Si no tienen elementos asignados, se <span style={{ fontWeight: "bold", textDecoration: "underline" }}>eliminarán</span> definitivamente del sistema.</>
+            <>Si no tienen leads asignados, se <span style={{ fontWeight: "bold", textDecoration: "underline" }}>eliminarán</span> definitivamente del sistema.</>
             : <>Si los habilita, serán accesibles a todo usuario autorizado.</>
 
     return (

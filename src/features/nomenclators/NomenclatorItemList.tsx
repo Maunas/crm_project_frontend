@@ -2,16 +2,20 @@ import { memo, useCallback, useEffect, useState } from 'react'
 import { NomenclatorItemFormSidebar } from './NomenclatorItemForm'
 import { NomenclatorItemDetails } from './NomenclatorItemDetails'
 import ContainerWithSidebar from 'shared/layout/container/GenericContainer'
+import { DisableConfirmDialog } from 'shared/feedback/ConfirmationDialog'
 import { CommonIconButton } from 'shared/ui/buttons/CommonIconButton'
 import PaginationComponent from 'shared/ui/lists/PaginationComponent'
+import LoadingScreenWrapper from 'shared/feedback/LoadingScreen'
 import { CustomListItem } from 'shared/ui/lists/CustomListItem'
 import CommonButton from 'shared/ui/buttons/CommonButton'
 import { EnabledIcon } from 'shared/ui/lists/Icons'
-import { disableNomenclatorItem, enableNomenclatorItem, getNomenclator, getNomenclatorItem, getNomenclatorItems } from './nomenclatorService'
 import { useListPagination } from 'src/hooks/useListPagination'
+import { useLoading } from 'src/hooks/useLoading'
 import { useSidebar } from 'src/hooks/useSidebar'
 import type { NomenclatorDetailed, NomenclatorItemDetailed } from 'src/types/nomenclators'
 import type { Paginable } from 'src/types/shared'
+import { disableNomenclatorItem, enableNomenclatorItem, getNomenclator, getNomenclatorItem, getNomenclatorItems } from './nomenclatorService'
+import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { useUserContext } from 'src/stores/UserContext'
 import { Link as RouterLink, useParams, useSearchParams } from 'react-router-dom'
 import { Breadcrumbs, ButtonGroup, Link, List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
@@ -34,14 +38,26 @@ export const NomenclatorItemList = () => {
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(nomenclatorItems)
 
     useEffect(() => {
-        getNomenclator(Number(nomenclatorId))
-            .then(setNomenclator)
+
     }, [nomenclatorId])
 
+    const fetchNomItems = useCallback(async (fetchPage: number, pageSize: number, nomenclatorId: number) => {
+        return getNomenclatorItems({ only_active: false, detailed: true, page: fetchPage, page_size: pageSize, nomenclator_id: nomenclatorId })
+            .then(async (res) => {
+                setNomenclatorItems(res)
+                await getNomenclator(Number(nomenclatorId))
+                    .then(setNomenclator)
+                    .catch(e => showCommonErrorToast(e, "Ha ocurrido un error al traer los datos del nomenclador"))
+            })
+            .catch(e => showCommonErrorToast(e, "Ha ocurrido un error al traer los ítems del nomenclador"))
+    }, [])
+
+    const { loading, fnWithLoading: fetchNomLoad } = useLoading(fetchNomItems)
+
     useEffect(() => {
-        getNomenclatorItems({ only_active: false, detailed: true, page: fetchPage, page_size: pageSize, nomenclator_id: Number(nomenclatorId) })
-            .then(setNomenclatorItems)
-    }, [fetchPage, pageSize, activeOrg, nomenclatorId])
+        if (!nomenclatorId) return
+        fetchNomLoad(fetchPage, pageSize, parseInt(nomenclatorId))
+    }, [fetchNomLoad, fetchPage, pageSize, activeOrg, nomenclatorId])
 
 
     const updateEntityOnList = useCallback((entity: NomenclatorItemDetailed | null, mode: string) => {
@@ -69,7 +85,7 @@ export const NomenclatorItemList = () => {
         }
     }, [closeSidebar, nomenclatorId, nomenclatorItems?.page, pageSize, selectedEntity])
 
-    const handleActive = useCallback((nom: NomenclatorItemDetailed) => {
+    const handleActive = useCallback(async (nom: NomenclatorItemDetailed | null) => {
         if (!nom) return
         const updateActive = (nom: NomenclatorItemDetailed) => {
             updateEntityOnList({ ...nom, active: !nom.active }, "UPDATE_NOM")
@@ -77,21 +93,33 @@ export const NomenclatorItemList = () => {
                 handleSidebar("KEEP", { ...selectedEntity, active: !nom.active })
             }
         }
-        const deleteWsp = (nom: NomenclatorItemDetailed) => {
+        const deleteNom = (nom: NomenclatorItemDetailed) => {
             updateEntityOnList(nom, "DELETE_NOM")
             if (selectedEntity?.id === nom.id) {
                 closeSidebar()
             }
         }
         if (nom.active) {
-            disableNomenclatorItem(nom.id).then(res => {
-                if (res.action === "disabled") updateActive(nom)
-                if (res.action === "deleted") deleteWsp(nom)
+            return disableNomenclatorItem(nom.id).then(res => {
+                if (res.action === "disabled") {
+                    updateActive(nom)
+                    showToast(`"${nom.value}" deshabilitado con éxito.`)
+                }
+                if (res.action === "deleted") {
+                    deleteNom(nom)
+                    showToast(`"${nom.value}" eliminado definitivamente.`)
+                }
             })
         } else {
-            enableNomenclatorItem(nom.id).then(() => updateActive(nom))
+            return enableNomenclatorItem(nom.id).then(() => {
+                updateActive(nom)
+                showToast(`"${nom.value}" habilitado con éxito.`)
+            })
+                .catch(e => showCommonErrorToast(e))
         }
     }, [closeSidebar, handleSidebar, selectedEntity, updateEntityOnList])
+
+    const [deletingItem, setDeletingItem] = useState<NomenclatorItemDetailed | null>(null)
 
     return (
         <ContainerWithSidebar isSidebarOpen={Boolean(sidebarMode)} closeSidebar={closeSidebar} sidebarComponent={
@@ -109,7 +137,7 @@ export const NomenclatorItemList = () => {
                 </Breadcrumbs>
                 <Stack spacing={3}>
                     <Stack spacing={1} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
-                        <Typography variant="h1">Opciones de {nomenclator?.name}</Typography>
+                        <Typography variant="h1">Opciones de "{nomenclator?.name ?? "Nomenclador"}"</Typography>
                         <ButtonGroup variant="outlined" sx={{ marginLeft: "auto" }} >
                             {nomenclatorItems && nomenclatorItems.items?.length > 0 &&
                                 <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_NOM", null) }} onlyTooltip>
@@ -118,52 +146,56 @@ export const NomenclatorItemList = () => {
                             }
                         </ButtonGroup>
                     </Stack>
-                    <Stack spacing={2}>
-                        {
-                            nomenclatorItems && nomenclatorItems.items?.length > 0 ?
-                                <List>
-                                    {nomenclatorItems.items.map(nom =>
-                                        <CustomListItem key={nom.id} selected={nom.id === selectedEntity?.id} disablePadding secondaryAction={
-                                            <Stack direction="row" sx={{ alignItems: "center" }}>
-                                                <CommonIconButton actionType='DETAILS' title='Detalle' onClick={() => handleSidebar("DETAILS_NOM", nom)} tooltipSize='small' size='small' />
-                                                {(nom.organization_id || activeOrg?.id === 0) &&
-                                                    <>
-                                                        <CommonIconButton actionType='MODIFY' title='Modificar' onClick={() => handleSidebar("UPDATE_NOM", nom)} tooltipSize='small' size='small' />
-                                                        <CommonIconButton actionType={nom.active ? "DISABLE" : "ENABLE"} tooltipSize="small" size='small'
-                                                            title={nom.active ? "Deshabilitar" : "Habilitar"}
-                                                            onClick={() => handleActive(nom)} color={nom.active ? "error" : "success"} />
-                                                    </>}
-                                            </Stack>
-                                        }>
-                                            <ListItemButton onClick={() => handleSidebar("DETAILS_NOM", nom)} >
-                                                <ListItemText sx={{ mr: 7 }} primary={
-                                                    <Stack spacing={1} direction="row" sx={{ alignItems: "center" }}>
-                                                        <EnabledIcon active={nom.active} />
-                                                        <Typography sx={{ fontWeight: "bold" }}>{nom.value}</Typography>
-                                                        {nom.parent_item &&
-                                                            <>
-                                                                <ArrowBackIcon />
-                                                                <Typography variant="subtitle2">
-                                                                    {nom.parent_item.value}
-                                                                </Typography>
-                                                            </>
-                                                        }
-                                                    </Stack>
-                                                }
-                                                    secondary={!nom.organization_id && <span style={{ fontStyle: "italic" }}>
-                                                        Opción del Sistema
-                                                    </span>} />
-                                            </ListItemButton>
-                                        </CustomListItem>
-                                    )}
-                                </List>
-                                : <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
-                                    <Typography variant="h4">No se han encontrado opciones en este nomenclador...</Typography>
-                                    <CommonButton actionType='CREATE' onClick={() => { handleSidebar("CREATE_NOM", null) }} variant="contained">Agregar</CommonButton>
-                                </Stack>
-                        }
-                        <PaginationComponent {...pageComponentProps} />
-                    </Stack>
+                    <LoadingScreenWrapper loading={loading}>
+                        <Stack spacing={2}>
+                            {
+                                nomenclatorItems && nomenclatorItems.items?.length > 0 ?
+                                    <List>
+                                        {nomenclatorItems.items.map(nom =>
+                                            <CustomListItem key={nom.id} selected={nom.id === selectedEntity?.id} disablePadding secondaryAction={
+                                                <Stack direction="row" sx={{ alignItems: "center" }}>
+                                                    <CommonIconButton actionType='DETAILS' title='Detalle' onClick={() => handleSidebar("DETAILS_NOM", nom)} tooltipSize='small' size='small' />
+                                                    {(nom.organization_id || activeOrg?.id === 0) &&
+                                                        <>
+                                                            <CommonIconButton actionType='MODIFY' title='Modificar' onClick={() => handleSidebar("UPDATE_NOM", nom)} tooltipSize='small' size='small' />
+                                                            <CommonIconButton actionType={nom.active ? "DISABLE" : "ENABLE"} tooltipSize="small" size='small'
+                                                                title={nom.active ? "Deshabilitar" : "Habilitar"}
+                                                                onClick={() => setDeletingItem(nom)} color={nom.active ? "error" : "success"} />
+                                                        </>}
+                                                </Stack>
+                                            }>
+                                                <ListItemButton onClick={() => handleSidebar("DETAILS_NOM", nom)} >
+                                                    <ListItemText sx={{ mr: 7 }} primary={
+                                                        <Stack spacing={1} direction="row" sx={{ alignItems: "center" }}>
+                                                            <EnabledIcon active={nom.active} />
+                                                            <Typography sx={{ fontWeight: "bold" }}>{nom.value}</Typography>
+                                                            {nom.parent_item &&
+                                                                <>
+                                                                    <ArrowBackIcon />
+                                                                    <Typography variant="subtitle2">
+                                                                        {nom.parent_item.value}
+                                                                    </Typography>
+                                                                </>
+                                                            }
+                                                        </Stack>
+                                                    }
+                                                        secondary={!nom.organization_id && <span style={{ fontStyle: "italic" }}>
+                                                            Opción del Sistema
+                                                        </span>} />
+                                                </ListItemButton>
+                                            </CustomListItem>
+                                        )}
+                                    </List>
+                                    : <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
+                                        <Typography variant="h4">No se han encontrado opciones en este nomenclador...</Typography>
+                                        <CommonButton actionType='CREATE' onClick={() => { handleSidebar("CREATE_NOM", null) }} variant="contained">Agregar</CommonButton>
+                                    </Stack>
+                            }
+                            <PaginationComponent {...pageComponentProps} />
+                        </Stack>
+                    </LoadingScreenWrapper>
+                    <DisableConfirmDialog entity={deletingItem} clearEntity={() => setDeletingItem(null)} idModal='dis-nom-list' nameField='value'
+                        onConfirm={() => handleActive(deletingItem)} entityTypeName='la opción' />
                 </Stack>
             </Stack>
         </ContainerWithSidebar >
@@ -180,7 +212,7 @@ interface SidebarProps {
         mode: string,
     ) => void,
     handleSidebar: (mode: string, entity: NomenclatorItemDetailed | null) => void,
-    handleActive: (entity: NomenclatorItemDetailed) => void
+    handleActive: (entity: NomenclatorItemDetailed) => Promise<void>
 }
 export const NomenclatorItemSidebar = memo(({ mode, entity, nomenclator, closeSidebar, updateEntityOnList, handleSidebar, handleActive }: SidebarProps) => {
 

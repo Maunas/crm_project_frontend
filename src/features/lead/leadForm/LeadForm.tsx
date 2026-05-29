@@ -153,7 +153,7 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
                     {errors.root &&
                         <FormErrorMessage>{errors.root.message}</FormErrorMessage>}
                     <ButtonGroup sx={{ alignSelf: "end" }}>
-                        {onCancel && <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel} disabled={submitLoading}>Cancelar</CommonButton>}
+                        {onCancel && <CommonButton actionType="CLOSE" variant="text" color="error" onClick={onCancel} disabled={submitLoading}>Cancelar</CommonButton>}
                         {campaignId &&
                             <CommonButton actionType={existingValues ? "MODIFY" : "CREATE"} loading={submitLoading}
                                 type="submit" variant="contained">{submitBtnLabel}</CommonButton>}
