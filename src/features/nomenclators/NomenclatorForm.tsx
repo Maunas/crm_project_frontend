@@ -1,11 +1,13 @@
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { ControlledAutocomplete } from "shared/ui/forms/CustomMultipleInputs"
 import { ControlledTextInput } from "shared/ui/forms/CustomInputs"
 import { FormErrorMessage } from "shared/ui/forms/FormFeedback"
-import { ControlledAutocomplete } from "shared/ui/forms/CustomMultipleInputs"
 import CommonButton from "shared/ui/buttons/CommonButton"
-import { createNomenclator, getNomenclators, updateNomenclator } from "./nomenclatorService"
+import { useLoading } from "src/hooks/useLoading"
 import type { Nomenclator, NomenclatorDetailed, NomenclatorPost } from "src/types/nomenclators"
+import { createNomenclator, getNomenclators, updateNomenclator } from "./nomenclatorService"
 import { setFormErrors } from "src/utils/forms"
+import { showToast } from "src/utils/feedback"
 import { useForm } from "react-hook-form"
 import { Typography, Grid, ButtonGroup, Stack } from "@mui/material"
 
@@ -17,21 +19,34 @@ interface NomenclatorSidebarProps {
 }
 
 //Wrapper de NomenclatorForm para funcionar en un Sidebar
-export const NomenclatorFormSidebar = ({ existingNom, closeSidebar, handleSidebar, updateEntityOnList }: NomenclatorSidebarProps) => {
-    const submit = (data: NomenclatorPost) => {
+export const NomenclatorFormSidebar = ({ existingNom, handleSidebar, closeSidebar, updateEntityOnList }: NomenclatorSidebarProps) => {
+
+    const handleClose = useCallback(() => {
+        if (existingNom) handleSidebar("DETAILS_NOM", existingNom)
+        else closeSidebar()
+    }, [existingNom, closeSidebar, handleSidebar])
+
+    const submit = useCallback((data: NomenclatorPost) => {
         const updateList = (res: NomenclatorDetailed) => {
             updateEntityOnList(res)
             handleSidebar("DETAILS_NOM", res)
         }
         if (!existingNom) {
             return createNomenclator(data)
-                .then(updateList)
+                .then(res => {
+                    updateList(res)
+                    showToast(`El nomenclador "${res.name}" se ha creado con éxito`)
+                })
         } else {
             return updateNomenclator(data, existingNom.id)
-                .then(updateList)
+                .then(res => {
+                    updateList(res)
+                    showToast(`El nomenclador "${res.name}" se ha modificado con éxito`)
+                })
         }
-    }
-    return <NomenclatorForm existingNom={existingNom} submit={submit} onCancel={closeSidebar} />
+    }, [existingNom, handleSidebar, updateEntityOnList])
+
+    return <NomenclatorForm existingNom={existingNom} submit={submit} onCancel={handleClose} />
 }
 
 interface NomenclatorProps {
@@ -58,12 +73,14 @@ export const NomenclatorForm = ({ existingNom, submit, onCancel }: NomenclatorPr
     useEffect(() => { reset(defaultValues) }, [reset, defaultValues])
 
     const onSubmit = (data: NomenclatorPost) => {
-        submit(data)
+        return submit(data)
             .catch(e => setFormErrors(e, setError))
     }
 
+    const { loading, fnWithLoading: submitNomLoad } = useLoading(onSubmit)
+
     return (
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(submitNomLoad)}>
             <Stack spacing={3}>
                 <Typography variant="h2">
                     {!existingNom ? "Crear Nomenclador"
@@ -91,10 +108,11 @@ export const NomenclatorForm = ({ existingNom, submit, onCancel }: NomenclatorPr
                         <FormErrorMessage >{errors?.root?.message}</FormErrorMessage>
                     }
                     <ButtonGroup sx={{ alignSelf: "end" }}>
-                        <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel}>
+                        <CommonButton actionType="CLOSE" color="error" variant="text" onClick={onCancel} disabled={loading}>
                             Cancelar
                         </CommonButton>
-                        <CommonButton actionType={existingNom ? "MODIFY" : "CREATE"} variant="contained" type="submit">
+                        <CommonButton actionType={existingNom ? "MODIFY" : "CREATE"} variant="contained"
+                            type="submit" loading={loading}>
                             Guardar
                         </CommonButton>
                     </ButtonGroup>

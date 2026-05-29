@@ -3,7 +3,7 @@ import { useCallback, useState } from "react"
 export const useLoading = (asyncFn?: (...props: any[]) => Promise<unknown>) => {
     const [loading, setLoading] = useState<boolean>(false)
 
-    const fnWithLoading = useCallback((...props: any[]) => {
+    const fnWithLoading = useCallback(async (...props: any[]) => {
         if (!asyncFn) return
         setLoading(true)
         return asyncFn(...props)

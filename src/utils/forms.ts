@@ -5,7 +5,8 @@ import type { FieldValues, Path, UseFormSetError } from "react-hook-form";
  * Identifica los errores y los setea con su campo correspondiente.
  */
 export const setFormErrors = <T extends FieldValues,>(error: ErrorBody<T>, setError: UseFormSetError<T>,
-    mapFunction: null | ((error: ErrorMessage<T>[]) => void) = null, customRoot: Path<T> = "root" as Path<T>) => {
+    mapFunction: null | ((error: ErrorMessage<T>[]) => void) = null,
+    customRoot: Path<T> | "root" = "root", toRoot: boolean = false) => {
 
     const errorDetail = error?.response?.data?.detail;
     //Si el error está en el cuerpo (Ej: Error de axios)
@@ -20,13 +21,13 @@ export const setFormErrors = <T extends FieldValues,>(error: ErrorBody<T>, setEr
         else return errorDetail?.forEach((error: ErrorMessage<T>) => {
             if (error.field === "general") setError(customRoot, { message: error.message });
             else {
-                setError(error.field, { message: error.message });
+                setError((toRoot ? customRoot : error.field), { message: error.message });
             }
         })
     }
     //Un solo error de formulario
     if (errorDetail.field === "general") setError(customRoot, { message: error.message });
     else {
-        setError(errorDetail.field, { message: errorDetail.message });
+        setError((toRoot ? customRoot : errorDetail.field), { message: errorDetail.message });
     }
 }

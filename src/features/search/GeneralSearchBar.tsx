@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import type { SearchResults } from "../../types/shared";
 import { useDebounce } from "../../hooks/useDebounce";
 import { generalSearch } from "./searchServices";
+import { showCommonErrorToast } from "src/utils/feedback";
 
 const Search = styled('div')(({ theme }) => ({
     borderRadius: theme.shape.borderRadius,
@@ -72,7 +73,10 @@ export const HeaderSearchBar = () => {
         if (query.length < 3) return
         debouncedFunction(() => generalSearch(query)
             .then(setResults)
-            .catch(() => setResults(null))
+            .catch(e => {
+                showCommonErrorToast(e)
+                setResults(null)
+            })
         )
     }, [query, debouncedFunction])
 

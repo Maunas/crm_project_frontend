@@ -141,7 +141,7 @@ export const FlowEditorHeader = ({ initialName, initialDescription, statesLength
 
   const navigate = useNavigate();
 
-  const { loading, fnWithLoading } = useLoading(() => handleSaveFlow(flowName, flowDescription))
+  const { loading, fnWithLoading: saveFlowLoad } = useLoading(() => handleSaveFlow(flowName, flowDescription))
 
   // Vuelve al formulario, con los datos guardados del sessionStorage.
   const handleBack = () => {
@@ -183,7 +183,7 @@ export const FlowEditorHeader = ({ initialName, initialDescription, statesLength
         />
       </Stack>
 
-      <CommonButton actionType={loading ? "LOADING" : "SAVE"} onClick={fnWithLoading} disabled={loading || statesLength === 0} sx={{ ml: "auto" }}>
+      <CommonButton actionType={loading ? "LOADING" : "SAVE"} onClick={saveFlowLoad} disabled={loading || statesLength === 0} sx={{ ml: "auto" }}>
         {loading ? 'Guardando...' : 'Guardar Flujo'}
       </CommonButton>
     </Stack>

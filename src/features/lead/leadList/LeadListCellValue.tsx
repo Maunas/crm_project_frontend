@@ -10,8 +10,8 @@ interface CellValueProps {
     subtype?: string | null,
     shortLeadTitle?: boolean,
     modalProps?: {
-        open: string | number | boolean;
-        handleOpen: (idModal: string | number) => void;
+        openModalId: string;
+        handleOpen: (idModal: string) => void;
         handleClose: () => void;
     }
 }

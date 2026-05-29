@@ -2,6 +2,7 @@ import { PasswordField, RegisteredTextInput } from "shared/ui/forms/CustomInputs
 import { FormErrorMessage } from "shared/ui/forms/FormFeedback"
 import CommonButton from "shared/ui/buttons/CommonButton"
 import type { UserSignup } from "src/types/users"
+import { useLoading } from "src/hooks/useLoading"
 import { setFormErrors } from "src/utils/forms"
 import { useUserContext } from "src/stores/UserContext"
 import { Link, useNavigate } from "react-router-dom"
@@ -15,7 +16,6 @@ export const SignupFormPage = () => {
 
   const submit = (data: UserSignup) => {
     return signup(data).then(() => {
-      alert("Cuenta Creada")
       nav("/")
     })
   }
@@ -36,12 +36,14 @@ const SignupForm = ({ submit, onCancel }: SignupFormProps) => {
   const { register, handleSubmit, formState: { errors }, setError } = useForm<UserSignup>()
 
   const onSubmit = (data: UserSignup) => {
-    submit(data)
+    return submit(data)
       .catch(e => setFormErrors(e, setError))
   }
 
+  const { fnWithLoading, loading } = useLoading(onSubmit)
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(fnWithLoading)}>
       <Stack spacing={3}>
         <Typography variant="h1" sx={{ textAlign: "center" }}>
           CRM
@@ -67,14 +69,14 @@ const SignupForm = ({ submit, onCancel }: SignupFormProps) => {
           }
           <Stack spacing={1}>
             <ButtonGroup fullWidth>
-              <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel} fullWidth>
+              <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel} disabled={loading} fullWidth>
                 Cancelar
               </CommonButton>
-              <CommonButton actionType="SIGNUP" variant="contained" type="submit" fullWidth>
+              <CommonButton actionType="SIGNUP" variant="contained" type="submit" loading={loading} fullWidth>
                 Crear Cuenta
               </CommonButton>
             </ButtonGroup>
-            <Button fullWidth variant="text" component={Link} to="/login">Iniciar Sesión</Button>
+            <Button fullWidth variant="text" component={Link} to="/login" disabled={loading} >Iniciar Sesión</Button>
           </Stack>
         </Stack>
       </Stack>

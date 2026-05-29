@@ -3,6 +3,10 @@ import type { Lead } from "./leads";
 import type { Campaign, Workspace } from "./campaigns";
 import type { Nomenclator, NomenclatorItem } from "./nomenclators";
 
+export interface DisableableEntity {
+  active?: boolean,
+}
+
 /**
  * Define la estructura de una lista con paginación. Se llama como: Paginable<Lead>.
  */
@@ -92,7 +96,7 @@ export interface ErrorMessage<T> {
 }
 
 export interface DeleteResponse {
-  action: string
+  action: "deleted" | "disabled"
 }
 
 export interface BulkDeleteResponse {

@@ -19,9 +19,11 @@ import WindowIcon from '@mui/icons-material/Window';
 import CloseIcon from '@mui/icons-material/Close'
 import SortIcon from '@mui/icons-material/Sort';
 import EditIcon from '@mui/icons-material/Edit'
+import { useLoading } from 'src/hooks/useLoading';
+import { showToast } from 'src/utils/feedback';
 
 interface LeadViewMenuProps {
-    saveView: (name: string, visibility: string, existingView?: LeadView) => Promise<LeadView> | undefined;
+    saveView: (name: string, visibility: string, existingView?: LeadView) => Promise<unknown>;
     loadView: (view: LeadView) => void;
     currentView: LeadViewParams | undefined;
     campaignId: number
@@ -94,7 +96,7 @@ export const LeadViewMenu = ({ saveView, loadView, campaignId }: LeadViewMenuPro
                     vertical: 'top',
                     horizontal: 'right',
                 }}           >
-                <Stack spacing={1} ref={menuRef}>
+                <Stack spacing={.5} ref={menuRef}>
                     <Typography variant="h4" component="h2" sx={{ px: 2, pt: 2 }} >Vistas Creadas</Typography>
                     <List sx={{ maxHeight: "30rem", minWidth: "15rem", maxWidth: "25rem", overflowY: "auto" }} dense >
                         {currentViews?.items && currentViews?.items?.length > 0 &&
@@ -148,7 +150,7 @@ interface ViewFormProps {
     formAnchor: null | HTMLElement,
     handleClose: () => void,
     visibilities: DictionaryItem[]
-    handleCreate: (name: string, visibility: string, existingView?: LeadView) => Promise<void> | undefined;
+    handleCreate: (name: string, visibility: string, existingView?: LeadView) => Promise<unknown>;
     children?: React.ReactNode
 }
 
@@ -173,13 +175,16 @@ export const ViewForm = ({ existingView, visibilities, formAnchor, handleClose, 
 
     useEffect(() => { reset(defaultValues) }, [defaultValues, reset])
 
-    const onSubmit = (data: LeadViewCreate) => {
-        handleCreate(data.name, data.visibility, existingView)?.then(() => {
+    const onSubmit = useCallback((data: LeadViewCreate) => {
+        return handleCreate(data.name, data.visibility, existingView).then(() => {
             reset(defaultValues)
             handleClose()
         })
+            .then(() => showToast("Se ha guardado la vista actual."))
             .catch(e => setFormErrors(e, setError))
-    }
+    }, [defaultValues, existingView, handleClose, handleCreate, reset, setError])
+
+    const { loading, fnWithLoading: saveViewLoad } = useLoading(onSubmit)
 
     const visibility = useWatch({ control, name: "visibility" })
 
@@ -202,7 +207,7 @@ export const ViewForm = ({ existingView, visibilities, formAnchor, handleClose, 
         >
             <Stack spacing={2} sx={{ p: 2 }}>
                 <Typography variant="h4" component="h3">{existingView ? `Renombrar "${existingView.name}"` : "Crear Vista"}</Typography>
-                <form onSubmit={handleSubmit(onSubmit)}>
+                <form onSubmit={handleSubmit(saveViewLoad)}>
                     <Stack spacing={1}>
                         <Stack spacing={.5}>
                             <TextField id="viewtag-name" label="Nombre" size="small" {...register("name")} />
@@ -223,8 +228,12 @@ export const ViewForm = ({ existingView, visibilities, formAnchor, handleClose, 
                         {errors?.root?.message &&
                             <FormErrorMessage>{errors?.root?.message}</FormErrorMessage>}
                         <Stack spacing={.5}>
-                            <CommonButton actionType='CLOSE' variant="text" onClick={handleClose}>Cancelar</CommonButton>
-                            <CommonButton actionType={existingView ? "MODIFY" : "CREATE"} variant="contained" type="submit">Guardar</CommonButton>
+                            <CommonButton actionType='CLOSE' variant="text" onClick={handleClose} disabled={loading} color="error">
+                                Cancelar
+                            </CommonButton>
+                            <CommonButton actionType={existingView ? "MODIFY" : "CREATE"} variant="contained" type="submit" loading={loading}>
+                                Guardar
+                            </CommonButton>
                         </Stack>
                     </Stack>
                 </form>

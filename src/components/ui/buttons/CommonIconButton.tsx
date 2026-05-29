@@ -3,7 +3,6 @@ import type { ActionType } from "./ActionIcons"
 import { ChipTooltip } from "../details/ChipTooltip"
 import ACTION_ICONS from "./ActionIcons"
 import type { ColorTypes } from "src/types/mui-theme.d"
-import type { LinkProps } from "react-router-dom"
 import { IconButton, type IconButtonProps } from "@mui/material"
 
 interface CommonIconButtonProps extends Omit<IconButtonProps, "color"> {
@@ -11,16 +10,30 @@ interface CommonIconButtonProps extends Omit<IconButtonProps, "color"> {
     title: string,
     size?: "small" | "medium"
     tooltipSize?: "small" | "medium" | "large" | "xlarge",
-    component?: React.ForwardRefExoticComponent<LinkProps & React.RefAttributes<HTMLAnchorElement>>,
+    component?: React.ElementType,
     to?: string,
-    color?: ColorTypes
+    color?: ColorTypes,
+    loading?: boolean
 }
 
-export const CommonIconButton = ({ actionType = "NONE", title, color, size = "medium", tooltipSize = "medium", ...props }: CommonIconButtonProps) => {
+export const CommonIconButton = ({ actionType = "NONE", title, color, size = "medium", tooltipSize = "medium", loading = false, ...props }: CommonIconButtonProps) => {
+
+    const styleIcon = (actionType: ActionType) => {
+        if (actionType === "NONE") return ACTION_ICONS.NONE
+        if (actionType === "LOADING") return cloneElement(
+            ACTION_ICONS[actionType], { size: (size === "small" ? 18 : 24), color: color }
+        )
+        return cloneElement(
+            ACTION_ICONS[actionType], { fontSize: size, color: color }
+        )
+    }
+
+    const actionIcon = loading ? styleIcon("LOADING") : styleIcon(actionType)
+
     return (
         <ChipTooltip title={title} color={color ?? "secondary"} size={tooltipSize}>
-            <IconButton edge="end" aria-label={title} size={size} {...props}>
-                {cloneElement(ACTION_ICONS[actionType], { fontSize: size, color: color })}
+            <IconButton edge="end" aria-label={title} size={size} disabled={loading} {...props}>
+                {actionIcon}
             </IconButton>
         </ChipTooltip>
 

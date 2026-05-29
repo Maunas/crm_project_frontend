@@ -1,28 +1,32 @@
-
+import { useState } from 'react';
 import { ValidationList } from '../validations/ValidationList';
-import TitleAndActive from 'shared/ui/details/TitleAndActive';
-import CustomChip from 'shared/ui/details/CustomChip';
-import CommonButton from 'shared/ui/buttons/CommonButton';
+import { DisableConfirmDialog } from 'shared/feedback/ConfirmationDialog';
 import HandleActiveButton from 'shared/ui/buttons/HandleActiveButton';
 import DetailsMetadata from 'shared/ui/details/DetailsMetadata';
-import { disableLeadField, enableLeadField } from './leadFieldServices';
+import TitleAndActive from 'shared/ui/details/TitleAndActive';
+import CommonButton from 'shared/ui/buttons/CommonButton';
+import CustomChip from 'shared/ui/details/CustomChip';
 import type { LeadFieldDetailed } from 'src/types/leadFields'
 import type { CampaignDetailed } from 'src/types/campaigns';
+import { disableLeadField, enableLeadField } from './leadFieldServices';
+import { showCommonErrorToast, showToast } from 'src/utils/feedback';
 import { Link as RouterLink } from 'react-router-dom'
 import { Grid, Stack, Typography, Divider, Link, ButtonGroup, Box } from '@mui/material'
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { alpha, useTheme } from '@mui/material/styles';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 
 interface LeadFieldDetailProps {
     leadField: LeadFieldDetailed,
     handleSidebar: (mode: string, entity: LeadFieldDetailed | null) => void,
     updateEntity: (mode: string, entity: CampaignDetailed | LeadFieldDetailed) => void,
     closeSidebar: () => void,
+    leadFieldListLength?: number
 }
 
-export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeSidebar }: LeadFieldDetailProps) => {
+export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeSidebar, leadFieldListLength = 0 }: LeadFieldDetailProps) => {
 
-    const handleActive = (field: LeadFieldDetailed) => {
+    const handleActive = async (field: LeadFieldDetailed | null) => {
+        if (!field || !field.id) return
         const updateActive = () => {
             updateEntity("UPDATE_FIELD", { ...field, active: !field.active })
             handleSidebar("KEEP", { ...field, active: !field.active })
@@ -30,17 +34,28 @@ export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeS
         if (field.active) {
             disableLeadField(field.id)
                 .then(res => {
-                    if (res.action === "disabled") updateActive()
+                    if (res.action === "disabled") {
+                        updateActive()
+                        showToast(`El campo "${field.name}" se ha deshabilitado con éxito`)
+                    }
                     else {
                         updateEntity("DELETE_FIELD", leadField)
                         closeSidebar()
+                        showToast(`El campo "${field.name}" se ha eliminado definitivamente`)
                     }
                 })
+                .catch(e => showCommonErrorToast(e))
         }
-        else enableLeadField(field.id).then(updateActive)
+        else enableLeadField(field.id).then(() => {
+            updateActive()
+            showToast(`El campo "${field.name}" se ha habilitado con éxito`)
+        })
+            .catch(e => showCommonErrorToast(e))
     }
 
     const { palette } = useTheme()
+
+    const [deletingField, setDeletingField] = useState<LeadFieldDetailed | null>(null)
 
     return (
         <Stack spacing={3} >
@@ -168,16 +183,18 @@ export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeS
                 <Divider />
                 <ButtonGroup sx={{ alignSelf: "end" }}>
                     <CommonButton onClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
-                    {leadField.order > 1 && //Si no se separa el condicional arruina el estilo del ButtonGroup
-                        <HandleActiveButton active={leadField.active} handleActive={() => handleActive(leadField)} />
+                    {leadFieldListLength > 1 && //Si no se separa el condicional arruina el estilo del ButtonGroup
+                        <HandleActiveButton active={leadField.active} handleActive={() => setDeletingField(leadField)} />
                     }
-                    {leadField.order > 1 &&
+                    {leadFieldListLength > 1 &&
                         <CommonButton onClick={() => handleSidebar("UPDATE_FIELD", leadField)} actionType="MODIFY" >
                             Modificar
                         </CommonButton>
                     }
                 </ButtonGroup>
             </Stack>
+            <DisableConfirmDialog entity={deletingField} clearEntity={() => setDeletingField(null)} idModal='dis-field-det'
+                onConfirm={() => handleActive(deletingField)} entityTypeName="el campo" />
         </Stack >
     )
 }

@@ -1,7 +1,6 @@
 import { cloneElement, type ComponentProps, type ReactNode } from 'react';
 import ACTION_ICONS, { type ActionType } from './ActionIcons';
 import type { ColorTypes } from 'src/types/mui-theme.d';
-import type { LinkProps } from 'react-router-dom';
 import { Stack } from '@mui/material'
 import { styled } from '@mui/material/styles';
 import Button from '@mui/material/Button';
@@ -12,16 +11,17 @@ type MuiButtonProps = ComponentProps<typeof Button>;
 
 export interface CommonBtnProps extends MuiButtonProps {
     actionType?: ActionType,
+    loading?: boolean,
     children?: ReactNode,
     //Se pasan en btnProps
-    component?: React.ForwardRefExoticComponent<LinkProps & React.RefAttributes<HTMLAnchorElement>>,
+    component?: React.ElementType,
     to?: string,
     onlyTooltip?: boolean
 }
 
 /**Version de Button que aclara el texto en outlined (dark mode) para aumentar su legibilidad.  */
 const LightButton = styled(Button)(({ theme, color = "primary", variant = "contained" }) => {
-    if (variant !== "outlined") return []
+    if (!["outlined", "text"].includes(variant)) return []
     return [
         theme.applyStyles('dark', {
             color: theme.palette[color as ColorTypes].light
@@ -31,27 +31,38 @@ const LightButton = styled(Button)(({ theme, color = "primary", variant = "conta
 /**
  * Componente basado en Button, que agrega un ícono a su contenido segun el tipo de acción
  */
-const CommonButton = ({ actionType = "NONE", onlyTooltip = false, children, ...btnProps }: CommonBtnProps) => {
+const CommonButton = ({ actionType = "NONE", onlyTooltip = false, loading = false, children, ...btnProps }: CommonBtnProps) => {
 
     const color = btnProps.color === "inherit" ? "primary" : (btnProps.color ?? "primary")
 
+    const styleIcon = (actionType: ActionType) => {
+        if (actionType === "NONE") return ACTION_ICONS.NONE
+        if (actionType === "LOADING") return cloneElement(
+            ACTION_ICONS[actionType], { size: (btnProps.size === "small" ? 18 : 24), sx: { ml: 0 } }
+        )
+        return cloneElement(
+            ACTION_ICONS[actionType],
+            { fontSize: btnProps.size }
+        )
+    }
+
+    const actionIcon = loading ? styleIcon("LOADING") : styleIcon(actionType)
+
     if (onlyTooltip) return (
         <ChipTooltip title={children} color={color} >
-            <LightButton variant='contained' {...btnProps}>
+            <LightButton variant='contained' disabled={loading} {...btnProps}>
                 <Stack spacing={.5} useFlexGap direction="row" sx={{ alignItems: "center", textAlign: "center" }}>
-                    {actionType === "NONE" ? ACTION_ICONS[actionType] :
-                        cloneElement(ACTION_ICONS[actionType], { fontSize: btnProps.size, sx: { ml: 0 } })}
+                    {actionIcon}
                 </Stack>
             </LightButton>
         </ChipTooltip>
     )
 
     return (
-        <LightButton variant='contained' {...btnProps}>
+        <LightButton variant='contained' disabled={loading} {...btnProps}>
             <Stack spacing={.5} useFlexGap direction="row" sx={{ alignItems: "center", textAlign: "center" }}>
-                {actionType === "NONE" ? ACTION_ICONS[actionType] :
-                    cloneElement(ACTION_ICONS[actionType], { fontSize: btnProps.size, sx: { ml: children ? -.5 : 0 } })}
-                {children}
+                {actionIcon}
+                {loading ? "Cargando" : children}
             </Stack>
         </LightButton>
     )

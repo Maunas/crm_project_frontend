@@ -1,15 +1,17 @@
-import { useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import { RegisteredTextInput } from "shared/ui/forms/CustomInputs"
 import { FormErrorMessage } from "shared/ui/forms/FormFeedback"
 import CommonButton from "shared/ui/buttons/CommonButton"
+import { useLoading } from "src/hooks/useLoading"
 import { createWorkspace, updateWorkspace } from "./workspaceServices"
 import type { Workspace, WorkspaceDetailed, WorkspacePost } from "src/types/campaigns"
+import { showCommonErrorToast, showToast } from "src/utils/feedback"
 import { setFormErrors } from "src/utils/forms"
 import { useForm } from "react-hook-form"
 import { Typography, Grid, ButtonGroup, Stack } from "@mui/material"
 
 interface WorkspaceSidebarProps {
-    existingWsp?: Workspace,
+    existingWsp?: WorkspaceDetailed,
     closeSidebar: () => void,
     updateEntityOnList: (entity: WorkspaceDetailed) => void,
     handleSidebar: (mode: string, entity: WorkspaceDetailed | null) => void
@@ -18,21 +20,34 @@ interface WorkspaceSidebarProps {
 //Wrapper de WorkspaceForm para funcionar en un Sidebar
 export const WorkspaceFormSidebar = ({ existingWsp, closeSidebar, handleSidebar, updateEntityOnList }: WorkspaceSidebarProps) => {
 
-    const submit = (data: WorkspacePost) => {
+    const handleClose = useCallback(() => {
+        if (existingWsp) handleSidebar("DETAILS_ORG", existingWsp)
+        else closeSidebar()
+    }, [existingWsp, closeSidebar, handleSidebar])
+
+    const submit = useCallback((data: WorkspacePost) => {
         const updateList = (res: WorkspaceDetailed) => {
             updateEntityOnList(res)
             handleSidebar("DETAILS_WSP", res)
         }
         if (!existingWsp) {
             return createWorkspace(data)
-                .then(updateList)
+                .then(res => {
+                    updateList(res)
+                    showToast(`El espacio de trabajo "${res.name}" fue creado con éxito`)
+                })
+                .catch(e => showCommonErrorToast(e))
         } else {
             return updateWorkspace(data, existingWsp.id!)
-                .then(updateList)
+                .then(res => {
+                    updateList(res)
+                    showToast(`El espacio de trabajo "${res.name}" fue modificado con éxito`)
+                })
+                .catch(e => showCommonErrorToast(e))
         }
-    }
+    }, [existingWsp, handleSidebar, updateEntityOnList])
 
-    return <WorkspaceForm existingWsp={existingWsp} submit={submit} onCancel={closeSidebar} />
+    return <WorkspaceForm existingWsp={existingWsp} submit={submit} onCancel={handleClose} />
 }
 
 interface WorkspaceProps {
@@ -53,12 +68,14 @@ export const WorkspaceForm = ({ existingWsp, submit, onCancel }: WorkspaceProps)
     useEffect(() => { reset(defaultValues) }, [reset, defaultValues])
 
     const onSubmit = (data: WorkspacePost) => {
-        submit(data)
+        return submit(data)
             .catch(e => setFormErrors(e, setError))
     }
 
+    const { loading, fnWithLoading: submitLoad } = useLoading(onSubmit)
+
     return (
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(submitLoad)}>
             <Stack spacing={3}>
                 <Typography variant="h1">
                     {!existingWsp ? "Crear Espacio de Trabajo"
@@ -79,10 +96,12 @@ export const WorkspaceForm = ({ existingWsp, submit, onCancel }: WorkspaceProps)
                         <FormErrorMessage >{errors?.root?.message}</FormErrorMessage>
                     }
                     <ButtonGroup sx={{ alignSelf: "end" }}>
-                        <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel}>
+                        <CommonButton actionType="CLOSE" variant="text" color="error"
+                            onClick={onCancel} disabled={loading}>
                             Cancelar
                         </CommonButton>
-                        <CommonButton actionType={existingWsp ? "MODIFY" : "CREATE"} variant="contained" type="submit">
+                        <CommonButton actionType={existingWsp ? "MODIFY" : "CREATE"}
+                            variant="contained" type="submit" loading={loading}>
                             Guardar
                         </CommonButton>
                     </ButtonGroup>

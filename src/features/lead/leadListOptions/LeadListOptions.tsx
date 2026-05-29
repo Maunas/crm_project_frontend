@@ -92,7 +92,7 @@ interface LeadListOptionsProps {
     campaignId: number | string | null,
     filters: LeadFilter[],
     headers: LeadListParams,
-    setFiltersAndHeaders: (filters: LeadFilter[], headers: LeadListParams) => Promise<void> | null,
+    setFiltersAndHeaders: (filters: LeadFilter[], headers: LeadListParams) => Promise<unknown>,
     campaignSelectorProps: {
         workspaceId: string | number | null;
         campaignId: string | number | null;
@@ -104,8 +104,8 @@ interface LeadListOptionsProps {
         handlePresentation: (mode: "string") => void;
     },
     modalProps: {
-        open: string | number | boolean;
-        handleOpen: (idModal: string | number) => void;
+        openModalId?: string;
+        handleOpen: (idModal: string) => void;
         handleClose: () => void;
     },
     selectCheckboxProps: {
@@ -118,7 +118,7 @@ interface LeadListOptionsProps {
     },
     bulkDelete: () => Promise<void> | undefined;
     viewUpdateProps: {
-        saveView: (name: string, visibility: string, existingView?: LeadView) => Promise<LeadView> | undefined
+        saveView: (name: string, visibility: string, existingView?: LeadView) => Promise<unknown>
         loadView: (view: LeadView) => void;
         currentView: LeadViewParams | undefined;
     }
@@ -127,7 +127,7 @@ interface LeadListOptionsProps {
 export const LeadListOptions = memo(({ areThereLeads, campaignId, filters, headers, setFiltersAndHeaders, modalProps, campaignSelectorProps, presentationProps, selectCheckboxProps, viewUpdateProps, bulkDelete }: LeadListOptionsProps) => {
 
     //Al aplicar filtros vuelve a la primera página
-    const applyFilters = useCallback((data: { headers: LeadListParams, filters: LeadFilter[] }) => {
+    const applyFilters = useCallback(async (data: { headers: LeadListParams, filters: LeadFilter[] }) => {
         const newHeaders = { ...headers, ...data.headers }
         return setFiltersAndHeaders(data.filters, newHeaders)?.then(() => modalProps.handleClose()
         )
@@ -180,7 +180,7 @@ export const LeadListOptions = memo(({ areThereLeads, campaignId, filters, heade
                         </ChipTooltip>
                     }
                 </ButtonGroup>
-                <GenericModal idModal="lead_filters" modalProps={modalProps} buttonText="Aplicar Filtros" maxWidth="md" fullWidth
+                <GenericModal idModal="lead_filters" {...modalProps} buttonText="Aplicar Filtros" maxWidth="md" fullWidth
                     btnProps={{ actionType: 'FILTER' }} color='secondary' showButton={false} >
                     <LeadFilters applyFilters={applyFilters} filters={{ filters, headers }} campaignId={Number(campaignId)}
                         onClose={() => modalProps.handleClose()} />

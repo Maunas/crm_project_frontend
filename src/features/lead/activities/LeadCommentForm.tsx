@@ -3,10 +3,12 @@ import { CommentInstance } from "./LeadComments"
 import { RegisteredTextInput } from "shared/ui/forms/CustomInputs"
 import { FormErrorMessage } from "shared/ui/forms/FormFeedback"
 import CommonButton from "shared/ui/buttons/CommonButton"
+import { useLoading } from "src/hooks/useLoading"
 import type { LeadComment, LeadCommentPost } from "src/types/leads"
 import type { ColorTypes } from "src/types/mui-theme.d"
 import { createComment, updateComment } from "./leadActivitiesService"
 import { setFormErrors } from "src/utils/forms"
+import { showToast } from "src/utils/feedback"
 import { COLORS } from "src/utils/constants"
 import { Controller, useForm, type Control } from "react-hook-form"
 import { Box, Grid, IconButton, Stack } from "@mui/material"
@@ -27,6 +29,7 @@ export const UpdateCommentFromNote = ({ existingComment, leadId, onUpdate, onClo
     const postComment = ((data: LeadCommentPost) => {
         return updateComment({ ...data }, existingComment.id).then((res) => {
             onUpdate(res)
+            showToast("Comentario modificado con éxito.")
         })
     })
 
@@ -75,8 +78,9 @@ export const CreateCommentWrapper = ({ leadId, onCreate }: CommentWrapperProps) 
     const { palette } = useTheme()
 
     const postComment = ((data: LeadCommentPost) => {
-        return createComment(data).then((res) => {
+        return createComment(data).then(res => {
             onCreate(res)
+            showToast("Comentario creado con éxito.")
         })
     })
 
@@ -109,7 +113,7 @@ const CommentForm = ({ existingComment, leadId, onClose, submit, setColor, size 
     const { control, register, handleSubmit, reset, setError, formState: { errors } } = useForm<LeadCommentPost>({ defaultValues })
 
     const onSubmit = ((data: LeadCommentPost) => {
-        submit(data)
+        return submit(data)
             .then(() => {
                 reset(defaultValues)
                 if (onClose) onClose()
@@ -117,14 +121,17 @@ const CommentForm = ({ existingComment, leadId, onClose, submit, setColor, size 
             .catch(e => setFormErrors(e, setError))
     })
 
+    const { fnWithLoading: submitLoad, loading } = useLoading(onSubmit)
+
     return (
-        < form onSubmit={handleSubmit(onSubmit)} >
-            <Stack spacing={1} sx={{ alignItems: "center", justifyContent: "end" }}>
+        <form onSubmit={handleSubmit(submitLoad)} >
+            <Stack spacing={1} sx={{ alignItems: "start", justifyContent: "end" }}>
                 <RegisteredTextInput register={register} name={"content"} label="Comentario"
                     errorMessage={errors.content?.message} size={size} multiline />
                 <Stack direction="row" spacing={1} useFlexGap sx={{ justifyContent: "space-between", flexWrap: "wrap", width: "100%" }}>
                     <CommentColorSelector control={control} setColor={setColor} />
-                    <CommonButton actionType="SAVE" variant="contained" color="primary" type="submit" size={size} sx={{ ml: "auto" }}>
+                    <CommonButton actionType="SAVE" variant="contained" color="primary" loading={loading}
+                        type="submit" size={size} sx={{ ml: "auto" }}>
                         Guardar
                     </CommonButton>
                 </Stack >

@@ -1,21 +1,24 @@
-import React, { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { getOrganizations } from 'src/features/organizations/organizationServices';
 import { loginUser, signupUser } from 'src/features/auth/userServices';
 import type { Organization, OrganizationDetailed } from 'src/types/campaigns';
 import type { UserData, UserLogin, UserSignup } from 'src/types/users';
 import { SUPERUSER } from 'src/utils/constants';
+import { showCommonErrorToast, showToast } from 'src/utils/feedback';
+import { useLoading } from 'src/hooks/useLoading';
 
 export interface UserContextItems {
     userOrganizations: OrganizationDetailed[],
     activeOrganizations: Organization[],
     activeOrg: Organization | null,
-    setActiveOrg: React.Dispatch<React.SetStateAction<Organization | null>>,
+    setActiveOrg: (org: Organization) => void,
     setOrganizations: React.Dispatch<React.SetStateAction<OrganizationDetailed[]>>,
-    fetchOrganizations: () => void,
+    fetchOrganizations: () => Promise<unknown>,
     user: UserData | null,
     login: (data: UserLogin) => Promise<void>,
     signup: (data: UserSignup) => Promise<void>,
-    logout: () => void
+    logout: () => void,
+    loadingOrgs: boolean
 }
 
 const UserContext = createContext<UserContextItems | undefined>({} as UserContextItems)
@@ -29,15 +32,17 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
 
     const [organizations, setOrganizations] = React.useState<OrganizationDetailed[]>([]);
 
-    const fetchOrganizations = () => {
-        getOrganizations({ only_active: true, detailed: true, page_size: 0 }).then(orgs => {
-            setOrganizations(orgs.items)
-        })
-    }
+    const fetchOrganizations = useCallback(() => {
+        return getOrganizations({ only_active: false, detailed: true, page_size: 0 })
+            .then(orgs => setOrganizations(orgs.items))
+            .catch(e => showCommonErrorToast(e))
+    }, [])
+
+    const { loading: loadingOrgs, fnWithLoading: fetchOrgLoad } = useLoading(fetchOrganizations)
 
     React.useEffect(() => {
-        fetchOrganizations()
-    }, [])
+        fetchOrgLoad()
+    }, [fetchOrgLoad])
 
     /*
     const userOrganizations = useMemo(() => {
@@ -53,8 +58,6 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
         return active
     }, [organizations])
 
-
-
     useEffect(() => {
         if (user) window.localStorage.setItem("user", JSON.stringify(user))
         else window.localStorage.removeItem("user")
@@ -65,6 +68,11 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
         return localUser ? JSON.parse(localUser) : null
     });
 
+    const changeActiveOrg = (org: Organization) => {
+        setActiveOrg(org)
+        showToast(`Se ha cambiado de organización activa a "${org.name}"`, "info")
+    }
+
     React.useEffect(() => {
         if (activeOrg) window.localStorage.setItem("selected_org", JSON.stringify(activeOrg))
         else window.localStorage.removeItem("selected_org")
@@ -74,17 +82,20 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
         return loginUser(data).then(user => {
             setUser(user)
             setActiveOrg(activeOrganizations[0])
+            showToast("Sesión iniciada con éxito", "success")
         })
     }
 
     const signup = (data: UserSignup) => {
         return signupUser(data).then(user => {
             setUser(user)
+            setActiveOrg(activeOrganizations[0])
+            showToast("Cuenta creada con éxito", "success")
         })
     }
 
     const logout = () => {
-        alert("Logout")
+        showToast("Sesión cerrada con éxito", "success")
         setUser(null)
         setActiveOrg(null)
     }
@@ -93,7 +104,9 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
         <UserContext.Provider value={{
             user, login, logout, signup,
             //To Do: Cuando se realice la seguridad en backend, quitar organizations.
-            userOrganizations: organizations, activeOrganizations, activeOrg, setActiveOrg, setOrganizations, fetchOrganizations
+            userOrganizations: organizations, activeOrganizations,
+            activeOrg, setActiveOrg: changeActiveOrg,
+            setOrganizations, fetchOrganizations: fetchOrgLoad, loadingOrgs
         }} >
             {children}
         </UserContext.Provider>

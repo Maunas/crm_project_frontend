@@ -5,6 +5,7 @@ import { ControlledCheckbox, ControlledNumber } from 'shared/ui/forms/CustomInpu
 import { ControlledAutocomplete } from 'shared/ui/forms/CustomMultipleInputs'
 import { FormErrorMessage } from 'shared/ui/forms/FormFeedback'
 import CommonButton from 'shared/ui/buttons/CommonButton'
+import { useLoading } from 'src/hooks/useLoading'
 import type { LeadField } from 'src/types/leadFields'
 import type { LeadFilter, LeadListParams } from 'src/types/shared'
 import { getLeadFields } from 'src/features/leadFields/leadFieldServices'
@@ -22,7 +23,7 @@ interface LeadListFilters {
 interface LeadFiltersProps {
     campaignId: number,
     filters: LeadListParams & LeadListFilters,
-    applyFilters: (data: LeadListParams & LeadListFilters) => Promise<void> | null | undefined,
+    applyFilters: (data: LeadListParams & LeadListFilters) => Promise<void>,
     onClose: () => void
 }
 
@@ -47,7 +48,7 @@ export const LeadFilters = memo(({ campaignId, filters, applyFilters, onClose }:
 
     const { append, remove, fields } = useFieldArray({ control, name: "filters" })
 
-    const onSubmit = (data: LeadListFilters) => {
+    const onSubmit = async (data: LeadListFilters) => {
         const formattedData = {
             ...data,
             filters: data.filters.map(item => {
@@ -58,17 +59,20 @@ export const LeadFilters = memo(({ campaignId, filters, applyFilters, onClose }:
                 return { ...item, value: newValue }
             }) as LeadFilter[]
         }
-        applyFilters(formattedData)?.catch(e => setFormErrors(e, setError,
-            (e) => e.map(error => setError(`root`, { message: error.message }))
-        ))
+        return applyFilters(formattedData)
+            .catch(e => setFormErrors(e, setError,
+                (e) => e.map(error => setError(`root`, { message: error.message }))
+            ))
     }
+
+    const { loading, fnWithLoading: applyFilterLoad } = useLoading(onSubmit)
 
     const pageSize = useWatch({ control, name: "headers.page_size" })
 
     return (
         <Stack spacing={3}>
             <Typography variant="h2">Filtros de Búsqueda</Typography>
-            <form onSubmit={handleSubmit(onSubmit)} >
+            <form onSubmit={handleSubmit(applyFilterLoad)} >
                 <Stack spacing={2}>
                     <Stack spacing={.5}>
                         <Grid container sx={{ alignItems: "center", flexWrap: "wrap" }} spacing={1}>
@@ -94,7 +98,7 @@ export const LeadFilters = memo(({ campaignId, filters, applyFilters, onClose }:
                             <Stack spacing={1}>
                                 {fields.map((filter, idx) => (
                                     <LeadFiltersItem key={filter.id} idx={idx} control={control} register={register} leadFields={leadFields}
-                                        errors={errors} remove={remove} />
+                                        errors={errors} remove={remove} disabled={loading} />
                                 ))}
                             </Stack>
                         </>
@@ -105,16 +109,16 @@ export const LeadFilters = memo(({ campaignId, filters, applyFilters, onClose }:
                     <Grid sx={{ alignSelf: "end" }}>
                         <ButtonGroup >
                             {!!campaignId &&
-                                <CommonButton actionType='CLOSE' variant="outlined" color="primary" onClick={onClose}>
+                                <CommonButton actionType='CLOSE' variant="outlined" color="primary" onClick={onClose} disabled={loading}>
                                     Cancelar
                                 </CommonButton>
                             }
                             {!!campaignId &&
-                                <CommonButton actionType='CREATE' variant="outlined" color="secondary" onClick={() => append({})}>
+                                <CommonButton actionType='CREATE' variant="outlined" color="secondary" onClick={() => append({})} disabled={loading}>
                                     Agregar Filtro
                                 </CommonButton>
                             }
-                            <CommonButton actionType='FILTER' variant="contained" color="primary" type='submit'>
+                            <CommonButton actionType='FILTER' variant="contained" color="primary" type='submit' loading={loading}>
                                 Aplicar Filtros
                             </CommonButton>
                         </ButtonGroup>
@@ -131,10 +135,11 @@ interface LeadFiltersItemProps {
     control: Control<LeadListFilters, unknown, LeadListFilters>,
     register: UseFormRegister<LeadListFilters>,
     errors: FieldErrors<LeadListParams & LeadListFilters>,
-    remove: UseFieldArrayRemove
+    remove: UseFieldArrayRemove,
+    disabled?: boolean
 }
 
-export const LeadFiltersItem = memo(({ idx, leadFields, control, register, errors, remove }: LeadFiltersItemProps) => {
+export const LeadFiltersItem = memo(({ idx, leadFields, control, register, errors, remove, disabled = false }: LeadFiltersItemProps) => {
 
     const selectedFieldId = useWatch({ name: `filters.${idx}.field_id`, control })
     const selectedField = useMemo(() => leadFields.find(i => i.id === selectedFieldId)
@@ -188,7 +193,7 @@ export const LeadFiltersItem = memo(({ idx, leadFields, control, register, error
                     }
                 </Stack>
             </Stack>
-            <Button className='delete-filter-btn' onClick={() => remove(idx)}>
+            <Button className='delete-filter-btn' onClick={() => remove(idx)} disabled={disabled}>
                 <CloseIcon />
             </Button>
         </FilterItem >
