@@ -163,7 +163,7 @@ export const LeadFormDate = <T extends FieldValues>
     const subtypeCode = subtype as keyof typeof DATE_INPUT_TYPE
 
     return <>
-        <TextField {...register(name, { setValueAs: (value) => `${formatDate(value, "custom", DATE_INPUT_TYPE[subtypeCode].format)}` })}
+        <TextField {...register(name, { setValueAs: (value) => formatDate(value, "custom", DATE_INPUT_TYPE[subtypeCode].format) })}
             label={label} id={name} type={DATE_INPUT_TYPE[subtypeCode].type} required={required} size={size}
             autoComplete="one-time-code" error={!!errorMessage} fullWidth
             slotProps={{
@@ -174,6 +174,7 @@ export const LeadFormDate = <T extends FieldValues>
                             filter: mode === "dark" ? 'invert(1)' : "none",  // negro → blanco
                         },
                     },
+                    step: 1
                 },
             }} />
         {errorMessage &&

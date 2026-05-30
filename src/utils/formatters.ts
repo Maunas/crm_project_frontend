@@ -29,7 +29,8 @@ export const formatDate = (date: string, formatType: DateFormat, customFormat: s
         default: format = customFormat
             break;
     }
-    return dayjs(date).format(format)
+    const formattedDate = dayjs(date).format(format)
+    return formattedDate === "Invalid Date" ? undefined : formattedDate
 }
 
 

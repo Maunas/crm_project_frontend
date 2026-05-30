@@ -135,9 +135,10 @@ export const LeadFieldTable = memo(({ campaign, leadFields, updateLeadFields, up
                                 </TableBody>
                             </Table>
                         </TableContainer>
-                        <CommonButton actionType={showAll ? "MINUS" : "CREATE"} onClick={() => setShowAll(!showAll)}>
-                            {showAll ? "Mostrar Menos" : "Mostrar Todos"}
-                        </CommonButton>
+                        {sortedFields.length > MIN_FIELDS &&
+                            <CommonButton actionType={showAll ? "MINUS" : "CREATE"} onClick={() => setShowAll(!showAll)}>
+                                {showAll ? "Mostrar Menos" : "Mostrar Todos"}
+                            </CommonButton>}
                     </Stack>
                     :
                     <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>

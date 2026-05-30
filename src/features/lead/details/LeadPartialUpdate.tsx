@@ -16,6 +16,8 @@ import { showCommonErrorToast, showToast } from "src/utils/feedback"
 import { useForm, type Control, type UseFormRegister } from "react-hook-form"
 import { ListItemText, Stack } from "@mui/material"
 import { getFieldIconTypeCode } from "src/features/leadFields/leadFieldUtils"
+import { LeadFormRelatedLead, LeadFormSelector } from "../shared/LeadFormMultipleFields"
+import { LeadFormBool, LeadFormDate, LeadFormFile, LeadFormNumber, LeadFormText } from "../shared/LeadFormFields"
 
 
 /**
@@ -108,7 +110,6 @@ export const LeadPartialUpdate = ({ fieldValue, onClose, lead, updateLeadInfo }:
     )
 }
 
-
 interface LeadFormFieldTypeProps {
     register: UseFormRegister<PartialFormProps>,
     control: Control<PartialFormProps>,
@@ -121,6 +122,9 @@ const LeadFormFieldType = ({ register, control, leadField, errorMessage, size = 
 
     const name = "value"
     const label = leadField.name ?? undefined
+    const typeCode = leadField.field_type_code
+    const subtypeCode = leadField.field_subtype_code ?? undefined
+    const required = leadField.required
 
     const [selectors, setSelectors] = useState<NomenclatorItem[] | undefined>(undefined)
     const [relatedLeads, setRelatedLeads] = useState<Lead[] | undefined>(undefined)
@@ -137,57 +141,27 @@ const LeadFormFieldType = ({ register, control, leadField, errorMessage, size = 
                 .catch(e => showCommonErrorToast(e, `Ocurrio un error buscando los leads de ${leadField.name}`))
         }
     }, [leadField])
-    /*
-        switch (leadField.field_type_code) {
-            case "LEAD":
-                return (<LeadFormRelatedLead label={label} name={name} control={control} options={relatedLeads}
-                    leadField={leadField} required={leadField.required} errorMessage={errorMessage} size={size} />)
-            case "SELECTOR":
-                return (<LeadFormSelector label={label} name={name} control={control} options={selectors}
-                    leadField={leadField} required={leadField.required} errorMessage={errorMessage} size={size} />)
-            case "CHECKBOX":
-                return (<LeadFormCheckbox label={label} name={name} control={control} options={selectors} size={size}
-                    leadField={leadField} returnField="id" required={leadField.required} errorMessage={errorMessage} />)
-            case "URL":
-                return (<LeadFormText label={label} name={name} register={register} type="url"
-                    required={leadField.required} errorMessage={errorMessage} size={size} />)
-            case "ADDRESS":
-                return (<LeadFormAddress label={label} name={name} register={register} leadField={leadField}
-                    required={leadField.required} errorMessage={errorMessage} size={size} />)
-            case "PHONE":
-                return (<LeadFormText label={label} name={name} register={register} type="tel"
-                    required={leadField.required} errorMessage={errorMessage} size={size} />)
-            case "EMAIL":
-                return (<LeadFormText label={label} name={name} register={register} type="email"
-                    required={leadField.required} errorMessage={errorMessage} size={size} />)
-            case "DATE":
-                return (<LeadFormText label={label} name={name} register={register} type="date"
-                    required={leadField.required} errorMessage={errorMessage} size={size} />)
-            case "DATE_TIME":
-                return (<LeadFormText label={label} name={name} register={register} type="datetime-local"
-                    required={leadField.required} errorMessage={errorMessage} size={size} />)
-            case "NUMBER": case "INT":
-                return (<LeadFormNumber label={label} name={name} control={control}
-                    required={leadField.required} errorMessage={errorMessage} size={size} />)
-            case "RICH_TEXT":
-                return (<LeadFormText label={label} name={name} register={register}
-                    required={leadField.required} errorMessage={errorMessage} size={size} multiline />)
-            case "RATING":
-                return (<LeadFormRating label={label} field_subtype_code={leadField.field_subtype_code!} name={name} control={control}
-                    required={leadField.required} errorMessage={errorMessage} size={size} />)
-            case "MONEY":
-                return (<LeadFormMoney label={label} name={name} register={register}
-                    required={leadField.required} errorMessage={errorMessage} size={size} />)
-            case "PASSWORD":
-                return (<LeadFormPassword label={label} name={name} register={register}
-                    required={leadField.required} errorMessage={errorMessage} size={size} />)
-            case "BOOL":
-                return (<LeadFormBool label={label} name={name} control={control} errorMessage={errorMessage} size={size} />)
-            case "FILE":
-                return (<LeadFormFile label={label} name={name} register={register}
-                    required={leadField.required} errorMessage={errorMessage} size={size} />)
-            default:
-                return <LeadFormText label={label} name={name} register={register}
-                    required={leadField.required} errorMessage={errorMessage} size={size} />
-        }*/
+
+    switch (typeCode) {
+        case "LEAD":
+            return (<LeadFormRelatedLead control={control} name={name} options={relatedLeads} size={size}
+                label={label} required={required} errorMessage={errorMessage} />)
+        case "FILE":
+            return (<LeadFormFile register={register} name={name} required={required} size={size}
+                errorMessage={errorMessage} />)
+        case "SELECTOR":
+            return (<LeadFormSelector control={control} name={name} options={selectors} size={size}
+                label={label} subtype={subtypeCode} required={required} errorMessage={errorMessage} />)
+        case "BOOL":
+            return (<LeadFormBool control={control} name={name} label={label} errorMessage={errorMessage} size={size} />)
+        case "DATE_TIME": case "DATE":
+            return (<LeadFormDate register={register} name={name} label={label} size={size}
+                subtype={subtypeCode} required={leadField.required} errorMessage={errorMessage} />)
+        case "NUMBER": case "INT":
+            return (<LeadFormNumber control={control} name={name} label={label} size={size}
+                subtype={subtypeCode} required={leadField.required} errorMessage={errorMessage} />)
+        case "STRING":
+            return <LeadFormText register={register} name={name} label={label} size={size}
+                required={leadField.required} errorMessage={errorMessage} />
+    }
 }
