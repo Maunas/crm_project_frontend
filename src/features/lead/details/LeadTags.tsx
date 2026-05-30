@@ -9,7 +9,7 @@ import CommonButton from 'shared/ui/buttons/CommonButton'
 import CustomChip from 'shared/ui/details/CustomChip'
 import { useListPagination } from 'src/hooks/useListPagination'
 import { useLoading } from 'src/hooks/useLoading'
-import type { LeadDetailed, LeadTag } from 'src/types/leads'
+import type { LeadDetailed, LeadTag, LeadTagDetailed } from 'src/types/leads'
 import type { ColorTypes } from 'src/types/mui-theme.d'
 import type { Paginable } from 'src/types/shared'
 import { deleteTag, getTags, updateLeadTags } from './LeadDetailsService'
@@ -201,7 +201,11 @@ const LeadTagsMenu = ({ leadId, tagList, leadTags, menuAnchor, handleClose, page
             })
         })
     }
-    const [deletingTag, setDeletingTag] = useState<LeadTag | null>(null)
+    const [deletingTag, setDeletingTag] = useState<LeadTagDetailed | null>(null)
+
+    const handleSetDeletingTag = (tag: LeadTag) => {
+        setDeletingTag({ ...tag, active: true } as LeadTagDetailed)
+    }
 
     return (
         <>
@@ -228,7 +232,7 @@ const LeadTagsMenu = ({ leadId, tagList, leadTags, menuAnchor, handleClose, page
                                                 <CommonIconButton title="Modificar" actionType='MODIFY'
                                                     size='small' tooltipSize="small" onClick={() => toggleEditTag(tag)} />
                                                 <CommonIconButton title="Eliminar" actionType='CLOSE'
-                                                    color="error" size='small' tooltipSize="small" onClick={() => setDeletingTag(tag)} />
+                                                    color="error" size='small' tooltipSize="small" onClick={() => handleSetDeletingTag(tag)} />
                                             </Stack>
                                         }
                                     >

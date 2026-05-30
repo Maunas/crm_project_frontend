@@ -1,6 +1,5 @@
 import { memo, useEffect, useMemo, useState } from 'react'
 import { FilterItem } from './LeadFilterItem'
-import { LeadFormBool, LeadFormMoney, LeadFormNumber, LeadFormRating, LeadFormText } from '../shared/LeadFormFields'
 import { ControlledCheckbox, ControlledNumber } from 'shared/ui/forms/CustomInputs'
 import { ControlledAutocomplete } from 'shared/ui/forms/CustomMultipleInputs'
 import { FormErrorMessage } from 'shared/ui/forms/FormFeedback'
@@ -211,6 +210,7 @@ interface LeadFormFieldTypeProps {
 
 const LeadFormFieldType = memo(({ register, control, name, label, leadField, errorMessage }: LeadFormFieldTypeProps) => {
     if (!leadField) return
+    /*
     switch (leadField.field_type_code) {
         case "DATE":
             return (<LeadFormText label={label} name={name} register={register} type="date" size="small"
@@ -232,5 +232,5 @@ const LeadFormFieldType = memo(({ register, control, name, label, leadField, err
         default:
             return <LeadFormText label={label} name={name} register={register} size="small"
                 errorMessage={errorMessage} />
-    }
+    }*/
 })

@@ -25,6 +25,8 @@ const stopPropagationEvent = (e: React.SyntheticEvent, callback: () => void) => 
     return callback()
 }
 
+const MIN_FIELDS = 10
+
 export const LeadFieldTable = memo(({ campaign, leadFields, updateLeadFields, updateEntity, handleSidebar, loading = false }: LeadFieldTableProps) => {
 
     useEffect(() => {
@@ -69,6 +71,8 @@ export const LeadFieldTable = memo(({ campaign, leadFields, updateLeadFields, up
 
     const [deletingField, setDeletingField] = useState<LeadFieldDetailed | null>(null)
 
+    const [showAll, setShowAll] = useState<boolean>(false)
+
     return (
         <Stack spacing={3}>
             <Stack useFlexGap direction="row" spacing={2}
@@ -90,44 +94,51 @@ export const LeadFieldTable = memo(({ campaign, leadFields, updateLeadFields, up
             </Stack>
             <LoadingScreenWrapper loading={loading}>
                 {sortedFields.length > 0 ?
-                    <TableContainer component={Paper} elevation={4}  >
-                        <Table aria-label="simple table" size='small' >
-                            <TableHead >
-                                <TableRow sx={{ "& .MuiTableCell-root": { fontWeight: 600 } }}>
-                                    <TableCell></TableCell>
-                                    <TableCell>Nombre</TableCell>
-                                    <TableCell align="right">Tipo</TableCell>
-                                    <TableCell align="right">Subtipo</TableCell>
-                                    <TableCell align="right">Obligatorio</TableCell>
-                                    <TableCell align="right">Único</TableCell>
-                                    <TableCell align="right">Visible</TableCell>
-                                    <TableCell align="right">Acciones</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {sortedFields
-                                    .map((row) => (
-                                        <SelectableTableRow key={row.id} onClick={() => handleSidebar("DETAILS_FIELD", row)}>
-                                            <LeadFieldTableCells row={row} />
-                                            <TableCell align="right">
-                                                <Stack direction="row" sx={{ justifyContent: "end" }} className="table-actions">
-                                                    <CommonIconButton actionType="DETAILS" title="Detalle" tooltipSize="small" size="small"
-                                                        onClick={(e) => stopPropagationEvent(e, () => handleSidebar("DETAILS_FIELD", row))} />
-                                                    {sortedFields.length > 1 &&
-                                                        <>
-                                                            <CommonIconButton actionType="MODIFY" title="Modificar" tooltipSize="small" size="small"
-                                                                onClick={(e) => stopPropagationEvent(e, () => handleSidebar("UPDATE_FIELD", row))} />
-                                                            <CommonIconButton actionType={row.active ? "DISABLE" : "ENABLE"} tooltipSize="small" size="small"
-                                                                title={row.active ? "Deshabilitar" : "Habilitar"}
-                                                                onClick={(e) => stopPropagationEvent(e, () => setDeletingField(row))} color={row.active ? "error" : "success"} />
-                                                        </>}
-                                                </Stack>
-                                            </TableCell>
-                                        </SelectableTableRow>
-                                    ))}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
+                    <Stack spacing={1}>
+                        <TableContainer component={Paper} elevation={4}  >
+                            <Table aria-label="simple table" size='small' >
+                                <TableHead >
+                                    <TableRow sx={{ "& .MuiTableCell-root": { fontWeight: 600 } }}>
+                                        <TableCell></TableCell>
+                                        <TableCell>Nombre</TableCell>
+                                        <TableCell align="right">Tipo</TableCell>
+                                        <TableCell align="right">Subtipo</TableCell>
+                                        <TableCell align="right">Obligatorio</TableCell>
+                                        <TableCell align="right">Único</TableCell>
+                                        <TableCell align="right">Visible</TableCell>
+                                        <TableCell align="right">Acciones</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {sortedFields
+                                        .map((row, idx) => {
+                                            if (!showAll && idx >= MIN_FIELDS) return
+                                            return <SelectableTableRow key={row.id} onClick={() => handleSidebar("DETAILS_FIELD", row)}>
+                                                <LeadFieldTableCells row={row} />
+                                                <TableCell align="right">
+                                                    <Stack direction="row" sx={{ justifyContent: "end" }} className="table-actions">
+                                                        <CommonIconButton actionType="DETAILS" title="Detalle" tooltipSize="small" size="small"
+                                                            onClick={(e) => stopPropagationEvent(e, () => handleSidebar("DETAILS_FIELD", row))} />
+                                                        {sortedFields.length > 1 &&
+                                                            <>
+                                                                <CommonIconButton actionType="MODIFY" title="Modificar" tooltipSize="small" size="small"
+                                                                    onClick={(e) => stopPropagationEvent(e, () => handleSidebar("UPDATE_FIELD", row))} />
+                                                                <CommonIconButton actionType={row.active ? "DISABLE" : "ENABLE"} tooltipSize="small" size="small"
+                                                                    title={row.active ? "Deshabilitar" : "Habilitar"}
+                                                                    onClick={(e) => stopPropagationEvent(e, () => setDeletingField(row))} color={row.active ? "error" : "success"} />
+                                                            </>}
+                                                    </Stack>
+                                                </TableCell>
+                                            </SelectableTableRow>
+                                        })
+                                    }
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                        <CommonButton actionType={showAll ? "MINUS" : "CREATE"} onClick={() => setShowAll(!showAll)}>
+                            {showAll ? "Mostrar Menos" : "Mostrar Todos"}
+                        </CommonButton>
+                    </Stack>
                     :
                     <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
                         <Typography variant="h4">No se han encontrado campos para esta campaña...</Typography>

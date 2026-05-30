@@ -143,7 +143,7 @@ export const ControlledRadio = <T extends FieldValues, Option>
     return (
         <Controller control={control} name={name} render={({ field }) => {
             return (
-                <FormControl required={required} error={!!errorMessage}>
+                <FormControl required={required} error={!!errorMessage} sx={{ my: .5, mx: 1 }}>
                     <FormLabel id={name}>{label}</FormLabel>
                     <RadioGroup {...field} row={row} id={name}
                         value={field.value ?? null}
@@ -227,7 +227,7 @@ const GroupedCheckbox = <T extends FieldValues, Option>
     }
 
     return (
-        <FormControl required={required} error={!!errorMessage} >
+        <FormControl required={required} error={!!errorMessage} sx={{ my: .5, mx: 1 }}>
             <FormLabel>{label}</FormLabel>
             <FormGroup row={row} >
                 {options?.map(option => (
