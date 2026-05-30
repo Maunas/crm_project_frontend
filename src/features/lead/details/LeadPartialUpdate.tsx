@@ -162,6 +162,6 @@ const LeadFormFieldType = ({ register, control, leadField, errorMessage, size = 
                 subtype={subtypeCode} required={leadField.required} errorMessage={errorMessage} />)
         case "STRING":
             return <LeadFormText register={register} name={name} label={label} size={size}
-                required={leadField.required} errorMessage={errorMessage} />
+                required={leadField.required} errorMessage={errorMessage} subtype={subtypeCode} />
     }
 }

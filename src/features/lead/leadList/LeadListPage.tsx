@@ -44,11 +44,17 @@ export const LeadListPage = () => {
         if (filters.length > 0) {
             return getFilteredLeads({ filters: filters }, { campaign_id: campaignId, page, ...headers })
                 .then(setLeads)
-                .catch(e => showCommonErrorToast(e))
+                .catch(e => {
+                    showCommonErrorToast(e)
+                    throw e
+                })
         } else {
             return getLeads({ campaign_id: campaignId, page, ...headers })
                 .then(setLeads)
-                .catch(e => showCommonErrorToast(e))
+                .catch(e => {
+                    showCommonErrorToast(e)
+                    throw e
+                })
         }
     }, [])
 
@@ -280,7 +286,7 @@ export const LeadListPage = () => {
     const [bulkDeleteOpen, setBulkDeleteOpen] = useState<boolean>(false)
 
     return (
-        <Stack spacing={3}>
+        <Stack spacing={3} sx={{ minWidth: 0 }}>
             <Stack useFlexGap direction="row" sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }} spacing={2}>
                 <Typography variant="h1">Lista de Leads</Typography>
                 {areThereLeads &&
@@ -290,7 +296,7 @@ export const LeadListPage = () => {
                     </CommonButton>
                 }
             </Stack>
-            <Stack spacing={2}>
+            <Stack spacing={2} sx={{ minWidth: 0 }}>
                 <LeadListOptions areThereLeads={areThereLeads} campaignId={campaignId} modalProps={modalProps} campaignSelectorProps={campaignSelectorProps} presentationProps={presentationProps}
                     filters={filters} headers={{ ...fetchParams, ...orderParams }} setFiltersAndHeaders={setFiltersAndHeaders} viewUpdateProps={viewUpdateProps} selectCheckboxProps={selectCheckboxProps}
                     bulkDelete={async () => setBulkDeleteOpen(true)} />
@@ -298,7 +304,8 @@ export const LeadListPage = () => {
                     {(leads && campaignId !== null && workspaceId !== null) ?
                         <>
                             <LeadListContent leads={leads.items} leadFields={leadFields} selectedFieldIds={selectedFieldIds} modalProps={modalProps} presentationMode={presentationMode}
-                                activeFilters={filters.length} orderProps={orderProps} handleSelectedFieldIds={handleSelectedFieldIds} selectCheckboxProps={selectCheckboxProps} />
+                                activeFilters={filters.length} orderProps={orderProps} handleSelectedFieldIds={handleSelectedFieldIds} selectCheckboxProps={selectCheckboxProps}
+                                workspaceId={workspaceId ? parseInt(`${workspaceId}`) : undefined} campaignId={campaignId ? parseInt(`${campaignId}`) : undefined} />
                             <PaginationComponent {...pageComponentProps} />
                         </>
                         :

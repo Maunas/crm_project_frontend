@@ -203,7 +203,7 @@ const LeadFormFieldType = ({ register, control, name, leadField, relatedLeads, s
             return (<LeadFormNumber control={control} name={name} label={label}
                 subtype={subtypeCode} required={leadField.required} errorMessage={errorMessage} />)
         case "STRING":
-            return <LeadFormText register={register} name={name} label={label}
+            return <LeadFormText register={register} name={name} label={label} subtype={subtypeCode}
                 required={leadField.required} errorMessage={errorMessage} />
     }
 }

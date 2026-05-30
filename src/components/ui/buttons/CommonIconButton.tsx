@@ -16,7 +16,7 @@ interface CommonIconButtonProps extends Omit<IconButtonProps, "color"> {
     loading?: boolean
 }
 
-export const CommonIconButton = ({ actionType = "NONE", title, color = "primary", size = "medium", tooltipSize = "medium", loading = false, ...props }: CommonIconButtonProps) => {
+export const CommonIconButton = ({ actionType = "NONE", title, color = "action", size = "medium", tooltipSize = "medium", loading = false, ...props }: CommonIconButtonProps) => {
 
     const styleIcon = (actionType: ActionType) => {
         if (actionType === "NONE") return ACTION_ICONS.NONE

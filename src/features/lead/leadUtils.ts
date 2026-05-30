@@ -4,6 +4,7 @@ import type { Lead, LeadDetailed, LeadPostValue } from "src/types/leads"
 import type { LeadField } from "src/types/leadFields"
 import { setFormErrors } from "src/utils/forms"
 import type { FieldArrayWithId, UseFormSetError } from "react-hook-form"
+import { OPERATORS as OP } from "src/mocks/operators"
 
 /** 
  * Obtener un arreglo con los campos de lead indicados como título, en orden.
@@ -109,4 +110,17 @@ export const setLeadFormErrors = (fields: FieldArrayWithId<LeadPostForm, "values
         })
     }
     setFormErrors(error, setError, leadErrorMapping)
+}
+
+export const OPERATORS_BY_LEAD_TYPE = {
+    BOOL: [OP.eq, OP.neq],
+    DATE_TIME: [OP.gt, OP.gte, OP.lt, OP.lte, OP.like],
+    DATE: [OP.gt, OP.gte, OP.lt, OP.lte, OP.like],
+    NUMBER: [OP.eq, OP.gt, OP.gte, OP.lt, OP.lte, OP.neq],
+    INT: [OP.eq, OP.gt, OP.gte, OP.lt, OP.lte, OP.neq],
+    STRING: [OP.like, OP.ilike],
+    CALCULATED: [],
+    LEAD: [],
+    SELECTOR: [],
+    FILE: []
 }
