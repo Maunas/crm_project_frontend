@@ -15,7 +15,7 @@ import { getListField } from "src/utils/lists"
 import { showCommonErrorToast, showToast } from "src/utils/feedback"
 import { useForm, type Control, type UseFormRegister } from "react-hook-form"
 import { ListItemText, Stack } from "@mui/material"
-import { getFieldIconTypeCode } from "src/features/leadFields/leadFieldUtils"
+import { getTypeOrSpecialTemplates } from "src/features/leadFields/leadFieldUtils"
 import { LeadFormRelatedLead, LeadFormSelector } from "../shared/LeadFormMultipleFields"
 import { LeadFormBool, LeadFormDate, LeadFormFile, LeadFormNumber, LeadFormText } from "../shared/LeadFormFields"
 
@@ -69,7 +69,7 @@ export const LeadPartialUpdate = ({ fieldValue, onClose, lead, updateLeadInfo }:
 
     const fieldData = fieldValue.field
 
-    const iconCode = getFieldIconTypeCode(fieldData.field_type_code, fieldData.field_template_code)
+    const iconCode = getTypeOrSpecialTemplates(fieldData.field_type_code, fieldData.field_template_code)
 
     const onSubmit = async (data: PartialFormProps) => {
         if (!data.value) return

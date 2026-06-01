@@ -217,7 +217,7 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
             control={control}
             label="Nombre del Campo"
             name="name"
-            required
+            required={creationMethod === "manual"}
             errorMessage={errors?.name?.message}
           />
         </Grid>

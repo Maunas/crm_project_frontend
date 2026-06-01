@@ -54,3 +54,14 @@ export const getFieldTypeValue = (fieldType: FieldType, value: unknown) => {
             return JSON.parse(value)
     }
 };
+
+export const isValidURL = (url: string) => {
+    try {
+        new URL(url)
+        return true
+    } catch {
+        return false
+    }
+}
+
+export const sanitizePhone = (phone: string) => phone.replace(/\D/g, "")

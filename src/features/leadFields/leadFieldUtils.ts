@@ -53,10 +53,10 @@ export const getFieldDataByType = (data: LeadFieldPost, isTemplate = false, isMa
 };
 
 
-const TEMPLATES_WITH_ICONS = ["INSTAGRAM_USER", "POSTAL_CODE", "CREDIT_CARD_SIMPLE"]
+const SPECIAL_TEMPLATES = ["INSTAGRAM_USER", "POSTAL_CODE", "CREDIT_CARD_SIMPLE"]
 /**
  * Obtiene el código de un template para buscar su ícono, únicamente si tiene código. Si no, devuelve el código de tipo.
  */
-export const getFieldIconTypeCode = (typeCode: string, templateCode?: string | null) => {
-    return (templateCode && TEMPLATES_WITH_ICONS.includes(templateCode)) ? templateCode : typeCode
+export const getTypeOrSpecialTemplates = (typeCode: string, templateCode?: string | null) => {
+    return (templateCode && SPECIAL_TEMPLATES.includes(templateCode)) ? templateCode : typeCode
 }
