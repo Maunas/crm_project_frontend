@@ -1,14 +1,13 @@
 import { useMemo, useState } from "react"
 import { LeadPartialUpdate } from "./LeadPartialUpdate"
-import { AddressValue, BoolValue, CardValue, DateValue, ListValues, ModalValue, NewTabLink, PasswordValue, RatingValue } from "../shared/LeadValueComponents"
+import { BoolValue, DateValue, ListValues, ModalValue, NumberValue, StringValue } from "../shared/LeadValueComponents"
 import { LeadFieldTypeIcon } from "features/leadFields/LeadFieldTypeIcon"
 import { CommonIconButton } from "shared/ui/buttons/CommonIconButton"
 import { CustomListItem } from "shared/ui/lists/CustomListItem"
 import type { LeadFieldValueDetailed } from "src/types/leadFields"
 import type { LeadDetailed } from "src/types/leads"
 import { useModal } from "src/hooks/useModal"
-import { getFieldIconTypeCode } from "features/leadFields/leadFieldUtils"
-import { formatMoney } from "src/utils/formatters"
+import { getTypeOrSpecialTemplates } from "features/leadFields/leadFieldUtils"
 import { Accordion, AccordionDetails, AccordionSummary, Divider, Typography, Stack, List, ListItemText, Box } from "@mui/material"
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
@@ -123,37 +122,49 @@ export const LeadFieldContent = (props: LeadFieldProps) => {
     const isSectionInfo = "fieldValue" in props
 
     const fieldValue = isSectionInfo ? props.fieldValue : undefined
+    const nomenclators = isSectionInfo ? props.fieldValue.nomenclator_items : undefined
+    const leads = isSectionInfo ? props.fieldValue.related_leads : undefined
     const onToggleEdit = isSectionInfo ? props.onToggleEdit : undefined
     const subtypeCode = isSectionInfo ? props.fieldValue.field.field_subtype_code : undefined
     const templateCode = isSectionInfo ? props.fieldValue.field.field_template_code : undefined
+    const modalProps = isSectionInfo ? props.modalProps : undefined
 
     const typeCode = isSectionInfo ? props.fieldValue.field.field_type_code : props.type
     const fieldName = isSectionInfo ? props.fieldValue.field.name : props.fieldName
     const value = isSectionInfo ? props.fieldValue.value : props.value
 
-    const iconCode = getFieldIconTypeCode(typeCode, templateCode)
+    const typeWithTemplates = getTypeOrSpecialTemplates(typeCode, templateCode)
 
 
     const component = (code?: string) => {
         switch (code) {
-            case "INSTAGRAM_USER": return <NewTabLink url={`https://instagram.com/${value?.substring(1)}`} value={value} />
-            case "POSTAL_CODE": return <NewTabLink url={`https://www.google.com/maps/search/${value?.replaceAll(" ", "+")}`} value={value} />
-            case "CREDIT_CARD_SIMPLE": return <CardValue value={`${value}`} allowShow />
-            case "MONEY": return formatMoney(Number(value))
-            case "RATING": return <RatingValue value={`${value}`} subtype={subtypeCode} counter />
-            case "URL": return <NewTabLink url={`${value}`} />
-            case "EMAIL": return <NewTabLink url={`mailto:${value}`} value={`${value}`} />
-            case "ADDRESS": return <AddressValue value={`${value}`} subtype={subtypeCode} />
-            case "DATE": return <DateValue date={`${value}`} />
-            case "DATE_TIME": return <DateValue date={`${value}`} isDatetime />
-            case "PASSWORD": return <PasswordValue value={`${value}`} allowShow />
-            case "FILE": case "RICH_TEXT":
-                if (!isSectionInfo) return null
-                return <ModalValue value={`${value}`} idModal={`file-${fieldValue?.id}`} modalProps={props.modalProps} type={typeCode} subtype={subtypeCode} />
+            //Templates especiales
+            case "INSTAGRAM_USER":
+            case "POSTAL_CODE":
+            case "CREDIT_CARD_SIMPLE": return <StringValue value={`${value}`} subtype={code} />
+
+            //Tipos de Field
+            case "STRING": return <StringValue value={`${value}`} idModal={`${fieldValue?.field_id}-${fieldValue?.id}`}
+                modalProps={modalProps} subtype={subtypeCode ?? undefined} />
+            case "NUMBER": return <NumberValue value={typeof value === "string" ? parseInt(value) : undefined}
+                subtype={subtypeCode!} ratingCounter />
+
             case "BOOL": return <BoolValue value={`${value}`} />
-            case "SELECTOR": case "CHECKBOX": return <ListValues value={fieldValue!.nomenclator_items} idFieldValue={fieldValue!.id} type="Selector" />
-            case "LEAD": return <ListValues value={fieldValue!.related_leads} idFieldValue={fieldValue!.id} type="Lead" isNav />
-            default: return <span style={{ overflowWrap: "break-word" }}>{value}</span>
+
+            case "DATE":
+            case "DATE_TIME": return <DateValue date={`${value}`} subtype={subtypeCode ?? undefined} />
+
+            case "SELECTOR": case "CHECKBOX":
+                return <ListValues value={Array.isArray(nomenclators) ? nomenclators : []} idFieldValue={fieldValue?.id}
+                    type="Selector" />
+            case "LEAD":
+                return <ListValues value={Array.isArray(leads) ? leads : []} idFieldValue={fieldValue?.id}
+                    type="Lead" isNav />
+
+            case "FILE": return <ModalValue value={`${value}`} idModal={`file-${fieldValue?.id}`}
+                modalProps={modalProps} type={code} subtype={subtypeCode!} />
+
+            default: return `${value}`
         }
     }
 
@@ -164,11 +175,11 @@ export const LeadFieldContent = (props: LeadFieldProps) => {
                     size="small" tooltipSize="small" color="primary"
                     disabled={typeCode === "CALCULATED" || !fieldValue?.field.is_visible} />
             } >
-            <LeadFieldTypeIcon typeCode={iconCode} subtypeCode={subtypeCode} />
+            <LeadFieldTypeIcon typeCode={typeWithTemplates} subtypeCode={subtypeCode} />
             <ListItemText sx={{ mr: 6 }}>
                 <Stack>
                     <Typography variant="subtitle2" color="textSecondary">{fieldName}</Typography>
-                    {component(iconCode)}
+                    {component(typeWithTemplates)}
                 </Stack>
             </ListItemText>
         </CustomListItem>

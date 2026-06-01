@@ -90,9 +90,9 @@ export default function LayoutSidebar({ children }: SidebarProps) {
     };
 
     return (
-        <Stack sx={{ minHeight: "100%" }}>
+        <Stack sx={{ minHeight: "100%", width: "100%", minWidth: 0 }}>
             <Header handleDrawerOpen={handleDrawerOpen} open={open} />
-            <Stack direction="row" sx={{ flexGrow: 1 }}>
+            <Stack direction="row" sx={{ minWidth: 0 }}>
                 <Drawer variant="permanent" open={open}>
                     <DrawerHeader>
                         <IconButton onClick={handleDrawerClose} color="inherit">
@@ -102,16 +102,15 @@ export default function LayoutSidebar({ children }: SidebarProps) {
                     <Divider />
                     <Navbar open={open} />
                 </Drawer>
-                <Stack direction="row" sx={{ flexGrow: 1 }}>
+                <Stack direction="row" sx={{ flexGrow: 1, minWidth: 0 }}>
                     <Box
                         component="main"
                         id="main-window"
-                        sx={{ flexGrow: 1, p: 3 }}
-                    >
+                        sx={{ flexGrow: 1, p: 3, minWidth: 0 }}>
                         {children}
                     </Box>
                 </Stack>
             </Stack>
-        </Stack>
+        </Stack >
     );
 }

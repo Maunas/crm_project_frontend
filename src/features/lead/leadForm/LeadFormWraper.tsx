@@ -57,7 +57,7 @@ export const CreateLeadFormPage = () => {
     const onSubmit = useCallback((data: FormData) => {
         return createLead(data).then(lead => {
             nav(`/leads/${lead.id}`)
-            showToast(`el lead fue creado con éxito`)
+            showToast(`El lead fue creado con éxito`)
         })
     }, [nav])
 
@@ -169,7 +169,7 @@ export const UpdateLeadFormPage = () => {
     const onSubmit = useCallback((data: FormData) => {
         return updateLead(data, lead!.id)
             .then(lead => {
-                showToast(`el lead fue modificado con éxito`)
+                showToast(`El lead fue modificado con éxito`)
                 nav(`/leads/${lead.id}`)
             })
     }, [nav, lead])

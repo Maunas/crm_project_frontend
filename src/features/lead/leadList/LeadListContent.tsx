@@ -30,14 +30,16 @@ interface LeadListContentProps {
         removeItem: (item: Lead) => void;
         removeAllItems: () => void;
     },
-    presentationMode: string
+    presentationMode: string,
+    workspaceId?: number,
+    campaignId?: number,
 }
 
 /**
  * Wrapper del contenido, realiza la lógica de selectedColumns, y elige el modo de vista deseado.
  */
 export const LeadListContent = memo(({ leads, leadFields, selectedFieldIds, activeFilters = 0, modalProps, orderProps, handleSelectedFieldIds,
-    selectCheckboxProps, presentationMode }: LeadListContentProps) => {
+    selectCheckboxProps, presentationMode, workspaceId, campaignId }: LeadListContentProps) => {
 
     //Filtra los objetos LeadField para seguir el orden del arreglo de ids.
     const selectedColumns = useMemo(() => {
@@ -57,7 +59,7 @@ export const LeadListContent = memo(({ leads, leadFields, selectedFieldIds, acti
                 <Typography variant="h4">Agrega un lead nuevo{activeFilters > 0 && " o revisa los filtros activos"}</Typography>
             </Stack>
             <ButtonGroup >
-                <CommonButton actionType="CREATE" color="primary" component={Link} to="/leads/new">
+                <CommonButton actionType="CREATE" color="primary" component={Link} to={`/leads/new?workspace=${workspaceId}&campaign=${campaignId}`}>
                     Agregar Lead
                 </CommonButton>
                 {activeFilters > 0 &&

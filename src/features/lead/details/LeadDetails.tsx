@@ -159,7 +159,7 @@ export const LeadDetailsLayout = () => {
                                         sx={{ underline: "hover", fontWeight: 600 }} >
                                         {campaign?.name}
                                     </Link>
-                                    <Typography sx={{ color: 'text.primary' }}>{leadTitle}</Typography>
+                                    <Typography sx={{ color: 'text.primary' }}>{leadTitle?.join(" ")}</Typography>
                                 </Breadcrumbs>}
                             {lead &&
                                 <Grid container spacing={3}>

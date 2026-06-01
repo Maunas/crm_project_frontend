@@ -1,6 +1,5 @@
 import { memo, useEffect, useMemo, useState } from 'react'
 import { FilterItem } from './LeadFilterItem'
-import { LeadFormBool, LeadFormMoney, LeadFormNumber, LeadFormRating, LeadFormText } from '../shared/LeadFormFields'
 import { ControlledCheckbox, ControlledNumber } from 'shared/ui/forms/CustomInputs'
 import { ControlledAutocomplete } from 'shared/ui/forms/CustomMultipleInputs'
 import { FormErrorMessage } from 'shared/ui/forms/FormFeedback'
@@ -10,10 +9,12 @@ import type { LeadField } from 'src/types/leadFields'
 import type { LeadFilter, LeadListParams } from 'src/types/shared'
 import { getLeadFields } from 'src/features/leadFields/leadFieldServices'
 import { setFormErrors } from 'src/utils/forms'
-import { dictOperatorsMock } from 'src/mocks/operators'
 import { useFieldArray, useForm, useWatch, type Control, type FieldErrors, type Path, type UseFieldArrayRemove, type UseFormRegister } from 'react-hook-form'
 import { Button, Divider, Grid, Typography, Stack, ButtonGroup, Fade, Box } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close';
+import { LeadFormRelatedLead, LeadFormSelector } from '../shared/LeadFormMultipleFields'
+import { LeadFormBool, LeadFormDate, LeadFormFile, LeadFormNumber, LeadFormText } from '../shared/LeadFormFields'
+import { OPERATORS_BY_LEAD_TYPE } from '../leadUtils'
 
 interface LeadListFilters {
     filters: LeadFilter[],
@@ -91,7 +92,7 @@ export const LeadFilters = memo(({ campaignId, filters, applyFilters, onClose }:
                             </Typography>
                         </Fade>
                     </Stack>
-                    {!!campaignId &&
+                    {Boolean(campaignId) &&
                         <>
                             <Divider />
                             <Typography variant="h3">Filtros por Campo</Typography>
@@ -141,30 +142,19 @@ interface LeadFiltersItemProps {
 
 export const LeadFiltersItem = memo(({ idx, leadFields, control, register, errors, remove, disabled = false }: LeadFiltersItemProps) => {
 
-    const selectedFieldId = useWatch({ name: `filters.${idx}.field_id`, control })
-    const selectedField = useMemo(() => leadFields.find(i => i.id === selectedFieldId)
-        , [leadFields, selectedFieldId])
+    const filteredFields = useMemo(() => {
+        if (!leadFields || leadFields.length === 0) return []
+        return leadFields.filter(field => !(["LEAD", "SELECTOR", "FILE", "CALCULATED"].includes(field.field_type_code)) && ([]))
+    }, [leadFields])
 
-    const operators = dictOperatorsMock
+    const selectedFieldId = useWatch({ name: `filters.${idx}.field_id`, control })
+    const selectedField = useMemo(() => filteredFields.find(i => i.id === selectedFieldId)
+        , [filteredFields, selectedFieldId])
 
     const filteredOperators = useMemo(() => {
         if (!selectedField) return []
-        return operators.filter(op => {
-            switch (selectedField?.field_type_code) {
-                case "CALCULATED": return true
-                case "BOOL": {
-                    return op.type.includes("bool")
-                }
-                case "DATE": case "DATE_TIME": {
-                    return op.type.includes("date")
-                }
-                case "NUMBER": case "INT": case "RATING": case "MONEY": {
-                    return op.type.includes("number")
-                }
-                default: return op.type.includes("string")
-            }
-        })
-    }, [selectedField, operators])
+        return OPERATORS_BY_LEAD_TYPE[(selectedField.field_subtype_code ?? "CALCULATED") as keyof typeof OPERATORS_BY_LEAD_TYPE]
+    }, [selectedField])
 
     return (
         <FilterItem direction="row" spacing={2} >
@@ -172,7 +162,7 @@ export const LeadFiltersItem = memo(({ idx, leadFields, control, register, error
                 <Typography variant="body1" sx={{ fontWeight: 600 }}>Filtro N° {idx + 1}</Typography>
                 <Stack direction="row" spacing={.5} useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
                     <Box sx={{ flexGrow: 2, minWidth: "12rem" }}>
-                        <ControlledAutocomplete control={control} name={`filters.${idx}.field_id`} options={leadFields}
+                        <ControlledAutocomplete control={control} name={`filters.${idx}.field_id`} options={filteredFields}
                             getOptionKey={option => `${option.id}`} getOptionLabel={option => `${option.name}`} returnField="id"
                             label="Campo a Filtrar" size="small"
                             errorMessage={errors.filters?.[idx]?.field_id?.message} />
@@ -186,7 +176,7 @@ export const LeadFiltersItem = memo(({ idx, leadFields, control, register, error
                                     errorMessage={errors.filters?.[idx]?.operator?.message} />
                             </Box>
                             <Box sx={{ flexGrow: 2, minWidth: "12rem" }}>
-                                <LeadFormFieldType register={register} control={control} name={`filters.${idx}.value`} label="Valor de Comparación"
+                                <LeadFormFieldType register={register} control={control} name={`filters.${idx}.value`}
                                     errorMessage={errors.filters?.[idx]?.value?.message} leadField={selectedField} />
                             </Box>
                         </>
@@ -204,33 +194,40 @@ interface LeadFormFieldTypeProps {
     register: UseFormRegister<LeadListFilters>,
     control: Control<LeadListFilters>,
     name: Path<LeadListFilters>,
-    label: string,
     leadField?: LeadField,
     errorMessage?: string
 }
 
-const LeadFormFieldType = memo(({ register, control, name, label, leadField, errorMessage }: LeadFormFieldTypeProps) => {
+const LEAD_FORM_LABEL = "Valor de Comparación"
+
+const LeadFormFieldType = memo(({ register, control, name, leadField, errorMessage }: LeadFormFieldTypeProps) => {
     if (!leadField) return
-    switch (leadField.field_type_code) {
-        case "DATE":
-            return (<LeadFormText label={label} name={name} register={register} type="date" size="small"
+
+    const { field_type_code: typeCode, required } = { ...leadField }
+    const subtypeCode = leadField.field_subtype_code ?? undefined
+
+
+
+    switch (typeCode) {
+        case "LEAD":
+            return (<LeadFormRelatedLead control={control} name={name} options={[]} size="small"
+                label={LEAD_FORM_LABEL} required={required} errorMessage={errorMessage} />)
+        case "FILE":
+            return (<LeadFormFile register={register} name={name} required={required} size="small" label={LEAD_FORM_LABEL}
                 errorMessage={errorMessage} />)
-        case "DATE_TIME":
-            return (<LeadFormText label={label} name={name} register={register} type="datetime-local" size="small"
-                errorMessage={errorMessage} />)
-        case "NUMBER": case "INT":
-            return (<LeadFormNumber label={label} name={name} control={control} size="small"
-                errorMessage={errorMessage} />)
-        case "RATING":
-            return (<LeadFormRating label={label} field_subtype_code={leadField.field_subtype_code!} name={name} control={control} size="small"
-                errorMessage={errorMessage} />)
-        case "MONEY":
-            return (<LeadFormMoney label={label} name={name} register={register} size="small"
-                errorMessage={errorMessage} />)
+        case "SELECTOR":
+            return (<LeadFormSelector control={control} name={name} options={[]} size="small"
+                label={LEAD_FORM_LABEL} subtype={subtypeCode} required={required} errorMessage={errorMessage} />)
         case "BOOL":
-            return (<LeadFormBool label={label} name={name} control={control} errorMessage={errorMessage} size="small" />)
-        default:
-            return <LeadFormText label={label} name={name} register={register} size="small"
-                errorMessage={errorMessage} />
+            return (<LeadFormBool control={control} name={name} label={LEAD_FORM_LABEL} errorMessage={errorMessage} size="small" />)
+        case "DATE_TIME": case "DATE":
+            return (<LeadFormDate register={register} name={name} label={LEAD_FORM_LABEL} size="small"
+                subtype={subtypeCode} required={leadField.required} errorMessage={errorMessage} />)
+        case "NUMBER": case "INT":
+            return (<LeadFormNumber control={control} name={name} label={LEAD_FORM_LABEL} size="small"
+                subtype={subtypeCode} required={leadField.required} errorMessage={errorMessage} />)
+        case "STRING":
+            return <LeadFormText register={register} name={name} label={LEAD_FORM_LABEL} size="small"
+                required={leadField.required} errorMessage={errorMessage} subtype={subtypeCode} />
     }
 })

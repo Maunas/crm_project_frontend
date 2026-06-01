@@ -14,6 +14,7 @@ import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { CircularProgress } from '@mui/material';
+import RemoveIcon from '@mui/icons-material/Remove';
 
 const ACTION_ICONS = {
     NONE: <></>,
@@ -33,6 +34,7 @@ const ACTION_ICONS = {
     LIST: <FormatListBulletedIcon sx={{ display: "block" }} />,
     CHECK: <TaskAltIcon sx={{ display: "block" }} />,
     LOADING: <CircularProgress size={24} sx={{ display: "block" }} />,
+    MINUS: <RemoveIcon sx={{ display: "block" }} />,
 }
 
 export type ActionType = keyof typeof ACTION_ICONS

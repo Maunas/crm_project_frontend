@@ -44,7 +44,7 @@ const ContainerWithSidebar = ({ isSidebarOpen = false, closeSidebar, sidebarProp
                     zIndex: 1202,
                     '& .MuiDrawer-paper': {
                         minHeight: '100vh',
-                        width: sidebarWidth ?? '35rem',
+                        width: sidebarWidth ?? '45rem',
                         [breakpoints.down('md')]: {
                             width: '100vw',
                         },

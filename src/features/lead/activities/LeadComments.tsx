@@ -94,10 +94,15 @@ export const LeadComments = ({ leadId }: { leadId: number }) => {
 }
 
 const CommentNote = styled(Paper)(({ theme, ...props }) => {
-    const paletteColor = props.color as ColorTypes
+    const isHex = props.color?.substring(0, 1) === "#"
+    const paletteColor = (props.color ?? "primary") as ColorTypes
+
+    const themeColor = theme.palette[paletteColor]
+    const primaryColor = theme.palette.primary
+
     return ([{
         borderRadius: "1rem 1rem 0 1rem",
-        border: `1px solid ${theme.palette[paletteColor].main}`,
+        border: `1px solid ${isHex ? props.color : themeColor.main}`,
         overflow: "hidden",
         color: theme.palette.text.primary,
         "& .comment-footer, .comment-header": {
@@ -107,12 +112,12 @@ const CommentNote = styled(Paper)(({ theme, ...props }) => {
             flexWrap: "wrap",
         },
         "& .comment-header": {
-            backgroundColor: alpha(theme.palette[paletteColor].light, .5),
-            borderBottom: `1px solid ${theme.palette[paletteColor].main}`,
+            backgroundColor: alpha(isHex ? props.color ?? primaryColor.light : themeColor.light, .5),
+            borderBottom: `1px solid ${isHex ? props.color : themeColor.main}`,
         },
         "& .comment-footer": {
-            backgroundColor: alpha(theme.palette[paletteColor].light, .5),
-            borderTop: `1px solid ${theme.palette[paletteColor].main}`,
+            backgroundColor: alpha(isHex ? props.color ?? primaryColor.light : themeColor.light, .5),
+            borderTop: `1px solid ${isHex ? props.color : themeColor.main}`,
         },
         "& .comment-main": {
             minHeight: "3rem",
@@ -120,12 +125,12 @@ const CommentNote = styled(Paper)(({ theme, ...props }) => {
     },
     theme.applyStyles('dark', {
         "& .comment-header": {
-            backgroundColor: alpha(theme.palette[paletteColor].dark, .2),
-            borderBottom: `1px solid ${theme.palette[paletteColor].main}`,
+            backgroundColor: alpha(isHex ? props.color ?? primaryColor.dark : themeColor.dark, .2),
+            borderBottom: `1px solid ${isHex ? props.color : themeColor.main}`,
         },
         "& .comment-footer": {
-            backgroundColor: alpha(theme.palette[paletteColor].dark, .2),
-            borderTop: `1px solid ${theme.palette[paletteColor].main}`,
+            backgroundColor: alpha(isHex ? props.color ?? primaryColor.dark : themeColor.dark, .2),
+            borderTop: `1px solid ${isHex ? props.color : themeColor.main}`,
         },
     })
     ])

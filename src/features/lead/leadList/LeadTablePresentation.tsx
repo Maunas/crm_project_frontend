@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom"
 import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, useTheme, Checkbox, TableSortLabel } from "@mui/material"
 import type { Palette } from "@mui/material/styles"
 
-const TABLE_SX = { minWidth: 650 } as const
+const TABLE_SX = {} as const
 
 interface LeadTablePresentationProps {
     leads: Lead[],
