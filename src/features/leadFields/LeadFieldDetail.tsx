@@ -7,7 +7,6 @@ import TitleAndActive from 'shared/ui/details/TitleAndActive';
 import CommonButton from 'shared/ui/buttons/CommonButton';
 import CustomChip from 'shared/ui/details/CustomChip';
 import type { LeadFieldDetailed } from 'src/types/leadFields'
-import type { CampaignDetailed } from 'src/types/campaigns';
 import { disableLeadField, enableLeadField } from './leadFieldServices';
 import { showCommonErrorToast, showToast } from 'src/utils/feedback';
 import { Link as RouterLink } from 'react-router-dom'
@@ -18,7 +17,7 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 interface LeadFieldDetailProps {
     leadField: LeadFieldDetailed,
     handleSidebar: (mode: string, entity: LeadFieldDetailed | null) => void,
-    updateEntity: (mode: string, entity: CampaignDetailed | LeadFieldDetailed) => void,
+    updateEntity: (mode: string, entity: LeadFieldDetailed) => void,
     closeSidebar: () => void,
     leadFieldListLength?: number
 }
