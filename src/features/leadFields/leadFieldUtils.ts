@@ -1,4 +1,4 @@
-import type { LeadFieldPost } from "src/types/leadFields";
+import type { LeadFieldDetailed, LeadFieldPost, LeadFieldsBySection, LeadFieldValueDetailed } from "src/types/leadFields";
 
 /**
  * Organiza los datos de LeadField, para evitar enviar campos incompatibles con el método de creación (template/manual)
@@ -60,3 +60,27 @@ const SPECIAL_TEMPLATES = ["INSTAGRAM_USER", "POSTAL_CODE", "CREDIT_CARD_SIMPLE"
 export const getTypeOrSpecialTemplates = (typeCode: string, templateCode?: string | null) => {
     return (templateCode && SPECIAL_TEMPLATES.includes(templateCode)) ? templateCode : typeCode
 }
+
+//Separa los fieldValues por sección
+export const getLeadFieldsBySections = <T extends LeadFieldValueDetailed | LeadFieldDetailed>(fields: T[]) => {
+    const sections = new Map<number, LeadFieldsBySection<T>>()
+    fields.forEach(field => {
+        const section = "field" in field ? field.field?.lead_field_section : field?.lead_field_section
+        if (!section) return []
+        if (sections.has(section.id)) {
+            sections.get(section.id)!.fields.push(field)
+        } else {
+            sections.set(section.id, { id: section.id, name: section.name, fields: [field] })
+        }
+    })
+    return Array.from(sections.values())
+}
+
+
+//Separa los fieldValues por sección, devolviendo únicamente sus ids.
+export const getLeadFieldsBySectionsIds = (fieldsBySections: LeadFieldsBySection<LeadFieldDetailed>[]) => {
+    if (fieldsBySections.length === 0) return []
+    return fieldsBySections.map(section => {
+        return { sectId: section.id, sectName: section.name, fields: section.fields.map(field => field.id) }
+    })
+} 

@@ -122,3 +122,11 @@ export interface LeadFieldSection extends LeadFieldSectionPost {
 }
 
 export interface LeadFieldSectionDetailed extends LeadFieldSection, Metadata { }
+
+
+
+export interface LeadFieldsBySection<T = LeadFieldValueDetailed | LeadFieldDetailed> {
+  id: number,
+  name: string,
+  fields: T[]
+}

@@ -15,6 +15,9 @@ import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { CircularProgress } from '@mui/material';
 import RemoveIcon from '@mui/icons-material/Remove';
+import LowPriorityIcon from '@mui/icons-material/LowPriority';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 
 const ACTION_ICONS = {
     NONE: <></>,
@@ -35,6 +38,9 @@ const ACTION_ICONS = {
     CHECK: <TaskAltIcon sx={{ display: "block" }} />,
     LOADING: <CircularProgress size={24} sx={{ display: "block" }} />,
     MINUS: <RemoveIcon sx={{ display: "block" }} />,
+    REORDER: <LowPriorityIcon sx={{ display: "block" }} />,
+    OPEN_LIST: <KeyboardArrowDownIcon sx={{ display: "block" }} />,
+    CLOSE_LIST: <KeyboardArrowUpIcon sx={{ display: "block" }} />,
 }
 
 export type ActionType = keyof typeof ACTION_ICONS

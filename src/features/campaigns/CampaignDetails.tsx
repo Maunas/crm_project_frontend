@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { UpdateCampaignFormSidebar } from './CampaignForms'
-import { LeadFieldTable } from '../leadFields/LeadFieldTable'
+import { LeadFieldList } from '../leadFields/LeadFieldList'
 import ContainerWithSidebar from 'shared/layout/container/GenericContainer'
 import { DisableConfirmDialog } from 'shared/feedback/ConfirmationDialog'
 import HandleActiveButton from 'shared/ui/buttons/HandleActiveButton'
@@ -112,7 +112,7 @@ export const CampaignDetails = () => {
                                 </ButtonGroup>
                             </Stack>
                             <Divider />
-                            <LeadFieldTable campaign={campaign} cmpSidebarMode={sidebarMode} closeCmpSidebar={closeSidebar} />
+                            <LeadFieldList campaign={campaign} cmpSidebarMode={sidebarMode} closeCmpSidebar={closeSidebar} />
                         </Stack>
                     }
                 </Stack>
