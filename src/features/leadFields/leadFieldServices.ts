@@ -1,6 +1,7 @@
 import type {
     LeadField, LeadFieldDetailed, LeadFieldPost, LeadFieldType, LeadFieldTypeDetailed, LeadFieldTemplate, LeadFieldSection, LeadFieldSectionDetailed,
-    InputMaskTemplate
+    InputMaskTemplate,
+    LeadFieldsReorderBody
 } from "../../types/leadFields";
 import type { DeleteResponse, EnableResponse, ListParams, Paginable } from "../../types/shared";
 import { orderListByField } from "src/utils/lists";
@@ -65,3 +66,8 @@ export const getFieldSections = async <T extends ListParams>(params?: T): Promis
     const sections = await axiosCRM.get(`lead_field_sections`, { params });
     return { ...sections.data, items: orderListByField(sections.data.items, "id") };
 };
+
+export const reorderLeadFields = async (data: LeadFieldsReorderBody): Promise<{ message: string, campaign_id: number }> => {
+    const response = await axiosCRM.patch("lead_fields/reorder/bulk", data)
+    return response.data
+}

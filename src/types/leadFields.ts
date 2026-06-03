@@ -124,6 +124,13 @@ export interface LeadFieldSection extends LeadFieldSectionPost {
 export interface LeadFieldSectionDetailed extends LeadFieldSection, Metadata { }
 
 
+export interface LeadFieldsReorderBody {
+  campaign_id: number,
+  orders: {
+    field_id: number,
+    order: number,
+  }[]
+}
 
 export interface LeadFieldsBySection<T = LeadFieldValueDetailed | LeadFieldDetailed> {
   id: number,

@@ -1,19 +1,23 @@
-import { memo, type ReactNode } from "react"
+import { memo } from "react"
 import { CommonIconButton } from "shared/ui/buttons/CommonIconButton"
 import { SelectableTableRow } from "shared/ui/lists/CustomTableRow"
 import { EnabledIcon } from "shared/ui/lists/Icons"
 import type { LeadFieldDetailed } from "src/types/leadFields"
-import { Box, Stack, Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material"
+import { Box, Stack, Table, TableBody, TableCell, TableHead, TableRow, type Palette } from "@mui/material"
 import React from 'react'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import type { ReorderFieldsIds } from "./LeadFieldList"
+import { useDragAndDrop } from "src/hooks/useDragAndDrop"
 
 interface LeadFieldTableProps {
-    leadFields: LeadFieldDetailed[],
+    sectLeadFields: LeadFieldDetailed[],
     orderFieldsIds: number[],
+    setOrderFieldsIds: React.Dispatch<React.SetStateAction<ReorderFieldsIds[]>>,
+    sectIdx: number,
     handleSidebar: (mode: string, entity: LeadFieldDetailed) => void,
     setDeletingField: (field: LeadFieldDetailed) => void,
-    isOpen?: boolean,
-    header?: ReactNode
+    isReordering: boolean,
+    palette: Palette
 }
 
 const stopPropagationEvent = (e: React.SyntheticEvent, callback: () => void) => {
@@ -21,7 +25,17 @@ const stopPropagationEvent = (e: React.SyntheticEvent, callback: () => void) => 
     return callback()
 }
 
-export const LeadFieldTable = memo(({ leadFields, orderFieldsIds, handleSidebar, setDeletingField }: LeadFieldTableProps) => {
+export const LeadFieldTable = memo(({ sectLeadFields, orderFieldsIds, setOrderFieldsIds, sectIdx, palette, isReordering = false, handleSidebar, setDeletingField }: LeadFieldTableProps) => {
+
+    const handleFieldChange = (fields: number[]) => {
+        setOrderFieldsIds(prev => {
+            const newList = [...prev]
+            newList[sectIdx].fields = fields
+            return newList
+        })
+    }
+
+    const { dragEvents, dragStyles } = useDragAndDrop(orderFieldsIds, handleFieldChange)
 
     return (
         <>
@@ -39,10 +53,11 @@ export const LeadFieldTable = memo(({ leadFields, orderFieldsIds, handleSidebar,
                 </TableHead>
                 <TableBody>
                     {orderFieldsIds
-                        .map(rowId => {
-                            const rowData = leadFields.find(field => field.id === rowId)
+                        .map((rowId, idx) => {
+                            const rowData = sectLeadFields.find(field => field.id === rowId)
                             if (!rowData) return
-                            return <SelectableTableRow key={rowData.id} onClick={() => handleSidebar("DETAILS_FIELD", rowData)}>
+                            return <SelectableTableRow key={rowData.id} onClick={() => handleSidebar("DETAILS_FIELD", rowData)}
+                                {...(isReordering ? dragEvents(idx) : {})} sx={isReordering ? dragStyles(idx, palette, "column") : {}}>
                                 <LeadFieldTableCells row={rowData} />
                                 <TableCell align="right">
                                     <Stack direction="row" sx={{ justifyContent: "end" }} className="table-actions">

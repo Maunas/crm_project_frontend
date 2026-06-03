@@ -5,7 +5,7 @@ import CommonButton from "shared/ui/buttons/CommonButton"
 import { useModal } from "src/hooks/useModal"
 import type { LeadFieldDetailed } from "src/types/leadFields"
 import type { CampaignDetailed } from "src/types/campaigns"
-import { disableLeadField, enableLeadField, getLeadField, getLeadFields } from "./leadFieldServices"
+import { disableLeadField, enableLeadField, getLeadField, getLeadFields, reorderLeadFields } from "./leadFieldServices"
 import { ButtonGroup, Collapse, Paper, Stack, Table, TableCell, TableContainer, TableHead, TableRow, Typography, useTheme } from "@mui/material"
 import LoadingScreenWrapper from "src/components/feedback/LoadingScreen"
 import { GenericSidebar } from "src/components/layout/container/GenericContainer"
@@ -28,7 +28,7 @@ interface LeadFieldTableProps {
     cmpSidebarMode: unknown | null
 }
 
-interface ReorderFieldsIds {
+export interface ReorderFieldsIds {
     sectId: number;
     sectName: string;
     fields: number[];
@@ -160,13 +160,18 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
     //Reordena las secciones, no los campos.
     const { dragEvents, dragStyles } = useDragAndDrop(fieldsBySectionIds, (i) => setFieldsBySectionIds(i))
 
-    const submitReorder = (fieldsBySectionIds: ReorderFieldsIds[]) => {
+    const submitReorder = useCallback((fieldsBySectionIds: ReorderFieldsIds[]) => {
         if (!campaign?.id) return
-        const reorder = fieldsBySectionIds.map(section => {
-            return section.fields
-        }).flat().map((field, idx) => ({ field_id: field, order: idx + 1 }))
-        console.log({ campaign_id: campaign.id, orders: reorder })
-    }
+        const fieldsFlatList = fieldsBySectionIds.map(section => section.fields).flat()
+        const reorder = fieldsFlatList.map((field, idx) => ({ field_id: field, order: idx + 1 }))
+        reorderLeadFields({ campaign_id: campaign.id, orders: reorder })
+            .then(res => {
+                showToast(res.message)
+                fetchFieldsLoad(campaign.id)
+                setIsReordering(false)
+            })
+            .catch(e => showCommonErrorToast(e))
+    }, [campaign, fetchFieldsLoad])
 
     const cancelReorder = () => {
         setFieldsBySectionIds(getLeadFieldsBySectionsIds(fieldsBySection))
@@ -229,7 +234,9 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
                                         </TableHead>
                                     </Table >
                                     <Collapse in={isOpen} >
-                                        <LeadFieldTable leadFields={leadFieldsData.fields} orderFieldsIds={sectFields} handleSidebar={handleSidebarWrapper} setDeletingField={handleDeletingField} />
+                                        <LeadFieldTable sectLeadFields={leadFieldsData.fields} orderFieldsIds={sectFields}
+                                            setOrderFieldsIds={setFieldsBySectionIds} sectIdx={idx} palette={palette} isReordering={isReordering}
+                                            handleSidebar={handleSidebarWrapper} setDeletingField={handleDeletingField} />
                                         {sectFields.length > MIN_FIELDS &&
                                             <CommonButton actionType={showAll ? "MINUS" : "CREATE"} onClick={() => setShowAll(!showAll)} fullWidth>
                                                 {showAll ? "Mostrar Menos" : "Mostrar Todos"}
