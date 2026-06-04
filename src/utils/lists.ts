@@ -18,3 +18,9 @@ export const getListField = <T>(list: T[], field: keyof T, isMultiple: boolean) 
     if (!isMultiple) return list[0][field]
     return list.map(item => item[field])
 }
+
+/** Devuelve el mismo callback, pero sin propagactión de evento */
+export const stopPropagationEvent = (callback: () => void = () => { }) => (e: React.SyntheticEvent) => {
+    e.stopPropagation()
+    return callback()
+}

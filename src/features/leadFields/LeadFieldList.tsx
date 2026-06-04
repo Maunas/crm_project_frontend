@@ -6,7 +6,7 @@ import { useModal } from "src/hooks/useModal"
 import type { LeadFieldDetailed } from "src/types/leadFields"
 import type { CampaignDetailed } from "src/types/campaigns"
 import { disableLeadField, enableLeadField, getLeadField, getLeadFields, reorderLeadFields } from "./leadFieldServices"
-import { ButtonGroup, Collapse, Paper, Stack, Table, TableCell, TableContainer, TableHead, TableRow, Typography, useTheme } from "@mui/material"
+import { Accordion, AccordionDetails, AccordionSummary, ButtonGroup, Checkbox, Paper, Stack, TableContainer, Typography, useTheme } from "@mui/material"
 import LoadingScreenWrapper from "src/components/feedback/LoadingScreen"
 import { GenericSidebar } from "src/components/layout/container/GenericContainer"
 import { DisableConfirmDialog } from "src/components/feedback/ConfirmationDialog"
@@ -19,8 +19,9 @@ import { LeadFieldDetail } from "./LeadFieldDetail"
 import { LeadFieldFormSidebar } from "./LeadFieldForm"
 import { ValidationFormSidebar } from "../validations/ValidationForm"
 import { LeadFieldTable } from "./LeadFieldTable"
-import { CommonIconButton } from "src/components/ui/buttons/CommonIconButton"
 import { useDragAndDrop } from "src/hooks/useDragAndDrop"
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
+import { stopPropagationEvent } from "src/utils/lists"
 
 interface LeadFieldTableProps {
     campaign: CampaignDetailed,
@@ -135,30 +136,28 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
 
     const [openTableId, setOpenTableId] = useState<number | null>(null)
 
-    const sortedFields = useMemo(() => {
-        if (!leadFields || leadFields?.length === 0) return []
-        return [...leadFields].sort((a, b) => a.order - b.order)
-    }, [leadFields])
-
     const fieldsBySection = useMemo(() => {
-        if (sortedFields.length === 0) return []
-        return getFieldsBySections(sortedFields)
-    }, [sortedFields])
+        if (!leadFields || leadFields.length === 0) return []
+        return getFieldsBySections(leadFields)
+    }, [leadFields])
 
 
     const [isReordering, setIsReordering] = useState<boolean>(false)
-    const [fieldsBySectionIds, setFieldsBySectionIds] = useState<ReorderFieldsIds[]>([])
+    const [originalFieldsBySectionIds, setOriginalFieldsBySectionIds] = useState<ReorderFieldsIds[]>([])
+    const [newFieldsBySectionIds, setNewFieldsBySectionIds] = useState<ReorderFieldsIds[]>([])
 
     useEffect(() => {
-        setFieldsBySectionIds(getLeadFieldsBySectionsIds(fieldsBySection))
+        setOriginalFieldsBySectionIds(getLeadFieldsBySectionsIds(fieldsBySection))
+        setNewFieldsBySectionIds(getLeadFieldsBySectionsIds(fieldsBySection))
     }, [fieldsBySection])
 
     //Reordena las secciones, no los campos.
-    const { dragEvents, dragStyles } = useDragAndDrop(fieldsBySectionIds, (i) => setFieldsBySectionIds(i))
+    const { handleDragEnter, handleDragOver, handleDragStart, handleDrop, dragStyles } = useDragAndDrop(newFieldsBySectionIds, (i) => setNewFieldsBySectionIds(i))
 
-    const submitReorder = useCallback((fieldsBySectionIds: ReorderFieldsIds[]) => {
+    const submitReorder = useCallback((updatedfieldsBySectionIds: ReorderFieldsIds[]) => {
         if (!campaign?.id) return
-        const fieldsFlatList = fieldsBySectionIds.map(section => section.fields).flat()
+        if (JSON.stringify(updatedfieldsBySectionIds) === JSON.stringify(originalFieldsBySectionIds)) return setIsReordering(false)
+        const fieldsFlatList = updatedfieldsBySectionIds.map(section => section.fields).flat()
         const reorder = fieldsFlatList.map((field, idx) => ({ field_id: field, order: idx + 1 }))
         reorderLeadFields({ campaign_id: campaign.id, orders: reorder })
             .then(res => {
@@ -167,10 +166,10 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
                 setIsReordering(false)
             })
             .catch(e => showCommonErrorToast(e))
-    }, [campaign, fetchFieldsLoad])
+    }, [campaign, fetchFieldsLoad, originalFieldsBySectionIds])
 
     const cancelReorder = () => {
-        setFieldsBySectionIds(getLeadFieldsBySectionsIds(fieldsBySection))
+        setNewFieldsBySectionIds(originalFieldsBySectionIds)
         setIsReordering(false)
     }
 
@@ -179,12 +178,12 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
             <Stack useFlexGap direction="row" spacing={2}
                 sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
                 <Typography variant="h2">Lista de Campos de Lead</Typography>
-                {sortedFields.length > 0 &&
+                {leadFields && leadFields.length > 0 &&
                     <ButtonGroup sx={{ marginLeft: "auto" }}>
                         {!isReordering && <GenericModal {...modalProps} idModal="simulateLead" buttonText='Vista previa de formulario' maxWidth="xl" fullWidth
                             btnProps={{ actionType: "DETAILS", variant: "outlined" }} sx={{ minWidth: "80vw" }} >
                             {campaign &&
-                                <SimulateLeadFormModal campaign={campaign} leadFields={sortedFields} onCancel={modalProps.handleClose} />
+                                <SimulateLeadFormModal campaign={campaign} leadFields={leadFields} onCancel={modalProps.handleClose} />
                             }
                         </GenericModal>}
                         {!isReordering && <CommonButton onClick={() => handleSidebar("CREATE_FIELD", null)} actionType="CREATE" onlyTooltip>
@@ -194,7 +193,7 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
                             color="error" variant="outlined" actionType="CLOSE" onlyTooltip>
                             Cancelar
                         </CommonButton>}
-                        <CommonButton onClick={() => isReordering ? submitReorder(fieldsBySectionIds) : setIsReordering(true)}
+                        <CommonButton onClick={() => isReordering ? submitReorder(newFieldsBySectionIds) : setIsReordering(true)}
                             color={isReordering ? "primary" : "secondary"} variant={isReordering ? "contained" : "outlined"}
                             actionType={isReordering ? "SAVE" : "REORDER"} onlyTooltip>
                             Reordenar
@@ -203,42 +202,53 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
                 }
             </Stack>
             <LoadingScreenWrapper loading={fieldsLoading}>
-                {fieldsBySectionIds.length > 0 ?
+                {newFieldsBySectionIds.length > 0 ?
                     <Stack spacing={2}>
-                        {fieldsBySectionIds.map((section, idx) => {
+                        {newFieldsBySectionIds.map((section, idx) => {
                             const sectFields = showAll ? section.fields : section.fields.slice(0, MIN_FIELDS)
                             const leadFieldsData = fieldsBySection.find(fbs => fbs.id === section.sectId)
 
-                            const isOpen = openTableId === section.sectId
-
                             if (!leadFieldsData) return
                             return (
-                                <TableContainer component={Paper} elevation={4} key={`section-${section.sectId}`}
-                                    {...(isReordering ? dragEvents(idx) : {})} sx={isReordering ? dragStyles(idx, palette, "column") : {}} >
-                                    <Table aria-label="simple table" size='small' >
-                                        <TableHead>
-                                            <TableRow>
-                                                <TableCell colSpan={6}>
-                                                    <Typography variant="h3" sx={{ py: .5 }}>{section.sectName}</Typography>
-                                                </TableCell>
-                                                <TableCell align="right">
-                                                    <CommonIconButton actionType={isOpen ? "CLOSE_LIST" : "OPEN_LIST"}
-                                                        title={isOpen ? "Cerrar" : "Abrir"}
-                                                        onClick={isOpen ? () => setOpenTableId(null) : () => setOpenTableId(section.sectId)} />
-                                                </TableCell>
-                                            </TableRow>
-                                        </TableHead>
-                                    </Table >
-                                    <Collapse in={isOpen} >
-                                        <LeadFieldTable sectLeadFields={leadFieldsData.fields} orderFieldsIds={sectFields}
-                                            setOrderFieldsIds={setFieldsBySectionIds} sectIdx={idx} palette={palette} isReordering={isReordering}
-                                            handleSidebar={handleSidebarWrapper} setDeletingField={handleDeletingField} />
-                                        {sectFields.length > MIN_FIELDS &&
-                                            <CommonButton actionType={showAll ? "MINUS" : "CREATE"} onClick={() => setShowAll(!showAll)} fullWidth>
-                                                {showAll ? "Mostrar Menos" : "Mostrar Todos"}
-                                            </CommonButton>}
-                                    </Collapse >
-                                </TableContainer>
+                                <Accordion expanded={openTableId === section.sectId} elevation={2} disableGutters
+                                    onChange={(_, expanded) => expanded ? setOpenTableId(section.sectId) : setOpenTableId(null)}
+                                    sx={isReordering ? dragStyles(idx, palette, "column", true) : {}}
+                                    {...(isReordering ? {
+                                        onDragEnter: () => handleDragEnter(idx),
+                                        onDragOver: handleDragOver,
+                                        onDrop: () => handleDrop(idx)
+                                    } : {})}>
+                                    <AccordionSummary
+                                        expandIcon={<ExpandMoreIcon />}
+                                        aria-controls={`${section.sectId}-content`}
+                                        id={`${section.sectId}-header`}
+                                    >
+                                        <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
+                                            {!isReordering ?
+                                                <Checkbox onClick={stopPropagationEvent()} /> :
+                                                <CommonButton actionType="DRAG" draggable variant="contained" onlyTooltip color="primary"
+                                                    onClick={stopPropagationEvent()}
+                                                    onDragStart={() => handleDragStart(idx)} sx={{ cursor: "grab", px: 1.5, minWidth: 0 }} />
+                                            }
+                                            <Typography variant="h3" sx={{ py: .5, flexGrow: 1 }}>{section.sectName}</Typography>
+                                            <Typography variant="body1" sx={{ fontStyle: "italic", py: .5, flexGrow: 1 }}>- 0 items seleccionados</Typography>
+
+                                        </Stack>
+
+                                    </AccordionSummary>
+                                    <AccordionDetails>
+                                        <TableContainer component={Paper} elevation={4} key={`section-${section.sectId}`}>
+                                            <LeadFieldTable sectLeadFields={leadFieldsData.fields} orderFieldsIds={sectFields}
+                                                setOrderFieldsIds={setNewFieldsBySectionIds} sectIdx={idx} palette={palette} isReordering={isReordering}
+                                                handleSidebar={handleSidebarWrapper} setDeletingField={handleDeletingField} />
+                                            {sectFields.length > MIN_FIELDS &&
+                                                <CommonButton actionType={showAll ? "MINUS" : "CREATE"} onClick={() => setShowAll(!showAll)} fullWidth>
+                                                    {showAll ? "Mostrar Menos" : "Mostrar Todos"}
+                                                </CommonButton>}
+                                        </TableContainer>
+                                    </AccordionDetails>
+                                </Accordion>
+
                             )
                         })
                         }
@@ -249,14 +259,14 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
                         <CommonButton onClick={() => handleSidebar("CREATE_FIELD", null)} actionType="CREATE">Agregar</CommonButton>
                     </Stack>
                 }
-            </LoadingScreenWrapper>
+            </LoadingScreenWrapper >
             <GenericSidebar isSidebarOpen={Boolean(sidebarMode)} closeSidebar={closeSidebar} sidebarComponent={
                 <LeadFieldSidebar mode={sidebarMode} entity={selectedEntity} updateEntity={updateEntity} campaign={campaign}
                     closeSidebar={closeSidebar} handleSidebar={handleSidebarWrapper} leadFieldListLength={leadFields?.length ?? 0} />
             } />
             <DisableConfirmDialog entity={deletingField} clearEntity={() => setDeletingField(null)} idModal='dis-field-det'
                 onConfirm={() => handleActive(deletingField)} entityTypeName="el campo" />
-        </Stack>
+        </Stack >
     )
 })
 

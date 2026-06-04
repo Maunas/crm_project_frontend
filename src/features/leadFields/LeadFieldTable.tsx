@@ -3,11 +3,13 @@ import { CommonIconButton } from "shared/ui/buttons/CommonIconButton"
 import { SelectableTableRow } from "shared/ui/lists/CustomTableRow"
 import { EnabledIcon } from "shared/ui/lists/Icons"
 import type { LeadFieldDetailed } from "src/types/leadFields"
-import { Box, Stack, Table, TableBody, TableCell, TableHead, TableRow, type Palette } from "@mui/material"
+import { Box, Checkbox, Stack, Table, TableBody, TableCell, TableHead, TableRow, type Palette } from "@mui/material"
 import React from 'react'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import type { ReorderFieldsIds } from "./LeadFieldList"
 import { useDragAndDrop } from "src/hooks/useDragAndDrop"
+import CommonButton from "src/components/ui/buttons/CommonButton"
+import { stopPropagationEvent } from "src/utils/lists"
 
 interface LeadFieldTableProps {
     sectLeadFields: LeadFieldDetailed[],
@@ -20,10 +22,6 @@ interface LeadFieldTableProps {
     palette: Palette
 }
 
-const stopPropagationEvent = (e: React.SyntheticEvent, callback: () => void) => {
-    e.stopPropagation()
-    return callback()
-}
 
 export const LeadFieldTable = memo(({ sectLeadFields, orderFieldsIds, setOrderFieldsIds, sectIdx, palette, isReordering = false, handleSidebar, setDeletingField }: LeadFieldTableProps) => {
 
@@ -35,50 +33,64 @@ export const LeadFieldTable = memo(({ sectLeadFields, orderFieldsIds, setOrderFi
         })
     }
 
-    const { dragEvents, dragStyles } = useDragAndDrop(orderFieldsIds, handleFieldChange)
+    const { handleDragEnter, handleDragOver, handleDragStart, handleDrop, dragStyles } = useDragAndDrop(orderFieldsIds, handleFieldChange)
 
     return (
-        <>
-            <Table size='small'>
-                <TableHead>
-                    <TableRow>
-                        <TableCell></TableCell>
-                        <TableCell>Nombre</TableCell>
-                        <TableCell align="left">Tipo</TableCell>
-                        <TableCell align="right">Obligatorio</TableCell>
-                        <TableCell align="right">Único</TableCell>
-                        <TableCell align="right">Visible</TableCell>
-                        <TableCell align="right">Acciones</TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {orderFieldsIds
-                        .map((rowId, idx) => {
-                            const rowData = sectLeadFields.find(field => field.id === rowId)
-                            if (!rowData) return
-                            return <SelectableTableRow key={rowData.id} onClick={() => handleSidebar("DETAILS_FIELD", rowData)}
-                                {...(isReordering ? dragEvents(idx) : {})} sx={isReordering ? dragStyles(idx, palette, "column") : {}}>
-                                <LeadFieldTableCells row={rowData} />
+        <Table size='small'>
+            <TableHead>
+                <TableRow>
+                    <TableCell padding="checkbox">
+                    </TableCell>
+                    <TableCell>Nombre</TableCell>
+                    <TableCell align="left">Tipo</TableCell>
+                    <TableCell align="right">Obligatorio</TableCell>
+                    <TableCell align="right">Único</TableCell>
+                    <TableCell align="right">Visible</TableCell>
+                    {!isReordering && <TableCell align="right">Acciones</TableCell>}
+                </TableRow>
+            </TableHead>
+            <TableBody>
+                {orderFieldsIds
+                    .map((rowId, idx) => {
+                        const rowData = sectLeadFields.find(field => field.id === rowId)
+                        if (!rowData) return
+                        return <SelectableTableRow key={rowData.id} onClick={() => !isReordering ? handleSidebar("DETAILS_FIELD", rowData) : {}}
+                            sx={isReordering ? dragStyles(idx, palette, "column", true) : {}}
+                            {...(isReordering ? {
+                                onDragEnter: () => handleDragEnter(idx),
+                                onDragOver: handleDragOver,
+                                onDrop: () => handleDrop(idx)
+                            } : {})}>
+                            <TableCell padding="checkbox" onClick={stopPropagationEvent()}>
+                                {!isReordering ?
+                                    <Checkbox onClick={stopPropagationEvent()} /> :
+                                    <CommonButton actionType="DRAG" draggable variant="contained" onlyTooltip color="primary"
+                                        size="small" onClick={stopPropagationEvent()}
+                                        onDragStart={() => handleDragStart(idx)} sx={{ cursor: "grab", px: 2, minWidth: 0 }} />
+                                }
+                            </TableCell>
+                            <LeadFieldTableCells row={rowData} />
+                            {!isReordering &&
                                 <TableCell align="right">
                                     <Stack direction="row" sx={{ justifyContent: "end" }} className="table-actions">
                                         <CommonIconButton actionType="DETAILS" title="Detalle" tooltipSize="small" size="small"
-                                            onClick={(e) => stopPropagationEvent(e, () => handleSidebar("DETAILS_FIELD", rowData))} />
+                                            onClick={stopPropagationEvent(() => handleSidebar("DETAILS_FIELD", rowData))} />
                                         {orderFieldsIds.length > 1 &&
                                             <>
                                                 <CommonIconButton actionType="MODIFY" title="Modificar" tooltipSize="small" size="small"
-                                                    onClick={(e) => stopPropagationEvent(e, () => handleSidebar("UPDATE_FIELD", rowData))} />
+                                                    onClick={stopPropagationEvent(() => handleSidebar("UPDATE_FIELD", rowData))} />
                                                 <CommonIconButton actionType={rowData.active ? "DISABLE" : "ENABLE"} tooltipSize="small" size="small"
                                                     title={rowData.active ? "Deshabilitar" : "Habilitar"}
-                                                    onClick={(e) => stopPropagationEvent(e, () => setDeletingField(rowData))} color={rowData.active ? "error" : "success"} />
+                                                    onClick={stopPropagationEvent(() => setDeletingField(rowData))} color={rowData.active ? "error" : "success"} />
                                             </>}
                                     </Stack>
                                 </TableCell>
-                            </SelectableTableRow>
-                        })
-                    }
-                </TableBody>
-            </Table>
-        </>
+                            }
+                        </SelectableTableRow>
+                    })
+                }
+            </TableBody>
+        </Table>
     )
 })
 
@@ -86,7 +98,6 @@ export const LeadFieldTable = memo(({ sectLeadFields, orderFieldsIds, setOrderFi
 export const LeadFieldTableCells = memo(({ row }: { row: LeadFieldDetailed }) => {
     return (
         <>
-            <TableCell component="th">{row.order}</TableCell>
             <TableCell component="th">
                 <Stack spacing={1} direction="row">
                     <EnabledIcon active={row.active} size="small" />
