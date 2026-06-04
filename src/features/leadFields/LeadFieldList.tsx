@@ -14,7 +14,7 @@ import { useSearchParams } from "react-router-dom"
 import { useLoading } from "src/hooks/useLoading"
 import { useSidebar } from "src/hooks/useSidebar"
 import { showCommonErrorToast, showToast } from "src/utils/feedback"
-import { getLeadFieldsBySections, getLeadFieldsBySectionsIds } from "./leadFieldUtils"
+import { getFieldsBySections, getLeadFieldsBySectionsIds } from "./leadFieldUtils"
 import { LeadFieldDetail } from "./LeadFieldDetail"
 import { LeadFieldFormSidebar } from "./LeadFieldForm"
 import { ValidationFormSidebar } from "../validations/ValidationForm"
@@ -142,16 +142,12 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
 
     const fieldsBySection = useMemo(() => {
         if (sortedFields.length === 0) return []
-        return getLeadFieldsBySections(sortedFields)
+        return getFieldsBySections(sortedFields)
     }, [sortedFields])
 
 
     const [isReordering, setIsReordering] = useState<boolean>(false)
     const [fieldsBySectionIds, setFieldsBySectionIds] = useState<ReorderFieldsIds[]>([])
-
-    useEffect(() => {
-        console.log(fieldsBySectionIds)
-    }, [fieldsBySectionIds])
 
     useEffect(() => {
         setFieldsBySectionIds(getLeadFieldsBySectionsIds(fieldsBySection))

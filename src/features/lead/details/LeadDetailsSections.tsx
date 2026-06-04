@@ -7,7 +7,7 @@ import { CustomListItem } from "shared/ui/lists/CustomListItem"
 import type { LeadFieldValueDetailed } from "src/types/leadFields"
 import type { LeadDetailed } from "src/types/leads"
 import { useModal } from "src/hooks/useModal"
-import { getLeadFieldsBySections, getTypeOrSpecialTemplates } from "features/leadFields/leadFieldUtils"
+import { getFieldsBySections, getTypeOrSpecialTemplates } from "features/leadFields/leadFieldUtils"
 import { Accordion, AccordionDetails, AccordionSummary, Divider, Typography, Stack, List, ListItemText, Box } from "@mui/material"
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
@@ -35,7 +35,7 @@ export const LeadFieldSections = ({ lead, updateLeadInfo }: LeadFieldSectionsPro
     }, [lead])
 
     const fieldValuesBySection = useMemo(() => {
-        return getLeadFieldsBySections(fieldValues)
+        return getFieldsBySections(fieldValues)
     }, [fieldValues])
 
 
@@ -133,7 +133,7 @@ export const LeadFieldContent = (props: LeadFieldProps) => {
             //Tipos de Field
             case "STRING": return <StringValue value={`${value}`} idModal={`${fieldValue?.field_id}-${fieldValue?.id}`}
                 modalProps={modalProps} subtype={subtypeCode ?? undefined} />
-            case "NUMBER": return <NumberValue value={typeof value === "string" ? parseInt(value) : undefined}
+            case "NUMBER": return <NumberValue value={typeof value === "string" ? Number(value) : undefined}
                 subtype={subtypeCode!} ratingCounter />
 
             case "BOOL": return <BoolValue value={`${value}`} />

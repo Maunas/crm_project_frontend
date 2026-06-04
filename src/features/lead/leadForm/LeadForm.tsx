@@ -14,7 +14,8 @@ import { getLeadFields } from "features/leadFields/leadFieldServices"
 import { createFormDataFromLead, setLeadFormErrors, updateSelectorOptions } from "../leadUtils"
 import { getListField } from "src/utils/lists"
 import { useFieldArray, useForm, type Control, type Path, type UseFormRegister } from "react-hook-form"
-import { Grid, ButtonGroup, Stack } from "@mui/material"
+import { Grid, ButtonGroup, Stack, Typography, Divider } from "@mui/material"
+import { getLeadFormFieldsBySections, orderFieldsBySections } from "src/features/leadFields/leadFieldUtils"
 
 //Para permitir mantener los datos de cada campo
 export interface LeadPostFormValues extends LeadPostValue {
@@ -68,8 +69,7 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
         //Si ya hay valores, formatea los values para asignarlos al fieldArray. Asigna listas de ids a value.
         if (existingValues) {
             replace(
-                existingValues
-                    .filter(value => value.field.field_type_code !== "CALCULATED" && value.field.is_visible)
+                orderFieldsBySections(existingValues.filter(value => value.field.field_type_code !== "CALCULATED" && value.field.is_visible))
                     .map(fieldValue => {
                         let value: unknown = fieldValue.value
                         //Si no hay valor, es selector o related_leads. Trae el id, o arreglo de ids
@@ -90,7 +90,7 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
             //Si no hay valores, solo trae los datos de los leadFields.
         } else {
             replace(
-                newLeadFields?.filter(field => field.field_type_code !== "CALCULATED" && field.is_visible)
+                orderFieldsBySections(newLeadFields.filter(field => field.field_type_code !== "CALCULATED" && field.is_visible))
                     .map(field => ({
                         field_id: field.id,
                         fieldData: field
@@ -134,24 +134,35 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [leadFields, setError])
 
+    const fieldsBySection = useMemo(() => {
+        return getLeadFormFieldsBySections(fields)
+    }, [fields])
+
     return (
         <LoadingScreenWrapper loading={fieldsLoading}>
             <form onSubmit={handleSubmit(submitLoad)}>
                 <input type="text" {...register("campaign_id", { setValueAs: value => (value === "" || !value) ? null : Number(value) })} hidden />
-                <Stack spacing={2}>
-                    <Grid container spacing={.5}>
-                        {campaignId &&
-                            fields.map((field, idx) =>
-                                <Grid size="grow" sx={{ alignItems: "center", minWidth: "20rem" }} key={field.id}>
-                                    <LeadFormFieldType register={register} control={control} name={`values.${idx}.value`}
-                                        leadField={field.fieldData}
-                                        relatedLeads={relatedLeads.get(field?.fieldData?.related_campaign_id ?? -1)}
-                                        selectors={selectors.get(field?.fieldData?.nomenclator_id ?? -1)}
-                                        errorMessage={errors?.values?.[idx]?.value?.message} />
+                <Stack spacing={3}>
+                    {campaignId &&
+                        fieldsBySection.map((section) => {
+                            return <Stack spacing={1} key={`section-lead-${section.id}`}>
+                                <Typography variant="h3">{section.name}</Typography>
+                                <Divider />
+                                <Grid container spacing={.5}>
+                                    {section.fields.map(sectField =>
+                                        <Grid size="grow" sx={{ alignItems: "center", minWidth: "20rem" }} key={sectField.field.id}>
+                                            <LeadFormFieldType register={register} control={control} name={`values.${sectField.globalIdx}.value`}
+                                                leadField={sectField.field.fieldData}
+                                                relatedLeads={relatedLeads.get(sectField.field?.fieldData?.related_campaign_id ?? -1)}
+                                                selectors={selectors.get(sectField.field?.fieldData?.nomenclator_id ?? -1)}
+                                                errorMessage={errors?.values?.[sectField.globalIdx]?.value?.message} />
+                                        </Grid>
+                                    )}
                                 </Grid>
-                            )
-                        }
-                    </Grid>
+                            </Stack>
+                        })
+
+                    }
                     {errors.root &&
                         <FormErrorMessage>{errors.root.message}</FormErrorMessage>}
                     <ButtonGroup sx={{ alignSelf: "end" }}>

@@ -2,6 +2,8 @@ import type { Campaign } from "./campaigns";
 import type { Metadata } from "./shared";
 import type { Lead } from "./leads";
 import type { Nomenclator, NomenclatorItem } from "./nomenclators";
+import type { FieldArrayWithId } from "react-hook-form";
+import type { LeadPostForm } from "src/features/lead/leadForm/LeadForm";
 
 export interface LeadFieldValue {
   id: number;
@@ -132,7 +134,7 @@ export interface LeadFieldsReorderBody {
   }[]
 }
 
-export interface LeadFieldsBySection<T = LeadFieldValueDetailed | LeadFieldDetailed> {
+export interface LeadFieldsBySection<T = LeadFieldValueDetailed | LeadFieldDetailed | FieldArrayWithId<LeadPostForm, "values", "id">> {
   id: number,
   name: string,
   fields: T[]

@@ -15,7 +15,8 @@ export const getLeadFields = async <T extends LeadFieldParams>(
     params?: T,
 ): Promise<Paginable<T["detailed"] extends true ? LeadFieldDetailed : LeadField>> => {
     const leadField = await axiosCRM.get(`lead_fields`, { params });
-    return { ...leadField.data, items: orderListByField(leadField.data.items, "order") };
+    const sortedList = orderListByField(leadField.data.items, "order")
+    return { ...leadField.data, items: sortedList };
 };
 
 export const getLeadField = async (id: number): Promise<LeadFieldDetailed> => {
