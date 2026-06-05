@@ -3,7 +3,7 @@ import type {
     InputMaskTemplate,
     LeadFieldsReorderBody
 } from "../../types/leadFields";
-import type { DeleteResponse, EnableResponse, ListParams, Paginable } from "../../types/shared";
+import type { BulkDeleteResponse, BulkEnableResponse, DeleteResponse, EnableResponse, ListParams, Paginable } from "../../types/shared";
 import { orderListByField } from "src/utils/lists";
 import axiosCRM from "src/lib/axios";
 
@@ -72,3 +72,14 @@ export const reorderLeadFields = async (data: LeadFieldsReorderBody): Promise<{ 
     const response = await axiosCRM.patch("lead_fields/reorder/bulk", data)
     return response.data
 }
+
+
+export const disableBulkLeadField = async (ids: number[]): Promise<BulkDeleteResponse> => {
+    const leadField = await axiosCRM.post(`/lead_fields/bulk-delete`, { ids });
+    return leadField.data;
+};
+
+export const enableBulkLeadField = async (ids: number[]): Promise<BulkEnableResponse> => {
+    const leadField = await axiosCRM.post(`/lead_fields/bulk-active`, { ids });
+    return leadField.data;
+};

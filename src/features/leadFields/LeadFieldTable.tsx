@@ -19,11 +19,16 @@ interface LeadFieldTableProps {
     handleSidebar: (mode: string, entity: LeadFieldDetailed) => void,
     setDeletingField: (field: LeadFieldDetailed) => void,
     isReordering: boolean,
-    palette: Palette
+    palette: Palette,
+    checkedItems: Map<number, LeadFieldDetailed>,
+    addItem: (item: LeadFieldDetailed | LeadFieldDetailed[]) => void,
+    removeItem: (item: LeadFieldDetailed | LeadFieldDetailed[]) => void
+
 }
 
 
-export const LeadFieldTable = memo(({ sectLeadFields, orderFieldsIds, setOrderFieldsIds, sectIdx, palette, isReordering = false, handleSidebar, setDeletingField }: LeadFieldTableProps) => {
+export const LeadFieldTable = memo(({ sectLeadFields, orderFieldsIds, setOrderFieldsIds, sectIdx, palette,
+    isReordering = false, handleSidebar, setDeletingField, checkedItems, addItem, removeItem }: LeadFieldTableProps) => {
 
     const handleFieldChange = (fields: number[]) => {
         setOrderFieldsIds(prev => {
@@ -39,7 +44,7 @@ export const LeadFieldTable = memo(({ sectLeadFields, orderFieldsIds, setOrderFi
         <Table size='small'>
             <TableHead>
                 <TableRow>
-                    <TableCell padding="checkbox">
+                    <TableCell>
                     </TableCell>
                     <TableCell>Nombre</TableCell>
                     <TableCell align="left">Tipo</TableCell>
@@ -63,7 +68,8 @@ export const LeadFieldTable = memo(({ sectLeadFields, orderFieldsIds, setOrderFi
                             } : {})}>
                             <TableCell padding="checkbox" onClick={stopPropagationEvent()}>
                                 {!isReordering ?
-                                    <Checkbox onClick={stopPropagationEvent()} /> :
+                                    <Checkbox onClick={stopPropagationEvent()} checked={checkedItems.has(rowData.id)}
+                                        onChange={(_, checked) => checked ? addItem(rowData) : removeItem(rowData)} /> :
                                     <CommonButton actionType="DRAG" draggable variant="contained" onlyTooltip color="primary"
                                         size="small" onClick={stopPropagationEvent()}
                                         onDragStart={() => handleDragStart(idx)} sx={{ cursor: "grab", px: 2, minWidth: 0 }} />

@@ -44,7 +44,7 @@ export interface LeadFieldPost {
   title_order?: number | null
 }
 
-export interface LeadField extends LeadFieldPost {
+export interface LeadField extends Omit<LeadFieldPost, "lead_field_section_id"> {
   id: number;
   name: string;
   configuration?: string;

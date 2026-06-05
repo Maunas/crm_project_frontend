@@ -3,22 +3,24 @@ import { useCallback, useMemo, useState } from "react"
 export const useSelectCheckbox = <T extends { id: number, active?: boolean }>() => {
     const [checkedItems, setCheckedItems] = useState<Map<number, T>>(new Map())
 
+    const checkedItemsArray = useMemo(() => Array.from(checkedItems.values()), [checkedItems])
+
     const addItem = useCallback((item: T | T[]) => {
         const addSingleItem = (item: T) => {
             if (checkedItems.has(item.id)) return
             setCheckedItems(prev => new Map(prev).set(item.id, item))
         }
-
         if (Array.isArray(item)) item.map(i => addSingleItem(i))
         else addSingleItem(item)
-
     }, [checkedItems])
 
-
-    const removeItem = useCallback((item: T) => {
+    const removeItem = useCallback((item: T | T[]) => {
         setCheckedItems(prev => {
             const newMap = new Map(prev)
-            newMap.delete(item.id)
+            if (Array.isArray(item)) {
+                item.forEach(i => newMap.delete(i.id))
+            }
+            else newMap.delete(item.id)
             return newMap
         })
     }, [])
@@ -28,20 +30,19 @@ export const useSelectCheckbox = <T extends { id: number, active?: boolean }>() 
     }, [])
 
     const areThereActiveItems = useMemo(() => {
-        const valuesArray = Array.from(checkedItems.values())
-        if (valuesArray.length > 0 && valuesArray[0].active !== undefined) return false
+        const valuesArray = checkedItemsArray
+        if (valuesArray.length > 0 && valuesArray[0].active === undefined) return false
         return valuesArray.some(checked => checked.active)
-    }
-        , [checkedItems])
+    }, [checkedItemsArray])
+
     const areThereInactiveItems = useMemo(() => {
-        const valuesArray = Array.from(checkedItems.values())
-        if (valuesArray.length > 0 && valuesArray[0].active !== undefined) return false
+        const valuesArray = checkedItemsArray
+        if (valuesArray.length > 0 && valuesArray[0].active === undefined) return false
         return valuesArray.some(checked => !checked.active)
-    }
-        , [checkedItems])
+    }, [checkedItemsArray])
 
     return ({
         checkedItems, addItem, removeItem, removeAllItems,
-        areThereActiveItems, areThereInactiveItems
+        checkedItemsArray, areThereActiveItems, areThereInactiveItems
     })
 }

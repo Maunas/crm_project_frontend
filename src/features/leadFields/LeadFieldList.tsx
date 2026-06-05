@@ -5,11 +5,11 @@ import CommonButton from "shared/ui/buttons/CommonButton"
 import { useModal } from "src/hooks/useModal"
 import type { LeadFieldDetailed } from "src/types/leadFields"
 import type { CampaignDetailed } from "src/types/campaigns"
-import { disableLeadField, enableLeadField, getLeadField, getLeadFields, reorderLeadFields } from "./leadFieldServices"
-import { Accordion, AccordionDetails, AccordionSummary, ButtonGroup, Checkbox, Paper, Stack, TableContainer, Typography, useTheme } from "@mui/material"
+import { disableBulkLeadField, disableLeadField, enableBulkLeadField, enableLeadField, getLeadField, getLeadFields, reorderLeadFields } from "./leadFieldServices"
+import { Accordion, AccordionDetails, AccordionSummary, Box, ButtonGroup, Checkbox, Paper, Stack, TableContainer, Typography, useTheme } from "@mui/material"
 import LoadingScreenWrapper from "src/components/feedback/LoadingScreen"
 import { GenericSidebar } from "src/components/layout/container/GenericContainer"
-import { DisableConfirmDialog } from "src/components/feedback/ConfirmationDialog"
+import { DisableBulkConfirmDialog, DisableConfirmDialog } from "src/components/feedback/ConfirmationDialog"
 import { useSearchParams } from "react-router-dom"
 import { useLoading } from "src/hooks/useLoading"
 import { useSidebar } from "src/hooks/useSidebar"
@@ -22,6 +22,7 @@ import { LeadFieldTable } from "./LeadFieldTable"
 import { useDragAndDrop } from "src/hooks/useDragAndDrop"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import { stopPropagationEvent } from "src/utils/lists"
+import { useSelectCheckbox } from "src/hooks/useSelectCheckbox"
 
 interface LeadFieldTableProps {
     campaign: CampaignDetailed,
@@ -173,6 +174,42 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
         setIsReordering(false)
     }
 
+    const { checkedItems, checkedItemsArray, addItem, removeItem, removeAllItems, areThereActiveItems, areThereInactiveItems } = useSelectCheckbox<LeadFieldDetailed>()
+
+    const getSectionCheckedItems = useCallback((sectionId: number) => {
+        return checkedItemsArray.filter(items => items.lead_field_section.id === sectionId)
+    }, [checkedItemsArray])
+
+    const [bulkDisabling, setBulkDisabling] = useState<"disable" | "enable" | null>(null)
+
+    const handleActiveBulk = useCallback((isDisabling: boolean) => {
+        if (isDisabling) {
+            return disableBulkLeadField(checkedItemsArray.map(i => i.id))
+                .then(res => {
+                    removeAllItems()
+                    const [disLength, delLength, failLength] = [res.disabled.length, res.deleted.length, res.failed.length]
+                    if (delLength + disLength > 0) fetchFieldsLoad(campaign.id)
+                    showToast(`
+                        ${disLength > 0 ? `Se han deshabilitado ${disLength} lead${disLength > 1 ? "s" : ""}. ` : ""}
+                        ${delLength > 0 ? `Se han eliminado definitivamente ${delLength} lead${delLength > 1 ? "s" : ""}. ` : ""}
+                        ${failLength > 0 ? `No se ha podido deshabilitar ${failLength} lead${failLength > 1 ? "s" : ""}.` : ""}
+                        `)
+                })
+                .catch(e => showCommonErrorToast(e))
+        }
+        return enableBulkLeadField(checkedItemsArray.map(i => i.id))
+            .then(res => {
+                removeAllItems()
+                const [enLength, failLength] = [res.activated.length, res.failed.length]
+                if (enLength > 0) fetchFieldsLoad(campaign.id)
+                showToast(`
+                        ${enLength > 0 ? `Se han habilitado ${enLength} lead${enLength > 1 ? "s" : ""}. ` : ""}
+                        ${failLength > 0 ? `No se ha podido habilitar ${failLength} lead${failLength > 1 ? "s" : ""}.` : ""}
+                        `)
+            })
+            .catch(e => showCommonErrorToast(e))
+    }, [campaign.id, checkedItemsArray, fetchFieldsLoad, removeAllItems])
+
     return (
         <Stack spacing={3}>
             <Stack useFlexGap direction="row" spacing={2}
@@ -186,9 +223,18 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
                                 <SimulateLeadFormModal campaign={campaign} leadFields={leadFields} onCancel={modalProps.handleClose} />
                             }
                         </GenericModal>}
+                        {!isReordering && checkedItemsArray.length > 0 && areThereInactiveItems &&
+                            <CommonButton onClick={() => setBulkDisabling("enable")} actionType="ENABLE" color="success" variant="outlined" onlyTooltip>
+                                Habilitar Seleccionados
+                            </CommonButton>}
+                        {!isReordering && checkedItemsArray.length > 0 && areThereActiveItems &&
+                            <CommonButton onClick={() => setBulkDisabling("disable")} actionType="DISABLE" color="error" variant="outlined" onlyTooltip>
+                                Deshabilitar Seleccionados
+                            </CommonButton>}
                         {!isReordering && <CommonButton onClick={() => handleSidebar("CREATE_FIELD", null)} actionType="CREATE" onlyTooltip>
                             Agregar
                         </CommonButton>}
+
                         {isReordering && <CommonButton onClick={cancelReorder}
                             color="error" variant="outlined" actionType="CLOSE" onlyTooltip>
                             Cancelar
@@ -203,14 +249,15 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
             </Stack>
             <LoadingScreenWrapper loading={fieldsLoading}>
                 {newFieldsBySectionIds.length > 0 ?
-                    <Stack spacing={2}>
+                    <Box>
                         {newFieldsBySectionIds.map((section, idx) => {
                             const sectFields = showAll ? section.fields : section.fields.slice(0, MIN_FIELDS)
                             const leadFieldsData = fieldsBySection.find(fbs => fbs.id === section.sectId)
-
+                            const sectionCheckedItems = getSectionCheckedItems(section.sectId)
+                            const sectionCheckedItemsLength = sectionCheckedItems.length
                             if (!leadFieldsData) return
                             return (
-                                <Accordion expanded={openTableId === section.sectId} elevation={2} disableGutters
+                                <Accordion expanded={openTableId === section.sectId} elevation={2} key={`${section.sectId}-acc`}
                                     onChange={(_, expanded) => expanded ? setOpenTableId(section.sectId) : setOpenTableId(null)}
                                     sx={isReordering ? dragStyles(idx, palette, "column", true) : {}}
                                     {...(isReordering ? {
@@ -218,29 +265,32 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
                                         onDragOver: handleDragOver,
                                         onDrop: () => handleDrop(idx)
                                     } : {})}>
-                                    <AccordionSummary
-                                        expandIcon={<ExpandMoreIcon />}
-                                        aria-controls={`${section.sectId}-content`}
-                                        id={`${section.sectId}-header`}
-                                    >
+                                    <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls={`${section.sectId}-content`} id={`${section.sectId}-header`}>
                                         <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
                                             {!isReordering ?
-                                                <Checkbox onClick={stopPropagationEvent()} /> :
+                                                <Checkbox
+                                                    checked={section.fields.length === sectionCheckedItemsLength}
+                                                    indeterminate={sectionCheckedItemsLength > 0 && section.fields.length !== sectionCheckedItemsLength}
+                                                    onClick={stopPropagationEvent()}
+                                                    onChange={(_, checked) => checked ? addItem(leadFieldsData.fields) : removeItem(leadFieldsData.fields)} /> :
                                                 <CommonButton actionType="DRAG" draggable variant="contained" onlyTooltip color="primary"
                                                     onClick={stopPropagationEvent()}
                                                     onDragStart={() => handleDragStart(idx)} sx={{ cursor: "grab", px: 1.5, minWidth: 0 }} />
                                             }
                                             <Typography variant="h3" sx={{ py: .5, flexGrow: 1 }}>{section.sectName}</Typography>
-                                            <Typography variant="body1" sx={{ fontStyle: "italic", py: .5, flexGrow: 1 }}>- 0 items seleccionados</Typography>
-
+                                            {sectionCheckedItemsLength > 0 &&
+                                                <Typography variant="body1" sx={{ fontStyle: "italic", py: .5, flexGrow: 1 }}>
+                                                    {`- ${sectionCheckedItemsLength === 1 ? "1 item seleccionado" : `${sectionCheckedItemsLength} items seleccionados`} `}
+                                                </Typography>
+                                            }
                                         </Stack>
-
                                     </AccordionSummary>
                                     <AccordionDetails>
                                         <TableContainer component={Paper} elevation={4} key={`section-${section.sectId}`}>
                                             <LeadFieldTable sectLeadFields={leadFieldsData.fields} orderFieldsIds={sectFields}
                                                 setOrderFieldsIds={setNewFieldsBySectionIds} sectIdx={idx} palette={palette} isReordering={isReordering}
-                                                handleSidebar={handleSidebarWrapper} setDeletingField={handleDeletingField} />
+                                                handleSidebar={handleSidebarWrapper} setDeletingField={handleDeletingField} checkedItems={checkedItems}
+                                                addItem={addItem} removeItem={removeItem} />
                                             {sectFields.length > MIN_FIELDS &&
                                                 <CommonButton actionType={showAll ? "MINUS" : "CREATE"} onClick={() => setShowAll(!showAll)} fullWidth>
                                                     {showAll ? "Mostrar Menos" : "Mostrar Todos"}
@@ -248,11 +298,10 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
                                         </TableContainer>
                                     </AccordionDetails>
                                 </Accordion>
-
                             )
                         })
                         }
-                    </Stack>
+                    </Box>
                     :
                     <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
                         <Typography variant="h4">No se han encontrado campos para esta campaña...</Typography>
@@ -266,6 +315,9 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
             } />
             <DisableConfirmDialog entity={deletingField} clearEntity={() => setDeletingField(null)} idModal='dis-field-det'
                 onConfirm={() => handleActive(deletingField)} entityTypeName="el campo" />
+            <DisableBulkConfirmDialog idModal="dis-field-bulk" isDisabling={bulkDisabling === "disable"} open={Boolean(bulkDisabling)}
+                onClose={() => setBulkDisabling(null)}
+                onConfirm={() => handleActiveBulk(bulkDisabling === "disable")} entityTypeName="los campos seleccionados" />
         </Stack >
     )
 })

@@ -104,6 +104,11 @@ export interface BulkDeleteResponse {
   disabled: number[],
   failed: number[],
 }
+export interface BulkEnableResponse {
+  activated: number[],
+  already_active: number[],
+  failed: number[],
+}
 
 export interface EnableResponse {
   actived: boolean
