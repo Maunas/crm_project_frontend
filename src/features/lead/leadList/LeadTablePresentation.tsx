@@ -158,7 +158,7 @@ export const LeadTableBodyRow = memo(({ lead, selectedColumns, modalProps }: Lea
             const leadValue = fieldValueByFieldId.get(column.id)
             return (
                 <TableCell component="td" scope="row" align="left" key={`${lead.id}-${column.id}`}>
-                    <LeadListCellValue leadId={lead.id} fieldValue={leadValue} {...modalProps} shortLeadTitle
+                    <LeadListCellValue leadId={lead.id} fieldValue={leadValue} {...modalProps}
                         type={column.field_type_code} subtype={column.field_subtype_code} />
                 </TableCell>
             )

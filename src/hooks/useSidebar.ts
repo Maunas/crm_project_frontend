@@ -27,7 +27,6 @@ const deleteParam = (setParam: SetURLSearchParams) => {
 export const useSidebar = <T>(entityIdField: keyof T, params?: URLSearchParams, setParams?: SetURLSearchParams,
     callback?: (id: number) => Promise<T>, detailsModeName?: string
 ) => {
-
     //setParams, al ser recibido como prop, es inestable y causa re-renders innecesarios.
     //Al convertirlo a un ref, se mantiene estable
     const setParamsRef = useRef(setParams)
@@ -46,7 +45,7 @@ export const useSidebar = <T>(entityIdField: keyof T, params?: URLSearchParams, 
     const [sidebarMode, setSidebarMode] = useState<string | null>(null)
     const [selectedEntity, setSelectedEntity] = useState<T | null>(null)
 
-    const handleSidebar = useCallback((mode: string, entity: T | null) => {
+    const handleSidebar = useCallback((mode: string, entity: T | null = null) => {
         updateParams(mode === "KEEP" ? sidebarMode : mode, entity)
         setSelectedEntity(entity)
         if (mode !== "KEEP") setSidebarMode(mode)

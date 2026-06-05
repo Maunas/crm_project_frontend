@@ -19,16 +19,16 @@ import EditIcon from "@mui/icons-material/Edit"
 
 interface UpdateCampaignSidebarProps {
     existingCmp: CampaignDetailed,
-    updateEntityOnList: (entity: CampaignDetailed) => void,
+    updateCampaignData: (entity: CampaignDetailed) => void,
     closeSidebar: () => void,
 }
 //Wrapper de CampaignForm para modificar desde un Sidebar
-export const UpdateCampaignFormSidebar = ({ existingCmp, updateEntityOnList, closeSidebar }: UpdateCampaignSidebarProps) => {
+export const UpdateCampaignFormSidebar = ({ existingCmp, updateCampaignData, closeSidebar }: UpdateCampaignSidebarProps) => {
 
     const submit = (data: CampaignPost) => {
         return updateCampaign(data, existingCmp.id)
             .then(res => {
-                updateEntityOnList(res)
+                updateCampaignData(res)
                 closeSidebar()
                 showToast(`Campaña "${res.name}" actualizada con éxito`)
             })

@@ -2,6 +2,8 @@ import type { Campaign } from "./campaigns";
 import type { Metadata } from "./shared";
 import type { Lead } from "./leads";
 import type { Nomenclator, NomenclatorItem } from "./nomenclators";
+import type { FieldArrayWithId } from "react-hook-form";
+import type { LeadPostForm } from "src/features/lead/leadForm/LeadForm";
 
 export interface LeadFieldValue {
   id: number;
@@ -42,7 +44,7 @@ export interface LeadFieldPost {
   title_order?: number | null
 }
 
-export interface LeadField extends LeadFieldPost {
+export interface LeadField extends Omit<LeadFieldPost, "lead_field_section_id"> {
   id: number;
   name: string;
   configuration?: string;
@@ -122,3 +124,18 @@ export interface LeadFieldSection extends LeadFieldSectionPost {
 }
 
 export interface LeadFieldSectionDetailed extends LeadFieldSection, Metadata { }
+
+
+export interface LeadFieldsReorderBody {
+  campaign_id: number,
+  orders: {
+    field_id: number,
+    order: number,
+  }[]
+}
+
+export interface LeadFieldsBySection<T = LeadFieldValueDetailed | LeadFieldDetailed | FieldArrayWithId<LeadPostForm, "values", "id">> {
+  id: number,
+  name: string,
+  fields: T[]
+}

@@ -52,9 +52,9 @@ export const useDragAndDrop = <T,>(itemsList: T[], setter: (items: T[]) => void,
         }
     }, [customDragEnter])
 
-    const dragStyles = useCallback((idx: number, palette: Palette, direction: "column" | "row" = "column") => {
+    const dragStyles = useCallback((idx: number, palette: Palette, direction: "column" | "row" = "column", noCursor: boolean = false) => {
         let styles: object = {
-            cursor: dragIndex !== null ? "grabbing" : "grab",
+            cursor: noCursor ? undefined : (dragIndex !== null ? "grabbing" : "grab"),
             backgroundColor: dragIndex === idx ? `${alpha(palette.background.default, .5)}` : "",
             border: dragIndex === idx ? `1px solid ${alpha(palette.contrast.light, .5)}` : "",
         }

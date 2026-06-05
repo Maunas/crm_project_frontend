@@ -7,14 +7,10 @@ import { CustomListItem } from "shared/ui/lists/CustomListItem"
 import type { LeadFieldValueDetailed } from "src/types/leadFields"
 import type { LeadDetailed } from "src/types/leads"
 import { useModal } from "src/hooks/useModal"
-import { getTypeOrSpecialTemplates } from "features/leadFields/leadFieldUtils"
+import { getFieldsBySections, getTypeOrSpecialTemplates } from "features/leadFields/leadFieldUtils"
 import { Accordion, AccordionDetails, AccordionSummary, Divider, Typography, Stack, List, ListItemText, Box } from "@mui/material"
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
-interface LeadDetailsSection {
-    name: string,
-    fields: LeadFieldValueDetailed[]
-}
 
 interface LeadFieldSectionsProps {
     lead: LeadDetailed,
@@ -32,25 +28,16 @@ export const LeadFieldSections = ({ lead, updateLeadInfo }: LeadFieldSectionsPro
     //Filtra leads para obtener los habilitados y con valor, ordenados por order
     const fieldValues = useMemo(() => {
         if (!lead?.field_values) return []
-        return lead.field_values.filter(i => (i.field.active && i.active &&
-            ((i.value && i.value !== "") || i.nomenclator_items?.length > 0 || i.related_leads?.length > 0)))
+        return lead.field_values
+            .filter(i => (i.field.active && i.active &&
+                ((i.value && i.value !== "") || i.nomenclator_items?.length > 0 || i.related_leads?.length > 0)))
             .sort((a, b) => a.field.order - b.field.order)
     }, [lead])
 
-    //Separa los fieldValues por sección
-    const leadSections: LeadDetailsSection[] = useMemo(() => {
-        const sections = new Map<number, LeadDetailsSection>()
-        fieldValues.forEach(fieldValue => {
-            const section = fieldValue?.field?.lead_field_section
-            if (!section) return
-            if (sections.has(section.id)) {
-                sections.get(section.id)!.fields.push(fieldValue)
-            } else {
-                sections.set(section.id, { name: section.name, fields: [fieldValue] })
-            }
-        })
-        return Array.from(sections.values())
+    const fieldValuesBySection = useMemo(() => {
+        return getFieldsBySections(fieldValues)
     }, [fieldValues])
+
 
     const [expanded, setExpanded] = useState<number | null>(0)
 
@@ -63,7 +50,7 @@ export const LeadFieldSections = ({ lead, updateLeadInfo }: LeadFieldSectionsPro
 
     return (
         <Box>
-            {leadSections.map((section, idx) =>
+            {fieldValuesBySection.map((section, idx) =>
                 <Accordion expanded={expanded === idx} onChange={onExpand(idx)} key={`section-${idx}`}>
                     <AccordionSummary expandIcon={<ArrowDropDownIcon />}
                         aria-controls={`panel${idx + 1}-content`} id={`panel${idx + 1}-header`}>
@@ -146,7 +133,7 @@ export const LeadFieldContent = (props: LeadFieldProps) => {
             //Tipos de Field
             case "STRING": return <StringValue value={`${value}`} idModal={`${fieldValue?.field_id}-${fieldValue?.id}`}
                 modalProps={modalProps} subtype={subtypeCode ?? undefined} />
-            case "NUMBER": return <NumberValue value={typeof value === "string" ? parseInt(value) : undefined}
+            case "NUMBER": return <NumberValue value={typeof value === "string" ? Number(value) : undefined}
                 subtype={subtypeCode!} ratingCounter />
 
             case "BOOL": return <BoolValue value={`${value}`} />

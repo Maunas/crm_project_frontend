@@ -13,7 +13,7 @@ interface GenericConfirmDialogProps extends Omit<DialogProps, "open"> {
     handleClose: () => void
     open?: boolean,
     onCancel?: () => void,
-    onConfirm: () => Promise<void>,
+    onConfirm: () => Promise<unknown>,
     confirmTimeoutSec?: number,
     noTimeout?: boolean,
     confirmText?: string,
@@ -166,7 +166,7 @@ interface DisableBulkConfirmDialog extends Omit<DialogProps, "open"> {
     idModal: string,
     isDisabling: boolean,
     onCancel?: () => void,
-    onConfirm: () => Promise<void>,
+    onConfirm: () => Promise<unknown>,
     entityTypeName?: string,
     onlyDelete?: boolean,
 }
@@ -176,6 +176,8 @@ interface DisableBulkConfirmDialog extends Omit<DialogProps, "open"> {
  * @param onConfirm Función a ejecutar al confirmar la acción. Se aplica por defecto tras un timeout, y cierra el modal.
  * @param entityTypeName tipo de entidad, con su artículo. Ej: "las campañas seleccionadas"
  * @param onlyDelete flag, modifica el contenido para solo mencionar la eliminación.
+ * @param isDisabling flag, modifica el contenido si está deshabilitando o habilitando.
+ * 
  * 
  * @example <DisableBulkConfirmDialog idModal='conf-id' open={open} 
  * onClose={() => setOpen(false)} entityTypeName="las campañas seleccionadas" 

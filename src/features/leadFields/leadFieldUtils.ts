@@ -1,4 +1,6 @@
-import type { LeadFieldPost } from "src/types/leadFields";
+import type { FieldArrayWithId } from "react-hook-form";
+import type { LeadField, LeadFieldDetailed, LeadFieldPost, LeadFieldsBySection, LeadFieldValue } from "src/types/leadFields";
+import type { LeadPostForm } from "../lead/leadForm/LeadForm";
 
 /**
  * Organiza los datos de LeadField, para evitar enviar campos incompatibles con el método de creación (template/manual)
@@ -60,3 +62,56 @@ const SPECIAL_TEMPLATES = ["INSTAGRAM_USER", "POSTAL_CODE", "CREDIT_CARD_SIMPLE"
 export const getTypeOrSpecialTemplates = (typeCode: string, templateCode?: string | null) => {
     return (templateCode && SPECIAL_TEMPLATES.includes(templateCode)) ? templateCode : typeCode
 }
+
+//Separa los fieldValues por sección
+export const getFieldsBySections = <T extends LeadFieldValue | LeadField>(fields: T[]) => {
+    const sections = new Map<number, LeadFieldsBySection<T>>()
+    fields.forEach(field => {
+        const section = "field" in field ? field.field?.lead_field_section : field?.lead_field_section
+        if (!section) return []
+        if (sections.has(section.id)) {
+            sections.get(section.id)!.fields.push(field)
+        } else {
+            sections.set(section.id, { id: section.id, name: section.name, fields: [field] })
+        }
+    })
+    return Array.from(sections.values())
+}
+
+//Ordena los fieldValues por sección
+export const orderFieldsBySections = <T extends LeadFieldValue | LeadField>(fields: T[]) => {
+    return getFieldsBySections(fields).flatMap(section => section.fields)
+}
+
+
+//Separa los fields de LeadForm por sección, agregando un globalIdx para el formulario (UseFieldArray)
+export const getLeadFormFieldsBySections = (fields: FieldArrayWithId<LeadPostForm, "values", "id">[]) => {
+    const sections = new Map<number, LeadFieldsBySection<FieldArrayWithId<LeadPostForm, "values", "id">>>()
+    fields.forEach(field => {
+        const section = field.fieldData.lead_field_section
+        if (!section) return []
+        if (sections.has(section.id)) {
+            sections.get(section.id)!.fields.push(field)
+        } else {
+            sections.set(section.id, { id: section.id, name: section.name, fields: [field] })
+        }
+    })
+    const sectionsList = Array.from(sections.values())
+    let globalIdx = 0
+    const finalList = sectionsList.map(section => {
+        return {
+            ...section, fields: section.fields.map(field => {
+                return { field, globalIdx: globalIdx++ }
+            })
+        }
+    })
+    return finalList
+}
+
+//Separa los fieldValues por sección, devolviendo únicamente sus ids.
+export const getLeadFieldsBySectionsIds = (fieldsBySections: LeadFieldsBySection<LeadFieldDetailed>[]) => {
+    if (fieldsBySections.length === 0) return []
+    return fieldsBySections.map(section => {
+        return { sectId: section.id, sectName: section.name, fields: section.fields.map(field => field.id) }
+    })
+} 
