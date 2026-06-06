@@ -1,29 +1,40 @@
 import type { LeadPostForm } from "./leadForm/LeadForm"
 import type { ErrorBody, ErrorMessage } from "src/types/shared"
 import type { Lead, LeadDetailed, LeadPostValue } from "src/types/leads"
-import type { LeadField } from "src/types/leadFields"
+import type { LeadField, LeadFieldValue } from "src/types/leadFields"
 import { setFormErrors } from "src/utils/forms"
 import type { FieldArrayWithId, UseFormSetError } from "react-hook-form"
 import { OPERATORS as OP } from "src/mocks/operators"
+
+
+const NOT_TITLE_TYPES = ["LEAD", "FILE", "BOOL", "HTML", "MARKDOWN",
+    "SELECTOR_MULTIPLE", "CHECKBOX_MULTIPLE",
+    "PASSWORD", "CREDIT_CARD_SIMPLE"]
+
+/**Revisa que el valor no sea parte de los tipos bloqueados, y que tenga un valor o nomenclador.*/
+const isTitleValid = (fieldValue: LeadFieldValue) => {
+    return !(
+        NOT_TITLE_TYPES.includes(fieldValue.field.field_type_code) ||
+        NOT_TITLE_TYPES.includes(fieldValue.field.field_subtype_code ?? "") ||
+        NOT_TITLE_TYPES.includes(fieldValue.field.field_template_code ?? "")
+    ) && (fieldValue.value || fieldValue.nomenclator_items.length !== 0)
+}
 
 /** 
  * Obtener un arreglo con los campos de lead indicados como título, en orden.
  * @params short: Muestra solo el elemento con title_order = 1
  */
 export const getLeadTitleArray = (lead: Lead | LeadDetailed, short: boolean = false) => {
-    if (short) {
-        const firstValue = lead.field_values.find(fv => fv.field.title_order === 1)?.value
-        return firstValue ? [firstValue] : ["Sin título"]
-    }
-    else {
-        const titleArray = lead.field_values
-            .filter(fv => fv.field.title_order != null && fv.value)
-            .sort((a, b) => a.field.title_order - b.field.title_order)
-            .map(fv => fv.value!)
-        return titleArray.length > 0 ? titleArray : ["Sin título"]
-    }
-}
 
+    const titleArray = lead.field_values
+        .filter(fv => fv.field.title_order != null && isTitleValid(fv))
+        .sort((a, b) => a.field.title_order - b.field.title_order)
+        .map(fv => fv.value ?? fv.nomenclator_items[0].value!) //Si es selector, será único gracias a isTitleValid
+
+    if (titleArray.length === 0) return ["Sin título"]
+
+    return short ? [titleArray[0]] : titleArray
+}
 
 /********************************************  FormData  ***********************************************/
 

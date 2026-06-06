@@ -114,4 +114,4 @@ export const getLeadFieldsBySectionsIds = (fieldsBySections: LeadFieldsBySection
     return fieldsBySections.map(section => {
         return { sectId: section.id, sectName: section.name, fields: section.fields.map(field => field.id) }
     })
-} 
+}

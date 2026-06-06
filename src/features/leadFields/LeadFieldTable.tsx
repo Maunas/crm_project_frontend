@@ -1,4 +1,4 @@
-import { memo } from "react"
+import { memo, useMemo } from "react"
 import { CommonIconButton } from "shared/ui/buttons/CommonIconButton"
 import { SelectableTableRow } from "shared/ui/lists/CustomTableRow"
 import { EnabledIcon } from "shared/ui/lists/Icons"
@@ -40,6 +40,11 @@ export const LeadFieldTable = memo(({ sectLeadFields, orderFieldsIds, setOrderFi
 
     const { handleDragEnter, handleDragOver, handleDragStart, handleDrop, dragStyles } = useDragAndDrop(orderFieldsIds, handleFieldChange)
 
+    //Precalcula el estilo para evitar rerenderizados
+    const dragStyleList = useMemo(() => {
+        return orderFieldsIds.map((_, idx) => dragStyles(idx, palette, "column", true))
+    }, [dragStyles, orderFieldsIds, palette])
+
     return (
         <Table size='small'>
             <TableHead>
@@ -60,7 +65,7 @@ export const LeadFieldTable = memo(({ sectLeadFields, orderFieldsIds, setOrderFi
                         const rowData = sectLeadFields.find(field => field.id === rowId)
                         if (!rowData) return
                         return <SelectableTableRow key={rowData.id} onClick={() => !isReordering ? handleSidebar("DETAILS_FIELD", rowData) : {}}
-                            sx={isReordering ? dragStyles(idx, palette, "column", true) : {}}
+                            sx={isReordering ? dragStyleList[idx] : {}}
                             {...(isReordering ? {
                                 onDragEnter: () => handleDragEnter(idx),
                                 onDragOver: handleDragOver,
