@@ -148,7 +148,7 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
                             return <Stack spacing={1} key={`section-lead-${section.id}`}>
                                 <Typography variant="h3">{section.name}</Typography>
                                 <Divider />
-                                <Grid container spacing={.5}>
+                                <Grid container sx={{ gap: ".25rem .5rem " }}>
                                     {section.fields.map(sectField =>
                                         <Grid size="grow" sx={{ alignItems: "center", minWidth: "20rem" }} key={sectField.field.id}>
                                             <LeadFormFieldType register={register} control={control} name={`values.${sectField.globalIdx}.value`}
@@ -198,23 +198,23 @@ const LeadFormFieldType = ({ register, control, name, leadField, relatedLeads, s
     switch (typeCode) {
         case "LEAD":
             return (<LeadFormRelatedLead control={control} name={name} options={relatedLeads}
-                label={label} required={required} errorMessage={errorMessage} />)
+                label={label} required={required} errorMessage={errorMessage} showAdornment />)
         case "FILE":
             return (<LeadFormFile register={register} name={name} required={required}
-                errorMessage={errorMessage} />)
+                errorMessage={errorMessage} showAdornment />)
         case "SELECTOR":
             return (<LeadFormSelector control={control} name={name} options={selectors}
-                label={label} subtype={subtypeCode} required={required} errorMessage={errorMessage} />)
+                label={label} subtype={subtypeCode} required={required} errorMessage={errorMessage} showAdornment />)
         case "BOOL":
             return (<LeadFormBool control={control} name={name} label={label} errorMessage={errorMessage} />)
         case "DATE_TIME": case "DATE":
             return (<LeadFormDate register={register} name={name} label={label}
-                subtype={subtypeCode} required={leadField.required} errorMessage={errorMessage} />)
+                subtype={subtypeCode} required={leadField.required} errorMessage={errorMessage} showAdornment />)
         case "NUMBER": case "INT":
             return (<LeadFormNumber control={control} name={name} label={label}
-                subtype={subtypeCode} required={leadField.required} errorMessage={errorMessage} />)
+                subtype={subtypeCode} required={leadField.required} errorMessage={errorMessage} showAdornment />)
         case "STRING":
             return <LeadFormText register={register} name={name} label={label} subtype={subtypeCode}
-                required={leadField.required} errorMessage={errorMessage} />
+                required={leadField.required} errorMessage={errorMessage} showAdornment />
     }
 }

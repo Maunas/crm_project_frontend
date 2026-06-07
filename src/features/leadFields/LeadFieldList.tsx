@@ -84,7 +84,7 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
                 })
             }
             case "CREATE_FIELD": {
-                return fetchFieldsLoad()
+                return fetchFieldsLoad(campaign.id)
             }
             case "DELETE_FIELD": {
                 return setLeadFields(prevList => {
@@ -98,7 +98,7 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
                 })
             }
         }
-    }, [closeSidebar, selectedEntity, fetchFieldsLoad, handleSidebar])
+    }, [closeSidebar, selectedEntity, fetchFieldsLoad, handleSidebar, campaign.id])
 
     const handleActive = async (field: LeadFieldDetailed | null) => {
         if (!field || !field.id) return

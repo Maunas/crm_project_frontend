@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react"
 import { LeadPartialUpdate } from "./LeadPartialUpdate"
 import { BoolValue, DateValue, ListValues, ModalValue, NumberValue, StringValue } from "../shared/LeadValueComponents"
-import { LeadFieldTypeIcon } from "features/leadFields/LeadFieldTypeIcon"
+import { LeadFieldTypeAvatar } from "features/leadFields/LeadFieldTypeIcon"
 import { CommonIconButton } from "shared/ui/buttons/CommonIconButton"
 import { CustomListItem } from "shared/ui/lists/CustomListItem"
 import type { LeadFieldValueDetailed } from "src/types/leadFields"
@@ -162,7 +162,7 @@ export const LeadFieldContent = (props: LeadFieldProps) => {
                     size="small" tooltipSize="small" color="primary"
                     disabled={typeCode === "CALCULATED" || !fieldValue?.field.is_visible} />
             } >
-            <LeadFieldTypeIcon typeCode={typeWithTemplates} subtypeCode={subtypeCode} />
+            <LeadFieldTypeAvatar typeCode={typeWithTemplates} subtypeCode={subtypeCode} />
             <ListItemText sx={{ mr: 6 }}>
                 <Stack>
                     <Typography variant="subtitle2" color="textSecondary">{fieldName}</Typography>
