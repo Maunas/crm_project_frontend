@@ -1,5 +1,5 @@
-import type { Paginable } from "../../types/shared"
-import type { UserData, UserLogin, UserSignup } from "../../types/users"
+import type { Paginable } from "src/types/shared"
+import type { UserData, UserLogin, UserSignup } from "src/types/users"
 import axiosCRM from "src/lib/axios"
 
 export const getUsers = async ():
@@ -8,7 +8,7 @@ export const getUsers = async ():
     return org.data
 }
 export const loginUser = async (data: UserLogin): Promise<UserData> => {
-    console.log(data)
+    console.info(data)
     const users = await getUsers()
     return users.items[0]
     //if (data.password !== "PASSWORD") throw new Error("Contraseña incorrecta.")

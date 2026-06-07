@@ -1,19 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
-import { ControlledCheckbox, ControlledTextInput } from "shared/ui/forms/CustomInputs";
 import { ControlledAutocomplete, ControlledRadio } from "shared/ui/forms/CustomMultipleInputs";
+import { ControlledCheckbox, ControlledTextInput } from "shared/ui/forms/CustomInputs";
 import { FormErrorMessage } from "shared/ui/forms/FormFeedback";
 import CommonButton from "shared/ui/buttons/CommonButton";
-import { createLeadField, getFieldSections, getFieldTemplates, getFieldTypes, getInputMaskTemplates, updateLeadField } from "./leadFieldServices";
-import { getNomenclators } from "../nomenclators/nomenclatorService";
-import { getCampaigns } from "../campaigns/campaignServices";
-import { setFormErrors } from "src/utils/forms";
-import { getFieldDataByType } from "./leadFieldUtils";
+import { useLoading } from "src/hooks/useLoading";
 import type { InputMaskTemplate, LeadFieldDetailed, LeadFieldPost, LeadFieldSection, LeadFieldTemplate, LeadFieldTypeDetailed } from "src/types/leadFields";
 import type { Campaign, CampaignDetailed } from "src/types/campaigns";
 import type { Nomenclator } from "src/types/nomenclators";
+import { createLeadField, getFieldSections, getFieldTemplates, getFieldTypes, getInputMaskTemplates, updateLeadField } from "./leadFieldServices";
+import { getNomenclators } from "../nomenclators/nomenclatorService";
+import { getCampaigns } from "../campaigns/campaignServices";
+import { getFieldDataByType } from "./leadFieldUtils";
+import { setFormErrors } from "src/utils/forms";
+import { showToast } from "src/utils/feedback";
 import { useForm, useWatch, type Control, type FieldErrors, type UseFormRegister } from "react-hook-form";
 import { Grid, FormGroup, Typography, ButtonGroup, Stack } from "@mui/material";
-
 
 interface LeadFieldSidebarProps {
   existingLF?: LeadFieldDetailed,
@@ -35,11 +36,15 @@ export const LeadFieldFormSidebar = ({ existingLF, campaign, updateEntityOnList,
     }
     if (!existingLF) {
       return createLeadField(data).then(res => {
-        if (reset) updateEntityOnList(res) //No cierra el sidebar
+        showToast(`El campo "${res.name}" se ha creado con éxito`)
+        if (reset) updateEntityOnList(res)
         else updateInfo(res)
       })
     } else {
-      return updateLeadField(data, existingLF.id).then(updateInfo)
+      return updateLeadField(data, existingLF.id).then(res => {
+        showToast(`El campo "${res.name}" se ha actuializado con éxito`)
+        updateInfo(res)
+      })
     }
   }
   return <LeadFieldForm existingLF={existingLF} campaign={campaign} submit={submit} onCancel={closeSidebar} />
@@ -97,7 +102,7 @@ export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFi
       is_primary: existingLF?.is_primary ?? false,
       is_visible: existingLF?.is_visible ?? true,
       field_template_code: "FIRST_NAME",
-      creation_method: existingLF ? "manual" : "template",
+      creation_method: "manual",
       input_mask_method: existingLF ? "template" : "manual"
     })
     , [existingLF, campaign])
@@ -120,16 +125,17 @@ export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFi
       });
   }
 
+  const { loading, fnWithLoading: saveFieldLoad } = useLoading(onSaveLeadField)
+
   const onSubmitAndReset = async (data: LeadFieldPostCreation) => {
-    return onSaveLeadField(data, true)
+    return saveFieldLoad(data, true)
       .then(() => {
         reset(defaultValues);
       })
   };
 
-
   return (
-    <form onSubmit={handleSubmit((data) => onSaveLeadField(data))}>
+    <form onSubmit={handleSubmit(data => saveFieldLoad(data, false))}>
       <Stack spacing={3}>
         {!existingLF ? (
           <Typography variant="h1">
@@ -148,16 +154,16 @@ export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFi
           />
 
           <Stack spacing={.5}>
-            <ButtonGroup fullWidth>
-              <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel}>
+            <ButtonGroup fullWidth={!existingLF} sx={{ alignSelf: "end" }}>
+              <CommonButton actionType="CLOSE" variant="text" onClick={onCancel} disabled={loading} color="error">
                 Cancelar
               </CommonButton>
-              <CommonButton actionType={existingLF ? "MODIFY" : "CREATE"} variant="contained" type="submit">
+              <CommonButton actionType={existingLF ? "MODIFY" : "CREATE"} variant="contained" type="submit" loading={loading}>
                 Guardar
               </CommonButton>
             </ButtonGroup>
             {!existingLF && (
-              <CommonButton actionType="CREATE" variant="contained" onClick={handleSubmit(onSubmitAndReset)} >
+              <CommonButton actionType="CREATE" variant="contained" onClick={handleSubmit(onSubmitAndReset)} loading={loading} >
                 Guardar y crear otro
               </CommonButton>
             )}
@@ -205,13 +211,13 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
         type="hidden"
         {...register("campaign_id", { value: campaignId })}
       />
-      <Grid size={12} container sx={{ minWidth: "20rem" }}>
+      <Grid size={12} spacing={.5} container sx={{ minWidth: "20rem" }}>
         <Grid size="grow" sx={{ minWidth: "20rem" }}>
           <ControlledTextInput
             control={control}
             label="Nombre del Campo"
             name="name"
-            required
+            required={creationMethod === "manual"}
             errorMessage={errors?.name?.message}
           />
         </Grid>
@@ -229,7 +235,7 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
           />
         </Grid>
         <Grid size="grow" sx={{ minWidth: "20rem", justifyContent: "center" }} >
-          <FormGroup row>
+          <FormGroup row sx={{ my: .5, mx: 1 }}>
             <ControlledCheckbox
               control={control}
               name="required"
@@ -252,9 +258,9 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
         </Grid>
       </Grid>
 
-      <Grid size={12} container sx={{ minWidth: "20rem" }}>
+      <Grid size={12} spacing={.5} container sx={{ minWidth: "20rem" }}>
         {!existingLFId &&
-          <Grid size={4} sx={{ minWidth: "20rem", justifyContent: "center" }} >
+          <Grid size="grow" sx={{ minWidth: "20rem", justifyContent: "center" }} >
             <ControlledRadio control={control} name="creation_method" label="Método de Creación" options={creationMethodRadioOptions}
               getRadioLabel={option => option.label} keyField="value" returnField="value" row />
           </Grid>}
@@ -349,8 +355,8 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
               </Grid>
             )}
             {fieldTypeCode === "STRING" && !existingLFId && (
-              <Grid size="grow" sx={{ minWidth: "20rem", justifyContent: "center" }} spacing={1}>
-                <Grid size={4} sx={{ minWidth: "20rem", justifyContent: "center" }} >
+              <Grid size={12} container sx={{ minWidth: "20rem", justifyContent: "center" }} spacing={1}>
+                <Grid size="grow" sx={{ minWidth: "20rem", justifyContent: "center" }} >
                   <ControlledRadio control={control} name="input_mask_method" label="Método de Carga de Máscara" options={creationMethodRadioOptions}
                     getRadioLabel={option => option.label} keyField="value" returnField="value" row />
                 </Grid>
@@ -367,12 +373,15 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
                       getOptionLabel={(option) => option.name}
                     />
                   </Grid> :
-                  < ControlledTextInput
-                    name="input_mask"
-                    label="Máscara de Campo"
-                    control={control}
-                    errorMessage={errors?.input_mask?.message}
-                  />}
+                  <Grid size="grow" sx={{ minWidth: "20rem", justifyContent: "center" }} >
+                    < ControlledTextInput
+                      name="input_mask"
+                      label="Máscara de Campo"
+                      control={control}
+                      errorMessage={errors?.input_mask?.message}
+                    />
+                  </Grid>
+                }
               </Grid>
             )}
           </>

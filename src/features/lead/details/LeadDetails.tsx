@@ -1,38 +1,111 @@
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { LeadFieldSections } from "./LeadDetailsSections"
 import { LeadTags } from "./LeadTags"
 import { LeadActivities } from "../activities/LeadActivities"
+import { DisableConfirmDialog } from "shared/feedback/ConfirmationDialog.tsx"
+import LoadingScreenWrapper from "shared/feedback/LoadingScreen.tsx"
 import GenericPaper from "shared/layout/container/GenericPaper"
 import TitleAndActive from "shared/ui/details/TitleAndActive"
 import CommonButton from "shared/ui/buttons/CommonButton"
+import { useLoading } from "src/hooks/useLoading.ts"
 import type { LeadDetailed } from "src/types/leads.ts"
 import type { Campaign } from "src/types/campaigns.ts"
 import { disableLead, enableLead, getLead } from "../leadService.ts"
 import { getCampaign } from "src/features/campaigns/campaignServices.ts"
 import { getLeadTitleArray } from "../leadUtils.ts"
+import { showCommonErrorToast, showToast } from "src/utils/feedback.ts"
+import { useLeadNavigation } from "../stores/LeadNavigationContext.tsx"
 import { Link as RouterLink, useNavigate, useParams } from "react-router-dom"
-import { Grid, Typography, ButtonGroup, Stack, Breadcrumbs, Link } from "@mui/material"
+import { Grid, Typography, ButtonGroup, Stack, Breadcrumbs, Link, Box, CircularProgress, Fab, Slide } from "@mui/material"
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
 export const LeadDetailsLayout = () => {
 
     const { id } = useParams()
+
+    const numId = useMemo(() => {
+        if (id === undefined) return id
+        const numId = parseInt(id)
+        if (isNaN(numId)) return undefined
+        return numId
+    }, [id])
+
     const [lead, setLead] = useState<LeadDetailed | null>(null)
     const [campaign, setCampaign] = useState<Campaign | null>(null)
     const nav = useNavigate()
+    const [lastMove, setLastMove] = useState<"next" | "prev" | false>(false)
+
+    const { getNextLeadId, getPrevLeadId, isLoadingNavigation, isFirstItem, isLastItem, isNavigationValid } = useLeadNavigation();
+
+    const handleNext = async () => {
+        if (numId === undefined) return
+        setLoading(true)
+        setLastMove("next")
+        const nextId = await getNextLeadId(numId);
+        if (nextId) nav(`/leads/${nextId}`);
+        else setLoading(false)
+    };
+
+    const handlePrev = async () => {
+        if (numId === undefined) return
+        setLoading(true)
+        setLastMove("prev")
+        const prevId = await getPrevLeadId(numId);
+        if (prevId) nav(`/leads/${prevId}`);
+        else setLoading(false)
+    };
 
     useEffect(() => {
-        if (id) getLead(parseInt(id)).then((lead) => {
-            setLead(lead)
-            if (!lead.campaign_id) return
-            getCampaign(lead.campaign_id).then(setCampaign)
-        })
-    }, [id])
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Evitamos navegar si el usuario está enfocado en un campo de texto
+            const activeTag = document.activeElement?.tagName;
+            if (activeTag === 'INPUT' || activeTag === 'TEXTAREA' || activeTag === 'SELECT') {
+                return;
+            }
+            if (e.key === 'ArrowRight') handleNext();
+            if (e.key === 'ArrowLeft') handlePrev();
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [numId]);
+
+    const fetchLeads = useCallback(async (numId: number) => {
+        try {
+            if (numId === undefined) return
+            await getLead(numId).then(async (lead) => {
+                setLead(prev => prev?.id !== lead.id ? lead : prev)
+                if (!lead.campaign_id) return
+                if (lead.campaign_id === campaign?.id) return
+                await getCampaign(lead.campaign_id).then(setCampaign)
+            })
+        } catch (e) {
+            showCommonErrorToast(e)
+        }
+    }, [campaign?.id])
+
+    const { loading, setLoading, fnWithLoading } = useLoading(fetchLeads)
+
+    useEffect(() => {
+        if (!numId) return
+        fnWithLoading(numId)
+    }, [numId, fnWithLoading])
 
     const handleActive = (lead: LeadDetailed) => {
-        if (!lead.active) enableLead(lead.id).then(() => setLead({ ...lead, active: true }))
-        else disableLead(lead.id).then(res => {
-            if (res.action === "deleted") return nav("/leads")
-            else return setLead({ ...lead, active: false })
+        if (!lead.active) return enableLead(lead.id).then(() => {
+            showToast(`"${leadTitle}" habilitado con éxito`)
+            setLead({ ...lead, active: true })
+        })
+        else return disableLead(lead.id).then(res => {
+            if (res.action === "deleted") {
+                showToast(`"${leadTitle}" eliminado definitivamente`)
+                return nav(`/leads?workspace=${campaign?.workspace_id}&campaign=${campaign?.id}`)
+            }
+            else {
+                showToast(`"${leadTitle}" deshabilitado con éxito`)
+                return setLead({ ...lead, active: false })
+            }
         })
     }
 
@@ -49,27 +122,76 @@ export const LeadDetailsLayout = () => {
     //reconoce cambios para actualizar la lista de audit
     const [reloadAudit, setReloadAudit] = useState<number>(0)
 
+    const setSlideDirection = useMemo(() => {
+        if (!lastMove) return undefined
+        if (lastMove === "next") return (isLoadingNavigation || loading) ? "right" : "left"
+        else return (isLoadingNavigation || loading) ? "left" : "right"
+    }, [lastMove, isLoadingNavigation, loading])
+
+    const [isDeleting, setIsDeleting] = useState<LeadDetailed | null>(null)
+
+    //TO DO: Error de id no disponible
+    if (numId === undefined) return <p>Id inválido</p>
     return (
-        <Stack sx={{ px: 3 }} spacing={3}>
-            {campaign &&
-                <Breadcrumbs aria-label="breadcrumb">
-                    <Link component={RouterLink} to={`/leads?workspace=${campaign?.workspace_id}&campaign=${campaign?.id}`}
-                        sx={{ underline: "hover", fontWeight: 600 }} >
-                        {campaign?.name}
-                    </Link>
-                    <Typography sx={{ color: 'text.primary' }}>{leadTitle?.join(" ") ?? "Lead"}</Typography>
-                </Breadcrumbs>}
-            {lead &&
-                <Grid container spacing={3}>
-                    <Grid size={{ xs: 12, md: 4, lg: 4 }} sx={{ minWidth: "20rem" }} >
-                        <LeadInfo lead={lead} handleActive={handleActive} leadTitle={leadTitle} updateLeadInfo={updateLeadInfo} />
-                    </Grid>
-                    <Grid size="grow" sx={{ minWidth: "20rem" }} component={GenericPaper} >
-                        <LeadActivities leadId={lead.id} reloadAudit={reloadAudit} />
-                    </Grid>
-                </Grid >
-            }
-        </Stack >
+        <LoadingScreenWrapper loading={loading && !lastMove}>
+            <Stack direction="row" spacing={2} sx={{ alignItems: 'stretch', px: 2 }}>
+                {isNavigationValid(numId) &&
+                    <Box sx={{ flexShrink: 0, width: "2.5rem", position: "relative" }}>
+                        <Box sx={{ position: 'sticky', top: '50vh', transform: 'translateY(-50%)', zIndex: 10 }}>
+                            <Fab
+                                color="primary"
+                                size="small"
+                                onClick={handlePrev}
+                                disabled={isLoadingNavigation || loading || isFirstItem(numId)}
+                            >
+                                {isLoadingNavigation || loading ? <CircularProgress size={24} color="inherit" /> : <ArrowBackIosNewIcon />}
+                            </Fab>
+                        </Box>
+                    </Box>}
+
+                <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                    <Slide in={!loading && !isLoadingNavigation} appear={false} unmountOnExit
+                        direction={setSlideDirection}>
+                        <Stack spacing={3}>
+                            {campaign &&
+                                <Breadcrumbs aria-label="breadcrumb">
+                                    <Link component={RouterLink} to={`/leads?workspace=${campaign?.workspace_id}&campaign=${campaign?.id}`}
+                                        sx={{ underline: "hover", fontWeight: 600 }} >
+                                        {campaign?.name}
+                                    </Link>
+                                    <Typography sx={{ color: 'text.primary' }}>{leadTitle?.join(" ")}</Typography>
+                                </Breadcrumbs>}
+                            {lead &&
+                                <Grid container spacing={3}>
+                                    <Grid size={{ xs: 12, md: 4, lg: 4 }} sx={{ minWidth: "20rem" }} >
+                                        <LeadInfo lead={lead} handleActive={() => setIsDeleting(lead)} leadTitle={leadTitle} updateLeadInfo={updateLeadInfo} />
+                                    </Grid>
+                                    <Grid size="grow" sx={{ minWidth: "20rem" }} component={GenericPaper} >
+                                        <LeadActivities leadId={lead.id} reloadAudit={reloadAudit} />
+                                    </Grid>
+                                </Grid >
+                            }
+                        </Stack >
+                    </Slide>
+                </Box>
+
+                {isNavigationValid(numId) &&
+                    <Box sx={{ flexShrink: 0, width: '40px' }}>
+                        <Box sx={{ position: 'sticky', top: '50vh', transform: 'translateY(-50%)', zIndex: 10 }}>
+                            <Fab
+                                color="primary"
+                                size="small"
+                                onClick={handleNext}
+                                disabled={isLoadingNavigation || loading || isLastItem(numId)}
+                            >
+                                {isLoadingNavigation || loading ? <CircularProgress size={24} color="inherit" /> : <ArrowForwardIosIcon />}
+                            </Fab>
+                        </Box>
+                    </Box>}
+            </Stack >
+            <DisableConfirmDialog entity={isDeleting} clearEntity={() => setIsDeleting(null)}
+                idModal="del-lead-det" onConfirm={() => handleActive(lead!)} entityTypeName="el lead" onlyDelete />
+        </LoadingScreenWrapper>
     )
 }
 
@@ -87,7 +209,7 @@ export const LeadInfo = ({ lead, leadTitle, handleActive, updateLeadInfo }: Lead
             <GenericPaper>
                 <Stack spacing={3} sx={{ alignItems: "center" }}>
                     <Stack spacing={1} sx={{ width: "100%" }}>
-                        <LeadTags lead={lead} tags={lead.tags} updateLeadInfo={updateLeadInfo} />
+                        <LeadTags lead={lead} updateLeadInfo={updateLeadInfo} />
                         <TitleAndActive active={lead?.active} >
                             <Typography sx={{ textOverflow: "ellipsis" }} variant="h1">
                                 {(leadTitle && leadTitle?.length > 0) ? leadTitle?.join(" ") : "Título no encontrado"}

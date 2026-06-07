@@ -1,16 +1,15 @@
-import { memo, useCallback, useContext, useEffect, useState } from "react"
-import { LeadFilters } from "./LeadFilters";
+import { memo, useCallback, useEffect, useState } from "react"
 import { LeadViewMenu } from "./LeadViewMenu";
-import CommonButton from 'shared/ui/buttons/CommonButton';
+import { LeadFilters } from "./LeadFilters";
 import GenericModal from "shared/layout/container/GenericModal";
 import { ChipTooltip } from "shared/ui/details/ChipTooltip";
-import type { LeadFilter, LeadListParams } from "src/types/shared";
+import CommonButton from 'shared/ui/buttons/CommonButton';
 import type { Lead, LeadView, LeadViewParams } from "src/types/leads";
+import type { LeadFilter, LeadListParams } from "src/types/shared";
 import type { Campaign, Workspace } from "src/types/campaigns"
 import { getWorkspaces } from "src/features/workspaces/workspaceServices";
 import { getCampaigns } from "src/features/campaigns/campaignServices";
-import { UserContext } from "src/stores/contexts";
-import type { UserContextItems } from 'src/stores/UserProvider';
+import { useUserContext } from 'src/stores/UserContext';
 import { Autocomplete, Badge, Divider, Grid, Stack, TextField, ToggleButton, ToggleButtonGroup, type AutocompleteRenderInputParams, ButtonGroup } from "@mui/material"
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
@@ -26,7 +25,7 @@ interface LeadCampaignSelectorsProps {
 
 export const LeadCampaignSelector = memo(({ workspaceId, handleWorkspaceChange, campaignId, handleCampaignChange }: LeadCampaignSelectorsProps) => {
 
-    const { activeOrg } = useContext<UserContextItems>(UserContext)
+    const { activeOrg } = useUserContext()
 
     const [workspaces, setWorkspaces] = useState<Workspace[]>([])
     const [campaigns, setCampaigns] = useState<Campaign[]>([])
@@ -93,7 +92,7 @@ interface LeadListOptionsProps {
     campaignId: number | string | null,
     filters: LeadFilter[],
     headers: LeadListParams,
-    setFiltersAndHeaders: (filters: LeadFilter[], headers: LeadListParams) => Promise<void> | null,
+    setFiltersAndHeaders: (filters: LeadFilter[], headers: LeadListParams) => Promise<unknown>,
     campaignSelectorProps: {
         workspaceId: string | number | null;
         campaignId: string | number | null;
@@ -105,8 +104,8 @@ interface LeadListOptionsProps {
         handlePresentation: (mode: "string") => void;
     },
     modalProps: {
-        open: string | number | boolean;
-        handleOpen: (idModal: string | number) => void;
+        openModalId?: string;
+        handleOpen: (idModal: string) => void;
         handleClose: () => void;
     },
     selectCheckboxProps: {
@@ -119,7 +118,7 @@ interface LeadListOptionsProps {
     },
     bulkDelete: () => Promise<void> | undefined;
     viewUpdateProps: {
-        saveView: (name: string, visibility: string, existingView?: LeadView) => Promise<LeadView> | undefined
+        saveView: (name: string, visibility: string, existingView?: LeadView) => Promise<unknown>
         loadView: (view: LeadView) => void;
         currentView: LeadViewParams | undefined;
     }
@@ -128,7 +127,7 @@ interface LeadListOptionsProps {
 export const LeadListOptions = memo(({ areThereLeads, campaignId, filters, headers, setFiltersAndHeaders, modalProps, campaignSelectorProps, presentationProps, selectCheckboxProps, viewUpdateProps, bulkDelete }: LeadListOptionsProps) => {
 
     //Al aplicar filtros vuelve a la primera página
-    const applyFilters = useCallback((data: { headers: LeadListParams, filters: LeadFilter[] }) => {
+    const applyFilters = useCallback(async (data: { headers: LeadListParams, filters: LeadFilter[] }) => {
         const newHeaders = { ...headers, ...data.headers }
         return setFiltersAndHeaders(data.filters, newHeaders)?.then(() => modalProps.handleClose()
         )
@@ -181,7 +180,7 @@ export const LeadListOptions = memo(({ areThereLeads, campaignId, filters, heade
                         </ChipTooltip>
                     }
                 </ButtonGroup>
-                <GenericModal idModal="lead_filters" modalProps={modalProps} buttonText="Aplicar Filtros" maxWidth="md" fullWidth
+                <GenericModal idModal="lead_filters" {...modalProps} buttonText="Aplicar Filtros" maxWidth="md" fullWidth
                     btnProps={{ actionType: 'FILTER' }} color='secondary' showButton={false} >
                     <LeadFilters applyFilters={applyFilters} filters={{ filters, headers }} campaignId={Number(campaignId)}
                         onClose={() => modalProps.handleClose()} />

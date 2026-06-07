@@ -1,8 +1,9 @@
 import type {
     LeadField, LeadFieldDetailed, LeadFieldPost, LeadFieldType, LeadFieldTypeDetailed, LeadFieldTemplate, LeadFieldSection, LeadFieldSectionDetailed,
-    InputMaskTemplate
+    InputMaskTemplate,
+    LeadFieldsReorderBody
 } from "../../types/leadFields";
-import type { DeleteResponse, EnableResponse, ListParams, Paginable } from "../../types/shared";
+import type { BulkDeleteResponse, BulkEnableResponse, DeleteResponse, EnableResponse, ListParams, Paginable } from "../../types/shared";
 import { orderListByField } from "src/utils/lists";
 import axiosCRM from "src/lib/axios";
 
@@ -14,7 +15,8 @@ export const getLeadFields = async <T extends LeadFieldParams>(
     params?: T,
 ): Promise<Paginable<T["detailed"] extends true ? LeadFieldDetailed : LeadField>> => {
     const leadField = await axiosCRM.get(`lead_fields`, { params });
-    return { ...leadField.data, items: orderListByField(leadField.data.items, "order") };
+    const sortedList = orderListByField(leadField.data.items, "order")
+    return { ...leadField.data, items: sortedList };
 };
 
 export const getLeadField = async (id: number): Promise<LeadFieldDetailed> => {
@@ -64,4 +66,20 @@ export const getFieldSections = async <T extends ListParams>(params?: T): Promis
 >> => {
     const sections = await axiosCRM.get(`lead_field_sections`, { params });
     return { ...sections.data, items: orderListByField(sections.data.items, "id") };
+};
+
+export const reorderLeadFields = async (data: LeadFieldsReorderBody): Promise<{ message: string, campaign_id: number }> => {
+    const response = await axiosCRM.patch("lead_fields/reorder/bulk", data)
+    return response.data
+}
+
+
+export const disableBulkLeadField = async (ids: number[]): Promise<BulkDeleteResponse> => {
+    const leadField = await axiosCRM.post(`/lead_fields/bulk-delete`, { ids });
+    return leadField.data;
+};
+
+export const enableBulkLeadField = async (ids: number[]): Promise<BulkEnableResponse> => {
+    const leadField = await axiosCRM.post(`/lead_fields/bulk-active`, { ids });
+    return leadField.data;
 };

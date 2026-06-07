@@ -1,18 +1,21 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect, useMemo, useState } from "react"
-import { LeadFormAddress, LeadFormBool, LeadFormCheckbox, LeadFormFile, LeadFormMoney, LeadFormNumber, LeadFormPassword, LeadFormRating, LeadFormRelatedLead, LeadFormSelector, LeadFormText } from "../shared/LeadFormFields"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { LeadFormBool, LeadFormDate, LeadFormFile, LeadFormNumber, LeadFormText } from "../shared/LeadFormFields"
+import { LeadFormRelatedLead, LeadFormSelector } from "../shared/LeadFormMultipleFields"
+import LoadingScreenWrapper from "shared/feedback/LoadingScreen"
 import { FormErrorMessage } from "shared/ui/forms/FormFeedback"
 import CommonButton from "shared/ui/buttons/CommonButton"
+import { useLoading } from "src/hooks/useLoading"
 import type { LeadField, LeadFieldValue } from "src/types/leadFields"
 import type { Lead, LeadPost, LeadPostValue } from "src/types/leads"
 import type { NomenclatorItem } from "src/types/nomenclators"
 import { getLeads } from "../leadService"
-import { getNomenclatorItems } from "src/features/nomenclators/nomenclatorService"
-import { getLeadFields } from "src/features/leadFields/leadFieldServices"
+import { getNomenclatorItems } from "features/nomenclators/nomenclatorService"
+import { getLeadFields } from "features/leadFields/leadFieldServices"
 import { createFormDataFromLead, setLeadFormErrors, updateSelectorOptions } from "../leadUtils"
 import { getListField } from "src/utils/lists"
 import { useFieldArray, useForm, type Control, type Path, type UseFormRegister } from "react-hook-form"
-import { Grid, ButtonGroup, Stack } from "@mui/material"
+import { Grid, ButtonGroup, Stack, Typography, Divider } from "@mui/material"
+import { getLeadFormFieldsBySections, orderFieldsBySections } from "src/features/leadFields/leadFieldUtils"
 
 //Para permitir mantener los datos de cada campo
 export interface LeadPostFormValues extends LeadPostValue {
@@ -48,8 +51,11 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
     const { fields, replace } = useFieldArray({ name: "values", control })
 
     const submit = (data: LeadPostForm) => {
-        onSubmit(createFormDataFromLead(data)).catch(e => setLeadFormErrors(fields, e, setError))
+        return onSubmit(createFormDataFromLead(data))
+            .catch(e => setLeadFormErrors(fields, e, setError))
     }
+
+    const { loading: submitLoading, fnWithLoading: submitLoad } = useLoading(submit)
 
     //Setea el mensaje de error al selector, en el caso de createLead
     useEffect(() => {
@@ -58,25 +64,12 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
 
     const [leadFields, setLeadFields] = useState<LeadField[]>(existingLeadFields ?? [])
 
-    //Actualiza los leadFields respecto al campaignId seleccionado. Si ya hay existingLeadFields, no busca.
-    useEffect(() => {
-        if (campaignId == null) return
-        if (existingLeadFields) {
-            setLeadFields(existingLeadFields)
-            return
-        }
-        getLeadFields({ only_active: true, campaign_id: campaignId, "page_size": 0 }).then(res =>
-            setLeadFields(res.items.sort((a, b) => a.order - b.order))
-        )
-    }, [campaignId, existingLeadFields])
-
     //Cuando se cargan los leadFields, se formatean y ubican en fieldArray
-    useEffect(() => {
+    const loadFieldValues = useCallback((newLeadFields: LeadField[], existingValues?: LeadFieldValue[]) => {
         //Si ya hay valores, formatea los values para asignarlos al fieldArray. Asigna listas de ids a value.
         if (existingValues) {
             replace(
-                existingValues
-                    .filter(value => value.field.field_type_code !== "CALCULATED")
+                orderFieldsBySections(existingValues.filter(value => value.field.field_type_code !== "CALCULATED" && value.field.is_visible))
                     .map(fieldValue => {
                         let value: unknown = fieldValue.value
                         //Si no hay valor, es selector o related_leads. Trae el id, o arreglo de ids
@@ -97,13 +90,34 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
             //Si no hay valores, solo trae los datos de los leadFields.
         } else {
             replace(
-                leadFields?.filter(field => field.field_type_code !== "CALCULATED")
+                orderFieldsBySections(newLeadFields.filter(field => field.field_type_code !== "CALCULATED" && field.is_visible))
                     .map(field => ({
                         field_id: field.id,
                         fieldData: field
                     }) as LeadPostFormValues))
         }
-    }, [replace, leadFields, existingValues])
+    }, [replace])
+
+    //Actualiza los leadFields respecto al campaignId seleccionado. Si ya hay existingLeadFields, no busca.
+    const fetchLeadFields = useCallback(async (campaignId: number, existingLeadFields?: LeadField[], existingValues?: LeadFieldValue[]) => {
+        if (campaignId == null) return
+        if (existingLeadFields) {
+            setLeadFields(existingLeadFields)
+            loadFieldValues(existingLeadFields, existingValues)
+            return
+        }
+        return getLeadFields({ only_active: true, campaign_id: campaignId, "page_size": 0 }).then(res => {
+            const leadFields = res.items.sort((a, b) => a.order - b.order)
+            setLeadFields(leadFields)
+            loadFieldValues(leadFields, existingValues)
+        })
+    }, [loadFieldValues])
+
+    const { loading: fieldsLoading, fnWithLoading: fetchFieldsLoad } = useLoading(fetchLeadFields)
+
+    useEffect(() => {
+        fetchFieldsLoad(campaignId, existingLeadFields, existingValues)
+    }, [fetchFieldsLoad, campaignId, existingLeadFields, existingValues])
 
     // Objetos que contienen todos los leads de campañas relacionadas, y todos los nomencladores necesarios para el formulario.
     // Se identifican en un Map or sus ids.
@@ -117,34 +131,49 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
         updateSelectorOptions(leadFields, "nomenclator_id", selectors, ["SELECTOR", "CHECKBOX"],
             (nomenclator_id: number) => getNomenclatorItems({ only_active: true, nomenclator_id: nomenclator_id, page_size: 0 }).then((res) => res.items))
             .then(map => setSelectors(map)).catch(() => setError("root", { message: "No se ha podido obtener la lista del selector" }))
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [leadFields, setError])
 
+    const fieldsBySection = useMemo(() => {
+        return getLeadFormFieldsBySections(fields)
+    }, [fields])
+
     return (
-        <form onSubmit={handleSubmit(submit)}>
-            <input type="text" {...register("campaign_id", { setValueAs: value => (value === "" || !value) ? null : Number(value) })} hidden />
-            <Stack spacing={2}>
-                <Grid container spacing={.5}>
+        <LoadingScreenWrapper loading={fieldsLoading}>
+            <form onSubmit={handleSubmit(submitLoad)}>
+                <input type="text" {...register("campaign_id", { setValueAs: value => (value === "" || !value) ? null : Number(value) })} hidden />
+                <Stack spacing={3}>
                     {campaignId &&
-                        fields.map((field, idx) =>
-                            <Grid size="grow" sx={{ alignItems: "center", minWidth: "20rem" }} key={field.id}>
-                                <LeadFormFieldType register={register} name={`values.${idx}.value`} control={control}
-                                    leadField={field.fieldData} relatedLeads={relatedLeads.get(field?.fieldData?.related_campaign_id ?? -1)}
-                                    selectors={selectors.get(field?.fieldData?.nomenclator_id ?? -1)}
-                                    errorMessage={errors?.values?.[idx]?.value?.message} />
-                            </Grid>
-                        )
+                        fieldsBySection.map((section) => {
+                            return <Stack spacing={1} key={`section-lead-${section.id}`}>
+                                <Typography variant="h3">{section.name}</Typography>
+                                <Divider />
+                                <Grid container sx={{ gap: ".25rem .5rem " }}>
+                                    {section.fields.map(sectField =>
+                                        <Grid size="grow" sx={{ alignItems: "center", minWidth: "20rem" }} key={sectField.field.id}>
+                                            <LeadFormFieldType register={register} control={control} name={`values.${sectField.globalIdx}.value`}
+                                                leadField={sectField.field.fieldData}
+                                                relatedLeads={relatedLeads.get(sectField.field?.fieldData?.related_campaign_id ?? -1)}
+                                                selectors={selectors.get(sectField.field?.fieldData?.nomenclator_id ?? -1)}
+                                                errorMessage={errors?.values?.[sectField.globalIdx]?.value?.message} />
+                                        </Grid>
+                                    )}
+                                </Grid>
+                            </Stack>
+                        })
+
                     }
-                </Grid>
-                {errors.root &&
-                    <FormErrorMessage>{errors.root.message}</FormErrorMessage>}
-                <ButtonGroup sx={{ marginLeft: "auto" }}>
-                    {onCancel && <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel} >Cancelar</CommonButton>}
-                    {campaignId &&
-                        <CommonButton actionType={existingValues ? "MODIFY" : "CREATE"}
-                            type="submit" variant="contained">{submitBtnLabel}</CommonButton>}
-                </ButtonGroup>
-            </Stack>
-        </form>
+                    {errors.root &&
+                        <FormErrorMessage>{errors.root.message}</FormErrorMessage>}
+                    <ButtonGroup sx={{ alignSelf: "end" }}>
+                        {onCancel && <CommonButton actionType="CLOSE" variant="text" color="error" onClick={onCancel} disabled={submitLoading}>Cancelar</CommonButton>}
+                        {campaignId &&
+                            <CommonButton actionType={existingValues ? "MODIFY" : "CREATE"} loading={submitLoading}
+                                type="submit" variant="contained">{submitBtnLabel}</CommonButton>}
+                    </ButtonGroup>
+                </Stack>
+            </form>
+        </LoadingScreenWrapper>
     )
 }
 
@@ -161,58 +190,31 @@ interface LeadFormFieldTypeProps {
 
 const LeadFormFieldType = ({ register, control, name, leadField, relatedLeads, selectors, errorMessage }: LeadFormFieldTypeProps) => {
 
-    const label = leadField.name ?? undefined
+    const label = leadField.name
+    const typeCode = leadField.field_type_code
+    const subtypeCode = leadField.field_subtype_code ?? undefined
+    const required = leadField.required
 
-    switch (leadField.field_type_code) {
+    switch (typeCode) {
         case "LEAD":
-            return (<LeadFormRelatedLead label={label} name={name} control={control} options={relatedLeads}
-                leadField={leadField} required={leadField.required} errorMessage={errorMessage} />)
-        case "SELECTOR":
-            return (<LeadFormSelector label={label} name={name} control={control} options={selectors}
-                leadField={leadField} required={leadField.required} errorMessage={errorMessage} />)
-        case "CHECKBOX":
-            return (<LeadFormCheckbox label={label} name={name} control={control} options={selectors}
-                leadField={leadField} returnField="id" required={leadField.required} errorMessage={errorMessage} />)
-        case "URL":
-            return (<LeadFormText label={label} name={name} register={register} type="url"
-                required={leadField.required} errorMessage={errorMessage} />)
-        case "ADDRESS":
-            return (<LeadFormAddress label={label} name={name} register={register} leadField={leadField}
-                required={leadField.required} errorMessage={errorMessage} />)
-        case "PHONE":
-            return (<LeadFormText label={label} name={name} register={register} type="tel"
-                required={leadField.required} errorMessage={errorMessage} />)
-        case "EMAIL":
-            return (<LeadFormText label={label} name={name} register={register} type="email"
-                required={leadField.required} errorMessage={errorMessage} />)
-        case "DATE":
-            return (<LeadFormText label={label} name={name} register={register} type="date"
-                required={leadField.required} errorMessage={errorMessage} />)
-        case "DATE_TIME":
-            return (<LeadFormText label={label} name={name} register={register} type="datetime-local"
-                required={leadField.required} errorMessage={errorMessage} />)
-        case "NUMBER": case "INT":
-            return (<LeadFormNumber label={label} name={name} control={control}
-                required={leadField.required} errorMessage={errorMessage} />)
-        case "RICH_TEXT":
-            return (<LeadFormText label={label} name={name} register={register}
-                required={leadField.required} errorMessage={errorMessage} multiline />)
-        case "RATING":
-            return (<LeadFormRating label={label} field_subtype_code={leadField.field_subtype_code!} name={name} control={control}
-                required={leadField.required} errorMessage={errorMessage} size="small" />)
-        case "MONEY":
-            return (<LeadFormMoney label={label} name={name} register={register}
-                required={leadField.required} errorMessage={errorMessage} />)
-        case "PASSWORD":
-            return (<LeadFormPassword label={label} name={name} register={register}
-                required={leadField.required} errorMessage={errorMessage} />)
-        case "BOOL":
-            return (<LeadFormBool label={label} name={name} control={control} errorMessage={errorMessage} />)
+            return (<LeadFormRelatedLead control={control} name={name} options={relatedLeads}
+                label={label} required={required} errorMessage={errorMessage} showAdornment />)
         case "FILE":
-            return (<LeadFormFile label={label} name={name} register={register}
-                required={leadField.required} errorMessage={errorMessage} />)
-        default:
-            return <LeadFormText label={label} name={name} register={register}
-                required={leadField.required} errorMessage={errorMessage} />
+            return (<LeadFormFile register={register} name={name} required={required}
+                errorMessage={errorMessage} showAdornment />)
+        case "SELECTOR":
+            return (<LeadFormSelector control={control} name={name} options={selectors}
+                label={label} subtype={subtypeCode} required={required} errorMessage={errorMessage} showAdornment />)
+        case "BOOL":
+            return (<LeadFormBool control={control} name={name} label={label} errorMessage={errorMessage} />)
+        case "DATE_TIME": case "DATE":
+            return (<LeadFormDate register={register} name={name} label={label}
+                subtype={subtypeCode} required={leadField.required} errorMessage={errorMessage} showAdornment />)
+        case "NUMBER": case "INT":
+            return (<LeadFormNumber control={control} name={name} label={label}
+                subtype={subtypeCode} required={leadField.required} errorMessage={errorMessage} showAdornment />)
+        case "STRING":
+            return <LeadFormText register={register} name={name} label={label} subtype={subtypeCode}
+                required={leadField.required} errorMessage={errorMessage} showAdornment />
     }
 }

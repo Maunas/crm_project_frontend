@@ -8,14 +8,14 @@ import { useNavigate } from "react-router-dom"
 import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, useTheme, Checkbox, TableSortLabel } from "@mui/material"
 import type { Palette } from "@mui/material/styles"
 
-const TABLE_SX = { minWidth: 650 } as const
+const TABLE_SX = {} as const
 
 interface LeadTablePresentationProps {
     leads: Lead[],
     selectedColumns: LeadField[],
     modalProps: {
-        open: string | number | boolean;
-        handleOpen: (idModal: string | number) => void;
+        openModalId?: string;
+        handleOpen: (idModal: string) => void;
         handleClose: () => void;
     },
     orderProps: {
@@ -138,8 +138,8 @@ interface LeadTableBodyRowProps {
     lead: Lead,
     selectedColumns: LeadField[],
     modalProps: {
-        open: string | number | boolean;
-        handleOpen: (idModal: string | number) => void;
+        openModalId?: string;
+        handleOpen: (idModal: string) => void;
         handleClose: () => void;
     }
 }
@@ -158,7 +158,7 @@ export const LeadTableBodyRow = memo(({ lead, selectedColumns, modalProps }: Lea
             const leadValue = fieldValueByFieldId.get(column.id)
             return (
                 <TableCell component="td" scope="row" align="left" key={`${lead.id}-${column.id}`}>
-                    <LeadListCellValue leadId={lead.id} fieldValue={leadValue} modalProps={modalProps} shortLeadTitle
+                    <LeadListCellValue leadId={lead.id} fieldValue={leadValue} {...modalProps}
                         type={column.field_type_code} subtype={column.field_subtype_code} />
                 </TableCell>
             )

@@ -1,25 +1,33 @@
-import { memo } from "react"
+import { memo, type ReactNode } from "react"
 import CommonButton, { type CommonBtnProps } from "shared/ui/buttons/CommonButton"
 import { Dialog, type DialogProps } from "@mui/material"
 import GenericPaper from "./GenericPaper"
 
 interface GenericModalProps extends Omit<DialogProps, "open"> {
-    idModal: string | number,
-    modalProps: {
-        open: boolean | string | number,
-        handleOpen: (idModal: string | number) => void,
-        handleClose: () => void
-    },
+    idModal: string,
+    openModalId?: string,
+    handleOpen?: (idModal: string) => void,
+    handleClose: () => void,
+    open?: boolean,
     showButton?: boolean,
     buttonText?: string,
     btnProps?: CommonBtnProps,
+    children?: ReactNode
 }
 
-const GenericModal = memo(({ idModal, modalProps: { open, handleOpen, handleClose }, showButton = true, buttonText = "Abrir Modal", children, btnProps = {}, ...props
+/**
+ * Componente de Dialog, para ser usado con useModal. Incluye un botón de apertura.
+ * @param idModal Define un id para manejar la apertura del modal.
+ * @param modelProps Provienen de useModal para manejar su estado.
+ * @param open Booleano que (en true) ignora la comparación de idModal para abrirlo.
+ * @param showButton Booleano, define si renderiza el botón de apertura.
+ */
+const GenericModal = memo(({ idModal, open = false, openModalId, handleOpen, handleClose, children,
+    showButton = true, buttonText = "Abrir Modal", btnProps = {}, ...props
 }: GenericModalProps) => {
     return (
         <>
-            {showButton &&
+            {showButton && handleOpen &&
                 <CommonButton {...btnProps}
                     onClick={(e) => {
                         e.stopPropagation()
@@ -32,7 +40,7 @@ const GenericModal = memo(({ idModal, modalProps: { open, handleOpen, handleClos
                 {...props}
                 onClick={(e) => e.stopPropagation()}
                 onClose={handleClose}
-                open={open === idModal}
+                open={openModalId === idModal || open}
                 slotProps={{
                     backdrop: { onClick: (e) => e.stopPropagation() }
                 }}

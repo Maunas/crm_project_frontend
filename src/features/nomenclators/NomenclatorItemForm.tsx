@@ -1,11 +1,13 @@
-import { useEffect, useMemo, useState } from "react"
-import { ControlledTextInput } from "../../components/ui/forms/CustomInputs"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { ControlledAutocomplete } from "shared/ui/forms/CustomMultipleInputs"
-import CommonButton from "shared/ui/buttons/CommonButton"
+import { ControlledTextInput } from "shared/ui/forms/CustomInputs"
 import { FormErrorMessage } from "shared/ui/forms/FormFeedback"
-import { createNomenclatorItem, getNomenclatorItems, updateNomenclatorItem } from "./nomenclatorService"
+import CommonButton from "shared/ui/buttons/CommonButton"
+import { useLoading } from "src/hooks/useLoading"
 import type { NomenclatorDetailed, NomenclatorItem, NomenclatorItemDetailed, NomenclatorItemPost } from "src/types/nomenclators"
+import { createNomenclatorItem, getNomenclatorItems, updateNomenclatorItem } from "./nomenclatorService"
 import { setFormErrors } from "src/utils/forms"
+import { showToast } from "src/utils/feedback"
 import { useForm } from "react-hook-form"
 import { Typography, Grid, ButtonGroup, Stack } from "@mui/material"
 
@@ -18,24 +20,37 @@ interface NomenclatorSidebarProps {
 }
 
 //Wrapper de NomenclatorItemForm para funcionar en un Sidebar
-export const NomenclatorItemFormSidebar = ({ existingNom, nomenclator, closeSidebar, handleSidebar, updateEntityOnList }: NomenclatorSidebarProps) => {
+export const NomenclatorItemFormSidebar = ({ existingNom, nomenclator, handleSidebar, closeSidebar, updateEntityOnList }: NomenclatorSidebarProps) => {
 
-    const submit = (data: NomenclatorItemPost, reset = false) => {
+    const handleClose = useCallback(() => {
+        if (existingNom) handleSidebar("DETAILS_NOM", existingNom)
+        else closeSidebar()
+    }, [existingNom, closeSidebar, handleSidebar])
+
+    const submit = useCallback((data: NomenclatorItemPost, reset = false) => {
         const updateList = (res: NomenclatorItemDetailed) => {
             updateEntityOnList(res)
             handleSidebar("DETAILS_NOM", res)
         }
         if (!existingNom) {
             return createNomenclatorItem(data)
-                .then(res => reset ? updateEntityOnList(res) : updateList(res))
+                .then(res => {
+                    if (reset) updateEntityOnList(res)
+                    else updateList(res)
+                    showToast(`La opción "${res.value}" se ha creado con éxito`)
+                })
         } else {
             return updateNomenclatorItem(data, existingNom.id)
-                .then(updateList)
+                .then(res => {
+                    updateList(res)
+                    showToast(`La opción "${res.value}" se ha modificado con éxito`)
+                })
         }
-    }
+    }, [existingNom, handleSidebar, updateEntityOnList])
 
     return (
-        <NomenclatorItemForm existingNom={existingNom} nomenclator={nomenclator} submit={submit} onCancel={closeSidebar} />
+        <NomenclatorItemForm existingNom={existingNom} nomenclator={nomenclator} submit={submit}
+            onCancel={handleClose} />
     )
 }
 
@@ -65,13 +80,15 @@ export const NomenclatorItemForm = ({ existingNom, nomenclator, submit, onCancel
 
     useEffect(() => { reset(defaultValues) }, [reset, defaultValues])
 
+    const { loading, fnWithLoading: submitItemLoad } = useLoading(submit)
+
     const onSubmit = (data: NomenclatorItemPost) => {
-        submit(data)
+        return submitItemLoad(data)
             .catch(e => setFormErrors(e, setError))
     }
 
     const onSubmitReset = (data: NomenclatorItemPost) => {
-        submit(data, true)
+        return submitItemLoad(data, true)
             .then(() => reset(defaultValues))
             .catch(e => setFormErrors(e, setError))
     }
@@ -105,15 +122,18 @@ export const NomenclatorItemForm = ({ existingNom, nomenclator, submit, onCancel
                     }
                     <Stack spacing={.5}>
                         <ButtonGroup sx={{ marginLeft: "auto" }} fullWidth >
-                            <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel} fullWidth>
+                            <CommonButton actionType="CLOSE" variant="text" color="error" disabled={loading}
+                                onClick={onCancel} fullWidth>
                                 Cancelar
                             </CommonButton>
-                            <CommonButton actionType={existingNom ? "MODIFY" : "CREATE"} variant="contained" type="submit" fullWidth>
+                            <CommonButton actionType={existingNom ? "MODIFY" : "CREATE"} loading={loading}
+                                variant="contained" type="submit" fullWidth>
                                 Guardar
                             </CommonButton>
                         </ButtonGroup>
                         {!existingNom &&
-                            <CommonButton actionType="CREATE" variant="contained" onClick={handleSubmit(onSubmitReset)} fullWidth>
+                            <CommonButton actionType="CREATE" variant="contained" loading={loading}
+                                onClick={handleSubmit(onSubmitReset)} fullWidth>
                                 Guardar y crear otro
                             </CommonButton>}
                     </Stack>

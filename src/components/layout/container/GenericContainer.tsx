@@ -1,6 +1,6 @@
-import type { ReactNode } from "react"
+import { type ReactNode } from "react"
 import GenericPaper from "./GenericPaper"
-import { Container, Grid, type Breakpoint, type ContainerProps, type GridProps, type PaperProps } from "@mui/material"
+import { Container, Drawer, useMediaQuery, useTheme, type Breakpoint, type ContainerProps, type DrawerProps, type PaperProps } from "@mui/material"
 
 export interface GenericContainerProps extends ContainerProps {
     children?: ReactNode,
@@ -20,32 +20,53 @@ export const GenericContainer = ({ children, paperProps = {}, ...props }: Generi
 
 interface ContainerWithSidebarProps {
     isSidebarOpen?: boolean,
+    closeSidebar: () => void,
     sidebarComponent: ReactNode,
     containerSize?: false | Breakpoint,
-    rootGridProps?: GridProps,
-    mainGridProps?: GridProps,
-    sidebarGridProps?: GridProps,
+    sidebarWidth?: string,
+    sidebarProps?: DrawerProps,
     children?: ReactNode,
 }
 
-const ContainerWithSidebar = ({ isSidebarOpen = false, rootGridProps, mainGridProps, sidebarGridProps, sidebarComponent, containerSize, children }: ContainerWithSidebarProps) => {
+export const GenericSidebar = ({ isSidebarOpen = false, closeSidebar, sidebarProps, sidebarComponent, sidebarWidth }: ContainerWithSidebarProps) => {
+
+    const { breakpoints } = useTheme()
+
+    const mdScreen = useMediaQuery(breakpoints.down('md'));
 
     return (
-        <Container maxWidth={isSidebarOpen ? false : containerSize ?? "lg"}>
-            <Grid container spacing={3} {...rootGridProps} >
-                <Grid size="grow" sx={{ minWidth: "30rem" }} {...mainGridProps}>
-                    <GenericPaper>
-                        {children}
-                    </GenericPaper>
-                </Grid>
-                {isSidebarOpen &&
-                    <Grid size={5} sx={{ minWidth: "30rem" }} {...sidebarGridProps}>
-                        <GenericPaper elevation={1}>
-                            {sidebarComponent}
-                        </GenericPaper>
-                    </Grid>}
-            </Grid>
-        </Container>
+        <Drawer open={isSidebarOpen} onClose={closeSidebar} anchor={mdScreen ? "bottom" : "right"}
+            sx={{
+                zIndex: 1202,
+                '& .MuiDrawer-paper': {
+                    minHeight: '100vh',
+                    width: sidebarWidth ?? '45rem',
+                    [breakpoints.down('md')]: {
+                        width: '100vw',
+                    },
+                },
+            }}  {...sidebarProps}
+            ModalProps={{ keepMounted: true }}>
+            <GenericPaper sx={{
+                height: "100%", minHeight: "100vh", width: "100%", overflowY: "auto", borderRadius: 0,
+            }}>
+                {isSidebarOpen && sidebarComponent}
+            </GenericPaper>
+        </Drawer >
+    )
+}
+
+
+const ContainerWithSidebar = ({ isSidebarOpen = false, closeSidebar, sidebarProps, sidebarComponent, containerSize, sidebarWidth, children }: ContainerWithSidebarProps) => {
+
+    return (
+        <>
+            <Container maxWidth={containerSize ?? "lg"} component={GenericPaper}>
+                {children}
+            </Container>
+            <GenericSidebar isSidebarOpen={isSidebarOpen} closeSidebar={closeSidebar} sidebarProps={sidebarProps}
+                sidebarComponent={sidebarComponent} sidebarWidth={sidebarWidth} />
+        </>
     )
 }
 

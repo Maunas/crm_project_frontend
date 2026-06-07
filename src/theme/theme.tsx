@@ -73,8 +73,6 @@ const theme = createTheme({
         '#root': {
           width: '100%',
           height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
           ...textTheme.root
         },
       },
@@ -100,6 +98,11 @@ const theme = createTheme({
         root: {
           marginBlock: ".25rem"
         }
+      },
+    },
+    MuiInputBase: {
+      defaultProps: {
+        disableInjectingGlobalStyles: true,
       },
     },
   },

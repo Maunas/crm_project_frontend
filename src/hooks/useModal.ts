@@ -1,13 +1,16 @@
 import { useCallback, useMemo, useState } from "react";
 
+/**
+ * Permite manejar la apertura y cierre de un modal, a partir de un id.
+ */
 export const useModal = () => {
-    const [open, setOpen] = useState<boolean | number | string>(false);
-    const handleOpen = useCallback((idModal: string | number) => setOpen(idModal), []);
-    const handleClose = useCallback(() => setOpen(false), []);
+    const [openModalId, setOpenModalId] = useState<string | undefined>(undefined);
+    const handleOpen = useCallback((idModal: string) => setOpenModalId(idModal), []);
+    const handleClose = useCallback(() => setOpenModalId(undefined), []);
 
     //Componente para asignar rápidamente a GenericModal
-    const modalProps = useMemo(() => ({ open, handleOpen, handleClose })
-        , [open, handleOpen, handleClose])
+    const modalProps = useMemo(() => ({ openModalId, handleOpen, handleClose })
+        , [openModalId, handleOpen, handleClose])
 
-    return ({ open, handleOpen, handleClose, modalProps })
+    return ({ openModalId, handleOpen, handleClose, modalProps })
 }

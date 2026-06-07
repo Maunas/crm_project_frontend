@@ -7,12 +7,14 @@ import PersonIcon from '@mui/icons-material/Person';
 import WorkIcon from '@mui/icons-material/Work';
 import StoreIcon from '@mui/icons-material/Store';
 import LabelIcon from '@mui/icons-material/Label';
+import TuneIcon from '@mui/icons-material/Tune';
 
 const options = [
   { name: "Leads", icon: <PersonIcon />, link: "/leads" },
   { name: "Campañas", icon: <WorkIcon />, link: "/campaigns" },
   { name: "Organizaciones", icon: <StoreIcon />, link: "/organizations" },
   { name: "Nomencladores", icon: <LabelIcon />, link: "/nomenclators" },
+  { name: "Propiedades de Lead", icon: <TuneIcon />, link: "/lead-properties" }
 ]
 
 interface NavbarProps {

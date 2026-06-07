@@ -1,15 +1,17 @@
-import { useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import CommonButton from 'shared/ui/buttons/CommonButton'
 import { RegisteredTextInput } from 'shared/ui/forms/CustomInputs'
 import { FormErrorMessage } from 'shared/ui/forms/FormFeedback'
-import { createOrganization, updateOrganization } from './organizationServices'
-import { setFormErrors } from "src/utils/forms"
+import { useLoading } from 'src/hooks/useLoading'
 import type { Organization, OrganizationDetailed, OrganizationPost } from 'src/types/campaigns'
+import { createOrganization, updateOrganization } from './organizationServices'
+import { showCommonErrorToast, showToast } from 'src/utils/feedback'
+import { setFormErrors } from "src/utils/forms"
 import { useForm } from 'react-hook-form'
 import { Grid, Typography, ButtonGroup, Stack } from '@mui/material'
 
 interface OrganizationSidebarProps {
-    existingOrg?: Organization,
+    existingOrg?: OrganizationDetailed,
     closeSidebar: () => void,
     updateEntityOnList: (entity: OrganizationDetailed) => void,
     handleSidebar: (mode: string, entity: OrganizationDetailed | null) => void
@@ -17,20 +19,33 @@ interface OrganizationSidebarProps {
 //Wrapper de OrganizationForm para funcionar en un Sidebar
 export const OrganizationFormSidebar = ({ existingOrg, closeSidebar, handleSidebar, updateEntityOnList }: OrganizationSidebarProps) => {
 
-    const submit = (data: OrganizationPost) => {
+    const handleClose = useCallback(() => {
+        if (existingOrg) handleSidebar("DETAILS_ORG", existingOrg)
+        else closeSidebar()
+    }, [existingOrg, closeSidebar, handleSidebar])
+
+    const submit = useCallback((data: OrganizationPost) => {
         const updateList = (res: OrganizationDetailed) => {
             updateEntityOnList(res)
             handleSidebar("DETAILS_ORG", res)
         }
         if (!existingOrg) {
             return createOrganization(data)
-                .then(updateList)
+                .then(res => {
+                    updateList(res)
+                    showToast(`La organización "${res.name}" fue creada con éxito`)
+                })
+                .catch(e => showCommonErrorToast(e))
         } else {
             return updateOrganization(data, existingOrg.id)
-                .then(updateList)
+                .then(res => {
+                    updateList(res)
+                    showToast(`La organización "${res.name}" fue modificada con éxito`)
+                })
+                .catch(e => showCommonErrorToast(e))
         }
-    }
-    return <OrganizationForm existingOrg={existingOrg} submit={submit} onCancel={closeSidebar} />
+    }, [existingOrg, handleSidebar, updateEntityOnList])
+    return <OrganizationForm existingOrg={existingOrg} submit={submit} onCancel={handleClose} />
 }
 
 interface OrganizationProps {
@@ -51,18 +66,21 @@ const OrganizationForm = ({ existingOrg, submit, onCancel }: OrganizationProps) 
     useEffect(() => { reset(defaultValues) }, [reset, defaultValues])
 
     const onSubmit = (data: OrganizationPost) => {
-        submit(data)
+        return submit(data)
             .catch(e => setFormErrors(e, setError))
     }
 
+    const { loading, fnWithLoading: submitLoad } = useLoading(onSubmit)
+
     return (
-        <form>
+        <form onSubmit={handleSubmit(submitLoad)}>
             <Stack spacing={3}>
                 <Typography variant="h2">
                     {!existingOrg ? "Crear Organización" : `Modificar Organización: ${existingOrg.name}`}
                 </Typography>
                 <Stack spacing={2} sx={{ alignItems: "start" }}>
                     <Grid container spacing={1} sx={{
+                        width: "100%",
                         justifyContent: "center",
                         alignItems: "center",
                     }}>
@@ -78,11 +96,12 @@ const OrganizationForm = ({ existingOrg, submit, onCancel }: OrganizationProps) 
                     {errors?.root &&
                         <FormErrorMessage>{errors?.root?.message}</FormErrorMessage>}
                     <ButtonGroup sx={{ alignSelf: "end" }}>
-                        <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel}>
+                        <CommonButton actionType="CLOSE" variant="text" color="error"
+                            onClick={onCancel} disabled={loading}>
                             Cancelar
                         </CommonButton>
-                        <CommonButton actionType={existingOrg ? "MODIFY" : "CREATE"} variant="contained"
-                            onClick={handleSubmit(onSubmit)}>
+                        <CommonButton actionType={existingOrg ? "MODIFY" : "CREATE"}
+                            variant="contained" type="submit" loading={loading}>
                             Guardar
                         </CommonButton>
                     </ButtonGroup>

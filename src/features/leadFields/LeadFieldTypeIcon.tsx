@@ -1,13 +1,13 @@
-import React, { useMemo } from 'react';
+import { cloneElement, useMemo, type JSX } from 'react';
 import { CustomListItemAvatar } from '../../components/ui/lists/CustomListItem';
 import type { ColorTypes } from '../../types/mui-theme.d';
-import { Avatar } from '@mui/material';
-import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import { Avatar, InputAdornment, type InputAdornmentProps } from '@mui/material';
+import HttpsIcon from '@mui/icons-material/Https';
 import CodeOutlinedIcon from '@mui/icons-material/CodeOutlined';
 import ExploreOutlinedIcon from '@mui/icons-material/ExploreOutlined';
 import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
 import MapOutlinedIcon from '@mui/icons-material/MapOutlined';
-import StarBorderOutlinedIcon from '@mui/icons-material/StarBorderOutlined';
+import StarIcon from '@mui/icons-material/Star';
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 import PhoneAndroidOutlinedIcon from '@mui/icons-material/PhoneAndroidOutlined';
 import LinkOutlinedIcon from '@mui/icons-material/LinkOutlined';
@@ -17,73 +17,140 @@ import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import CalculateOutlinedIcon from '@mui/icons-material/CalculateOutlined';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
-import LibraryAddCheckOutlinedIcon from '@mui/icons-material/LibraryAddCheckOutlined';
-import CheckBoxOutlinedIcon from '@mui/icons-material/CheckBoxOutlined';
+import LibraryAddCheckIcon from '@mui/icons-material/LibraryAddCheck';
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import LocalOfferOutlinedIcon from '@mui/icons-material/LocalOfferOutlined';
 import DiscountOutlinedIcon from '@mui/icons-material/DiscountOutlined';
 import ToggleOnOutlinedIcon from '@mui/icons-material/ToggleOnOutlined';
-import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined';
 import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined';
 import NumbersOutlinedIcon from '@mui/icons-material/NumbersOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import AlternateEmailOutlinedIcon from '@mui/icons-material/AlternateEmailOutlined';
 import CreditCardOutlinedIcon from '@mui/icons-material/CreditCardOutlined';
 import DriveFileRenameOutlineSharpIcon from '@mui/icons-material/DriveFileRenameOutlineSharp';
+import TodayOutlinedIcon from '@mui/icons-material/TodayOutlined';
+import PercentOutlinedIcon from '@mui/icons-material/PercentOutlined';
 
-export const LeadFieldTypeIcon = ({ typeCode, subtypeCode }: { typeCode?: string | null, subtypeCode?: string | null }) => {
+type TypeIconItem = {
+    color: ColorTypes,
+    component: JSX.Element
+}
 
-    const icon = useMemo<{ color: ColorTypes, component: React.ReactNode }>(() => {
-        switch (typeCode) {
-            case "STRING": return { color: "primary", component: <DriveFileRenameOutlineSharpIcon /> }
-            case "NUMBER": case "INT": return { color: "primary", component: <NumbersOutlinedIcon /> }
-            case "BOOL": return { color: "primary", component: <ToggleOnOutlinedIcon /> }
+const TYPE_ICONS: Record<string, TypeIconItem> = {
+    //primary - Tipos de dato primitivos
+    STRING: { color: "primary", component: <DriveFileRenameOutlineSharpIcon /> },
+    NUMBER: { color: "primary", component: <NumbersOutlinedIcon /> },
+    BOOL: { color: "primary", component: <ToggleOnOutlinedIcon /> },
 
-            case "RICH_TEXT": return { color: "secondary", component: <CodeOutlinedIcon /> }
-            case "FILE": {
-                if (subtypeCode === "FILE_IMAGE") return { color: "secondary", component: <ImageOutlinedIcon /> }
-                return { color: "secondary", component: <DescriptionOutlinedIcon /> }
-            }
-            case "URL": case "INSTAGRAM_USER": {
-                if (subtypeCode === "WEBSITE") return { color: "secondary", component: <LinkOutlinedIcon /> }
-                else return { color: "secondary", component: <AlternateEmailOutlinedIcon /> }
-            }
+    //info - Datos de Contacto
+    EMAIL: { color: "info", component: <EmailOutlinedIcon /> },
+    PHONE: { color: "info", component: <PhoneOutlinedIcon /> },
+    MOBILE: { color: "info", component: <PhoneAndroidOutlinedIcon /> },
+    SIMPLE_ADDRESS: { color: "info", component: <MapOutlinedIcon /> },
+    MAPS_URL: { color: "info", component: <PlaceOutlinedIcon /> },
+    COORDINATES: { color: "info", component: <ExploreOutlinedIcon /> },
 
-            case "EMAIL": return { color: "info", component: <EmailOutlinedIcon /> }
-            case "PHONE": {
-                if (subtypeCode === "MOBILE") return { color: "info", component: <PhoneAndroidOutlinedIcon /> }
-                return { color: "info", component: <PhoneOutlinedIcon /> }
-            }
-            case "ADDRESS": case "POSTAL_CODE": {
-                if (subtypeCode === "COORDINATES") return { color: "info", component: <ExploreOutlinedIcon /> }
-                if (subtypeCode === "SIMPLE_ADRESS") return { color: "info", component: <MapOutlinedIcon /> }
-                return { color: "info", component: <PlaceOutlinedIcon /> }
-            }
+    //secondary - Otros datos
+    WEBSITE: { color: "secondary", component: <LinkOutlinedIcon /> },
+    SOCIAL_MEDIA: { color: "secondary", component: <AlternateEmailOutlinedIcon /> },
+    HTML: { color: "secondary", component: <CodeOutlinedIcon /> },
+    FILE_IMAGE: { color: "secondary", component: <ImageOutlinedIcon /> },
+    FILE_DOCUMENT: { color: "secondary", component: <DescriptionOutlinedIcon /> },
 
-            case "MONEY": return { color: "success", component: <AttachMoneyOutlinedIcon /> }
-            case "CALCULATED": return { color: "success", component: <CalculateOutlinedIcon /> }
-            case "DATE_TIME": return { color: "success", component: <AccessTimeOutlinedIcon /> }
-            case "DATE": return { color: "success", component: <CalendarTodayOutlinedIcon /> }
+    //warning - Datos múltiples y rating
+    LEAD: { color: "warning", component: <PersonOutlinedIcon /> },
+    SELECTOR_MULTIPLE: { color: "warning", component: <DiscountOutlinedIcon /> },
+    SELECTOR_SIMPLE: { color: "warning", component: <LocalOfferOutlinedIcon /> },
+    CHECKBOX_MULTIPLE: { color: "warning", component: <LibraryAddCheckIcon /> },
+    CHECKBOX_SIMPLE: { color: "warning", component: <CheckBoxIcon /> },
+    RATING: { color: "warning", component: <StarIcon /> },
 
-            case "RATING": return { color: "warning", component: <StarBorderOutlinedIcon /> }
-            case "LEAD": case "USER": return { color: "warning", component: <PersonOutlinedIcon /> }
-            case "CHECKBOX": {
-                if (subtypeCode === "CHECKBOX_MULTIPLE") return { color: "warning", component: <LibraryAddCheckOutlinedIcon /> }
-                return { color: "warning", component: <CheckBoxOutlinedIcon /> }
-            }
-            case "SELECTOR": {
-                if (subtypeCode === "SELECTOR_MULTIPLE") return { color: "warning", component: <DiscountOutlinedIcon /> }
-                return { color: "warning", component: <LocalOfferOutlinedIcon /> }
-            }
+    //success - Datos numéricos especiales, y fechas
+    DATE: { color: "success", component: <TodayOutlinedIcon /> },
+    TIME_ONLY: { color: "success", component: <AccessTimeOutlinedIcon /> },
+    CALCULATED: { color: "success", component: <CalculateOutlinedIcon /> },
+    MONEY: { color: "success", component: <AttachMoneyOutlinedIcon /> },
+    PERCENTAGE: { color: "success", component: <PercentOutlinedIcon /> },
 
-            case "CREDIT_CARD_SIMPLE": return { color: "error", component: <CreditCardOutlinedIcon /> }
-            case "PASSWORD": return { color: "error", component: <VisibilityOutlinedIcon /> }
-            default: return { color: "error", component: <InfoOutlinedIcon /> }
+    //error - Datos sensibles, y no reconocidos
+    PASSWORD: { color: "error", component: <HttpsIcon /> },
+    CREDIT_CARD: { color: "error", component: <CreditCardOutlinedIcon /> },
+    DEFAULT: { color: "error", component: <InfoOutlinedIcon /> },
+}
+
+type TypeIcon = keyof typeof TYPE_ICONS
+
+const getTypeIcon = (typeCode?: string | null, subtypeCode?: string | null) => {
+    switch (typeCode) {
+        case "LEAD": case "USER": return TYPE_ICONS.LEAD
+        case "CALCULATED": return TYPE_ICONS.CALCULATED
+        case "FILE": {
+            const fileSubtype = (subtypeCode &&
+                ["FILE_IMAGE", "FILE_DOCUMENT"].includes(subtypeCode))
+                ? subtypeCode as TypeIcon : "FILE_DOCUMENT"
+            return TYPE_ICONS[fileSubtype]
         }
-    }, [typeCode, subtypeCode])
+        case "SELECTOR": {
+            const selSubtype = (subtypeCode &&
+                ["SELECTOR_MULTIPLE", "SELECTOR_SIMPLE", "CHECKBOX_MULTIPLE", "CHECKBOX_SIMPLE"].includes(subtypeCode))
+                ? subtypeCode as TypeIcon : "SELECTOR_SIMPLE"
+            return TYPE_ICONS[selSubtype]
+        }
+        case "BOOL": return TYPE_ICONS.BOOL
+        case "DATE_TIME": return subtypeCode === "TIME_ONLY" ? TYPE_ICONS.TIME_ONLY : TYPE_ICONS.DATE
+        case "DATE": return TYPE_ICONS.DATE
+        case "NUMBER": case "INT": {
+            const numSubtype = (subtypeCode && ["STAR_RATING", "NPS", "SCORE"].includes(subtypeCode)) ? "RATING"
+                : (subtypeCode ?? "NUMBER") as TypeIcon
+            return TYPE_ICONS[numSubtype]
+        }
+
+        case "STRING": {
+            if (!subtypeCode) return TYPE_ICONS.STRING
+            if (["URL", "WEBSITE"].includes(subtypeCode)) return TYPE_ICONS.WEBSITE
+            if (["WHATSAPP", "MOBILE"].includes(subtypeCode)) return TYPE_ICONS.MOBILE
+            if (["PHONE", "LANDLINE"].includes(subtypeCode)) return TYPE_ICONS.PHONE
+            if (["HTML", "MARKDOWN"].includes(subtypeCode)) return TYPE_ICONS.HTML
+            return TYPE_ICONS[subtypeCode as TypeIcon]
+        }
+
+        //Templates con íconos
+        case "POSTAL_CODE": return TYPE_ICONS.SIMPLE_ADDRESS
+        case "CREDIT_CARD_SIMPLE": return TYPE_ICONS.CREDIT_CARD
+        case "INSTAGRAM_USER": return TYPE_ICONS.SOCIAL_MEDIA
+
+        default: return TYPE_ICONS.DEFAULT
+    }
+}
+
+export const LeadFieldTypeAvatar = ({ typeCode, subtypeCode }: { typeCode?: string | null, subtypeCode?: string | null }) => {
+
+    const icon = useMemo<TypeIconItem>(() =>
+        getTypeIcon(typeCode, subtypeCode)
+        , [typeCode, subtypeCode])
 
     return <CustomListItemAvatar color={icon.color}>
         <Avatar variant="rounded" sx={{ height: "2rem", width: "2rem", mx: "auto" }}>
             {icon.component}
         </Avatar>
     </CustomListItemAvatar>
+}
+
+interface LeadFieldInputIconProps extends InputAdornmentProps {
+    typeCode?: string | null,
+    subtypeCode?: string | null,
+    size?: "small" | "medium"
+}
+
+export const LeadFieldInputIcon = ({ typeCode, subtypeCode, size = "medium", ...props }: LeadFieldInputIconProps) => {
+
+    const icon = useMemo<TypeIconItem>(() =>
+        getTypeIcon(typeCode, subtypeCode)
+        , [typeCode, subtypeCode])
+
+    return (
+        <InputAdornment {...props}>
+            {cloneElement(icon.component, { fontSize: size })}
+        </InputAdornment>
+    )
 }

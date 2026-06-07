@@ -1,23 +1,21 @@
-import { useContext } from "react"
-import { PasswordField, RegisteredTextInput } from "../../components/ui/forms/CustomInputs"
+import { PasswordField, RegisteredTextInput } from "shared/ui/forms/CustomInputs"
+import { FormErrorMessage } from "shared/ui/forms/FormFeedback"
 import CommonButton from "shared/ui/buttons/CommonButton"
-import { FormErrorMessage } from "../../components/ui/forms/FormFeedback"
-import type { UserLogin } from "../../types/users"
+import type { UserLogin } from "src/types/users"
+import { useLoading } from "src/hooks/useLoading"
 import { setFormErrors } from "src/utils/forms"
-import { UserContext } from "src/stores/contexts"
-import { useForm } from "react-hook-form"
+import { useUserContext } from "src/stores/UserContext"
 import { Link, useNavigate } from "react-router-dom"
+import { useForm } from "react-hook-form"
 import { Button, ButtonGroup, Grid, Paper, Stack, Typography } from "@mui/material"
-
 
 export const LoginFormPage = () => {
 
-  const { login } = useContext(UserContext)
+  const { login } = useUserContext()
   const nav = useNavigate()
 
   const submit = (data: UserLogin) => {
     return login(data).then(() => {
-      alert("Sesión Iniciada")
       nav("/")
     })
   }
@@ -39,12 +37,14 @@ const LoginForm = ({ submit, onCancel }: LoginFormProps) => {
   const { register, handleSubmit, formState: { errors }, setError } = useForm<UserLogin>()
 
   const onSubmit = (data: UserLogin) => {
-    submit(data)
+    return submit(data)
       .catch(e => setFormErrors(e, setError))
   }
 
+  const { fnWithLoading, loading } = useLoading(onSubmit)
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(fnWithLoading)}>
       <Stack spacing={3}>
         <Typography variant="h1" sx={{ textAlign: "center" }}>
           CRM
@@ -70,14 +70,14 @@ const LoginForm = ({ submit, onCancel }: LoginFormProps) => {
           }
           <Stack spacing={1}>
             <ButtonGroup fullWidth>
-              <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel} fullWidth>
+              <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel} fullWidth disabled={loading}>
                 Cancelar
               </CommonButton>
-              <CommonButton actionType="LOGIN" variant="contained" type="submit" fullWidth>
+              <CommonButton actionType="LOGIN" variant="contained" type="submit" loading={loading} fullWidth>
                 Iniciar Sesión
               </CommonButton>
             </ButtonGroup>
-            <Button fullWidth variant="text" component={Link} to="/signup">Crear Cuenta</Button>
+            <Button fullWidth variant="text" component={Link} to="/signup" disabled={loading} >Crear Cuenta</Button>
           </Stack>
         </Stack>
       </Stack>

@@ -28,7 +28,9 @@ export const ValidationList = ({ leadField, handleSidebar }: ValidationListProps
             <Stack direction="row" useFlexGap spacing={2} sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
                 <Typography variant="h3">Validaciones</Typography>
                 <CommonButton actionType='MODIFY' variant='contained' sx={{ marginLeft: "auto" }} size="small"
-                    onClick={() => handleSidebar("UPDATE_VAL", leadField)} />
+                    onClick={() => handleSidebar("UPDATE_VAL", leadField)} onlyTooltip>
+                    Modificar
+                </CommonButton>
             </Stack>
             <List>
                 {leadField.validation_rules.map(val =>

@@ -13,6 +13,13 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import SettingsIcon from '@mui/icons-material/Settings';
+import { CircularProgress } from '@mui/material';
+import RemoveIcon from '@mui/icons-material/Remove';
+import LowPriorityIcon from '@mui/icons-material/LowPriority';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
+import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
 
 const ACTION_ICONS = {
     NONE: <></>,
@@ -31,6 +38,13 @@ const ACTION_ICONS = {
     SIGNUP: <PersonAddIcon sx={{ display: "block" }} />,
     LIST: <FormatListBulletedIcon sx={{ display: "block" }} />,
     CHECK: <TaskAltIcon sx={{ display: "block" }} />,
+    LOADING: <CircularProgress size={24} sx={{ display: "block" }} />,
+    MINUS: <RemoveIcon sx={{ display: "block" }} />,
+    REORDER: <LowPriorityIcon sx={{ display: "block" }} />,
+    OPEN_LIST: <KeyboardArrowDownIcon sx={{ display: "block" }} />,
+    CLOSE_LIST: <KeyboardArrowUpIcon sx={{ display: "block" }} />,
+    DRAG: <DragIndicatorIcon sx={{ display: "block" }} />,
+    EDIT_TEXT: <DriveFileRenameOutlineIcon sx={{ display: "block" }} />,
 }
 
 export type ActionType = keyof typeof ACTION_ICONS

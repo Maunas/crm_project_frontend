@@ -1,11 +1,9 @@
-import { useContext } from "react"
-import CommonButton from "shared/ui/buttons/CommonButton"
 import HandleActiveButton from "shared/ui/buttons/HandleActiveButton"
-import CustomChip from "shared/ui/details/CustomChip"
 import DetailsMetadata from "shared/ui/details/DetailsMetadata"
+import CommonButton from "shared/ui/buttons/CommonButton"
+import CustomChip from "shared/ui/details/CustomChip"
 import type { OrganizationDetailed } from "src/types/campaigns"
-import { UserContext } from "src/stores/contexts"
-import type { UserContextItems } from "src/stores/UserProvider"
+import { useUserContext } from "src/stores/UserContext"
 import { Link } from "react-router-dom"
 import { ButtonGroup, Divider, Stack, Typography } from "@mui/material"
 
@@ -16,7 +14,7 @@ interface DetailsProps {
     handleActive: (org: OrganizationDetailed) => void
 }
 const OrganizationDetails = ({ entity, closeSidebar, handleSidebar, handleActive }: DetailsProps) => {
-    const { activeOrg, setActiveOrg } = useContext<UserContextItems>(UserContext)
+    const { activeOrg, setActiveOrg } = useUserContext()
 
     if (!entity) return
 
@@ -37,9 +35,10 @@ const OrganizationDetails = ({ entity, closeSidebar, handleSidebar, handleActive
                 }
                 <Divider />
                 <ButtonGroup fullWidth>
-                    {activeOrg?.id !== entity.id &&
-                        <CommonButton actionType="CHECK" color="info" variant='outlined' onClick={() => setActiveOrg(entity)} >Seleccionar como Activo</CommonButton>}
-                    <CommonButton actionType="LIST" component={Link} to={`/campaigns`} >Ver Espacios de Trabajo</CommonButton>
+                    {activeOrg?.id !== entity.id ?
+                        <CommonButton actionType="CHECK" color="info" variant='outlined' onClick={() => setActiveOrg(entity)} >Seleccionar como Activo</CommonButton>
+                        : <CommonButton actionType="LIST" component={Link} to={`/campaigns`} >Ver Espacios de Trabajo</CommonButton>
+                    }
                 </ButtonGroup>
                 <Divider />
                 <DetailsMetadata entity={entity} />

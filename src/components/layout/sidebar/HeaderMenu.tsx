@@ -1,16 +1,22 @@
 import React, { memo } from 'react'
 import MaterialUISwitch from './ThemeSlider';
-import { UserContext } from 'src/stores/contexts';
-import { Link } from 'react-router-dom';
-import type { UserContextItems } from 'src/stores/UserProvider';
+import { useUserContext } from 'src/stores/UserContext';
+import { Link, useNavigate } from 'react-router-dom';
 import { Avatar, Box, Button, Divider, FormControlLabel, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Stack, Typography } from '@mui/material'
 import { useColorScheme, useTheme } from '@mui/material/styles';
 import { AccountCircle, Check } from '@mui/icons-material';
 import MoreIcon from '@mui/icons-material/More';
+import LoadingScreenWrapper from 'src/components/feedback/LoadingScreen';
 
 const HeaderMenu = memo(() => {
+    const nav = useNavigate()
 
-    const { user, logout, activeOrganizations, activeOrg, setActiveOrg } = React.useContext<UserContextItems>(UserContext)
+    const { user, logout, activeOrganizations, activeOrg, setActiveOrg, loadingOrgs } = useUserContext()
+
+    const handleLogout = () => {
+        logout()
+        nav("/login")
+    }
 
     const { setMode } = useColorScheme();
     const { palette } = useTheme();
@@ -62,19 +68,21 @@ const HeaderMenu = memo(() => {
                 <ListItemText>Organizaciones</ListItemText>
                 <Divider />
             </MenuItem>
-            {
-                activeOrganizations?.map(org => {
-                    return <MenuItem dense key={org.id} onClick={() => setActiveOrg(org)}>
-                        {org.id === activeOrg?.id &&
-                            <ListItemIcon>
-                                <Check />
-                            </ListItemIcon>
-                        }
-                        <ListItemText inset={org.id !== activeOrg?.id} primary={org.name}>
-                        </ListItemText>
-                    </MenuItem>
-                })
-            }
+            <LoadingScreenWrapper loading={loadingOrgs} sx={{ minWidth: "15rem", height: "10rem" }}>
+                {
+                    activeOrganizations?.map(org => {
+                        return <MenuItem dense key={org.id} onClick={() => setActiveOrg(org)}>
+                            {org.id === activeOrg?.id &&
+                                <ListItemIcon>
+                                    <Check />
+                                </ListItemIcon>
+                            }
+                            <ListItemText inset={org.id !== activeOrg?.id} primary={org.name}>
+                            </ListItemText>
+                        </MenuItem>
+                    })
+                }
+            </LoadingScreenWrapper>
             <Divider />
             <MenuItem >
                 <FormControlLabel sx={{ width: "9rem" }}
@@ -83,7 +91,7 @@ const HeaderMenu = memo(() => {
                     label={palette.mode === "dark" ? "Modo Oscuro" : "Modo Claro"}
                 />
             </MenuItem>
-            <MenuItem dense onClick={() => logout()} sx={{ "&:hover": { color: palette.error.main } }}>
+            <MenuItem dense onClick={() => handleLogout()} sx={{ "&:hover": { color: palette.error.main } }}>
                 <ListItemText>
                     Cerrar Sesión
                 </ListItemText>

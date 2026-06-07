@@ -29,7 +29,8 @@ export const formatDate = (date: string, formatType: DateFormat, customFormat: s
         default: format = customFormat
             break;
     }
-    return dayjs(date).format(format)
+    const formattedDate = dayjs(date).format(format)
+    return formattedDate === "Invalid Date" ? undefined : formattedDate
 }
 
 
@@ -53,3 +54,14 @@ export const getFieldTypeValue = (fieldType: FieldType, value: unknown) => {
             return JSON.parse(value)
     }
 };
+
+export const isValidURL = (url: string) => {
+    try {
+        new URL(url)
+        return true
+    } catch {
+        return false
+    }
+}
+
+export const sanitizePhone = (phone: string) => phone.replace(/\D/g, "")
