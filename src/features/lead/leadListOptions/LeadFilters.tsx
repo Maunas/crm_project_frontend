@@ -206,28 +206,26 @@ const LeadFormFieldType = memo(({ register, control, name, leadField, errorMessa
     const { field_type_code: typeCode, required } = { ...leadField }
     const subtypeCode = leadField.field_subtype_code ?? undefined
 
-
-
     switch (typeCode) {
         case "LEAD":
             return (<LeadFormRelatedLead control={control} name={name} options={[]} size="small"
-                label={LEAD_FORM_LABEL} required={required} errorMessage={errorMessage} />)
+                label={LEAD_FORM_LABEL} required={required} errorMessage={errorMessage} showAdornment />)
         case "FILE":
             return (<LeadFormFile register={register} name={name} required={required} size="small" label={LEAD_FORM_LABEL}
-                errorMessage={errorMessage} />)
+                errorMessage={errorMessage} showAdornment />)
         case "SELECTOR":
             return (<LeadFormSelector control={control} name={name} options={[]} size="small"
-                label={LEAD_FORM_LABEL} subtype={subtypeCode} required={required} errorMessage={errorMessage} />)
+                label={LEAD_FORM_LABEL} subtype={subtypeCode} required={required} errorMessage={errorMessage} showAdornment />)
         case "BOOL":
             return (<LeadFormBool control={control} name={name} label={LEAD_FORM_LABEL} errorMessage={errorMessage} size="small" />)
         case "DATE_TIME": case "DATE":
             return (<LeadFormDate register={register} name={name} label={LEAD_FORM_LABEL} size="small"
-                subtype={subtypeCode} required={leadField.required} errorMessage={errorMessage} />)
+                subtype={subtypeCode} required={leadField.required} errorMessage={errorMessage} showAdornment />)
         case "NUMBER": case "INT":
             return (<LeadFormNumber control={control} name={name} label={LEAD_FORM_LABEL} size="small"
-                subtype={subtypeCode} required={leadField.required} errorMessage={errorMessage} />)
+                subtype={subtypeCode} required={leadField.required} errorMessage={errorMessage} showAdornment />)
         case "STRING":
             return <LeadFormText register={register} name={name} label={LEAD_FORM_LABEL} size="small"
-                required={leadField.required} errorMessage={errorMessage} subtype={subtypeCode} />
+                required={leadField.required} errorMessage={errorMessage} subtype={subtypeCode} showAdornment />
     }
 })
