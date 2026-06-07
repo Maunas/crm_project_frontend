@@ -100,6 +100,11 @@ const theme = createTheme({
         }
       },
     },
+    MuiInputBase: {
+      defaultProps: {
+        disableInjectingGlobalStyles: true,
+      },
+    },
   },
 });
 

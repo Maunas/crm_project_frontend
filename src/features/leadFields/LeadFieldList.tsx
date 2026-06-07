@@ -36,7 +36,6 @@ export interface ReorderFieldsIds {
     fields: number[];
 }
 
-
 const MIN_FIELDS = 10
 
 export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }: LeadFieldTableProps) => {
@@ -85,7 +84,7 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
                 })
             }
             case "CREATE_FIELD": {
-                return fetchFieldsLoad()
+                return fetchFieldsLoad(campaign.id)
             }
             case "DELETE_FIELD": {
                 return setLeadFields(prevList => {
@@ -99,7 +98,7 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
                 })
             }
         }
-    }, [closeSidebar, selectedEntity, fetchFieldsLoad, handleSidebar])
+    }, [closeSidebar, selectedEntity, fetchFieldsLoad, handleSidebar, campaign.id])
 
     const handleActive = async (field: LeadFieldDetailed | null) => {
         if (!field || !field.id) return
@@ -128,9 +127,6 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
             .catch(e => showCommonErrorToast(e))
     }
 
-    const [deletingField, setDeletingField] = useState<LeadFieldDetailed | null>(null)
-    const handleDeletingField = useCallback((deletingField: LeadFieldDetailed) => setDeletingField(deletingField), [])
-
     const [showAll, setShowAll] = useState<boolean>(false)
 
     const { modalProps } = useModal()
@@ -141,7 +137,6 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
         if (!leadFields || leadFields.length === 0) return []
         return getFieldsBySections(leadFields)
     }, [leadFields])
-
 
     const [isReordering, setIsReordering] = useState<boolean>(false)
     const [originalFieldsBySectionIds, setOriginalFieldsBySectionIds] = useState<ReorderFieldsIds[]>([])
@@ -174,10 +169,21 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
         setIsReordering(false)
     }
 
+
+    // Deshabilitación de campos
+    const [deletingField, setDeletingField] = useState<LeadFieldDetailed | null>(null)
+    const handleDeletingField = useCallback((deletingField: LeadFieldDetailed) => setDeletingField(deletingField), [])
+
     const { checkedItems, checkedItemsArray, addItem, removeItem, removeAllItems, areThereActiveItems, areThereInactiveItems } = useSelectCheckbox<LeadFieldDetailed>()
 
-    const getSectionCheckedItems = useCallback((sectionId: number) => {
-        return checkedItemsArray.filter(items => items.lead_field_section.id === sectionId)
+    /**Devuelve la cantidad de items seleccionados por sección */
+    const checkedBySectionId = useMemo(() => {
+        const map = new Map<number, number>()
+        for (const item of checkedItemsArray) {
+            const sectId = item.lead_field_section.id
+            map.set(sectId, (map.get(sectId) ?? 0) + 1)
+        }
+        return map
     }, [checkedItemsArray])
 
     const [bulkDisabling, setBulkDisabling] = useState<"disable" | "enable" | null>(null)
@@ -190,9 +196,9 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
                     const [disLength, delLength, failLength] = [res.disabled.length, res.deleted.length, res.failed.length]
                     if (delLength + disLength > 0) fetchFieldsLoad(campaign.id)
                     showToast(`
-                        ${disLength > 0 ? `Se han deshabilitado ${disLength} lead${disLength > 1 ? "s" : ""}. ` : ""}
-                        ${delLength > 0 ? `Se han eliminado definitivamente ${delLength} lead${delLength > 1 ? "s" : ""}. ` : ""}
-                        ${failLength > 0 ? `No se ha podido deshabilitar ${failLength} lead${failLength > 1 ? "s" : ""}.` : ""}
+                        ${disLength > 0 ? `Se han deshabilitado ${disLength} campo${disLength > 1 ? "s" : ""}. ` : ""}
+                        ${delLength > 0 ? `Se han eliminado definitivamente ${delLength} campo${delLength > 1 ? "s" : ""}. ` : ""}
+                        ${failLength > 0 ? `No se ha podido deshabilitar ${failLength} campo${failLength > 1 ? "s" : ""}.` : ""}
                         `)
                 })
                 .catch(e => showCommonErrorToast(e))
@@ -203,8 +209,8 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
                 const [enLength, failLength] = [res.activated.length, res.failed.length]
                 if (enLength > 0) fetchFieldsLoad(campaign.id)
                 showToast(`
-                        ${enLength > 0 ? `Se han habilitado ${enLength} lead${enLength > 1 ? "s" : ""}. ` : ""}
-                        ${failLength > 0 ? `No se ha podido habilitar ${failLength} lead${failLength > 1 ? "s" : ""}.` : ""}
+                        ${enLength > 0 ? `Se han habilitado ${enLength} campo${enLength > 1 ? "s" : ""}. ` : ""}
+                        ${failLength > 0 ? `No se ha podido habilitar ${failLength} campo${failLength > 1 ? "s" : ""}.` : ""}
                         `)
             })
             .catch(e => showCommonErrorToast(e))
@@ -231,10 +237,6 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
                             <CommonButton onClick={() => setBulkDisabling("disable")} actionType="DISABLE" color="error" variant="outlined" onlyTooltip>
                                 Deshabilitar Seleccionados
                             </CommonButton>}
-                        {!isReordering && <CommonButton onClick={() => handleSidebar("CREATE_FIELD", null)} actionType="CREATE" onlyTooltip>
-                            Agregar
-                        </CommonButton>}
-
                         {isReordering && <CommonButton onClick={cancelReorder}
                             color="error" variant="outlined" actionType="CLOSE" onlyTooltip>
                             Cancelar
@@ -244,6 +246,10 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
                             actionType={isReordering ? "SAVE" : "REORDER"} onlyTooltip>
                             Reordenar
                         </CommonButton>
+                        {!isReordering && <CommonButton onClick={() => handleSidebar("CREATE_FIELD", null)} actionType="CREATE" onlyTooltip>
+                            Agregar
+                        </CommonButton>}
+
                     </ButtonGroup>
                 }
             </Stack>
@@ -253,8 +259,7 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
                         {newFieldsBySectionIds.map((section, idx) => {
                             const sectFields = showAll ? section.fields : section.fields.slice(0, MIN_FIELDS)
                             const leadFieldsData = fieldsBySection.find(fbs => fbs.id === section.sectId)
-                            const sectionCheckedItems = getSectionCheckedItems(section.sectId)
-                            const sectionCheckedItemsLength = sectionCheckedItems.length
+                            const sectionCheckedItems = checkedBySectionId.get(section.sectId) ?? 0
                             if (!leadFieldsData) return
                             return (
                                 <Accordion expanded={openTableId === section.sectId} elevation={2} key={`${section.sectId}-acc`}
@@ -269,8 +274,8 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
                                         <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
                                             {!isReordering ?
                                                 <Checkbox
-                                                    checked={section.fields.length === sectionCheckedItemsLength}
-                                                    indeterminate={sectionCheckedItemsLength > 0 && section.fields.length !== sectionCheckedItemsLength}
+                                                    checked={section.fields.length === sectionCheckedItems}
+                                                    indeterminate={sectionCheckedItems > 0 && section.fields.length !== sectionCheckedItems}
                                                     onClick={stopPropagationEvent()}
                                                     onChange={(_, checked) => checked ? addItem(leadFieldsData.fields) : removeItem(leadFieldsData.fields)} /> :
                                                 <CommonButton actionType="DRAG" draggable variant="contained" onlyTooltip color="primary"
@@ -278,9 +283,9 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
                                                     onDragStart={() => handleDragStart(idx)} sx={{ cursor: "grab", px: 1.5, minWidth: 0 }} />
                                             }
                                             <Typography variant="h3" sx={{ py: .5, flexGrow: 1 }}>{section.sectName}</Typography>
-                                            {sectionCheckedItemsLength > 0 &&
+                                            {sectionCheckedItems > 0 &&
                                                 <Typography variant="body1" sx={{ fontStyle: "italic", py: .5, flexGrow: 1 }}>
-                                                    {`- ${sectionCheckedItemsLength === 1 ? "1 item seleccionado" : `${sectionCheckedItemsLength} items seleccionados`} `}
+                                                    {`- ${sectionCheckedItems === 1 ? "1 item seleccionado" : `${sectionCheckedItems} items seleccionados`} `}
                                                 </Typography>
                                             }
                                         </Stack>
@@ -311,7 +316,7 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
             </LoadingScreenWrapper >
             <GenericSidebar isSidebarOpen={Boolean(sidebarMode)} closeSidebar={closeSidebar} sidebarComponent={
                 <LeadFieldSidebar mode={sidebarMode} entity={selectedEntity} updateEntity={updateEntity} campaign={campaign}
-                    closeSidebar={closeSidebar} handleSidebar={handleSidebarWrapper} leadFieldListLength={leadFields?.length ?? 0} />
+                    closeSidebar={closeSidebar} handleSidebar={handleSidebarWrapper} leadFields={leadFields} />
             } />
             <DisableConfirmDialog entity={deletingField} clearEntity={() => setDeletingField(null)} idModal='dis-field-det'
                 onConfirm={() => handleActive(deletingField)} entityTypeName="el campo" />
@@ -328,14 +333,14 @@ interface SidebarProps {
     closeSidebar: () => void,
     updateEntity: (mode: string, entity: LeadFieldDetailed) => void,
     handleSidebar: (mode: string, entity: LeadFieldDetailed | null) => void,
-    leadFieldListLength: number,
+    leadFields: LeadFieldDetailed[] | null,
     campaign: CampaignDetailed
 }
 
-const LeadFieldSidebar = ({ mode, entity, handleSidebar, closeSidebar, updateEntity, campaign, leadFieldListLength }: SidebarProps) => {
+const LeadFieldSidebar = ({ mode, entity, handleSidebar, closeSidebar, updateEntity, campaign, leadFields }: SidebarProps) => {
     switch (mode) {
         case "DETAILS_FIELD":
-            return <LeadFieldDetail leadField={entity as LeadFieldDetailed} leadFieldListLength={leadFieldListLength}
+            return <LeadFieldDetail leadField={entity as LeadFieldDetailed} leadFieldListLength={leadFields?.length ?? 0}
                 closeSidebar={closeSidebar} handleSidebar={handleSidebar} updateEntity={updateEntity} />
         case "CREATE_FIELD":
             return <LeadFieldFormSidebar campaign={campaign} closeSidebar={closeSidebar} handleSidebar={handleSidebar}

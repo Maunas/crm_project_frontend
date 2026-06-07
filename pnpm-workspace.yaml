@@ -1,3 +1,6 @@
+allowBuilds:
+  msgpackr-extract: true
+
 minimumReleaseAge: 7200
 
 onlyBuiltDependencies:

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import type { LeadPostForm } from "../leadForm/LeadForm"
-import { LeadFieldTypeIcon } from "features/leadFields/LeadFieldTypeIcon"
+import { LeadFieldTypeAvatar } from "features/leadFields/LeadFieldTypeIcon"
 import { CommonIconButton } from "shared/ui/buttons/CommonIconButton"
 import { CustomListItem } from "shared/ui/lists/CustomListItem"
 import { useLoading } from "src/hooks/useLoading"
@@ -100,7 +100,7 @@ export const LeadPartialUpdate = ({ fieldValue, onClose, lead, updateLeadInfo }:
                         size="small" tooltipSize="small" color="primary" />
                 </Stack>
             }>
-                <LeadFieldTypeIcon typeCode={iconCode} subtypeCode={fieldData.field_subtype_code} />
+                <LeadFieldTypeAvatar typeCode={iconCode} subtypeCode={fieldData.field_subtype_code} />
                 <ListItemText sx={{ mr: 9 }}>
                     <LeadFormFieldType register={register} control={control} leadField={fieldData}
                         size="small" errorMessage={errors?.value?.message} />

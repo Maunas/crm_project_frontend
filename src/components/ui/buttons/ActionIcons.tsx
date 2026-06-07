@@ -19,6 +19,8 @@ import LowPriorityIcon from '@mui/icons-material/LowPriority';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
+import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
+
 const ACTION_ICONS = {
     NONE: <></>,
     MODIFY: <EditIcon sx={{ display: "block" }} />,
@@ -42,6 +44,7 @@ const ACTION_ICONS = {
     OPEN_LIST: <KeyboardArrowDownIcon sx={{ display: "block" }} />,
     CLOSE_LIST: <KeyboardArrowUpIcon sx={{ display: "block" }} />,
     DRAG: <DragIndicatorIcon sx={{ display: "block" }} />,
+    EDIT_TEXT: <DriveFileRenameOutlineIcon sx={{ display: "block" }} />,
 }
 
 export type ActionType = keyof typeof ACTION_ICONS
