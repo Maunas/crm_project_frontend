@@ -49,7 +49,7 @@ export const GenericSidebar = ({ isSidebarOpen = false, closeSidebar, sidebarPro
             ModalProps={{ keepMounted: true }}>
             <GenericPaper sx={{
                 height: "100%", minHeight: "100vh", width: "100%", overflowY: "auto", borderRadius: 0,
-            }}>
+            }} elevation={2}>
                 {isSidebarOpen && sidebarComponent}
             </GenericPaper>
         </Drawer >
@@ -61,7 +61,7 @@ const ContainerWithSidebar = ({ isSidebarOpen = false, closeSidebar, sidebarProp
 
     return (
         <>
-            <Container maxWidth={containerSize ?? "lg"} component={GenericPaper}>
+            <Container maxWidth={containerSize ?? "lg"} component={GenericPaper} elevation={1} >
                 {children}
             </Container>
             <GenericSidebar isSidebarOpen={isSidebarOpen} closeSidebar={closeSidebar} sidebarProps={sidebarProps}
