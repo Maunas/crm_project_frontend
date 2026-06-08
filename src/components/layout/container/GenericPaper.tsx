@@ -16,7 +16,7 @@ const GenericPaper = styled(Paper)(({ theme }) => {
         backgroundImage: `
         ${originalGradient},
         linear-gradient(180deg, ${theme.alpha(theme.palette.contrast[50], .05)},
-        ${theme.alpha(theme.palette.contrast[900], .12)})`
+        ${theme.alpha(theme.palette.contrast[900], .1)})`
 
     })]
 })
