@@ -83,7 +83,6 @@ export const orderFieldsBySections = <T extends LeadFieldValue | LeadField>(fiel
     return getFieldsBySections(fields).flatMap(section => section.fields)
 }
 
-
 //Separa los fields de LeadForm por sección, agregando un globalIdx para el formulario (UseFieldArray)
 export const getLeadFormFieldsBySections = (fields: FieldArrayWithId<LeadPostForm, "values", "id">[]) => {
     const sections = new Map<number, LeadFieldsBySection<FieldArrayWithId<LeadPostForm, "values", "id">>>()
@@ -109,8 +108,9 @@ export const getLeadFormFieldsBySections = (fields: FieldArrayWithId<LeadPostFor
 }
 
 //Separa los fieldValues por sección, devolviendo únicamente sus ids.
-export const getLeadFieldsBySectionsIds = (fieldsBySections: LeadFieldsBySection<LeadFieldDetailed>[]) => {
-    if (fieldsBySections.length === 0) return []
+export const getLeadFieldsBySectionsIds = (leadFields: LeadFieldDetailed[] | null) => {
+    if (!leadFields || leadFields.length === 0) return []
+    const fieldsBySections = getFieldsBySections(leadFields)
     return fieldsBySections.map(section => {
         return { sectId: section.id, sectName: section.name, fields: section.fields.map(field => field.id) }
     })

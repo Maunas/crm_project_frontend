@@ -81,3 +81,9 @@ declare module '@mui/material/Button' {
     contrast: true;
   }
 }
+
+declare module '@mui/material/Paper' {
+  interface PaperOwnProps {
+    noBorder?: true;
+  }
+}

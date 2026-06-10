@@ -17,7 +17,6 @@ export const GenericContainer = ({ children, paperProps = {}, ...props }: Generi
     )
 }
 
-
 interface ContainerWithSidebarProps {
     isSidebarOpen?: boolean,
     closeSidebar: () => void,
@@ -26,42 +25,51 @@ interface ContainerWithSidebarProps {
     sidebarWidth?: string,
     sidebarProps?: DrawerProps,
     children?: ReactNode,
+    noPaper?: boolean
 }
 
 export const GenericSidebar = ({ isSidebarOpen = false, closeSidebar, sidebarProps, sidebarComponent, sidebarWidth }: ContainerWithSidebarProps) => {
 
-    const { breakpoints } = useTheme()
+    const { breakpoints, palette } = useTheme()
 
     const mdScreen = useMediaQuery(breakpoints.down('md'));
 
     return (
-        <Drawer open={isSidebarOpen} onClose={closeSidebar} anchor={mdScreen ? "bottom" : "right"}
-            sx={{
-                zIndex: 1202,
-                '& .MuiDrawer-paper': {
-                    minHeight: '100vh',
-                    width: sidebarWidth ?? '45rem',
-                    [breakpoints.down('md')]: {
-                        width: '100vw',
-                    },
-                },
-            }}  {...sidebarProps}
-            ModalProps={{ keepMounted: true }}>
-            <GenericPaper sx={{
-                height: "100%", minHeight: "100vh", width: "100%", overflowY: "auto", borderRadius: 0,
-            }} elevation={2}>
-                {isSidebarOpen && sidebarComponent}
-            </GenericPaper>
+        <Drawer
+            open={isSidebarOpen}
+            onClose={closeSidebar}
+            anchor={mdScreen ? "bottom" : "right"}
+            slotProps={{
+                paper: {
+                    component: GenericPaper,
+                    noBorder: true,
+                    elevation: 1,
+                    sx: {
+                        minHeight: '100vh',
+                        width: sidebarWidth ?? '45rem',
+                        height: "100%",
+                        overflowY: "auto",
+                        borderLeft: `1px solid ${palette.divider}`,
+                        borderRadius: 0,
+                        [breakpoints.down('md')]: {
+                            width: '100vw',
+                            borderLeft: "none",
+                        },
+                    }
+                }
+            }}
+            sx={{ zIndex: 1202 }}
+            {...sidebarProps}
+        >
+            {isSidebarOpen && sidebarComponent}
         </Drawer >
     )
 }
 
-
-const ContainerWithSidebar = ({ isSidebarOpen = false, closeSidebar, sidebarProps, sidebarComponent, containerSize, sidebarWidth, children }: ContainerWithSidebarProps) => {
-
+const ContainerWithSidebar = ({ isSidebarOpen = false, closeSidebar, sidebarProps, sidebarComponent, containerSize, sidebarWidth, noPaper = false, children }: ContainerWithSidebarProps) => {
     return (
         <>
-            <Container maxWidth={containerSize ?? "lg"} component={GenericPaper} elevation={1} >
+            <Container maxWidth={containerSize ?? "lg"} {...(noPaper ? {} : { component: GenericPaper })} >
                 {children}
             </Container>
             <GenericSidebar isSidebarOpen={isSidebarOpen} closeSidebar={closeSidebar} sidebarProps={sidebarProps}

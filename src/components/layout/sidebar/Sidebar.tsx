@@ -31,8 +31,9 @@ const closedMixin = (theme: Theme): CSSObject => ({
     },
 });
 
-const DrawerHeader = styled('div')(({ theme }) => ({
-    backgroundColor: theme.palette.contrast.dark,
+const DrawerHeader = styled('div')(({ theme }) => ([{
+    backgroundColor: theme.palette.contrast.light,
+    borderBottom: `1px solid ${theme.palette.divider}`,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'flex-end',
@@ -40,10 +41,14 @@ const DrawerHeader = styled('div')(({ theme }) => ({
     color: theme.palette.contrast.contrastText,
     // necessary for content to be below app bar
     ...theme.mixins.toolbar,
-}));
+},
+theme.applyStyles("dark", {
+    backgroundColor: theme.palette.background.paper,
+
+})]));
 
 const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(
-    ({ theme }) => ({
+    ({ theme }) => ([{
         width: `${drawerWidth}rem`,
         flexShrink: 0,
         whiteSpace: 'nowrap',
@@ -68,7 +73,12 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
                 },
             },
         ],
-    }),
+    },
+    theme.applyStyles("dark", {
+        '& .MuiDrawer-paper': {
+            backgroundColor: theme.palette.background.paper,
+        },
+    })])
 );
 
 /************************************ Componente ****************************************/
@@ -93,8 +103,14 @@ export default function LayoutSidebar({ children }: SidebarProps) {
         <Stack sx={{ minHeight: 0, height: "100%", width: "100%", minWidth: 0 }}>
             <Header handleDrawerOpen={handleDrawerOpen} open={open} />
             <Stack direction="row" sx={{ flexGrow: 1, minHeight: 0, minWidth: 0 }}>
-                <Drawer variant="permanent" open={open}>
-                    <DrawerHeader>
+                <Drawer variant="permanent" open={open}
+                    slotProps={{
+                        paper: {
+                            elevation: 1,
+                            noBorder: true
+                        }
+                    }}>
+                    <DrawerHeader >
                         <IconButton onClick={handleDrawerClose} color="inherit">
                             {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
                         </IconButton>
