@@ -107,7 +107,7 @@ export default function LayoutSidebar({ children }: SidebarProps) {
                     slotProps={{
                         paper: {
                             elevation: 1,
-                            noBorder: true
+                            "data-noborder": true
                         }
                     }}>
                     <DrawerHeader >

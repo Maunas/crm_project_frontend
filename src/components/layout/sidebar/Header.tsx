@@ -47,7 +47,7 @@ interface HeaderProps extends MuiAppBarProps {
 export default function Header({ handleDrawerOpen, open }: HeaderProps) {
 
   return (
-    <HeaderBar position="sticky" elevation={4} noBorder open={open}  >
+    <HeaderBar position="sticky" elevation={4} data-noborder open={open}  >
       <Toolbar >
         <IconButton size="large" edge="start" aria-label="open drawer"
           sx={[

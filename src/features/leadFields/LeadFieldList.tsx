@@ -259,20 +259,28 @@ interface SidebarProps {
 }
 
 const LeadFieldSidebar = ({ mode, entity, handleSidebar, closeSidebar, updateEntity, campaign, leadFields }: SidebarProps) => {
-    switch (mode) {
-        case "DETAILS_FIELD":
-            return <LeadFieldDetail leadField={entity as LeadFieldDetailed} leadFieldListLength={leadFields?.length ?? 0}
+
+    const content = useMemo(() => ({
+        "DETAILS_FIELD":
+            <LeadFieldDetail campaignName={campaign.name} leadField={entity as LeadFieldDetailed} leadFieldListLength={leadFields?.length ?? 0}
                 closeSidebar={closeSidebar} handleSidebar={handleSidebar} updateEntity={updateEntity} />
-        case "CREATE_FIELD":
-            return <LeadFieldFormSidebar campaign={campaign} closeSidebar={closeSidebar} handleSidebar={handleSidebar}
-                updateEntityOnList={(entity) => updateEntity(mode, entity)} />
-        case "UPDATE_FIELD":
-            return <LeadFieldFormSidebar existingLF={entity as LeadFieldDetailed} campaign={campaign}
-                updateEntityOnList={(entity) => updateEntity(mode, entity)}
+        ,
+        "CREATE_FIELD":
+            <LeadFieldFormSidebar campaign={campaign} closeSidebar={closeSidebar} handleSidebar={handleSidebar}
+                updateEntityOnList={(entity) => updateEntity(mode!, entity)} />
+        ,
+        "UPDATE_FIELD":
+            <LeadFieldFormSidebar existingLF={entity as LeadFieldDetailed} campaign={campaign}
+                updateEntityOnList={(entity) => updateEntity(mode!, entity)}
                 closeSidebar={closeSidebar} handleSidebar={handleSidebar} />
-        case "UPDATE_VAL":
-            return <ValidationFormSidebar leadField={entity as LeadFieldDetailed}
-                updateEntityOnList={(entity) => updateEntity("UPDATE_FIELD", entity)}
-                handleSidebar={handleSidebar} />
-    }
+        ,
+        "UPDATE_VAL": <ValidationFormSidebar leadField={entity as LeadFieldDetailed}
+            updateEntityOnList={(entity) => updateEntity("UPDATE_FIELD", entity)}
+            handleSidebar={handleSidebar} />
+        ,
+    }), [campaign, closeSidebar, entity, handleSidebar, leadFields?.length, mode, updateEntity])
+
+    const contentMode = mode as keyof typeof content
+    return content[contentMode]
+
 }

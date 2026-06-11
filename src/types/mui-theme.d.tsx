@@ -84,6 +84,6 @@ declare module '@mui/material/Button' {
 
 declare module '@mui/material/Paper' {
   interface PaperOwnProps {
-    noBorder?: true;
+    "data-noborder"?: true;
   }
 }
