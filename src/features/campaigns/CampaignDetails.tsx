@@ -91,42 +91,40 @@ export const CampaignDetails = () => {
                 </Breadcrumbs>
                 <Stack spacing={3}>
                     <GenericPaper>
-                        <Stack spacing={2}>
+                        <Stack spacing={3}>
                             {campaign &&
-                                <TitleAndActive active={campaign.active} >
-                                    <Typography variant="h1">{campaign.name}</Typography>
-                                </TitleAndActive>
-                            }
-                        </Stack>
-                        {campaign &&
-                            <Stack spacing={2} >
-                                {campaign.description &&
-                                    <Typography variant="body1">{campaign.description}</Typography>
-                                }
-                                <DetailsMetadata entity={campaign} />
-                                <Divider />
-                                <Stack spacing={2} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
-                                    <Typography variant="h2">Acciones</Typography>
-                                    <ButtonGroup sx={{ marginLeft: "auto" }}>
-                                        <HandleActiveButton active={campaign.active} handleActive={() => setDeletingCmp(campaign)} />
-                                        <CommonButton onClick={() => handleSidebar("UPDATE_CMP", null)} actionType="MODIFY">Modificar</CommonButton>
-                                        <CommonButton component={RouterLink} variant='outlined' to={`/leads?workspace=${campaign.workspace_id}&campaign=${campaign.id}`}
-                                            actionType="LIST">Ver Leads</CommonButton>
-                                    </ButtonGroup>
+                                <Stack direction="row" spacing={2} useFlexGap sx={{ justifyContent: "space-between", flexWrap: "wrap" }}>
+                                    <TitleAndActive active={campaign.active} >
+                                        <Stack>
+                                            <Typography variant="h1">{campaign.name}</Typography>
+                                            {campaign.description &&
+                                                <Typography variant="body1" color="textSecondary">{campaign.description}</Typography>}
+                                        </Stack>
+                                    </TitleAndActive>
+                                    <Stack spacing={2} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", ml: "auto" }}>
+                                        <ButtonGroup sx={{ marginLeft: "auto" }}>
+                                            <CommonButton component={RouterLink} variant='outlined' to={`/leads?workspace=${campaign.workspace_id}&campaign=${campaign.id}`}
+                                                actionType="LIST" onlyTooltip color="secondary">Ver Leads</CommonButton>
+                                            <HandleActiveButton active={campaign.active} handleActive={() => setDeletingCmp(campaign)} onlyTooltip />
+                                            <CommonButton onClick={() => handleSidebar("UPDATE_CMP", null)} actionType="MODIFY" onlyTooltip>Modificar</CommonButton>
+                                        </ButtonGroup>
+                                    </Stack>
                                 </Stack>
+                            }
+                            {campaign && <>
                                 <Divider />
-                            </Stack>
-                        }
+                                <DetailsMetadata entity={campaign} />
+                            </>}
+                        </Stack>
                     </GenericPaper>
                     {campaign &&
                         <GenericPaper>
                             <LeadFieldList campaign={campaign} cmpSidebarMode={sidebarMode} closeCmpSidebar={closeSidebar} />
                         </GenericPaper>}
-
                 </Stack>
                 <DisableConfirmDialog idModal='conf-delete-cmp-det' entity={deletingCmp} clearEntity={() => setDeletingCmp(null)} entityTypeName="la campaña"
                     onConfirm={() => handleActiveCampaign(deletingCmp!)} />
             </ContainerWithSidebar >
-        </LoadingScreenWrapper>
+        </LoadingScreenWrapper >
     )
 }

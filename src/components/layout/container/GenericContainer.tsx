@@ -2,6 +2,7 @@ import { type ReactNode } from "react"
 import GenericPaper from "./GenericPaper"
 import { Container, Divider, Drawer, Stack, useMediaQuery, useTheme, type Breakpoint, type ContainerProps, type DrawerProps, type PaperProps, Box, Typography } from "@mui/material"
 import { CommonIconButton } from "src/components/ui/buttons/CommonIconButton"
+import { GenericSidebarHeader } from "./GenericSidebarHeader"
 
 export interface GenericContainerProps extends ContainerProps {
     children?: ReactNode,
@@ -31,9 +32,9 @@ interface ContainerWithSidebarProps {
 
 export const GenericSidebar = ({ isSidebarOpen = false, closeSidebar, sidebarProps, sidebarComponent, sidebarWidth }: ContainerWithSidebarProps) => {
 
-    const { breakpoints, palette } = useTheme()
+    const theme = useTheme()
 
-    const mdScreen = useMediaQuery(breakpoints.down('md'));
+    const mdScreen = useMediaQuery(theme.breakpoints.down('md'));
 
     return (
         <Drawer
@@ -45,23 +46,24 @@ export const GenericSidebar = ({ isSidebarOpen = false, closeSidebar, sidebarPro
                     component: GenericPaper,
                     "data-noborder": true,
                     elevation: 1,
-                    sx: {
+                    sx: [{
                         minHeight: '100vh',
                         width: sidebarWidth ?? '40rem',
                         height: "100%",
-                        overflowY: "auto",
                         position: "fixed",
-                        borderLeft: `1px solid ${palette.divider}`,
+                        borderLeft: `1px solid ${theme.palette.divider}`,
                         borderRadius: 0,
-                        [breakpoints.down('md')]: {
+                        [theme.breakpoints.down('md')]: {
                             width: '100vw',
                             borderLeft: "none",
                         },
-                    }
+                    },
+                    theme.applyStyles("light", {
+                        backgroundColor: theme.palette.background.default
+                    })]
                 }
             }}
             sx={{ zIndex: 1202 }}
-
             {...sidebarProps}
         >
             <CommonIconButton actionType="CLOSE" title="Cerrar" onClick={closeSidebar}
@@ -74,23 +76,35 @@ export const GenericSidebar = ({ isSidebarOpen = false, closeSidebar, sidebarPro
 interface SidebarContentWrapperProps {
     title?: ReactNode,
     subtitle?: ReactNode,
+    avatar?: ReactNode,
+    actions?: ReactNode,
     children?: ReactNode,
 }
 
-export const SidebarContentWrapper = ({ title, subtitle, children }: SidebarContentWrapperProps) => {
+export const SidebarContentWrapper = ({ title, subtitle, avatar, actions, children }: SidebarContentWrapperProps) => {
     return (
-        <Stack spacing={2} useFlexGap>
-            <Box sx={{ m: "-1.5rem -2rem 0" }}>
-                <Stack sx={{ p: "1rem 1.5rem", height: "6rem", justifyContent: "center" }}>
-                    <Typography variant="subtitle2" color="textSecondary"
-                        sx={{ textTransform: "uppercase", fontWeight: "bold" }} >{subtitle}</Typography>
-                    <Typography variant="h2" >{title}</Typography>
+        <Stack spacing={2} sx={{ height: "100%" }} useFlexGap>
+            <GenericSidebarHeader >
+                <Stack direction="row" spacing={2} sx={{ p: "1rem 4rem 1rem 1.5rem", height: "6rem", alignItems: "center" }}>
+                    {avatar}
+                    <Stack>
+                        <Typography variant="subtitle2" color="textSecondary"
+                            sx={{ textTransform: "uppercase", fontWeight: "bold" }} >{subtitle}</Typography>
+                        <Typography variant="h2" >{title}</Typography>
+                    </Stack>
                 </Stack>
                 <Divider />
-            </Box >
+            </GenericSidebarHeader >
             <Box sx={{ flexGrow: 1 }}>
                 {children}
             </Box>
+            <GenericSidebarHeader sx={{ mt: 0, mb: "-1.5rem" }}>
+                <Divider />
+                {Boolean(actions) &&
+                    <Stack sx={{ p: "1rem 1.5rem", justifyContent: "center", minHeight: "5rem" }}>
+                        {actions}
+                    </Stack>}
+            </GenericSidebarHeader >
         </Stack >
     )
 }

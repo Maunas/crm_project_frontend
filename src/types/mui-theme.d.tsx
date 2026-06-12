@@ -66,8 +66,9 @@ declare module '@mui/material/LinearProgress' {
 }
 declare module '@mui/material/ListItem' {
   interface ListItemOwnProps {
-    selected?: boolean;
+    isSelected?: boolean;
     alwaysShowSecondary?: boolean;
+    color?: ColorTypes;
   }
 }
 declare module '@mui/material/ListItemAvatar' {

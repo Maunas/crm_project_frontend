@@ -26,7 +26,7 @@ const GenericPaper = styled(
                         linear-gradient(180deg, ${theme.alpha(theme.palette.contrast[50], .04)},
                         ${theme.alpha(theme.palette.contrast[900], .04)})
                         ${elevation === 0 ?//Aclara un poco el elevation=0
-                            `,linear-gradient(${theme.alpha(theme.palette.contrast[50], .02)})`
+                            `,linear-gradient(${theme.alpha(theme.palette.contrast[50], .03)})`
                             : ""}
         `}
             })]

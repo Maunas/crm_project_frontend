@@ -1,7 +1,8 @@
 import CommonButton from 'shared/ui/buttons/CommonButton'
 import type { LeadFieldDetailed } from 'src/types/leadFields'
-import { Box, List, ListItem, ListItemText, Stack, Typography } from '@mui/material'
-import { alpha, useTheme } from '@mui/material/styles'
+import { List, ListItem, ListItemText, Paper, Stack, Typography } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
+import { CodeBox } from 'src/components/ui/details/CodeBox'
 
 interface ValidationListProps {
     leadField: LeadFieldDetailed,
@@ -32,27 +33,24 @@ export const ValidationList = ({ leadField, handleSidebar }: ValidationListProps
                     Modificar
                 </CommonButton>
             </Stack>
-            <List>
+            <List disablePadding>
                 {leadField.validation_rules.map(val =>
-                    <ListItem key={val.id} disableGutters sx={{ py: .5 }}>
-                        <ListItemText primary={
+                    <ListItem key={val.id} disablePadding sx={{ mb: 1, overflow: "hidden" }} component={Paper} elevation={7} >
+                        <ListItemText sx={{ m: 0 }} primary={
                             <Stack spacing={1}>
-                                <Stack>
-                                    <Typography sx={{ fontWeight: "bold" }}>
+                                <Stack sx={{ p: ".5rem 1rem 0 " }}>
+                                    <Typography>
                                         {val.name}
                                     </Typography>
                                     <Typography variant='body2' sx={{ fontStyle: "italic", color: palette.error.main }} >
                                         {val.error_message}
                                     </Typography>
                                 </Stack>
-                                <Box sx={{
-                                    bgcolor: alpha(palette.background.default, .5), width: "100%",
-                                    textAlign: "center", px: 2, py: 1, borderRadius: 3
-                                }}>
-                                    <Typography variant="body1">
+                                <CodeBox>
+                                    <Typography variant="subtitle2" sx={{ fontFamily: "inherit" }}>
                                         {val.expression}
                                     </Typography>
-                                </Box>
+                                </CodeBox>
                             </Stack>
                         } />
                     </ListItem>
