@@ -39,7 +39,7 @@ export const LeadProperties = () => {
                 <Stack spacing={2}>
                     <List>
                         {LEAD_PROPERTIES.map(prop =>
-                            <CustomListItem key={`${prop.id}`} selected={prop.id === selectedEntity?.id} disablePadding secondaryAction={
+                            <CustomListItem key={`${prop.id}`} isSelected={prop.id === selectedEntity?.id} disablePadding secondaryAction={
                                 <Stack direction="row" sx={{ alignItems: "center" }}>
                                     <CommonIconButton actionType='DETAILS' title="Detalles" tooltipSize="small" size="small"
                                         onClick={() => { handleSidebar(`${prop.id}`, prop) }} />

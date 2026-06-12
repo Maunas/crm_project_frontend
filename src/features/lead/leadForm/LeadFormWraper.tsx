@@ -94,8 +94,7 @@ export const CreateLeadFormPage = () => {
 //Convierte LeadFieldDetailed a LeadField
 const detailedToNormalLeadField = (leadField: LeadFieldDetailed) => {
     let newFieldData: LeadField = {
-        ...leadField,
-        lead_field_section_id: leadField.lead_field_section.id
+        ...leadField
     }
     if (leadField.nomenclator) newFieldData = {
         ...newFieldData,

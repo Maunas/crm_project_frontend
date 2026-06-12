@@ -66,8 +66,9 @@ declare module '@mui/material/LinearProgress' {
 }
 declare module '@mui/material/ListItem' {
   interface ListItemOwnProps {
-    selected?: boolean;
+    isSelected?: boolean;
     alwaysShowSecondary?: boolean;
+    color?: ColorTypes;
   }
 }
 declare module '@mui/material/ListItemAvatar' {
@@ -79,5 +80,11 @@ declare module '@mui/material/ListItemAvatar' {
 declare module '@mui/material/Button' {
   interface ButtonPropsColorOverrides {
     contrast: true;
+  }
+}
+
+declare module '@mui/material/Paper' {
+  interface PaperOwnProps {
+    "data-noborder"?: true;
   }
 }

@@ -116,7 +116,7 @@ export const OrganizationList = () => {
                         {userOrganizations && userOrganizations?.length > 0 ?
                             <List>
                                 {userOrganizations.map(org =>
-                                    <CustomListItem key={org.id} selected={org.id === selectedEntity?.id} disablePadding secondaryAction={
+                                    <CustomListItem key={org.id} isSelected={org.id === selectedEntity?.id} disablePadding secondaryAction={
                                         <Stack direction="row" sx={{ alignItems: "center" }}>
                                             <CommonIconButton actionType='DETAILS' title='Detalle' onClick={() => handleSidebar("DETAILS_ORG", org)} tooltipSize="small" size="small" />
                                             <CommonIconButton actionType='MODIFY' title='Modificar' onClick={() => handleSidebar("UPDATE_ORG", org)} tooltipSize="small" size="small" />

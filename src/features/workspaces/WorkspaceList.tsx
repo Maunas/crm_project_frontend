@@ -136,7 +136,7 @@ export const WorkspaceList = () => {
                         {workspaces?.items && workspaces?.items?.length > 0 ?
                             <List>
                                 {workspaces?.items.map(wsp =>
-                                    <CustomListItem key={`wsp-${wsp.id}`} selected={wsp.id === selectedEntity?.id} disablePadding secondaryAction={
+                                    <CustomListItem key={`wsp-${wsp.id}`} isSelected={wsp.id === selectedEntity?.id} disablePadding secondaryAction={
                                         <Stack direction="row" sx={{ alignItems: "center" }}>
                                             <CommonIconButton actionType='DETAILS' title="Detalles" tooltipSize="small" size="small"
                                                 onClick={() => { handleSidebar("DETAILS_WSP", wsp) }} />

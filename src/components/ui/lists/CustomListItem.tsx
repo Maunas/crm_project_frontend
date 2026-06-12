@@ -1,26 +1,35 @@
-import { ListItem, ListItemAvatar } from '@mui/material'
-import { alpha, lighten, styled } from '@mui/material/styles'
+import { ListItem, ListItemAvatar, Paper, type ListItemOwnProps } from '@mui/material'
+import { alpha, styled } from '@mui/material/styles'
+import type { ColorTypes } from 'src/types/mui-theme.d'
 
 /**
  * Solo muestra los secondaryAction si se está haciendo hover.
  */
-export const CustomListItem = styled(ListItem,
+export const CustomListItem = styled(
+    ({ isSelected = false, ...props }: ListItemOwnProps) => {
+        console.log("selected:", isSelected)
+        return <ListItem
+            {...(isSelected ? { component: Paper, elevation: 7, "data-noborder": true } : {})}
+            {...props}
+        >
+            {props.children}
+        </ListItem>
+    },
     {
         shouldForwardProp: (prop) =>
-            prop !== "alwaysShowSecondary" && prop !== "selected",
+            prop !== "alwaysShowSecondary" && prop !== "isSelected ",
     }
 )(
-    ({ selected = false, alwaysShowSecondary = false, theme }) => {
-        const selectedStyle = selected ?
+    ({ isSelected = false, alwaysShowSecondary = false, theme, color }) => {
+        const colorType = color ? color as ColorTypes : "primary"
+        const selectedStyle = isSelected ?
             [
                 {
                     borderRadius: ".5rem",
-                    backgroundColor: lighten(theme.palette.background.paper, .3),
-                    boxShadow: `0 2px 6px -1px ${alpha(theme.palette.primary.dark, .6)}`,
+                    border: `2px solid ${alpha(theme.palette[colorType].dark, .6)}`,
                 },
                 theme.applyStyles("dark", {
-                    backgroundColor: lighten(theme.palette.background.paper, .15),
-                    boxShadow: `0 2px 6px -1px ${alpha(theme.palette.primary.main, .4)}`,
+                    border: `2px solid ${alpha(theme.palette[colorType].main, .4)}`,
                 })
             ] : {}
 

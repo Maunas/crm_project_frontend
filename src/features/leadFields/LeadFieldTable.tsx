@@ -1,15 +1,121 @@
-import { memo, useMemo } from "react"
+import { memo, useCallback, useMemo, useState } from "react"
 import { CommonIconButton } from "shared/ui/buttons/CommonIconButton"
 import { SelectableTableRow } from "shared/ui/lists/CustomTableRow"
 import { EnabledIcon } from "shared/ui/lists/Icons"
 import type { LeadFieldDetailed } from "src/types/leadFields"
-import { Box, Checkbox, Stack, Table, TableBody, TableCell, TableHead, TableRow, type Palette } from "@mui/material"
+import { Accordion, AccordionDetails, AccordionSummary, Box, Checkbox, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, useTheme, type Palette } from "@mui/material"
 import React from 'react'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import type { ReorderFieldsIds } from "./LeadFieldList"
 import { useDragAndDrop } from "src/hooks/useDragAndDrop"
 import CommonButton from "src/components/ui/buttons/CommonButton"
 import { stopPropagationEvent } from "src/utils/lists"
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
+import { DisableConfirmDialog } from "src/components/feedback/ConfirmationDialog"
+import { getFieldsBySections } from "./leadFieldUtils"
+
+const MIN_FIELDS = 10
+
+interface LeadFieldTableSectionsProps {
+    leadFields: LeadFieldDetailed[]
+    newFieldsBySectionIds: ReorderFieldsIds[],
+    setNewFieldsBySectionIds: React.Dispatch<React.SetStateAction<ReorderFieldsIds[]>>,
+    handleActive: (field: LeadFieldDetailed | null) => Promise<void>,
+    isReordering: boolean,
+    handleSidebarWrapper: (mode: string, entity?: LeadFieldDetailed | null | undefined) => void,
+    checkedItems: Map<number, LeadFieldDetailed>;
+    checkedItemsArray: LeadFieldDetailed[];
+    addItem: (item: LeadFieldDetailed | LeadFieldDetailed[]) => void;
+    removeItem: (item: LeadFieldDetailed | LeadFieldDetailed[]) => void;
+}
+
+export const LeadFieldTableSections = ({ leadFields, newFieldsBySectionIds, setNewFieldsBySectionIds, handleActive, isReordering,
+    handleSidebarWrapper, checkedItems, checkedItemsArray, addItem, removeItem }: LeadFieldTableSectionsProps) => {
+
+    const { palette } = useTheme()
+    const [showAll, setShowAll] = useState<boolean>(false)
+    const [openTableId, setOpenTableId] = useState<number | null>(null)
+
+    // Deshabilitación de campos
+    const [deletingField, setDeletingField] = useState<LeadFieldDetailed | null>(null)
+    const handleDeletingField = useCallback((deletingField: LeadFieldDetailed) => setDeletingField(deletingField), [])
+
+    /**Devuelve la cantidad de items seleccionados por sección */
+    const checkedBySectionId = useMemo(() => {
+        const map = new Map<number, number>()
+        for (const item of checkedItemsArray) {
+            const sectId = item.lead_field_section.id
+            map.set(sectId, (map.get(sectId) ?? 0) + 1)
+        }
+        return map
+    }, [checkedItemsArray])
+
+    //Reordena las secciones, no los campos.
+    const { handleDragEnter, handleDragOver, handleDragStart, handleDrop, dragStyles } = useDragAndDrop(newFieldsBySectionIds, (i) => setNewFieldsBySectionIds(i))
+
+    const fieldsMapBySection = useMemo(() => {
+        if (!leadFields || leadFields.length === 0) return new Map()
+        const sectionArray = getFieldsBySections(leadFields).map(section => ([section.id, section] as const))
+        return new Map(sectionArray)
+    }, [leadFields])
+
+    return (
+        <Box>
+            {newFieldsBySectionIds.map((section, idx) => {
+                const sectFields = showAll ? section.fields : section.fields.slice(0, MIN_FIELDS)
+                const leadFieldsData = fieldsMapBySection.get(section.sectId)
+                const sectionCheckedItems = checkedBySectionId.get(section.sectId) ?? 0
+                if (!leadFieldsData) return
+                return (
+                    <Accordion expanded={openTableId === section.sectId} component={Paper} elevation={3} key={`${section.sectId}-acc`}
+                        onChange={(_, expanded) => expanded ? setOpenTableId(section.sectId) : setOpenTableId(null)}
+                        sx={[{ p: 0 }, isReordering ? dragStyles(idx, palette, "column", true) : {}]}
+                        {...(isReordering ? {
+                            onDragEnter: () => handleDragEnter(idx),
+                            onDragOver: handleDragOver,
+                            onDrop: () => handleDrop(idx)
+                        } : {})}>
+                        <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls={`${section.sectId}-content`} id={`${section.sectId}-header`}>
+                            <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
+                                {!isReordering ?
+                                    <Checkbox
+                                        checked={section.fields.length === sectionCheckedItems}
+                                        indeterminate={sectionCheckedItems > 0 && section.fields.length !== sectionCheckedItems}
+                                        onClick={stopPropagationEvent()}
+                                        onChange={(_, checked) => checked ? addItem(leadFieldsData.fields) : removeItem(leadFieldsData.fields)} /> :
+                                    <CommonButton actionType="DRAG" draggable variant="contained" onlyTooltip color="primary"
+                                        onClick={stopPropagationEvent()}
+                                        onDragStart={() => handleDragStart(idx)} sx={{ cursor: "grab", px: 1.5, minWidth: 0 }} />
+                                }
+                                <Typography variant="h3" sx={{ py: .5, flexGrow: 1 }}>{section.sectName}</Typography>
+                                {sectionCheckedItems > 0 &&
+                                    <Typography variant="body1" sx={{ fontStyle: "italic", py: .5, flexGrow: 1 }}>
+                                        {`- ${sectionCheckedItems === 1 ? "1 item seleccionado" : `${sectionCheckedItems} items seleccionados`} `}
+                                    </Typography>
+                                }
+                            </Stack>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                            <TableContainer component={Paper} elevation={6} key={`section-${section.sectId}`}>
+                                <LeadFieldTable sectLeadFields={leadFieldsData.fields} orderFieldsIds={sectFields}
+                                    setOrderFieldsIds={setNewFieldsBySectionIds} sectIdx={idx} palette={palette} isReordering={isReordering}
+                                    handleSidebar={handleSidebarWrapper} setDeletingField={handleDeletingField} checkedItems={checkedItems}
+                                    addItem={addItem} removeItem={removeItem} />
+                                {sectFields.length > MIN_FIELDS &&
+                                    <CommonButton actionType={showAll ? "MINUS" : "CREATE"} onClick={() => setShowAll(!showAll)} fullWidth>
+                                        {showAll ? "Mostrar Menos" : "Mostrar Todos"}
+                                    </CommonButton>}
+                            </TableContainer>
+                        </AccordionDetails>
+                    </Accordion >
+                )
+            })
+            }
+            <DisableConfirmDialog entity={deletingField} clearEntity={() => setDeletingField(null)} idModal='dis-field-det'
+                onConfirm={() => handleActive(deletingField)} entityTypeName="el campo" />
+        </Box >
+    )
+}
 
 interface LeadFieldTableProps {
     sectLeadFields: LeadFieldDetailed[],
@@ -25,7 +131,6 @@ interface LeadFieldTableProps {
     removeItem: (item: LeadFieldDetailed | LeadFieldDetailed[]) => void
 
 }
-
 
 export const LeadFieldTable = memo(({ sectLeadFields, orderFieldsIds, setOrderFieldsIds, sectIdx, palette,
     isReordering = false, handleSidebar, setDeletingField, checkedItems, addItem, removeItem }: LeadFieldTableProps) => {
@@ -104,7 +209,6 @@ export const LeadFieldTable = memo(({ sectLeadFields, orderFieldsIds, setOrderFi
         </Table>
     )
 })
-
 
 export const LeadFieldTableCells = memo(({ row }: { row: LeadFieldDetailed }) => {
     return (

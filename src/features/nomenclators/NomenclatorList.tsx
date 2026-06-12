@@ -132,7 +132,7 @@ export const NomenclatorList = () => {
                             nomenclators && nomenclators.items?.length > 0 ?
                                 <List>
                                     {nomenclators.items.map(nom =>
-                                        <CustomListItem key={nom.id} selected={nom.id === selectedEntity?.id} disablePadding secondaryAction={
+                                        <CustomListItem key={nom.id} isSelected={nom.id === selectedEntity?.id} disablePadding secondaryAction={
                                             <Stack direction="row" sx={{ alignItems: "center" }}>
                                                 <CommonIconButton actionType='DETAILS' title='Detalle' onClick={() => handleSidebar("DETAILS_NOM", nom)} tooltipSize='small' size="small" />
                                                 <CommonIconButton actionType='LIST' title='Ver Items' component={RouterLink} to={`/nomenclators/${nom.id}`} tooltipSize='small' size="small" />

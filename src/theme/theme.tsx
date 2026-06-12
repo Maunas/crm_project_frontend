@@ -105,6 +105,17 @@ const theme = createTheme({
         disableInjectingGlobalStyles: true,
       },
     },
+    MuiPaper: {
+      styleOverrides: {
+        root: ({ theme }) => (theme.applyStyles("dark", {
+          '&:not([data-noborder])': {
+            border: `1px solid ${theme.palette.divider}`,
+            borderTop: `1px solid ${theme.alpha(theme.palette.common.white, .3)}`,
+          }
+        })
+        )
+      }
+    }
   },
 });
 

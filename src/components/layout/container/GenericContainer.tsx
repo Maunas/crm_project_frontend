@@ -1,6 +1,8 @@
 import { type ReactNode } from "react"
 import GenericPaper from "./GenericPaper"
-import { Container, Drawer, useMediaQuery, useTheme, type Breakpoint, type ContainerProps, type DrawerProps, type PaperProps } from "@mui/material"
+import { Container, Divider, Drawer, Stack, useMediaQuery, useTheme, type Breakpoint, type ContainerProps, type DrawerProps, type PaperProps, Box, Typography } from "@mui/material"
+import { CommonIconButton } from "src/components/ui/buttons/CommonIconButton"
+import { GenericSidebarHeader } from "./GenericSidebarHeader"
 
 export interface GenericContainerProps extends ContainerProps {
     children?: ReactNode,
@@ -17,7 +19,6 @@ export const GenericContainer = ({ children, paperProps = {}, ...props }: Generi
     )
 }
 
-
 interface ContainerWithSidebarProps {
     isSidebarOpen?: boolean,
     closeSidebar: () => void,
@@ -26,46 +27,96 @@ interface ContainerWithSidebarProps {
     sidebarWidth?: string,
     sidebarProps?: DrawerProps,
     children?: ReactNode,
+    noPaper?: boolean,
 }
 
 export const GenericSidebar = ({ isSidebarOpen = false, closeSidebar, sidebarProps, sidebarComponent, sidebarWidth }: ContainerWithSidebarProps) => {
 
-    const { breakpoints } = useTheme()
+    const theme = useTheme()
 
-    const mdScreen = useMediaQuery(breakpoints.down('md'));
+    const mdScreen = useMediaQuery(theme.breakpoints.down('md'));
 
     return (
-        <Drawer open={isSidebarOpen} onClose={closeSidebar} anchor={mdScreen ? "bottom" : "right"}
-            sx={{
-                zIndex: 1202,
-                '& .MuiDrawer-paper': {
-                    minHeight: '100vh',
-                    width: sidebarWidth ?? '45rem',
-                    [breakpoints.down('md')]: {
-                        width: '100vw',
+        <Drawer
+            open={isSidebarOpen}
+            onClose={closeSidebar}
+            anchor={mdScreen ? "bottom" : "right"}
+            slotProps={{
+                paper: {
+                    component: GenericPaper,
+                    "data-noborder": true,
+                    elevation: 1,
+                    sx: [{
+                        minHeight: '100vh',
+                        width: sidebarWidth ?? '40rem',
+                        height: "100%",
+                        position: "fixed",
+                        borderLeft: `1px solid ${theme.palette.divider}`,
+                        borderRadius: 0,
+                        [theme.breakpoints.down('md')]: {
+                            width: '100vw',
+                            borderLeft: "none",
+                        },
                     },
-                },
-            }}  {...sidebarProps}
-            ModalProps={{ keepMounted: true }}>
-            <GenericPaper sx={{
-                height: "100%", minHeight: "100vh", width: "100%", overflowY: "auto", borderRadius: 0,
-            }} elevation={2}>
-                {isSidebarOpen && sidebarComponent}
-            </GenericPaper>
+                    theme.applyStyles("light", {
+                        backgroundColor: theme.palette.background.default
+                    })]
+                }
+            }}
+            sx={{ zIndex: 1202 }}
+            {...sidebarProps}
+        >
+            <CommonIconButton actionType="CLOSE" title="Cerrar" onClick={closeSidebar}
+                sx={{ position: "absolute", top: "3rem", right: "2rem", transform: "translateY(-50%)" }} />
+            {sidebarComponent}
         </Drawer >
     )
 }
 
+interface SidebarContentWrapperProps {
+    title?: ReactNode,
+    subtitle?: ReactNode,
+    avatar?: ReactNode,
+    actions?: ReactNode,
+    children?: ReactNode,
+}
 
-const ContainerWithSidebar = ({ isSidebarOpen = false, closeSidebar, sidebarProps, sidebarComponent, containerSize, sidebarWidth, children }: ContainerWithSidebarProps) => {
+export const SidebarContentWrapper = ({ title, subtitle, avatar, actions, children }: SidebarContentWrapperProps) => {
+    return (
+        <Stack spacing={2} sx={{ height: "100%" }} useFlexGap>
+            <GenericSidebarHeader >
+                <Stack direction="row" spacing={2} sx={{ p: "1rem 4rem 1rem 1.5rem", height: "6rem", alignItems: "center" }}>
+                    {avatar}
+                    <Stack>
+                        <Typography variant="subtitle2" color="textSecondary"
+                            sx={{ textTransform: "uppercase", fontWeight: "bold" }} >{subtitle}</Typography>
+                        <Typography variant="h2" >{title}</Typography>
+                    </Stack>
+                </Stack>
+                <Divider />
+            </GenericSidebarHeader >
+            <Box sx={{ flexGrow: 1 }}>
+                {children}
+            </Box>
+            <GenericSidebarHeader sx={{ mt: 0, mb: "-1.5rem" }}>
+                <Divider />
+                {Boolean(actions) &&
+                    <Stack sx={{ p: "1rem 1.5rem", justifyContent: "center", minHeight: "5rem" }}>
+                        {actions}
+                    </Stack>}
+            </GenericSidebarHeader >
+        </Stack >
+    )
+}
 
+const ContainerWithSidebar = ({ isSidebarOpen = false, closeSidebar, sidebarProps, sidebarComponent, containerSize, sidebarWidth, noPaper = false, ...props }: ContainerWithSidebarProps) => {
     return (
         <>
-            <Container maxWidth={containerSize ?? "lg"} component={GenericPaper} elevation={1} >
-                {children}
+            <Container maxWidth={containerSize ?? "lg"} {...(noPaper ? {} : { component: GenericPaper })} >
+                {props.children}
             </Container>
             <GenericSidebar isSidebarOpen={isSidebarOpen} closeSidebar={closeSidebar} sidebarProps={sidebarProps}
-                sidebarComponent={sidebarComponent} sidebarWidth={sidebarWidth} />
+                sidebarComponent={sidebarComponent} sidebarWidth={sidebarWidth} {...props} />
         </>
     )
 }

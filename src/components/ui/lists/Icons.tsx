@@ -12,7 +12,7 @@ interface IconProps {
 export const EnabledIcon = memo(({ active = false, trueTooltip = "Habilitado", falseTooltip = "Deshabilitado", size = "medium" }: IconProps) => {
     return (
         <ChipTooltip title={active ? trueTooltip : falseTooltip}
-            color={active ? "success" : "error"} size="small">
+            color={active ? "success" : "error"} size={size}>
             {active
                 ? <CheckCircleOutlinedIcon color="success" fontSize={size} />
                 : <HighlightOffIcon color="error" fontSize={size} />}

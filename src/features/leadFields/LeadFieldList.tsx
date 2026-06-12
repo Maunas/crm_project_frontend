@@ -6,23 +6,20 @@ import { useModal } from "src/hooks/useModal"
 import type { LeadFieldDetailed } from "src/types/leadFields"
 import type { CampaignDetailed } from "src/types/campaigns"
 import { disableBulkLeadField, disableLeadField, enableBulkLeadField, enableLeadField, getLeadField, getLeadFields, reorderLeadFields } from "./leadFieldServices"
-import { Accordion, AccordionDetails, AccordionSummary, Box, ButtonGroup, Checkbox, Paper, Stack, TableContainer, Typography, useTheme } from "@mui/material"
+import { ButtonGroup, Stack, Typography } from "@mui/material"
 import LoadingScreenWrapper from "src/components/feedback/LoadingScreen"
 import { GenericSidebar } from "src/components/layout/container/GenericContainer"
-import { DisableBulkConfirmDialog, DisableConfirmDialog } from "src/components/feedback/ConfirmationDialog"
+import { DisableBulkConfirmDialog } from "src/components/feedback/ConfirmationDialog"
 import { useSearchParams } from "react-router-dom"
 import { useLoading } from "src/hooks/useLoading"
 import { useSidebar } from "src/hooks/useSidebar"
 import { showCommonErrorToast, showToast } from "src/utils/feedback"
-import { getFieldsBySections, getLeadFieldsBySectionsIds } from "./leadFieldUtils"
+import { getLeadFieldsBySectionsIds } from "./leadFieldUtils"
 import { LeadFieldDetail } from "./LeadFieldDetail"
 import { LeadFieldFormSidebar } from "./LeadFieldForm"
 import { ValidationFormSidebar } from "../validations/ValidationForm"
-import { LeadFieldTable } from "./LeadFieldTable"
-import { useDragAndDrop } from "src/hooks/useDragAndDrop"
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
-import { stopPropagationEvent } from "src/utils/lists"
 import { useSelectCheckbox } from "src/hooks/useSelectCheckbox"
+import { LeadFieldTableSections } from "./LeadFieldTable"
 
 interface LeadFieldTableProps {
     campaign: CampaignDetailed,
@@ -36,11 +33,7 @@ export interface ReorderFieldsIds {
     fields: number[];
 }
 
-const MIN_FIELDS = 10
-
 export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }: LeadFieldTableProps) => {
-
-    const { palette } = useTheme()
 
     const [leadFields, setLeadFields] = useState<LeadFieldDetailed[] | null>(null)
 
@@ -59,6 +52,7 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
     const [params, setParams] = useSearchParams()
 
     const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<LeadFieldDetailed>("id", params, setParams, getLeadField, "DETAILS_FIELD")
+    const { modalProps } = useModal()
 
     const handleSidebarWrapper = useCallback((mode: string, entity?: LeadFieldDetailed | null) => {
         if (cmpSidebarMode) closeCmpSidebar()
@@ -127,28 +121,18 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
             .catch(e => showCommonErrorToast(e))
     }
 
-    const [showAll, setShowAll] = useState<boolean>(false)
-
-    const { modalProps } = useModal()
-
-    const [openTableId, setOpenTableId] = useState<number | null>(null)
-
-    const fieldsBySection = useMemo(() => {
-        if (!leadFields || leadFields.length === 0) return []
-        return getFieldsBySections(leadFields)
-    }, [leadFields])
-
+    //-----------------------------------------------Reordenamiento-----------------------------------------------
     const [isReordering, setIsReordering] = useState<boolean>(false)
+
     const [originalFieldsBySectionIds, setOriginalFieldsBySectionIds] = useState<ReorderFieldsIds[]>([])
     const [newFieldsBySectionIds, setNewFieldsBySectionIds] = useState<ReorderFieldsIds[]>([])
 
     useEffect(() => {
-        setOriginalFieldsBySectionIds(getLeadFieldsBySectionsIds(fieldsBySection))
-        setNewFieldsBySectionIds(getLeadFieldsBySectionsIds(fieldsBySection))
-    }, [fieldsBySection])
-
-    //Reordena las secciones, no los campos.
-    const { handleDragEnter, handleDragOver, handleDragStart, handleDrop, dragStyles } = useDragAndDrop(newFieldsBySectionIds, (i) => setNewFieldsBySectionIds(i))
+        const leadFieldsIds = getLeadFieldsBySectionsIds(leadFields)
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setOriginalFieldsBySectionIds(leadFieldsIds)
+        setNewFieldsBySectionIds(leadFieldsIds)
+    }, [leadFields])
 
     const submitReorder = useCallback((updatedfieldsBySectionIds: ReorderFieldsIds[]) => {
         if (!campaign?.id) return
@@ -169,22 +153,10 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
         setIsReordering(false)
     }
 
-
-    // Deshabilitación de campos
-    const [deletingField, setDeletingField] = useState<LeadFieldDetailed | null>(null)
-    const handleDeletingField = useCallback((deletingField: LeadFieldDetailed) => setDeletingField(deletingField), [])
-
+    //------------------------------------------------------Deshabilitación masiva de campos------------------------------------------------------
     const { checkedItems, checkedItemsArray, addItem, removeItem, removeAllItems, areThereActiveItems, areThereInactiveItems } = useSelectCheckbox<LeadFieldDetailed>()
 
-    /**Devuelve la cantidad de items seleccionados por sección */
-    const checkedBySectionId = useMemo(() => {
-        const map = new Map<number, number>()
-        for (const item of checkedItemsArray) {
-            const sectId = item.lead_field_section.id
-            map.set(sectId, (map.get(sectId) ?? 0) + 1)
-        }
-        return map
-    }, [checkedItemsArray])
+    const checkBoxProps = useMemo(() => ({ checkedItems, checkedItemsArray, addItem, removeItem }), [checkedItems, checkedItemsArray, addItem, removeItem])
 
     const [bulkDisabling, setBulkDisabling] = useState<"disable" | "enable" | null>(null)
 
@@ -223,20 +195,12 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
                 <Typography variant="h2">Lista de Campos de Lead</Typography>
                 {leadFields && leadFields.length > 0 &&
                     <ButtonGroup sx={{ marginLeft: "auto" }}>
-                        {!isReordering && <GenericModal {...modalProps} idModal="simulateLead" buttonText='Vista previa de formulario' maxWidth="xl" fullWidth
-                            btnProps={{ actionType: "DETAILS", variant: "outlined" }} sx={{ minWidth: "80vw" }} >
+                        {!isReordering && <GenericModal {...modalProps} idModal="simulateLead" buttonText='Vista previa' maxWidth="xl" fullWidth
+                            btnProps={{ actionType: "DETAILS", variant: "outlined", color: "secondary", onlyTooltip: true }} sx={{ minWidth: "80vw" }} >
                             {campaign &&
                                 <SimulateLeadFormModal campaign={campaign} leadFields={leadFields} onCancel={modalProps.handleClose} />
                             }
                         </GenericModal>}
-                        {!isReordering && checkedItemsArray.length > 0 && areThereInactiveItems &&
-                            <CommonButton onClick={() => setBulkDisabling("enable")} actionType="ENABLE" color="success" variant="outlined" onlyTooltip>
-                                Habilitar Seleccionados
-                            </CommonButton>}
-                        {!isReordering && checkedItemsArray.length > 0 && areThereActiveItems &&
-                            <CommonButton onClick={() => setBulkDisabling("disable")} actionType="DISABLE" color="error" variant="outlined" onlyTooltip>
-                                Deshabilitar Seleccionados
-                            </CommonButton>}
                         {isReordering && <CommonButton onClick={cancelReorder}
                             color="error" variant="outlined" actionType="CLOSE" onlyTooltip>
                             Cancelar
@@ -246,6 +210,14 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
                             actionType={isReordering ? "SAVE" : "REORDER"} onlyTooltip>
                             Reordenar
                         </CommonButton>
+                        {!isReordering && checkedItems.size > 0 && areThereInactiveItems &&
+                            <CommonButton onClick={() => setBulkDisabling("enable")} actionType="ENABLE" color="success" variant="outlined" onlyTooltip>
+                                Habilitar Seleccionados
+                            </CommonButton>}
+                        {!isReordering && checkedItems.size > 0 && areThereActiveItems &&
+                            <CommonButton onClick={() => setBulkDisabling("disable")} actionType="DISABLE" color="error" variant="outlined" onlyTooltip>
+                                Deshabilitar Seleccionados
+                            </CommonButton>}
                         {!isReordering && <CommonButton onClick={() => handleSidebar("CREATE_FIELD", null)} actionType="CREATE" onlyTooltip>
                             Agregar
                         </CommonButton>}
@@ -254,59 +226,9 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
                 }
             </Stack>
             <LoadingScreenWrapper loading={fieldsLoading}>
-                {newFieldsBySectionIds.length > 0 ?
-                    <Box>
-                        {newFieldsBySectionIds.map((section, idx) => {
-                            const sectFields = showAll ? section.fields : section.fields.slice(0, MIN_FIELDS)
-                            const leadFieldsData = fieldsBySection.find(fbs => fbs.id === section.sectId)
-                            const sectionCheckedItems = checkedBySectionId.get(section.sectId) ?? 0
-                            if (!leadFieldsData) return
-                            return (
-                                <Accordion expanded={openTableId === section.sectId} elevation={2} key={`${section.sectId}-acc`}
-                                    onChange={(_, expanded) => expanded ? setOpenTableId(section.sectId) : setOpenTableId(null)}
-                                    sx={isReordering ? dragStyles(idx, palette, "column", true) : {}}
-                                    {...(isReordering ? {
-                                        onDragEnter: () => handleDragEnter(idx),
-                                        onDragOver: handleDragOver,
-                                        onDrop: () => handleDrop(idx)
-                                    } : {})}>
-                                    <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls={`${section.sectId}-content`} id={`${section.sectId}-header`}>
-                                        <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
-                                            {!isReordering ?
-                                                <Checkbox
-                                                    checked={section.fields.length === sectionCheckedItems}
-                                                    indeterminate={sectionCheckedItems > 0 && section.fields.length !== sectionCheckedItems}
-                                                    onClick={stopPropagationEvent()}
-                                                    onChange={(_, checked) => checked ? addItem(leadFieldsData.fields) : removeItem(leadFieldsData.fields)} /> :
-                                                <CommonButton actionType="DRAG" draggable variant="contained" onlyTooltip color="primary"
-                                                    onClick={stopPropagationEvent()}
-                                                    onDragStart={() => handleDragStart(idx)} sx={{ cursor: "grab", px: 1.5, minWidth: 0 }} />
-                                            }
-                                            <Typography variant="h3" sx={{ py: .5, flexGrow: 1 }}>{section.sectName}</Typography>
-                                            {sectionCheckedItems > 0 &&
-                                                <Typography variant="body1" sx={{ fontStyle: "italic", py: .5, flexGrow: 1 }}>
-                                                    {`- ${sectionCheckedItems === 1 ? "1 item seleccionado" : `${sectionCheckedItems} items seleccionados`} `}
-                                                </Typography>
-                                            }
-                                        </Stack>
-                                    </AccordionSummary>
-                                    <AccordionDetails>
-                                        <TableContainer component={Paper} elevation={4} key={`section-${section.sectId}`}>
-                                            <LeadFieldTable sectLeadFields={leadFieldsData.fields} orderFieldsIds={sectFields}
-                                                setOrderFieldsIds={setNewFieldsBySectionIds} sectIdx={idx} palette={palette} isReordering={isReordering}
-                                                handleSidebar={handleSidebarWrapper} setDeletingField={handleDeletingField} checkedItems={checkedItems}
-                                                addItem={addItem} removeItem={removeItem} />
-                                            {sectFields.length > MIN_FIELDS &&
-                                                <CommonButton actionType={showAll ? "MINUS" : "CREATE"} onClick={() => setShowAll(!showAll)} fullWidth>
-                                                    {showAll ? "Mostrar Menos" : "Mostrar Todos"}
-                                                </CommonButton>}
-                                        </TableContainer>
-                                    </AccordionDetails>
-                                </Accordion>
-                            )
-                        })
-                        }
-                    </Box>
+                {leadFields && newFieldsBySectionIds.length > 0 ?
+                    <LeadFieldTableSections isReordering={isReordering} newFieldsBySectionIds={newFieldsBySectionIds} setNewFieldsBySectionIds={setNewFieldsBySectionIds}
+                        handleActive={handleActive} leadFields={leadFields} handleSidebarWrapper={handleSidebarWrapper} {...checkBoxProps} />
                     :
                     <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
                         <Typography variant="h4">No se han encontrado campos para esta campaña...</Typography>
@@ -318,11 +240,10 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
                 <LeadFieldSidebar mode={sidebarMode} entity={selectedEntity} updateEntity={updateEntity} campaign={campaign}
                     closeSidebar={closeSidebar} handleSidebar={handleSidebarWrapper} leadFields={leadFields} />
             } />
-            <DisableConfirmDialog entity={deletingField} clearEntity={() => setDeletingField(null)} idModal='dis-field-det'
-                onConfirm={() => handleActive(deletingField)} entityTypeName="el campo" />
             <DisableBulkConfirmDialog idModal="dis-field-bulk" isDisabling={bulkDisabling === "disable"} open={Boolean(bulkDisabling)}
                 onClose={() => setBulkDisabling(null)}
                 onConfirm={() => handleActiveBulk(bulkDisabling === "disable")} entityTypeName="los campos seleccionados" />
+
         </Stack >
     )
 })
@@ -338,20 +259,28 @@ interface SidebarProps {
 }
 
 const LeadFieldSidebar = ({ mode, entity, handleSidebar, closeSidebar, updateEntity, campaign, leadFields }: SidebarProps) => {
-    switch (mode) {
-        case "DETAILS_FIELD":
-            return <LeadFieldDetail leadField={entity as LeadFieldDetailed} leadFieldListLength={leadFields?.length ?? 0}
+
+    const content = useMemo(() => ({
+        "DETAILS_FIELD":
+            <LeadFieldDetail campaignName={campaign.name} leadField={entity as LeadFieldDetailed} leadFieldListLength={leadFields?.length ?? 0}
                 closeSidebar={closeSidebar} handleSidebar={handleSidebar} updateEntity={updateEntity} />
-        case "CREATE_FIELD":
-            return <LeadFieldFormSidebar campaign={campaign} closeSidebar={closeSidebar} handleSidebar={handleSidebar}
-                updateEntityOnList={(entity) => updateEntity(mode, entity)} />
-        case "UPDATE_FIELD":
-            return <LeadFieldFormSidebar existingLF={entity as LeadFieldDetailed} campaign={campaign}
-                updateEntityOnList={(entity) => updateEntity(mode, entity)}
+        ,
+        "CREATE_FIELD":
+            <LeadFieldFormSidebar campaign={campaign} closeSidebar={closeSidebar} handleSidebar={handleSidebar}
+                updateEntityOnList={(entity) => updateEntity(mode!, entity)} />
+        ,
+        "UPDATE_FIELD":
+            <LeadFieldFormSidebar existingLF={entity as LeadFieldDetailed} campaign={campaign}
+                updateEntityOnList={(entity) => updateEntity(mode!, entity)}
                 closeSidebar={closeSidebar} handleSidebar={handleSidebar} />
-        case "UPDATE_VAL":
-            return <ValidationFormSidebar leadField={entity as LeadFieldDetailed}
-                updateEntityOnList={(entity) => updateEntity("UPDATE_FIELD", entity)}
-                handleSidebar={handleSidebar} />
-    }
+        ,
+        "UPDATE_VAL": <ValidationFormSidebar leadField={entity as LeadFieldDetailed}
+            updateEntityOnList={(entity) => updateEntity("UPDATE_FIELD", entity)}
+            handleSidebar={handleSidebar} />
+        ,
+    }), [campaign, closeSidebar, entity, handleSidebar, leadFields?.length, mode, updateEntity])
+
+    const contentMode = mode as keyof typeof content
+    return content[contentMode]
+
 }

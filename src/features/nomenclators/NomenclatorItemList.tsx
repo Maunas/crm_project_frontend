@@ -154,7 +154,7 @@ export const NomenclatorItemList = () => {
                                 nomenclatorItems && nomenclatorItems.items?.length > 0 ?
                                     <List>
                                         {nomenclatorItems.items.map(nom =>
-                                            <CustomListItem key={nom.id} selected={nom.id === selectedEntity?.id} disablePadding secondaryAction={
+                                            <CustomListItem key={nom.id} isSelected={nom.id === selectedEntity?.id} disablePadding secondaryAction={
                                                 <Stack direction="row" sx={{ alignItems: "center" }}>
                                                     <CommonIconButton actionType='DETAILS' title='Detalle' onClick={() => handleSidebar("DETAILS_NOM", nom)} tooltipSize='small' size='small' />
                                                     {(nom.organization_id || activeOrg?.id === 0) &&
