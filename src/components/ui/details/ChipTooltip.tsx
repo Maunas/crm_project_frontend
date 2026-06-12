@@ -6,6 +6,7 @@ import { useTheme } from "@mui/material/styles"
 
 interface ChipTooltipProps {
     show?: boolean,
+    boxed?: boolean,
     title: ReactNode,
     color?: ColorTypes,
     placement?: PopperPlacementType,
@@ -13,7 +14,7 @@ interface ChipTooltipProps {
     children: ReactElement,
 }
 
-export const ChipTooltip = memo(({ show = true, title, color = "primary", placement = "top", size = "medium", children }: ChipTooltipProps) => {
+export const ChipTooltip = memo(({ show = true, boxed = false, title, color = "primary", placement = "top", size = "medium", children }: ChipTooltipProps) => {
 
     const { palette } = useTheme()
 
@@ -37,6 +38,6 @@ export const ChipTooltip = memo(({ show = true, title, color = "primary", placem
                 sx: { color: palette[color].main }
             }
         }} >
-        {children}
+        {boxed ? <Box>{children}</Box> : children}
     </Tooltip >)
 })

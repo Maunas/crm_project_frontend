@@ -14,7 +14,9 @@ import { getFieldDataByType } from "./leadFieldUtils";
 import { setFormErrors } from "src/utils/forms";
 import { showToast } from "src/utils/feedback";
 import { useForm, useWatch, type Control, type FieldErrors, type UseFormRegister } from "react-hook-form";
-import { Grid, FormGroup, Typography, ButtonGroup, Stack } from "@mui/material";
+import { Grid, FormGroup, ButtonGroup, Stack, Avatar, useTheme } from "@mui/material";
+import { SidebarContentWrapper } from "src/components/layout/container/GenericContainer";
+import ACTION_ICONS from "src/components/ui/buttons/ActionIcons";
 
 interface LeadFieldSidebarProps {
   existingLF?: LeadFieldDetailed,
@@ -28,6 +30,8 @@ interface LeadFieldSidebarProps {
 }
 //Wrapper de CampaignForm para crear desde un Sidebar
 export const LeadFieldFormSidebar = ({ existingLF, campaign, updateEntityOnList, closeSidebar, handleSidebar }: LeadFieldSidebarProps) => {
+
+  const { palette } = useTheme()
 
   const submit = (data: LeadFieldPost, reset: boolean = false) => {
     const updateInfo = (data: LeadFieldDetailed) => {
@@ -47,7 +51,11 @@ export const LeadFieldFormSidebar = ({ existingLF, campaign, updateEntityOnList,
       })
     }
   }
-  return <LeadFieldForm existingLF={existingLF} campaign={campaign} submit={submit} onCancel={closeSidebar} />
+  return <SidebarContentWrapper subtitle={campaign.name}
+    title={existingLF ? `Modificar "${existingLF.name}"` : "Crear Campo"}
+    avatar={<Avatar sx={{ bgcolor: palette.primary.main }} variant="rounded">{ACTION_ICONS.CREATE}</Avatar>}>
+    <LeadFieldForm existingLF={existingLF} campaign={campaign} submit={submit} onCancel={closeSidebar} />
+  </SidebarContentWrapper>
 }
 
 export interface LeadFieldPostCreation extends LeadFieldPost {
@@ -136,38 +144,26 @@ export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFi
 
   return (
     <form onSubmit={handleSubmit(data => saveFieldLoad(data, false))}>
-      <Stack spacing={3}>
-        {!existingLF ? (
-          <Typography variant="h1">
-            Crear Campo para: "{campaign?.name}"
-          </Typography>
-        ) : (
-          <Typography variant="h1">
-            Modificar el Campo {existingLF?.name} para: {campaign?.name}
-          </Typography>
-        )}
-        <Stack spacing={2}>
-          <LeadFieldFormFields templates={fieldTemplates} sections={fieldSections}
-            nomenclators={nomenclators} campaigns={campaigns} types={fieldTypes}
-            errors={errors} register={register} control={control} maskTemplates={maskTemplates}
-            campaignId={campaign.id} existingLFId={existingLF?.id}
-          />
-
-          <Stack spacing={.5}>
-            <ButtonGroup fullWidth={!existingLF} sx={{ alignSelf: "end" }}>
-              <CommonButton actionType="CLOSE" variant="text" onClick={onCancel} disabled={loading} color="error">
-                Cancelar
-              </CommonButton>
-              <CommonButton actionType={existingLF ? "MODIFY" : "CREATE"} variant="contained" type="submit" loading={loading}>
-                Guardar
-              </CommonButton>
-            </ButtonGroup>
-            {!existingLF && (
-              <CommonButton actionType="CREATE" variant="contained" onClick={handleSubmit(onSubmitAndReset)} loading={loading} >
-                Guardar y crear otro
-              </CommonButton>
-            )}
-          </Stack>
+      <Stack spacing={2}>
+        <LeadFieldFormFields templates={fieldTemplates} sections={fieldSections}
+          nomenclators={nomenclators} campaigns={campaigns} types={fieldTypes}
+          errors={errors} register={register} control={control} maskTemplates={maskTemplates}
+          campaignId={campaign.id} existingLFId={existingLF?.id}
+        />
+        <Stack spacing={.5}>
+          <ButtonGroup fullWidth={!existingLF} sx={{ alignSelf: "end" }}>
+            <CommonButton actionType="CLOSE" variant="text" onClick={onCancel} disabled={loading} color="error">
+              Cancelar
+            </CommonButton>
+            <CommonButton actionType={existingLF ? "MODIFY" : "CREATE"} variant="contained" type="submit" loading={loading}>
+              Guardar
+            </CommonButton>
+          </ButtonGroup>
+          {!existingLF && (
+            <CommonButton actionType="CREATE" variant="contained" onClick={handleSubmit(onSubmitAndReset)} loading={loading} >
+              Guardar y crear otro
+            </CommonButton>
+          )}
         </Stack>
       </Stack>
     </form>
@@ -197,6 +193,11 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
     { label: "Por Plantilla", value: "template" },
     { label: "Manual", value: "manual" },
   ];
+
+  const required = useWatch({ name: "required", control });
+  const primary = useWatch({ name: "is_primary", control });
+  const visible = useWatch({ name: "is_visible", control });
+
 
   const fieldTypeCode = useWatch({ name: "field_type_code", control });
   //Busca el objeto del Tipo seleccionado a partir de su código
@@ -241,18 +242,21 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
               name="required"
               label="Obligatorio"
               errorMessage={errors?.required?.message}
+              tooltip={`El campo ${required ? "no" : ""} podrá estar vacio.`}
             />
             <ControlledCheckbox
               control={control}
               name="is_primary"
               label="Único"
               errorMessage={errors?.is_primary?.message}
+              tooltip={`El valor ${primary ? "no" : ""}  podrá repetirse entre leads.`}
             />
             <ControlledCheckbox
               control={control}
               name="is_visible"
               label="Visible"
               errorMessage={errors?.is_visible?.message}
+              tooltip={`El campo ${!visible ? "no" : ""}  se verá en formularios.`}
             />
           </FormGroup>
         </Grid>

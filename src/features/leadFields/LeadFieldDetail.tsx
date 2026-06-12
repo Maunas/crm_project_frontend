@@ -59,20 +59,7 @@ export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeS
 
     return (
         <SidebarContentWrapper subtitle={campaignName}
-            title={<span>{leadField.name}</span>} avatar={<EnabledIcon active={leadField.active} />}
-            actions={
-                <ButtonGroup sx={{ ml: "auto" }}>
-                    <CommonButton onClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
-                    {leadFieldListLength > 1 && //Si no se separa el condicional arruina el estilo del ButtonGroup
-                        <HandleActiveButton active={leadField.active} handleActive={() => setDeletingField(leadField)} />
-                    }
-                    {leadFieldListLength > 1 &&
-                        <CommonButton onClick={() => handleSidebar("UPDATE_FIELD", leadField)} actionType="MODIFY" >
-                            Modificar
-                        </CommonButton>
-                    }
-                </ButtonGroup>
-            }>
+            title={<span>{leadField.name}</span>} avatar={<EnabledIcon active={leadField.active} />}>
             <Stack spacing={2}>
                 <Stack spacing={2} >
                     <Stack direction="row" useFlexGap spacing={1} sx={{ flexWrap: "wrap", minWidth: "20rem", justifyContent: "space-between" }}>
@@ -169,6 +156,18 @@ export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeS
                 <Stack spacing={3}>
                     <ValidationList leadField={leadField} handleSidebar={handleSidebar} />
                 </Stack>
+                <Divider />
+                <ButtonGroup sx={{ ml: "auto" }}>
+                    <CommonButton onClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
+                    {leadFieldListLength > 1 && //Si no se separa el condicional arruina el estilo del ButtonGroup
+                        <HandleActiveButton active={leadField.active} handleActive={() => setDeletingField(leadField)} />
+                    }
+                    {leadFieldListLength > 1 &&
+                        <CommonButton onClick={() => handleSidebar("UPDATE_FIELD", leadField)} actionType="MODIFY" >
+                            Modificar
+                        </CommonButton>
+                    }
+                </ButtonGroup>
                 <DisableConfirmDialog entity={deletingField} clearEntity={() => setDeletingField(null)} idModal='dis-field-det'
                     onConfirm={() => handleActive(deletingField)} entityTypeName="el campo" />
             </Stack >
