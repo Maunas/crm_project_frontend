@@ -1,13 +1,13 @@
-import AccountTreeIcon from '@mui/icons-material/AccountTree';
-import { Avatar, List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material';
 import type { ReactNode } from 'react';
-import ContainerWithSidebar from 'src/components/layout/container/GenericContainer';
-import { CommonIconButton } from 'src/components/ui/buttons/CommonIconButton';
-import { CustomListItem, CustomListItemAvatar } from 'src/components/ui/lists/CustomListItem';
-import { useSidebar } from 'src/hooks/useSidebar';
 import { LeadFlowList } from '../leadFlows/LeadFlowList';
+import { CustomListItem, CustomListItemAvatar } from 'shared/ui/lists/CustomListItem';
+import ContainerWithSidebar from 'shared/layout/container/GenericContainer';
+import { CommonIconButton } from 'shared/ui/buttons/CommonIconButton';
+import { useSidebar } from 'src/hooks/useSidebar';
 import type { ColorTypes } from 'src/types/mui-theme.d';
 import { useSearchParams } from 'react-router-dom';
+import { Avatar, List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
 
 export interface LeadPropertiesItem {
     label: string,

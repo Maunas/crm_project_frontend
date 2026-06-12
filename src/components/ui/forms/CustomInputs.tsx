@@ -1,11 +1,11 @@
 import { useState, type HTMLInputTypeAttribute, type ReactNode } from "react";
 import NumberField, { NumberSpinner } from "./NumberField";
 import { FormErrorMessage } from "./FormFeedback";
+import { ChipTooltip } from "../details/ChipTooltip";
 import { Controller, type Control, type FieldValues, type Path, type PathValue, type UseFormRegister, } from "react-hook-form";
 import { Box, Checkbox, FormControl, FormControlLabel, FormLabel, Grid, IconButton, InputAdornment, InputLabel, OutlinedInput, Rating, Slider, Stack, Switch, TextField, Typography, useColorScheme, type InputProps, } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import { ChipTooltip } from "../details/ChipTooltip";
 
 interface BasicFormInput<T extends FieldValues> {
   label?: string;

@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { ControlledAutocomplete, ControlledRadio } from "shared/ui/forms/CustomMultipleInputs";
 import { ControlledCheckbox, ControlledTextInput } from "shared/ui/forms/CustomInputs";
+import { SidebarContentWrapper } from "shared/layout/container/GenericContainer";
 import { FormErrorMessage } from "shared/ui/forms/FormFeedback";
 import CommonButton from "shared/ui/buttons/CommonButton";
+import ACTION_ICONS from "shared/ui/buttons/ActionIcons";
 import { useLoading } from "src/hooks/useLoading";
 import type { InputMaskTemplate, LeadFieldDetailed, LeadFieldPost, LeadFieldSection, LeadFieldTemplate, LeadFieldTypeDetailed } from "src/types/leadFields";
 import type { Campaign, CampaignDetailed } from "src/types/campaigns";
@@ -15,8 +17,6 @@ import { setFormErrors } from "src/utils/forms";
 import { showToast } from "src/utils/feedback";
 import { useForm, useWatch, type Control, type FieldErrors, type UseFormRegister } from "react-hook-form";
 import { Grid, FormGroup, ButtonGroup, Stack, Avatar, useTheme } from "@mui/material";
-import { SidebarContentWrapper } from "src/components/layout/container/GenericContainer";
-import ACTION_ICONS from "src/components/ui/buttons/ActionIcons";
 
 interface LeadFieldSidebarProps {
   existingLF?: LeadFieldDetailed,

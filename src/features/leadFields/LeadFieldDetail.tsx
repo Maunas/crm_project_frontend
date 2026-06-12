@@ -1,20 +1,20 @@
 import { useState } from 'react';
 import { ValidationList } from '../validations/ValidationList';
+import { getTypeIconAndColor, LeadFieldTypeAvatar } from './LeadFieldTypeIcon';
+import { SidebarContentWrapper } from 'shared/layout/container/GenericContainer';
 import { DisableConfirmDialog } from 'shared/feedback/ConfirmationDialog';
 import HandleActiveButton from 'shared/ui/buttons/HandleActiveButton';
+import { CustomListItem } from 'shared/ui/lists/CustomListItem';
 import DetailsMetadata from 'shared/ui/details/DetailsMetadata';
 import CommonButton from 'shared/ui/buttons/CommonButton';
 import CustomChip from 'shared/ui/details/CustomChip';
+import { EnabledIcon } from 'shared/ui/lists/Icons';
+import { CodeBox } from 'shared/ui/details/CodeBox';
 import type { LeadFieldDetailed } from 'src/types/leadFields'
 import { disableLeadField, enableLeadField } from './leadFieldServices';
 import { showCommonErrorToast, showToast } from 'src/utils/feedback';
 import { Link as RouterLink } from 'react-router-dom'
 import { Stack, Typography, Divider, Link, ButtonGroup, Paper, ListItemText } from '@mui/material'
-import { SidebarContentWrapper } from 'src/components/layout/container/GenericContainer';
-import { EnabledIcon } from 'src/components/ui/lists/Icons';
-import { CodeBox } from 'src/components/ui/details/CodeBox';
-import { getTypeIconAndColor, LeadFieldTypeAvatar } from './LeadFieldTypeIcon';
-import { CustomListItem } from 'src/components/ui/lists/CustomListItem';
 
 interface LeadFieldDetailProps {
     leadField: LeadFieldDetailed,

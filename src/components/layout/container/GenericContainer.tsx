@@ -1,8 +1,8 @@
 import { type ReactNode } from "react"
 import GenericPaper from "./GenericPaper"
-import { Container, Divider, Drawer, Stack, useMediaQuery, useTheme, type Breakpoint, type ContainerProps, type DrawerProps, type PaperProps, Box, Typography } from "@mui/material"
-import { CommonIconButton } from "src/components/ui/buttons/CommonIconButton"
 import { GenericSidebarHeader } from "./GenericSidebarHeader"
+import { CommonIconButton } from "shared/ui/buttons/CommonIconButton"
+import { Container, Divider, Drawer, Stack, useMediaQuery, useTheme, type Breakpoint, type ContainerProps, type DrawerProps, type PaperProps, Box, Typography } from "@mui/material"
 
 export interface GenericContainerProps extends ContainerProps {
     children?: ReactNode,
