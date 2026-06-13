@@ -42,12 +42,13 @@ const GenericModal = memo(({ idModal, open = false, openModalId, handleOpen, han
                 onClose={handleClose}
                 open={openModalId === idModal || open}
                 slotProps={{
-                    backdrop: { onClick: (e) => e.stopPropagation() }
-                }}
-            >
-                <GenericPaper>
-                    {children}
-                </GenericPaper>
+                    backdrop: { onClick: (e) => e.stopPropagation() },
+                    paper: {
+                        component: GenericPaper,
+                        elevation: 1,
+                    }
+                }}>
+                {children}
             </Dialog>
         </>
     )

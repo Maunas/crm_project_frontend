@@ -4,12 +4,12 @@ import { ChipTooltip } from '../details/ChipTooltip';
 import type { ColorTypes } from 'src/types/mui-theme.d';
 import { Stack } from '@mui/material'
 import { styled } from '@mui/material/styles';
-import Button from '@mui/material/Button';
+import Button, { type ButtonProps } from '@mui/material/Button';
 
 
 type MuiButtonProps = ComponentProps<typeof Button>;
 
-export interface CommonBtnProps extends MuiButtonProps {
+export interface CommonBtnProps extends MuiButtonProps, ButtonProps {
     actionType?: ActionType,
     loading?: boolean,
     children?: ReactNode,

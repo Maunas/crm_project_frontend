@@ -19,7 +19,10 @@ export const getFieldDataByType = (data: LeadFieldPost, isTemplate = false, isMa
 
     //Si la máscara es por template, devuelve el código unicamente
     if (isMaskTemplate) {
-        requiredData = { ...requiredData, mask_template_code: data.mask_template_code }
+        requiredData = {
+            ...requiredData,
+            mask_template_code: data.mask_template_code !== "NULL" ? data.mask_template_code : undefined
+        }
     } else {
         requiredData = { ...requiredData, input_mask: data.input_mask }
     }
@@ -35,7 +38,7 @@ export const getFieldDataByType = (data: LeadFieldPost, isTemplate = false, isMa
     const manualData: LeadFieldPost = {
         ...requiredData,
         field_type_code: data.field_type_code,
-        field_subtype_code: data.field_subtype_code,
+        field_subtype_code: data.field_subtype_code !== "NULL" ? data.field_subtype_code : undefined,
     };
 
     switch (data.field_type_code) {

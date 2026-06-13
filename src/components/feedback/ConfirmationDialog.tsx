@@ -84,7 +84,7 @@ export const GenericConfirmDialog = memo(({ idModal, open = false, openModalId, 
             <Stack spacing={2}>
                 {children}
                 <ButtonGroup sx={{ alignSelf: "end" }}>
-                    <CommonButton variant="text" onClick={handleDialogClose}>
+                    <CommonButton variant="outlined" onClick={handleDialogClose} disabled={activeTimeout}>
                         {closeText ?? "Cerrar"}
                     </CommonButton>
                     {(!activeTimeout || noTimeout) &&

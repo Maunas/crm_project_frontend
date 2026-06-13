@@ -59,9 +59,22 @@ export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeS
 
     return (
         <SidebarContentWrapper subtitle={campaignName}
-            title={<span>{leadField.name}</span>} avatar={<EnabledIcon active={leadField.active} />}>
-            <Stack spacing={2}>
-                <Stack spacing={2} >
+            title={<span>{leadField.name}</span>} avatar={<EnabledIcon active={leadField.active} />}
+            actions={
+                <ButtonGroup sx={{ ml: "auto" }}>
+                    <CommonButton onClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
+                    {leadFieldListLength > 1 && //Si no se separa el condicional arruina el estilo del ButtonGroup
+                        <HandleActiveButton active={leadField.active} handleActive={() => setDeletingField(leadField)} />
+                    }
+                    {leadFieldListLength > 1 &&
+                        <CommonButton onClick={() => handleSidebar("UPDATE_FIELD", leadField)} actionType="MODIFY" >
+                            Modificar
+                        </CommonButton>
+                    }
+                </ButtonGroup>
+            }>
+            <Stack spacing={2} sx={{ height: "100%" }}>
+                <Stack spacing={2} sx={{ flexGrow: 1, justifyItems: "start" }}>
                     <Stack direction="row" useFlexGap spacing={1} sx={{ flexWrap: "wrap", minWidth: "20rem", justifyContent: "space-between" }}>
                         <Stack sx={{ minWidth: "10rem" }}>
                             <Typography variant="subtitle2" color="textSecondary">Seccion:</Typography>
@@ -87,90 +100,77 @@ export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeS
                         {leadField.is_visible ? <CustomChip color='success' label="Visible" /> :
                             <CustomChip color='error' label="Oculto" />}
                     </Stack>
-                </Stack>
-                <Divider />
-                <Stack spacing={1}>
-                    <Typography variant="body1" sx={{ fontWeight: 500 }}>Tipo {leadField.field_subtype?.description ? `/ Subtipo` : ""} de Dato</Typography>
-                    <CustomListItem color={getTypeIconAndColor(leadField.field_type?.code, leadField.field_subtype?.code).color} isSelected>
-                        <LeadFieldTypeAvatar typeCode={leadField.field_type?.code} subtypeCode={leadField.field_subtype?.code} />
-                        <ListItemText primary={leadField.field_type.description} secondary={leadField.field_subtype?.description} />
-                    </CustomListItem>
-                    {(leadField?.nomenclator || leadField?.related_campaign || leadField?.calculation_expression) &&
-                        <Stack spacing={1} sx={{ alignItems: "start" }}>
-                            <Paper elevation={7} sx={{ width: "100%", overflow: "hidden" }}>
-                                <Typography variant="body1" sx={{ py: 1, px: 2 }}>
-                                    {leadField?.nomenclator ? "Selector" : ""}
-                                    {leadField?.related_campaign ? "Campaña relacionada" : ""}
-                                    {leadField?.calculation_expression ? "Fórmula de Cálculo" : ""}
-                                </Typography>
-                                <CodeBox>
-                                    {leadField?.nomenclator &&
+                    <Divider />
+                    <Stack spacing={1}>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>Tipo {leadField.field_subtype?.description ? `/ Subtipo` : ""} de Dato</Typography>
+                        <CustomListItem color={getTypeIconAndColor(leadField.field_type?.code, leadField.field_subtype?.code).color} isSelected>
+                            <LeadFieldTypeAvatar typeCode={leadField.field_type?.code} subtypeCode={leadField.field_subtype?.code} />
+                            <ListItemText primary={leadField.field_type.description} secondary={leadField.field_subtype?.description} />
+                        </CustomListItem>
+                        {(leadField?.nomenclator || leadField?.related_campaign || leadField?.calculation_expression) &&
+                            <Stack spacing={1} sx={{ alignItems: "start" }}>
+                                <Paper elevation={7} sx={{ width: "100%", overflow: "hidden" }}>
+                                    <Typography variant="body1" sx={{ py: 1, px: 2 }}>
+                                        {leadField?.nomenclator ? "Selector" : ""}
+                                        {leadField?.related_campaign ? "Campaña relacionada" : ""}
+                                        {leadField?.calculation_expression ? "Fórmula de Cálculo" : ""}
+                                    </Typography>
+                                    <CodeBox>
+                                        {leadField?.nomenclator &&
+                                            <Typography variant="body1">
+                                                {leadField?.nomenclator.name}
+                                            </Typography>
+                                        }
+                                        {leadField?.related_campaign &&
+                                            <Link component={RouterLink} to={`/campaigns/${leadField?.related_campaign.id}`}>
+                                                {leadField?.related_campaign.name}
+                                            </Link>
+                                        }
+                                        {leadField?.calculation_expression &&
+                                            leadField?.calculation_expression
+                                        }
+                                    </CodeBox>
+                                </Paper>
+                            </Stack>
+                        }
+                    </Stack>
+                    {(leadField?.default_value || leadField?.input_mask) &&
+                        <Stack useFlexGap direction="row" spacing={2} sx={{ flexWrap: "wrap", width: "100%" }}>
+                            {leadField?.default_value &&
+                                <Paper elevation={7} sx={{ flexGrow: 1, overflow: "hidden" }}>
+                                    <Typography variant="body1" sx={{ py: 1, px: 2 }}>
+                                        Valor por Defecto
+                                    </Typography>
+                                    <CodeBox>
                                         <Typography variant="body1">
-                                            {leadField?.nomenclator.name}
+                                            {leadField?.default_value}
                                         </Typography>
-                                    }
-                                    {leadField?.related_campaign &&
-                                        <Link component={RouterLink} to={`/campaigns/${leadField?.related_campaign.id}`}>
-                                            {leadField?.related_campaign.name}
-                                        </Link>
-                                    }
-                                    {leadField?.calculation_expression &&
-                                        leadField?.calculation_expression
-                                    }
-                                </CodeBox>
-                            </Paper>
-                        </Stack>
-                    }
-                </Stack>
-                {leadField?.default_value && leadField?.input_mask &&
-                    <Stack useFlexGap direction="row" spacing={2} sx={{ flexWrap: "wrap", width: "100%" }}>
-                        {leadField?.default_value &&
-                            <Paper elevation={7} sx={{ flexGrow: 1, overflow: "hidden" }}>
-                                <Typography variant="body1" sx={{ py: 1, px: 2 }}>
-                                    Valor por Defecto
-                                </Typography>
-                                <CodeBox>
-                                    <Typography variant="body1">
-                                        {leadField?.default_value}
+                                    </CodeBox>
+                                </Paper>
+                            }
+                            {leadField?.input_mask &&
+                                <Paper elevation={7} sx={{ flexGrow: 1, overflow: "hidden" }}>
+                                    <Typography variant="body1" sx={{ py: 1, px: 2 }}>
+                                        Máscara
                                     </Typography>
-                                </CodeBox>
-                            </Paper>
-                        }
-                        {leadField?.input_mask &&
-                            <Paper elevation={7} sx={{ flexGrow: 1, overflow: "hidden" }}>
-                                <Typography variant="body1" sx={{ py: 1, px: 2 }}>
-                                    Máscara
-                                </Typography>
-                                <CodeBox>
-                                    <Typography variant="body1">
-                                        {leadField?.input_mask}
-                                    </Typography>
-                                </CodeBox>
-                            </Paper>
-                        }
-                    </Stack>}
-                <Divider />
-                <DetailsMetadata entity={leadField} />
-                <Divider />
-
-                <Stack spacing={3}>
-                    <ValidationList leadField={leadField} handleSidebar={handleSidebar} />
+                                    <CodeBox>
+                                        <Typography variant="body1">
+                                            {leadField?.input_mask}
+                                        </Typography>
+                                    </CodeBox>
+                                </Paper>
+                            }
+                        </Stack>}
+                    <Divider />
+                    <DetailsMetadata entity={leadField} />
+                    <Divider />
+                    <Stack spacing={3}>
+                        <ValidationList leadField={leadField} handleSidebar={handleSidebar} />
+                    </Stack>
                 </Stack>
-                <Divider />
-                <ButtonGroup sx={{ ml: "auto" }}>
-                    <CommonButton onClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
-                    {leadFieldListLength > 1 && //Si no se separa el condicional arruina el estilo del ButtonGroup
-                        <HandleActiveButton active={leadField.active} handleActive={() => setDeletingField(leadField)} />
-                    }
-                    {leadFieldListLength > 1 &&
-                        <CommonButton onClick={() => handleSidebar("UPDATE_FIELD", leadField)} actionType="MODIFY" >
-                            Modificar
-                        </CommonButton>
-                    }
-                </ButtonGroup>
-                <DisableConfirmDialog entity={deletingField} clearEntity={() => setDeletingField(null)} idModal='dis-field-det'
-                    onConfirm={() => handleActive(deletingField)} entityTypeName="el campo" />
             </Stack >
-        </SidebarContentWrapper>
+            <DisableConfirmDialog entity={deletingField} clearEntity={() => setDeletingField(null)} idModal='dis-field-det'
+                onConfirm={() => handleActive(deletingField)} entityTypeName="el campo" />
+        </SidebarContentWrapper >
     )
 }

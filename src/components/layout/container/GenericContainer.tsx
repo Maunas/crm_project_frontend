@@ -1,8 +1,8 @@
 import { type ReactNode } from "react"
 import GenericPaper from "./GenericPaper"
-import { GenericSidebarHeader } from "./GenericSidebarHeader"
+import { GenericSidebarContent, GenericSidebarHeader } from "./GenericSidebarHeader"
 import { CommonIconButton } from "shared/ui/buttons/CommonIconButton"
-import { Container, Divider, Drawer, Stack, useMediaQuery, useTheme, type Breakpoint, type ContainerProps, type DrawerProps, type PaperProps, Box, Typography } from "@mui/material"
+import { Container, Divider, Drawer, Stack, useMediaQuery, useTheme, type Breakpoint, type ContainerProps, type DrawerProps, type PaperProps, Typography, Box } from "@mui/material"
 
 export interface GenericContainerProps extends ContainerProps {
     children?: ReactNode,
@@ -80,7 +80,9 @@ interface SidebarContentWrapperProps {
     actions?: ReactNode,
     children?: ReactNode,
 }
-
+/**Wrapper que le agrega al contenido de un sidebar un header formateado.
+ * Si se asigna actions, se muestran en un footer, si no, se deja solo el contenido.
+ */
 export const SidebarContentWrapper = ({ title, subtitle, avatar, actions, children }: SidebarContentWrapperProps) => {
     return (
         <Stack spacing={2} sx={{ height: "100%" }} useFlexGap>
@@ -95,17 +97,28 @@ export const SidebarContentWrapper = ({ title, subtitle, avatar, actions, childr
                 </Stack>
                 <Divider />
             </GenericSidebarHeader >
-            <Box sx={{ flexGrow: 1 }}>
+            <GenericSidebarContent >
+                {actions ?
+                    <SidebarContentActionsWrapper actions={actions}>
+                        {children}
+                    </SidebarContentActionsWrapper>
+                    : children}
+            </GenericSidebarContent >
+        </Stack >
+    )
+}
+/**Contenedor que permite formatear el contenido solo de un Sidebar, sin el header.
+ * Sirve como un contenedor utilizable incluso fuera de un sidebar, ya que no afecta el contenido.
+ */
+export const SidebarContentActionsWrapper = ({ actions, children }: { actions?: ReactNode, children: ReactNode }) => {
+    return (
+        <Stack sx={{ height: "100%" }}>
+            <Box className="sidebar-content">
                 {children}
             </Box>
-            <GenericSidebarHeader sx={{ mt: 0, mb: "-1.5rem" }}>
-                <Divider />
-                {Boolean(actions) &&
-                    <Stack sx={{ p: "1rem 1.5rem", justifyContent: "center", minHeight: "5rem" }}>
-                        {actions}
-                    </Stack>}
-            </GenericSidebarHeader >
-        </Stack >
+            {actions &&
+                <Box className="sidebar-footer">{actions}</Box>}
+        </Stack>
     )
 }
 

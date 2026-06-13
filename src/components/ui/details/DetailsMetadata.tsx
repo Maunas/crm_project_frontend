@@ -10,7 +10,7 @@ interface DetailsMetadataProps<T extends Metadata> {
 
 export default function DetailsMetadata<T extends Metadata>({ entity }: DetailsMetadataProps<T>) {
     return (
-        <Grid container spacing={1} size="grow" sx={{ minWidth: "20rem" }}>
+        <Grid container spacing={1} sx={{ minWidth: "20rem" }}>
             <Grid size="grow" sx={{ minWidth: "12rem" }}>
                 <Typography variant="subtitle2" color="textSecondary">
                     Fecha de creación:
