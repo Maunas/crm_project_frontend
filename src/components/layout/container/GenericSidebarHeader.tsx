@@ -20,7 +20,7 @@ export const GenericSidebarContent = styled(Box)(
                 flexGrow: 1,
             },
             "& .sidebar-footer": {
-                margin: "0 -2rem -1.5rem",
+                margin: "1rem -2rem -1.5rem",
                 padding: "1rem 1.5rem",
                 minHeight: "5rem",
                 borderTop: `1px solid ${theme.palette.divider}`,

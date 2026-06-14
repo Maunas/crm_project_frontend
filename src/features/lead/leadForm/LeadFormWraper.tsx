@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { LeadForm } from "./LeadForm"
+import { GenericContainer } from "shared/layout/container/GenericContainer"
 import { FormErrorMessage } from "shared/ui/forms/FormFeedback"
 import type { LeadField, LeadFieldDetailed, LeadFieldValue } from "src/types/leadFields"
 import type { Campaign, Workspace } from "src/types/campaigns"
@@ -62,32 +63,34 @@ export const CreateLeadFormPage = () => {
     }, [nav])
 
     return (
-        <Stack spacing={3}>
-            <Typography variant="h1">Nuevo Lead</Typography>
-            <Stack spacing={2}>
-                <Grid container spacing={1}>
-                    <Grid size="grow" sx={{ minWidth: "20rem" }}>
-                        <Autocomplete options={workspaces} loading={workspaces.length === 0} disabled={workspaces.length === 0}
-                            onChange={(_, value) => setSelectedWorkspace(value)} value={selectedWorkspace}
-                            getOptionLabel={o => o.name!} renderInput={(props) =>
-                                <TextField label="Workspace" {...props} />
-                            } />
+        <GenericContainer containerSize="xl">
+            <Stack spacing={3}>
+                <Typography variant="h1">Nuevo Lead</Typography>
+                <Stack spacing={2}>
+                    <Grid container spacing={1}>
+                        <Grid size="grow" sx={{ minWidth: "20rem" }}>
+                            <Autocomplete options={workspaces} loading={workspaces.length === 0} disabled={workspaces.length === 0}
+                                onChange={(_, value) => setSelectedWorkspace(value)} value={selectedWorkspace}
+                                getOptionLabel={o => o.name!} renderInput={(props) =>
+                                    <TextField label="Workspace" {...props} />
+                                } />
+                        </Grid>
+                        <Grid size="grow" sx={{ minWidth: "20rem" }}>
+                            <Autocomplete options={campaigns.filter(c => c.workspace_id === selectedWorkspace?.id)}
+                                loading={campaigns.length === 0} disabled={campaigns.length === 0 && !selectedWorkspace}
+                                onChange={(_, value) => setSelectedCampaign(value)} value={selectedCampaign}
+                                getOptionLabel={o => o.name!}
+                                renderInput={(props) =>
+                                    <TextField error={!!campaignError} label="Campaña" {...props} />
+                                } />
+                        </Grid>
                     </Grid>
-                    <Grid size="grow" sx={{ minWidth: "20rem" }}>
-                        <Autocomplete options={campaigns.filter(c => c.workspace_id === selectedWorkspace?.id)}
-                            loading={campaigns.length === 0} disabled={campaigns.length === 0 && !selectedWorkspace}
-                            onChange={(_, value) => setSelectedCampaign(value)} value={selectedCampaign}
-                            getOptionLabel={o => o.name!}
-                            renderInput={(props) =>
-                                <TextField error={!!campaignError} label="Campaña" {...props} />
-                            } />
-                    </Grid>
-                </Grid>
-                {campaignError && <FormErrorMessage>{campaignError}</FormErrorMessage>}
-                {selectedCampaign && <Divider />}
-                <LeadForm campaignId={selectedCampaign?.id} onSubmit={onSubmit} onCancel={() => nav(`/leads?workspace=${selectedWorkspace?.id}&campaign=${selectedCampaign?.id}`)} setCampaignError={setCampaignError} />
+                    {campaignError && <FormErrorMessage>{campaignError}</FormErrorMessage>}
+                    {selectedCampaign && <Divider />}
+                    <LeadForm campaignId={selectedCampaign?.id} onSubmit={onSubmit} onCancel={() => nav(`/leads?workspace=${selectedWorkspace?.id}&campaign=${selectedCampaign?.id}`)} setCampaignError={setCampaignError} />
+                </Stack>
             </Stack>
-        </Stack>
+        </GenericContainer>
     )
 }
 
@@ -179,10 +182,12 @@ export const UpdateLeadFormPage = () => {
     }, [lead])
 
     if (lead && lead.campaign_id) return (
-        <Stack spacing={3}>
-            <Typography variant="h1">{`Modificar Lead: ${leadTitle}`}</Typography>
-            <LeadForm existingValues={formattedLeadValues} existingLeadFields={formattedLeadFields}
-                campaignId={lead.campaign_id} onSubmit={onSubmit} onCancel={() => nav(`/leads/${lead.id}`)} />
-        </Stack>
+        <GenericContainer containerSize="xl">
+            <Stack spacing={3}>
+                <Typography variant="h1">{`Modificar Lead: ${leadTitle}`}</Typography>
+                <LeadForm existingValues={formattedLeadValues} existingLeadFields={formattedLeadFields}
+                    campaignId={lead.campaign_id} onSubmit={onSubmit} onCancel={() => nav(`/leads/${lead.id}`)} />
+            </Stack>
+        </GenericContainer>
     )
 }

@@ -1,54 +1,53 @@
+import { NomenclatorItemList } from "./NomenclatorItemList"
+import { SidebarContentWrapper } from "shared/layout/container/GenericContainer"
 import HandleActiveButton from "shared/ui/buttons/HandleActiveButton"
 import DetailsMetadata from "shared/ui/details/DetailsMetadata"
-import TitleAndActive from "shared/ui/details/TitleAndActive"
 import CommonButton from "shared/ui/buttons/CommonButton"
+import { EnabledIcon } from "shared/ui/lists/Icons"
 import type { NomenclatorDetailed } from "src/types/nomenclators"
 import { useUserContext } from "src/stores/UserContext"
 import { Link as RouterLink } from "react-router-dom"
 import { ButtonGroup, Divider, Link, Stack, Typography } from "@mui/material"
 
 interface NomenclatorDetailsProps {
-    entity: NomenclatorDetailed | null,
+    nomenclator: NomenclatorDetailed | null,
     closeSidebar: () => void,
-    handleSidebar: (mode: string, entity: NomenclatorDetailed | null) => void,
-    handleActive: (entity: NomenclatorDetailed) => void
+    handleSidebar: (mode: string, nomenclator: NomenclatorDetailed | null) => void,
+    handleActive: (nomenclator: NomenclatorDetailed) => void
 }
 
-export const NomenclatorDetails = ({ entity, closeSidebar, handleSidebar, handleActive }: NomenclatorDetailsProps) => {
+export const NomenclatorDetails = ({ nomenclator, closeSidebar, handleSidebar, handleActive }: NomenclatorDetailsProps) => {
 
     const { activeOrg } = useUserContext()
 
-    if (entity) return (
-        <Stack spacing={3} >
-            <TitleAndActive active={entity.active}>
-                <Typography variant="h2">{entity.name}</Typography>
-            </TitleAndActive>
-            <Stack spacing={2}>
-                <Stack spacing={1}>
-                    {!entity.organization_id && <Typography variant="body1" sx={{ fontStyle: "italic" }} >Nomenclador del Sistema</Typography>}
-                    {entity.parent_nomenclator &&
-                        <Stack spacing={.5} direction="row">
-                            <Typography>Depende del nomenclador:</Typography>
-                            <Link component={RouterLink} to={`/nomenclators/${entity.parent_nomenclator.id}`}>{entity.parent_nomenclator.name}</Link>
-                        </Stack>
-                    }
-                </Stack>
-                <Divider />
-                <CommonButton actionType="LIST" variant="contained" component={RouterLink} to={`/nomenclators/${entity.id}`} >Ver Items de Nomenclador</CommonButton>
-                <Divider />
-                <DetailsMetadata entity={entity} />
-                <Divider />
-
-                <ButtonGroup sx={{ alignSelf: "end" }}>
+    if (nomenclator) return (
+        <SidebarContentWrapper title={nomenclator.name} avatar={<EnabledIcon active={nomenclator.active} />}
+            subtitle={!nomenclator.organization_id ? "Nomenclador del Sistema" : "Nomenclador"}
+            actions={
+                <ButtonGroup>
                     <CommonButton onClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
-                    {(entity.organization_id || activeOrg?.id === 0) &&
-                        <HandleActiveButton active={entity.active} handleActive={() => handleActive(entity)} />
+                    {(nomenclator.organization_id || activeOrg?.id === 0) &&
+                        <HandleActiveButton active={nomenclator.active} handleActive={() => handleActive(nomenclator)} />
                     }
-                    {(entity.organization_id || activeOrg?.id === 0) &&
-                        <CommonButton onClick={() => handleSidebar("UPDATE_NOM", entity)} actionType="MODIFY" >Modificar</CommonButton>
+                    {(nomenclator.organization_id || activeOrg?.id === 0) &&
+                        <CommonButton onClick={() => handleSidebar("UPDATE_NOM", nomenclator)} actionType="MODIFY" >Modificar</CommonButton>
                     }
                 </ButtonGroup>
+            }>
+            <Stack spacing={2}>
+                {nomenclator.parent_nomenclator &&
+                    <Stack spacing={1}>
+                        <Stack spacing={1} direction="row">
+                            <Typography>Depende del nomenclador:</Typography>
+                            <Link component={RouterLink} to={`/nomenclators/${nomenclator.parent_nomenclator.id}`}>{nomenclator.parent_nomenclator.name}</Link>
+                        </Stack>
+                        <Divider />
+                    </Stack>
+                }
+                <DetailsMetadata entity={nomenclator} />
+                <Divider />
+                <NomenclatorItemList nomenclator={nomenclator} />
             </Stack>
-        </Stack>
+        </SidebarContentWrapper>
     )
 }

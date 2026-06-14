@@ -2,9 +2,8 @@ import { cloneElement, type ComponentProps, type ReactNode } from 'react';
 import ACTION_ICONS, { type ActionType } from './ActionIcons';
 import { ChipTooltip } from '../details/ChipTooltip';
 import type { ColorTypes } from 'src/types/mui-theme.d';
-import { Stack } from '@mui/material'
-import { styled } from '@mui/material/styles';
-import Button, { type ButtonProps } from '@mui/material/Button';
+import { Avatar, Stack, type AvatarProps, Button, type ButtonProps } from '@mui/material'
+import { styled, useTheme } from '@mui/material/styles';
 
 
 type MuiButtonProps = ComponentProps<typeof Button>;
@@ -69,3 +68,40 @@ const CommonButton = ({ actionType = "NONE", onlyTooltip = false, loading = fals
 }
 
 export default CommonButton
+
+
+export interface CommonAvatarProps extends AvatarProps {
+    actionType?: ActionType,
+    color?: ColorTypes,
+    size?: "small" | "medium",
+    children?: ReactNode,
+}
+/**
+ * Componente basado en Avatar, que agrega un ícono a su contenido segun el tipo de acción.
+ * Se puede agregar un children en lugar de actionType
+ */
+export const CommonAvatar = ({ actionType = "NONE", color = "primary", size = "medium", children, ...props }: CommonAvatarProps) => {
+
+    const { palette } = useTheme()
+
+    const styleIcon = (actionType: ActionType) => {
+        if (actionType === "NONE") return ACTION_ICONS.NONE
+        if (actionType === "LOADING") return cloneElement(
+            ACTION_ICONS[actionType], { size: (size === "small" ? 18 : 24), sx: { ml: 0 } }
+        )
+        return cloneElement(
+            ACTION_ICONS[actionType],
+            { fontSize: size }
+        )
+    }
+
+    const sizeValue = size === "medium" ? 42 : 32
+
+    return (
+        <Avatar variant='rounded' sx={{ backgroundColor: palette[color].main, height: sizeValue, width: sizeValue, ...props.sx }} {...props}>
+            <Stack spacing={.5} useFlexGap direction="row" sx={{ alignItems: "center", textAlign: "center" }}>
+                {children ?? (actionType && styleIcon(actionType))}
+            </Stack>
+        </Avatar>
+    )
+}

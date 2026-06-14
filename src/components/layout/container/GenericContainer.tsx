@@ -1,20 +1,22 @@
 import { type ReactNode } from "react"
-import GenericPaper from "./GenericPaper"
 import { GenericSidebarContent, GenericSidebarHeader } from "./GenericSidebarHeader"
+import GenericPaper from "./GenericPaper"
 import { CommonIconButton } from "shared/ui/buttons/CommonIconButton"
-import { Container, Divider, Drawer, Stack, useMediaQuery, useTheme, type Breakpoint, type ContainerProps, type DrawerProps, type PaperProps, Typography, Box } from "@mui/material"
+import { Container, Divider, Drawer, Stack, useMediaQuery, useTheme, type Breakpoint, type ContainerProps, type DrawerProps, type PaperProps, Typography, Box, type ContainerOwnProps } from "@mui/material"
 
 export interface GenericContainerProps extends ContainerProps {
     children?: ReactNode,
     paperProps?: PaperProps
+    noPaper?: boolean,
+    containerSize?: ContainerOwnProps["maxWidth"]
 }
 
-export const GenericContainer = ({ children, paperProps = {}, ...props }: GenericContainerProps) => {
+export const GenericContainer = ({ children, containerSize, noPaper = false, paperProps = {}, ...props }: GenericContainerProps) => {
     return (
-        <Container {...props}>
-            <GenericPaper {...paperProps} >
-                {children}
-            </GenericPaper>
+        <Container maxWidth={containerSize === undefined ? "lg" : containerSize}
+            {...(noPaper ? {} : { component: GenericPaper, ...paperProps })}
+            {...props}>
+            {children}
         </Container>
     )
 }
@@ -23,14 +25,36 @@ interface ContainerWithSidebarProps {
     isSidebarOpen?: boolean,
     closeSidebar: () => void,
     sidebarComponent: ReactNode,
-    containerSize?: false | Breakpoint,
     sidebarWidth?: string,
     sidebarProps?: DrawerProps,
-    children?: ReactNode,
+    containerSize?: false | Breakpoint,
+    containerProps?: ContainerProps,
     noPaper?: boolean,
+    children?: ReactNode,
 }
 
-export const GenericSidebar = ({ isSidebarOpen = false, closeSidebar, sidebarProps, sidebarComponent, sidebarWidth }: ContainerWithSidebarProps) => {
+const ContainerWithSidebar = ({ isSidebarOpen = false, closeSidebar, sidebarComponent, sidebarProps, sidebarWidth,
+    containerSize, containerProps, noPaper = false, children }: ContainerWithSidebarProps) => {
+    return (
+        <>
+            <GenericContainer containerSize={containerSize} noPaper={noPaper} {...containerProps} >
+                {children}
+            </GenericContainer>
+            <GenericSidebar isSidebarOpen={isSidebarOpen} closeSidebar={closeSidebar} sidebarComponent={sidebarComponent}
+                sidebarWidth={sidebarWidth} {...sidebarProps} />
+        </>
+    )
+}
+
+export default ContainerWithSidebar
+
+interface GenericSidebarProps extends DrawerProps {
+    isSidebarOpen?: boolean,
+    closeSidebar: () => void,
+    sidebarComponent: ReactNode,
+    sidebarWidth?: string
+}
+export const GenericSidebar = ({ isSidebarOpen = false, closeSidebar, sidebarComponent, sidebarWidth, ...props }: GenericSidebarProps) => {
 
     const theme = useTheme()
 
@@ -64,7 +88,7 @@ export const GenericSidebar = ({ isSidebarOpen = false, closeSidebar, sidebarPro
                 }
             }}
             sx={{ zIndex: 1202 }}
-            {...sidebarProps}
+            {...props}
         >
             <CommonIconButton actionType="CLOSE" title="Cerrar" onClick={closeSidebar}
                 sx={{ position: "absolute", top: "3rem", right: "2rem", transform: "translateY(-50%)" }} />
@@ -121,17 +145,3 @@ export const SidebarContentActionsWrapper = ({ actions, children }: { actions?: 
         </Stack>
     )
 }
-
-const ContainerWithSidebar = ({ isSidebarOpen = false, closeSidebar, sidebarProps, sidebarComponent, containerSize, sidebarWidth, noPaper = false, ...props }: ContainerWithSidebarProps) => {
-    return (
-        <>
-            <Container maxWidth={containerSize ?? "lg"} {...(noPaper ? {} : { component: GenericPaper })} >
-                {props.children}
-            </Container>
-            <GenericSidebar isSidebarOpen={isSidebarOpen} closeSidebar={closeSidebar} sidebarProps={sidebarProps}
-                sidebarComponent={sidebarComponent} sidebarWidth={sidebarWidth} {...props} />
-        </>
-    )
-}
-
-export default ContainerWithSidebar
