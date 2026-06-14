@@ -6,11 +6,9 @@ import { CreateLeadFormPage, UpdateLeadFormPage } from "features/lead/leadForm/L
 import { LeadListPage } from "features/lead/leadList/LeadListPage";
 import { OrganizationList } from "features/organizations/OrganizationList";
 import { NomenclatorList } from "features/nomenclators/NomenclatorList";
-import { NomenclatorItemList } from "features/nomenclators/NomenclatorItemList";
 import { LoginFormPage } from "./features/auth/LoginForm";
 import { SignupFormPage } from "features/auth/SignupForm";
 import { SearchResultsList } from "features/search/SearchResults";
-import { GenericContainer } from "shared/layout/container/GenericContainer";
 import MainLayout from "./app/mainLayout";
 import { createBrowserRouter, Outlet } from "react-router-dom";
 import { LeadFlowEditor } from "src/features/leadFlows/FlowEditorPage";
@@ -51,15 +49,15 @@ export const router = createBrowserRouter([
                 children: [
                     {
                         path: "/leads/",
-                        element: <GenericContainer sx={{ minWidth: "85%" }}><LeadListPage /></GenericContainer>
+                        element: <LeadListPage />
                     },
                     {
                         path: "/leads/new",
-                        element: <GenericContainer sx={{ minWidth: "85%" }}><CreateLeadFormPage /></GenericContainer>
+                        element: <CreateLeadFormPage />
                     },
                     {
                         path: "/leads/modify/:id",
-                        element: <GenericContainer sx={{ minWidth: "85%" }}><UpdateLeadFormPage /></GenericContainer>
+                        element: <UpdateLeadFormPage />
                     },
                     {
                         path: "/leads/:id",
@@ -75,10 +73,6 @@ export const router = createBrowserRouter([
             {
                 path: "/nomenclators/",
                 Component: NomenclatorList
-            },
-            {
-                path: "/nomenclators/:nomenclatorId",
-                Component: NomenclatorItemList
             },
             {
                 path: "/organizations/",

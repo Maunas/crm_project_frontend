@@ -1,15 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { SidebarContentActionsWrapper, SidebarContentWrapper } from "shared/layout/container/GenericContainer"
 import { ControlledAutocomplete } from "shared/ui/forms/CustomMultipleInputs"
 import { ControlledTextInput } from "shared/ui/forms/CustomInputs"
 import { FormErrorMessage } from "shared/ui/forms/FormFeedback"
-import CommonButton from "shared/ui/buttons/CommonButton"
+import CommonButton, { CommonAvatar } from "shared/ui/buttons/CommonButton"
 import { useLoading } from "src/hooks/useLoading"
 import type { NomenclatorDetailed, NomenclatorItem, NomenclatorItemDetailed, NomenclatorItemPost } from "src/types/nomenclators"
 import { createNomenclatorItem, getNomenclatorItems, updateNomenclatorItem } from "./nomenclatorService"
 import { setFormErrors } from "src/utils/forms"
 import { showToast } from "src/utils/feedback"
 import { useForm } from "react-hook-form"
-import { Typography, Grid, ButtonGroup, Stack } from "@mui/material"
+import { Grid, ButtonGroup, Stack } from "@mui/material"
 
 interface NomenclatorSidebarProps {
     existingNom?: NomenclatorItemDetailed,
@@ -20,17 +21,12 @@ interface NomenclatorSidebarProps {
 }
 
 //Wrapper de NomenclatorItemForm para funcionar en un Sidebar
-export const NomenclatorItemFormSidebar = ({ existingNom, nomenclator, handleSidebar, closeSidebar, updateEntityOnList }: NomenclatorSidebarProps) => {
-
-    const handleClose = useCallback(() => {
-        if (existingNom) handleSidebar("DETAILS_NOM", existingNom)
-        else closeSidebar()
-    }, [existingNom, closeSidebar, handleSidebar])
+export const NomenclatorItemFormSidebar = ({ existingNom, nomenclator, closeSidebar, updateEntityOnList }: NomenclatorSidebarProps) => {
 
     const submit = useCallback((data: NomenclatorItemPost, reset = false) => {
         const updateList = (res: NomenclatorItemDetailed) => {
             updateEntityOnList(res)
-            handleSidebar("DETAILS_NOM", res)
+            closeSidebar()
         }
         if (!existingNom) {
             return createNomenclatorItem(data)
@@ -46,11 +42,15 @@ export const NomenclatorItemFormSidebar = ({ existingNom, nomenclator, handleSid
                     showToast(`La opción "${res.value}" se ha modificado con éxito`)
                 })
         }
-    }, [existingNom, handleSidebar, updateEntityOnList])
+    }, [existingNom, closeSidebar, updateEntityOnList])
 
     return (
-        <NomenclatorItemForm existingNom={existingNom} nomenclator={nomenclator} submit={submit}
-            onCancel={handleClose} />
+        <SidebarContentWrapper title={existingNom ? `Modificar "${existingNom.value}"` : "Agregar Opción"}
+            subtitle={nomenclator?.name}
+            avatar={<CommonAvatar actionType={existingNom ? "MODIFY" : "CREATE"} />}>
+            <NomenclatorItemForm existingNom={existingNom} nomenclator={nomenclator} submit={submit}
+                onCancel={closeSidebar} />
+        </SidebarContentWrapper>
     )
 }
 
@@ -94,12 +94,25 @@ export const NomenclatorItemForm = ({ existingNom, nomenclator, submit, onCancel
     }
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)}>
-            <Stack spacing={3}>
-                <Typography variant="h2">
-                    {!existingNom ? "Crear Opciones de Nomenclador"
-                        : `Modificar Opción: ${existingNom.value}`}
-                </Typography>
+        <form onSubmit={handleSubmit(onSubmit)} style={{ height: "100%" }}>
+            <SidebarContentActionsWrapper
+                actions={
+                    <ButtonGroup sx={{ ml: "auto" }} >
+                        <CommonButton actionType="CLOSE" variant="outlined" color="error" disabled={loading}
+                            onClick={onCancel}>
+                            Cancelar
+                        </CommonButton>
+                        {!existingNom &&
+                            <CommonButton actionType="CREATE" variant="outlined" loading={loading}
+                                onClick={handleSubmit(onSubmitReset)}>
+                                Guardar y crear otro
+                            </CommonButton>}
+                        <CommonButton actionType={existingNom ? "MODIFY" : "CREATE"} loading={loading}
+                            variant="contained" type="submit">
+                            Guardar
+                        </CommonButton>
+                    </ButtonGroup>
+                }>
                 <Stack spacing={2}>
                     <Grid container spacing={1} sx={{
                         justifyContent: "center",
@@ -120,27 +133,9 @@ export const NomenclatorItemForm = ({ existingNom, nomenclator, submit, onCancel
                     {errors?.root &&
                         <FormErrorMessage >{errors?.root?.message}</FormErrorMessage>
                     }
-                    <Stack spacing={.5}>
-                        <ButtonGroup sx={{ marginLeft: "auto" }} fullWidth >
-                            <CommonButton actionType="CLOSE" variant="text" color="error" disabled={loading}
-                                onClick={onCancel} fullWidth>
-                                Cancelar
-                            </CommonButton>
-                            <CommonButton actionType={existingNom ? "MODIFY" : "CREATE"} loading={loading}
-                                variant="contained" type="submit" fullWidth>
-                                Guardar
-                            </CommonButton>
-                        </ButtonGroup>
-                        {!existingNom &&
-                            <CommonButton actionType="CREATE" variant="contained" loading={loading}
-                                onClick={handleSubmit(onSubmitReset)} fullWidth>
-                                Guardar y crear otro
-                            </CommonButton>}
-                    </Stack>
                 </Stack>
-            </Stack>
-
-        </form>
+            </SidebarContentActionsWrapper>
+        </form >
     )
 }
 

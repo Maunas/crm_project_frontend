@@ -10,7 +10,9 @@ import { createValidation, deleteValidation, getValidationTemplates, updateValid
 import { getValidationDataByType, setValFormErrors } from "./validationUtils";
 import { showToast } from "src/utils/feedback";
 import { useFieldArray, useForm, useWatch, type Control, type FieldErrors, type UseFieldArrayRemove, type UseFormClearErrors, type UseFormGetValues, type UseFormRegister, type UseFormSetValue } from "react-hook-form";
-import { Divider, Grid, Stack, Typography, ButtonGroup } from "@mui/material";
+import { Divider, Grid, Stack, Typography, ButtonGroup, Avatar, useTheme } from "@mui/material";
+import { SidebarContentActionsWrapper, SidebarContentWrapper } from "src/components/layout/container/GenericContainer";
+import RuleIcon from '@mui/icons-material/Rule';
 
 export interface FieldValidationListPostInstance extends FieldValidationRulePost {
     required_params: string[];
@@ -33,6 +35,9 @@ export interface ValidationSidebarProps {
 }
 
 export const ValidationFormSidebar = ({ leadField, updateEntityOnList, handleSidebar }: ValidationSidebarProps) => {
+
+    const { palette } = useTheme()
+
     const submit = (val: FieldValidationListPostInstance) => {
         if (val.to_delete && val.id) return deleteValidation(val.id)
         if (val.id) {
@@ -60,8 +65,11 @@ export const ValidationFormSidebar = ({ leadField, updateEntityOnList, handleSid
     }
 
     return (
-        <ValidationRuleForm leadField={leadField} submit={submit} submitAll={submitAll} onErrorAll={onErrorAll}
-            onCancel={() => handleSidebar("DETAILS_FIELD", leadField)} />
+        <SidebarContentWrapper title="Reglas de validación" subtitle={leadField.name}
+            avatar={<Avatar sx={{ bgcolor: palette.primary.main }} variant="rounded"><RuleIcon /></Avatar>}>
+            <ValidationRuleForm leadField={leadField} submit={submit} submitAll={submitAll} onErrorAll={onErrorAll}
+                onCancel={() => handleSidebar("DETAILS_FIELD", leadField)} />
+        </SidebarContentWrapper>
     )
 }
 
@@ -136,12 +144,32 @@ export const ValidationRuleForm = ({ leadField, submit, submitAll, onErrorAll, o
     const { loading, fnWithLoading: submitLoad } = useLoading(onSubmit)
 
     return (
-        <form onSubmit={handleSubmit(submitLoad)}>
-            <Stack spacing={3}>
-                <Typography variant="h2">{leadField.name}</Typography>
+        <form onSubmit={handleSubmit(submitLoad)} style={{ height: "100%" }}>
+            <SidebarContentActionsWrapper actions={
+                <ButtonGroup>
+                    <CommonButton actionType="CLOSE" variant="outlined" color="error" disabled={loading} onClick={onCancel}>
+                        Cancelar
+                    </CommonButton>
+                    <CommonButton actionType="CREATE" variant="outlined" disabled={loading} color="secondary"
+                        onClick={() =>
+                            append({
+                                name: "",
+                                error_message: "",
+                                creation_method: "template",
+                                template_params: {},
+                                required_params: [],
+                                field_id: leadField.id,
+                                to_delete: false
+                            })
+                        }>
+                        Agregar
+                    </CommonButton>
+                    <CommonButton actionType="MODIFY" type="submit" loading={loading}>
+                        Guardar
+                    </CommonButton>
+                </ButtonGroup>
+            }>
                 <Stack spacing={2}>
-                    <Typography variant="h3">Reglas de Validación</Typography>
-                    <Divider />
                     {fields?.length > 0 ?
                         fields.map((field, idx) => (
                             <ValidationInstance key={field.array_id} idx={idx} templates={templates}
@@ -150,30 +178,8 @@ export const ValidationRuleForm = ({ leadField, submit, submitAll, onErrorAll, o
                         ))
                         : <Typography variant="h5" sx={{ textAlign: "center" }}>No hay validaciones cargadas</Typography>
                     }
-                    <ButtonGroup sx={{ alignSelf: "end" }}>
-                        <CommonButton actionType="CLOSE" variant="text" color="error" disabled={loading} onClick={onCancel}>
-                            Cancelar
-                        </CommonButton>
-                        <CommonButton actionType="CREATE" variant="outlined" disabled={loading} color="secondary"
-                            onClick={() =>
-                                append({
-                                    name: "",
-                                    error_message: "",
-                                    creation_method: "template",
-                                    template_params: {},
-                                    required_params: [],
-                                    field_id: leadField.id,
-                                    to_delete: false
-                                })
-                            }>
-                            Agregar
-                        </CommonButton>
-                        <CommonButton actionType="MODIFY" type="submit" loading={loading}>
-                            Guardar
-                        </CommonButton>
-                    </ButtonGroup>
                 </Stack>
-            </Stack>
+            </SidebarContentActionsWrapper>
         </form>
     );
 };
@@ -238,6 +244,7 @@ export const ValidationInstance = ({ idx, templates, register, control, setValue
 
     return (
         <Stack spacing={2}>
+            {idx > 0 && <Divider />}
             <Grid container sx={{ justifyContent: "space-between", alignContent: "center" }}>
                 <Stack spacing={1} direction="row" sx={{ alignItems: "center" }} >
                     <Typography variant="h4" color={toDelete ? "error" : "textPrimary"} >Validación {idx + 1}</Typography>
@@ -349,7 +356,6 @@ export const ValidationInstance = ({ idx, templates, register, control, setValue
                 <FormErrorMessage>{errors.validation_rules?.[idx]?.root?.message}</FormErrorMessage>}
             {errors.validation_rules?.[idx] &&
                 <FormErrorMessage>{errors.validation_rules?.[idx]?.message}</FormErrorMessage>}
-            <Divider />
         </Stack>
     );
 };

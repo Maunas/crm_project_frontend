@@ -5,6 +5,7 @@ import ContainerWithSidebar from 'shared/layout/container/GenericContainer'
 import { DisableConfirmDialog } from 'shared/feedback/ConfirmationDialog'
 import HandleActiveButton from 'shared/ui/buttons/HandleActiveButton'
 import LoadingScreenWrapper from 'shared/feedback/LoadingScreen'
+import GenericPaper from 'shared/layout/container/GenericPaper'
 import DetailsMetadata from 'shared/ui/details/DetailsMetadata'
 import TitleAndActive from 'shared/ui/details/TitleAndActive'
 import CommonButton from 'shared/ui/buttons/CommonButton'
@@ -15,7 +16,6 @@ import { disableCampaign, enableCampaign, getCampaign } from './campaignServices
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom'
 import { Typography, ButtonGroup, Link, Breadcrumbs, Stack, Divider } from '@mui/material'
-import GenericPaper from 'src/components/layout/container/GenericPaper'
 
 export const CampaignDetails = () => {
     const { id } = useParams()

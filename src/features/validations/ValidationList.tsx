@@ -1,8 +1,8 @@
 import CommonButton from 'shared/ui/buttons/CommonButton'
+import { CodeBox } from 'shared/ui/details/CodeBox'
 import type { LeadFieldDetailed } from 'src/types/leadFields'
 import { List, ListItem, ListItemText, Paper, Stack, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { CodeBox } from 'src/components/ui/details/CodeBox'
 
 interface ValidationListProps {
     leadField: LeadFieldDetailed,

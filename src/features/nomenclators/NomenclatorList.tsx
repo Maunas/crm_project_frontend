@@ -1,12 +1,11 @@
 import { memo, useCallback, useEffect, useState } from 'react'
 import { NomenclatorFormSidebar } from './NomenclatorForm'
 import { NomenclatorDetails } from './NomenclatorDetails'
+import { ResponsiveListItem, type ListItemAction } from 'shared/ui/lists/CustomListItem'
 import ContainerWithSidebar from 'shared/layout/container/GenericContainer'
 import { DisableConfirmDialog } from 'shared/feedback/ConfirmationDialog'
-import { CommonIconButton } from 'shared/ui/buttons/CommonIconButton'
 import PaginationComponent from 'shared/ui/lists/PaginationComponent'
 import LoadingScreenWrapper from 'shared/feedback/LoadingScreen'
-import { CustomListItem } from 'shared/ui/lists/CustomListItem'
 import CommonButton from 'shared/ui/buttons/CommonButton'
 import { EnabledIcon } from 'shared/ui/lists/Icons'
 import { useListPagination } from 'src/hooks/useListPagination'
@@ -17,9 +16,8 @@ import type { Paginable } from 'src/types/shared'
 import { disableNomenclator, enableNomenclator, getNomenclator, getNomenclators } from './nomenclatorService'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { useUserContext } from 'src/stores/UserContext'
-import { Link as RouterLink, useSearchParams } from 'react-router-dom'
-import { List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { useSearchParams } from 'react-router-dom'
+import { Grid, List, ListItemText, Stack, Typography } from '@mui/material'
 
 export const NomenclatorList = () => {
 
@@ -116,7 +114,7 @@ export const NomenclatorList = () => {
                 closeSidebar={closeSidebar} updateEntityOnList={updateEntityOnList}
                 handleActive={handleDeletingNom} />
         }>
-            <Stack spacing={3}>
+            <Stack>
                 <Stack direction="row" useFlexGap spacing={2} sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
                     <Typography variant="h1">Lista de Nomencladores</Typography>
                     {nomenclators && nomenclators.items?.length > 0 &&
@@ -130,42 +128,44 @@ export const NomenclatorList = () => {
                     <Stack spacing={2}>
                         {
                             nomenclators && nomenclators.items?.length > 0 ?
-                                <List>
-                                    {nomenclators.items.map(nom =>
-                                        <CustomListItem key={nom.id} isSelected={nom.id === selectedEntity?.id} disablePadding secondaryAction={
-                                            <Stack direction="row" sx={{ alignItems: "center" }}>
-                                                <CommonIconButton actionType='DETAILS' title='Detalle' onClick={() => handleSidebar("DETAILS_NOM", nom)} tooltipSize='small' size="small" />
-                                                <CommonIconButton actionType='LIST' title='Ver Items' component={RouterLink} to={`/nomenclators/${nom.id}`} tooltipSize='small' size="small" />
-                                                {(nom.organization_id || activeOrg?.id === 0) &&
-                                                    <>
-                                                        <CommonIconButton actionType='MODIFY' title='Modificar' onClick={() => handleSidebar("UPDATE_NOM", nom)} tooltipSize='small' size="small" />
-                                                        <CommonIconButton actionType={nom.active ? "DISABLE" : "ENABLE"} tooltipSize="small" size="small"
-                                                            title={nom.active ? "Deshabilitar" : "Habilitar"}
-                                                            onClick={() => handleDeletingNom(nom)} color={nom.active ? "error" : "success"} />
-                                                    </>}
-                                            </Stack>
-                                        }>
-                                            <ListItemButton onClick={() => handleSidebar("DETAILS_NOM", nom)} >
-                                                <ListItemText sx={{ mr: 10 }} primary={
-                                                    <Stack spacing={1} direction="row" sx={{ alignItems: "center" }}>
-                                                        <EnabledIcon active={nom.active} />
-                                                        <Typography sx={{ fontWeight: "bold" }}>{nom.name}</Typography>
-                                                        {nom.parent_nomenclator &&
-                                                            <>
-                                                                <ArrowBackIcon />
-                                                                <Typography variant="subtitle2">
-                                                                    {nom.parent_nomenclator.name}
-                                                                </Typography>
-                                                            </>
-                                                        }
-                                                    </Stack>
-                                                }
-                                                    secondary={!nom.organization_id &&
-                                                        <span style={{ fontStyle: "italic" }}>Nomenclador del Sistema</span>
-                                                    } />
-                                            </ListItemButton>
-                                        </CustomListItem>
-                                    )}
+                                <List dense>
+                                    <Grid container sx={{ alignItems: "stretch" }}>
+                                        {nomenclators.items.map(nom => {
+                                            const isBlocked = !nom.organization_id && activeOrg?.id !== 0
+                                            return (<Grid size={{ xs: 12, sm: 12, md: 6, lg: 4 }} key={nom.id}>
+                                                <ResponsiveListItem isSelected={nom.id === selectedEntity?.id} disablePadding
+                                                    onClick={() => handleSidebar("DETAILS_NOM", nom)}
+                                                    actions={[
+                                                        { actionType: "DETAILS", label: 'Detalle', onClick: () => handleSidebar("DETAILS_NOM", nom) },
+                                                        ...(isBlocked ? [] : [
+                                                            { actionType: "MODIFY", label: 'Modificar', onClick: () => handleSidebar("UPDATE_NOM", nom) },
+                                                            {
+                                                                actionType: (nom.active ? "DISABLE" : "ENABLE"), label: nom.active ? "Deshabilitar" : "Habilitar",
+                                                                color: (nom.active ? "error" : "success"), onClick: () => handleDeletingNom(nom)
+                                                            }
+                                                        ] as ListItemAction[])
+                                                    ]}>
+                                                    <ListItemText primary={
+                                                        <Stack spacing={.5} direction="row" sx={{ alignItems: "center" }}>
+                                                            <EnabledIcon active={nom.active} size="small" />
+                                                            <Stack spacing={-.5}>
+                                                                {nom.parent_nomenclator &&
+                                                                    <Typography variant="caption" color="textSecondary" sx={{ fontWeight: 500, textTransform: "uppercase", wordBreak: "break-word" }}>
+                                                                        {nom.parent_nomenclator.name}
+                                                                    </Typography>}
+                                                                <Typography sx={{ fontWeight: 500, wordBreak: "break-word" }}>{nom.name}</Typography>
+                                                            </Stack>
+                                                        </Stack>
+                                                    }
+                                                        secondary={!nom.organization_id &&
+                                                            <span style={{ fontStyle: "italic" }}>Nomenclador del Sistema</span>
+                                                        } />
+                                                </ResponsiveListItem>
+                                            </Grid>
+                                            )
+                                        }
+                                        )}
+                                    </Grid>
                                 </List>
                                 : <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
                                     <Typography variant="h4">No se han encontrado nomencladores...</Typography>
@@ -177,9 +177,9 @@ export const NomenclatorList = () => {
                         <PaginationComponent {...pageComponentProps} />
                     </Stack>
                 </LoadingScreenWrapper>
-                <DisableConfirmDialog entity={deletingNom} clearEntity={() => setDeletingNom(null)} idModal='dis-nom-list'
-                    onConfirm={() => handleActive(deletingNom)} entityTypeName='el nomenclador' />
             </Stack>
+            <DisableConfirmDialog entity={deletingNom} clearEntity={() => setDeletingNom(null)} idModal='dis-nom-list'
+                onConfirm={() => handleActive(deletingNom)} entityTypeName='el nomenclador' />
         </ContainerWithSidebar >
     )
 }
@@ -207,7 +207,7 @@ const NomenclatorSidebar = memo(({ mode, entity, closeSidebar, updateEntityOnLis
                 updateEntityOnList={entity => updateEntityOnList(entity, mode)}
                 handleSidebar={handleSidebar} />
         case "DETAILS_NOM":
-            return <NomenclatorDetails entity={entity as NomenclatorDetailed} closeSidebar={closeSidebar}
+            return <NomenclatorDetails nomenclator={entity as NomenclatorDetailed} closeSidebar={closeSidebar}
                 handleSidebar={handleSidebar} handleActive={handleActive} />
     }
 

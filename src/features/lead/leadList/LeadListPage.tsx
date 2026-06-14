@@ -3,6 +3,7 @@ import { LeadListContent } from './LeadListContent'
 import LeadColumnSelector from '../leadListOptions/LeadColumnSelector'
 import { LeadListOptions } from '../leadListOptions/LeadListOptions'
 import { DisableBulkConfirmDialog } from 'shared/feedback/ConfirmationDialog'
+import { GenericContainer } from 'shared/layout/container/GenericContainer'
 import PaginationComponent from 'shared/ui/lists/PaginationComponent'
 import LoadingScreenWrapper from 'shared/feedback/LoadingScreen'
 import GenericModal from 'shared/layout/container/GenericModal'
@@ -286,41 +287,43 @@ export const LeadListPage = () => {
     const [bulkDeleteOpen, setBulkDeleteOpen] = useState<boolean>(false)
 
     return (
-        <Stack spacing={3} sx={{ minWidth: 0 }}>
-            <Stack useFlexGap direction="row" sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }} spacing={2}>
-                <Typography variant="h1">Lista de Leads</Typography>
-                {areThereLeads &&
-                    <CommonButton actionType='CREATE' variant="contained" color="primary"
-                        component={RouterLink} to={`/leads/new?workspace=${workspaceId}&campaign=${campaignId}`} onlyTooltip>
-                        Agregar
-                    </CommonButton>
-                }
-            </Stack>
-            <Stack spacing={2} sx={{ minWidth: 0 }}>
-                <LeadListOptions areThereLeads={areThereLeads} campaignId={campaignId} modalProps={modalProps} campaignSelectorProps={campaignSelectorProps} presentationProps={presentationProps}
-                    filters={filters} headers={{ ...fetchParams, ...orderParams }} setFiltersAndHeaders={setFiltersAndHeaders} viewUpdateProps={viewUpdateProps} selectCheckboxProps={selectCheckboxProps}
-                    bulkDelete={async () => setBulkDeleteOpen(true)} />
-                <LoadingScreenWrapper loading={loading}>
-                    {(leads && campaignId !== null && workspaceId !== null) ?
-                        <>
-                            <LeadListContent leads={leads.items} leadFields={leadFields} selectedFieldIds={selectedFieldIds} modalProps={modalProps} presentationMode={presentationMode}
-                                activeFilters={filters.length} orderProps={orderProps} handleSelectedFieldIds={handleSelectedFieldIds} selectCheckboxProps={selectCheckboxProps}
-                                workspaceId={workspaceId ? parseInt(`${workspaceId}`) : undefined} campaignId={campaignId ? parseInt(`${campaignId}`) : undefined} />
-                            <PaginationComponent {...pageComponentProps} />
-                        </>
-                        :
-                        <Stack spacing={3} sx={{ alignItems: "center", py: 6 }}>
-                            <Typography variant="h3">No hay leads para presentar</Typography>
-                            <Typography variant="h4">Revisa que haya una campaña seleccionada</Typography>
-                        </Stack>
+        <GenericContainer containerSize="xl">
+            <Stack spacing={3} sx={{ minWidth: 0 }}>
+                <Stack useFlexGap direction="row" sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }} spacing={2}>
+                    <Typography variant="h1">Lista de Leads</Typography>
+                    {areThereLeads &&
+                        <CommonButton actionType='CREATE' variant="contained" color="primary"
+                            component={RouterLink} to={`/leads/new?workspace=${workspaceId}&campaign=${campaignId}`} onlyTooltip>
+                            Agregar
+                        </CommonButton>
                     }
-                </LoadingScreenWrapper>
-            </Stack >
-            <DisableBulkConfirmDialog open={bulkDeleteOpen} onClose={() => setBulkDeleteOpen(false)} idModal="bulk-del-leads"
-                onlyDelete entityTypeName="los leads seleccionados" onConfirm={bulkDelete} isDisabling />
-            <GenericModal idModal="columns_selector" {...modalProps} buttonText="Modificar Columnas" maxWidth="md" fullWidth showButton={false}>
-                <LeadColumnSelector originalList={leadFields} selectedFieldIds={selectedFieldIds!} handleSelectedFieldIds={handleSelectedFieldIds} handleClose={modalProps.handleClose} showField="name" />
-            </GenericModal>
-        </Stack>
+                </Stack>
+                <Stack spacing={2} sx={{ minWidth: 0 }}>
+                    <LeadListOptions areThereLeads={areThereLeads} campaignId={campaignId} modalProps={modalProps} campaignSelectorProps={campaignSelectorProps} presentationProps={presentationProps}
+                        filters={filters} headers={{ ...fetchParams, ...orderParams }} setFiltersAndHeaders={setFiltersAndHeaders} viewUpdateProps={viewUpdateProps} selectCheckboxProps={selectCheckboxProps}
+                        bulkDelete={async () => setBulkDeleteOpen(true)} />
+                    <LoadingScreenWrapper loading={loading}>
+                        {(leads && campaignId !== null && workspaceId !== null) ?
+                            <>
+                                <LeadListContent leads={leads.items} leadFields={leadFields} selectedFieldIds={selectedFieldIds} modalProps={modalProps} presentationMode={presentationMode}
+                                    activeFilters={filters.length} orderProps={orderProps} handleSelectedFieldIds={handleSelectedFieldIds} selectCheckboxProps={selectCheckboxProps}
+                                    workspaceId={workspaceId ? parseInt(`${workspaceId}`) : undefined} campaignId={campaignId ? parseInt(`${campaignId}`) : undefined} />
+                                <PaginationComponent {...pageComponentProps} />
+                            </>
+                            :
+                            <Stack spacing={3} sx={{ alignItems: "center", py: 6 }}>
+                                <Typography variant="h3">No hay leads para presentar</Typography>
+                                <Typography variant="h4">Revisa que haya una campaña seleccionada</Typography>
+                            </Stack>
+                        }
+                    </LoadingScreenWrapper>
+                </Stack >
+                <DisableBulkConfirmDialog open={bulkDeleteOpen} onClose={() => setBulkDeleteOpen(false)} idModal="bulk-del-leads"
+                    onlyDelete entityTypeName="los leads seleccionados" onConfirm={bulkDelete} isDisabling />
+                <GenericModal idModal="columns_selector" {...modalProps} buttonText="Modificar Columnas" maxWidth="md" fullWidth showButton={false}>
+                    <LeadColumnSelector originalList={leadFields} selectedFieldIds={selectedFieldIds!} handleSelectedFieldIds={handleSelectedFieldIds} handleClose={modalProps.handleClose} showField="name" />
+                </GenericModal>
+            </Stack>
+        </GenericContainer>
     )
 }
