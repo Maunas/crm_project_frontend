@@ -10,6 +10,7 @@ import { useModal } from "src/hooks/useModal"
 import { getFieldsBySections, getTypeOrSpecialTemplates } from "features/leadFields/leadFieldUtils"
 import { Accordion, AccordionDetails, AccordionSummary, Divider, Typography, Stack, List, ListItemText, Box } from "@mui/material"
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import GenericPaper from "src/components/layout/container/GenericPaper"
 
 
 interface LeadFieldSectionsProps {
@@ -51,7 +52,8 @@ export const LeadFieldSections = ({ lead, updateLeadInfo }: LeadFieldSectionsPro
     return (
         <Box>
             {fieldValuesBySection.map((section, idx) =>
-                <Accordion expanded={expanded === idx} onChange={onExpand(idx)} key={`section-${idx}`}>
+                <Accordion expanded={expanded === idx} onChange={onExpand(idx)} key={`section-${idx}`}
+                    component={GenericPaper} elevation={0} sx={{ p: 0 }}>
                     <AccordionSummary expandIcon={<ArrowDropDownIcon />}
                         aria-controls={`panel${idx + 1}-content`} id={`panel${idx + 1}-header`}>
                         <Typography variant="h2">{section.name}</Typography>
@@ -70,7 +72,8 @@ export const LeadFieldSections = ({ lead, updateLeadInfo }: LeadFieldSectionsPro
                     </AccordionDetails>
                 </Accordion >
             )}
-            <Accordion expanded={expanded === -1} onChange={onExpand(-1)}>
+            <Accordion expanded={expanded === -1} onChange={onExpand(-1)}
+                component={GenericPaper} elevation={0} sx={{ p: 0 }}>
                 <AccordionSummary sx={{ height: "4rem" }} expandIcon={<ArrowDropDownIcon />}
                     aria-controls="panel0-content" id="panel0-header">
                     <Typography variant="h2">Creación de Lead</Typography>

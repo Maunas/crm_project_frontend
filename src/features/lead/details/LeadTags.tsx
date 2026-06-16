@@ -87,7 +87,7 @@ export const LeadTags = ({ lead, updateLeadInfo }: { lead: LeadDetailed, updateL
         {(lead.tags.length === 0) ? (
             <Box sx={{ width: "100%" }}>
                 <Button sx={{ p: 0, minWidth: 0 }} size="small" onClick={openTagMenu}>
-                    <CustomChip color="primary" size='small' label={
+                    <CustomChip chipColor="primary" size='small' label={
                         <AddIcon fontSize='inherit' />
                     } />
                 </Button>
@@ -97,7 +97,7 @@ export const LeadTags = ({ lead, updateLeadInfo }: { lead: LeadDetailed, updateL
                 <Stack direction="row" spacing={.5} useFlexGap sx={{ flexWrap: "wrap", alignItems: "center", justifyContent: "start", width: "100%" }}>
                     {lead.tags.map(tag =>
                         <Button sx={{ p: 0, minWidth: 0 }} size="small" key={`lead-${tag.id}`} onClick={() => setOpenList(p => !p)}>
-                            <CustomChip size='small' color={tag.color} defaultColor="secondary" label={tag.name}
+                            <CustomChip size='small' chipColor={tag.color} defaultColor="secondary" label={tag.name}
                                 sx={{
                                     maxHeight: openList ? "5rem" : ".5rem", maxWidth: openList ? "10rem" : "3rem",
                                     transition: `all 150ms ease-in-out ${openList ? "0ms" : "100ms"}`,
@@ -109,7 +109,7 @@ export const LeadTags = ({ lead, updateLeadInfo }: { lead: LeadDetailed, updateL
                         </Button>
                     )}
                     <Button sx={{ p: 0, minWidth: 0 }} size="small" onClick={openTagMenu}>
-                        <CustomChip color="primary" size='small' label={<Stack direction="row" spacing={.5}><AddIcon fontSize='inherit' />{lead.tags.length === 0 && "Etiquetas"}</Stack>}
+                        <CustomChip chipColor="primary" size='small' label={<Stack direction="row" spacing={.5}><AddIcon fontSize='inherit' />{lead.tags.length === 0 && "Etiquetas"}</Stack>}
                             sx={{
                                 maxHeight: "5rem", maxWidth: "10rem", display: openList ? "flex" : "none",
                                 transition: `all 150ms ease-in-out ${openList ? "150ms" : "0ms"}`,
@@ -242,7 +242,7 @@ const LeadTagsMenu = ({ leadId, tagList, leadTags, menuAnchor, handleClose, page
                                                     edge="start" sx={{ py: 0 }} onChange={() => handleCheckboxToggle(tag.id)} />
                                             </ListItemIcon>
                                             <ListItemText sx={{ my: 0, mr: 3 }} primary={
-                                                <CustomChip color={tagColor(tag.color)} label={tag.name} sx={{ width: "100%" }} />
+                                                <CustomChip chipColor={tagColor(tag.color)} label={tag.name} sx={{ width: "100%" }} />
                                             } />
                                         </ListItemButton>
                                     </CustomListItem>

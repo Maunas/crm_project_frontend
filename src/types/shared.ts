@@ -2,6 +2,7 @@ import type { Path } from "react-hook-form";
 import type { Lead } from "./leads";
 import type { Campaign, Workspace } from "./campaigns";
 import type { Nomenclator, NomenclatorItem } from "./nomenclators";
+import type { UserData } from "./users";
 
 export interface DisableableEntity {
   active?: boolean,
@@ -27,6 +28,8 @@ export interface Metadata {
   active: boolean;
   created_by: number;
   updated_by?: number;
+  creator?: UserData;
+  updater?: UserData | null;
 }
 
 /**

@@ -9,8 +9,9 @@ import { useListPagination } from "src/hooks/useListPagination"
 import { useLoading } from "src/hooks/useLoading"
 import type { ColorTypes } from "src/types/mui-theme.d"
 import type { Paginable } from "src/types/shared"
-import type { LeadAudit } from "src/types/leads"
+import type { LeadAudit, LeadDetailed } from "src/types/leads"
 import { getAudit } from "./leadActivitiesService"
+import { showCommonErrorToast } from "src/utils/feedback"
 import { Avatar, Box, Button, Card, CardActionArea, CardActions, CardContent, CardHeader, Collapse, Divider, Stack, Typography } from "@mui/material"
 import { timelineItemClasses } from "@mui/lab/TimelineItem"
 import Timeline from '@mui/lab/Timeline';
@@ -19,13 +20,21 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import WatchLaterIcon from '@mui/icons-material/WatchLater';
 import EditIcon from "@mui/icons-material/Edit"
 import AddIcon from "@mui/icons-material/Add"
-import { showCommonErrorToast } from "src/utils/feedback"
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import type { LeadState } from "src/types/leadFlow"
+import { getLeadFlowStates } from "src/features/leadFlows/leadFlowServices/FlowService"
 
 const MAX_ITEMS_NUM = 3
 
-export const LeadAuditList = ({ leadId, reloadAudit }: { leadId: number, reloadAudit: number }) => {
+export const LeadAuditList = ({ lead, reloadAudit }: { lead: LeadDetailed, reloadAudit: number }) => {
 
   const [audit, setAudit] = useState<Paginable<LeadAudit> | null>(null)
+  const [statesList, setStatesList] = useState<LeadState[]>([])
+
+  useEffect(() => {
+    getLeadFlowStates({ detailed: false, lead_flow_id: lead.current_state.lead_flow_id, only_active: false, page_size: 0 })
+      .then(res => setStatesList(res.items))
+  }, [lead.current_state.lead_flow_id])
 
   const { fetchPage, pageSize, pageComponentProps } = useListPagination(audit, 8)
 
@@ -38,16 +47,16 @@ export const LeadAuditList = ({ leadId, reloadAudit }: { leadId: number, reloadA
   const { fnWithLoading: fetchAuditLoad, loading } = useLoading(fetchAuditList)
 
   useEffect(() => {
-    if (!leadId) return
-    fetchAuditLoad(leadId, fetchPage, pageSize)
+    if (!lead.id) return
+    fetchAuditLoad(lead.id, fetchPage, pageSize)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [leadId, fetchPage, pageSize])
+  }, [lead.id, fetchPage, pageSize])
 
   //Recarga cuando hay un cambio. No realiza cuando reloadAudit === 0 (Primera carga).
   useEffect(() => {
-    if (!leadId) return
+    if (!lead.id) return
     if (reloadAudit === 0) return
-    fetchAuditLoad(leadId, fetchPage, pageSize)
+    fetchAuditLoad(lead.id, fetchPage, pageSize)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reloadAudit])
 
@@ -72,12 +81,15 @@ export const LeadAuditList = ({ leadId, reloadAudit }: { leadId: number, reloadA
           },
         }}>
           {audit?.items.map((item, idx) => {
+            const stateChangeFromObject = item.activity_type !== "STATE_CHANGED" ? undefined : statesList?.find(i => i.id === item.details.from_state_id)
+            const stateChangeToObject = item.activity_type !== "STATE_CHANGED" ? undefined : statesList?.find(i => i.id === item.details.to_state_id)
             return (
               <CustomTimelineItem selected={idx === showItems} last={idx === audit.items.length - 1} key={item.id}>
                 <Card raised>
                   <CardActionArea onClick={() => handleShowItems(idx)} title="Ver detalle">
                     <LeadAuditHeader activityType={item.activity_type}
-                      message={item.details.message ?? `${Object.values(item.details?.changes ?? {}).length} cambios`} />
+                      message={item.details.message ?? item.details.notes ??
+                        (item.details?.changes && `${Object.values(item.details?.changes ?? {}).length} cambios`)} />
                   </CardActionArea>
                   <Collapse in={idx === showItems} timeout="auto" unmountOnExit>
                     <Divider />
@@ -108,6 +120,21 @@ export const LeadAuditList = ({ leadId, reloadAudit }: { leadId: number, reloadA
                         </Stack>
                       </CardContent>
                     }
+                    {item?.details?.to_state_id && item?.details?.from_state_id &&
+                      <CardContent sx={{ py: 1 }}>
+                        <Stack direction="row" useFlexGap spacing={1} sx={{ flexWrap: "wrap", px: 1, alignItems: "center" }}>
+                          <Box>
+                            <LeadAuditValue value={stateChangeFromObject?.name ?? item?.details?.from_state_id}
+                              id={item.id} color={stateChangeFromObject?.color ?? "secondary"} size="small" />
+                          </Box>
+                          <ArrowForwardIcon fontSize="small" />
+                          <Box>
+                            <LeadAuditValue value={stateChangeToObject?.name ?? item?.details?.to_state_id}
+                              id={item.id} color={stateChangeToObject?.color ?? "primary"} size="small" />
+                          </Box>
+                        </Stack>
+                      </CardContent>
+                    }
                     <Divider />
                     <CardActions sx={{ py: .5 }}>
                       <Stack direction="row" spacing={.5} sx={{ alignItems: "center", justifyContent: "end", ml: "auto" }}>
@@ -133,7 +160,7 @@ interface ActivityInfoProps {
   title: string
 }
 
-const LeadAuditHeader = ({ activityType, message }: { activityType?: string, message: string }) => {
+const LeadAuditHeader = ({ activityType, message }: { activityType?: string, message?: string }) => {
 
   const activityInfo = useMemo<ActivityInfoProps>(() => {
     switch (activityType) {
@@ -143,8 +170,11 @@ const LeadAuditHeader = ({ activityType, message }: { activityType?: string, mes
       case "LEAD_CREATED": return (
         { icon: <AddIcon />, color: "success", title: "Nuevo Lead" }
       )
+      case "STATE_CHANGED": return (
+        { icon: <AccountTreeIcon />, color: "warning", title: "Cambio de Estado" }
+      )
       default: return (
-        { icon: <InfoOutlinedIcon />, color: "warning", title: "Otro" }
+        { icon: <InfoOutlinedIcon />, color: "error", title: "Otro" }
       )
     }
   }, [activityType])
@@ -167,9 +197,9 @@ const LeadAuditHeader = ({ activityType, message }: { activityType?: string, mes
 
 interface LeadAuditValueProps {
   value: string | number | number[] | null,
-  fieldName: string,
+  fieldName?: string,
   size?: "small" | "medium" | "large" | "xlarge",
-  color?: ColorTypes,
+  color?: string,
   id: number
 }
 
@@ -186,17 +216,17 @@ const chipSx = {
 
 const LeadAuditValue = ({ value, fieldName, id, size = "medium", color = "primary" }: LeadAuditValueProps) => {
   if (!value) {
-    return <CustomChip size={size} color={color} label="---" title="Sin valor" sx={chipSx} />
+    return <CustomChip size={size} chipColor={color} label="---" title="Sin valor" sx={chipSx} />
   }
   if (typeof value === "number") {
-    return <CustomChip size={size} color={color} label={value} title={`${value}`} sx={chipSx} />
+    return <CustomChip size={size} chipColor={color} label={value} title={`${value}`} sx={chipSx} />
   }
   if (typeof value === "string") {
-    return <CustomChip size={size} color={color} label={showValue(value, fieldName)} title={value} sx={chipSx} />
+    return <CustomChip size={size} chipColor={color} label={showValue(value, fieldName!)} title={value} sx={chipSx} />
   }
   return <Stack spacing={.5} direction="row" useFlexGap sx={{ flexWrap: "wrap", direction: "row", justifyContent: "start" }}>
     {value?.map(item =>
-      <CustomChip size={size} color={color} key={`audit-value-${id}-${value}`} label={showValue(`${item}`, fieldName)} title={`${item}`} sx={chipSx} />
+      <CustomChip size={size} chipColor={color} key={`audit-value-${id}-${value}`} label={showValue(`${item}`, fieldName!)} title={`${item}`} sx={chipSx} />
     )}
   </Stack>
 }

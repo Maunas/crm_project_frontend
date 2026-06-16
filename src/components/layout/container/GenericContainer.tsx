@@ -37,7 +37,7 @@ const ContainerWithSidebar = ({ isSidebarOpen = false, closeSidebar, sidebarComp
     containerSize, containerProps, noPaper = false, children }: ContainerWithSidebarProps) => {
     return (
         <>
-            <GenericContainer containerSize={containerSize} noPaper={noPaper} {...containerProps} >
+            <GenericContainer containerSize={containerSize} noPaper={noPaper}  {...containerProps} >
                 {children}
             </GenericContainer>
             <GenericSidebar isSidebarOpen={isSidebarOpen} closeSidebar={closeSidebar} sidebarComponent={sidebarComponent}

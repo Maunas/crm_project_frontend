@@ -1,5 +1,7 @@
-import type { LeadFilter, ListParams, Metadata } from "./shared";
 import type { LeadFieldValue, LeadFieldValueDetailed } from "./leadFields";
+import type { LeadFilter, ListParams, Metadata } from "./shared";
+import type { LeadContactState, LeadContactStateDetailed } from "./contactState";
+import type { LeadState, LeadStateDetailed } from "./leadFlow";
 import type { ColorTypes } from "./mui-theme.d";
 
 export interface LeadPostValue {
@@ -16,11 +18,19 @@ export interface Lead {
   campaign_id?: number;
   field_values: LeadFieldValue[];
   organization_id?: number,
-  tags: LeadTag[]
+  tags: LeadTag[],
+  current_state_id: number,
+  current_state: LeadState,
+  contact_state_id: number,
+  contact_state: LeadContactState,
+  picture_url?: string,
+  assigned_to_user_id: unknown,
+  team_id: unknown,
 }
 export interface LeadDetailed extends Lead, Metadata {
   field_values: LeadFieldValueDetailed[];
-
+  current_state: LeadStateDetailed,
+  contact_state: LeadContactStateDetailed,
 }
 
 export interface LeadCommentPost {
@@ -36,10 +46,13 @@ export interface LeadComment extends LeadCommentPost, Metadata {
 export interface LeadAudit extends Metadata {
   id: number,
   lead_id: number,
-  activity_type: "LEAD_CREATED" | "FIELDS_UPDATED",
+  activity_type: "LEAD_CREATED" | "FIELDS_UPDATED" | "STATE_CHANGED",
   details: {
     message?: string,
+    notes?: string,
     changes?: LeadAuditChange
+    to_state_id?: number
+    from_state_id?: number
   }
 }
 

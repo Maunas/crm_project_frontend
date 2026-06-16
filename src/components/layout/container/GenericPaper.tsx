@@ -9,6 +9,9 @@ const GenericPaper = styled(
             const originalGradient = "var(--Paper-overlay)"
             const originalShadow = "var(--Paper-shadow)"
 
+            const newGradient = `linear-gradient(180deg, ${theme.alpha(theme.palette.contrast[50], .04)}, ${theme.alpha(theme.palette.contrast[900], .04)})`
+            const lightOverlay = `linear-gradient(${theme.alpha(theme.palette.contrast[50], .03)})`
+
             return [{
                 padding: "1.5rem 2rem",
                 width: "100%"
@@ -22,12 +25,9 @@ const GenericPaper = styled(
             theme.applyStyles("dark", {
                 "&&": {
                     backgroundImage: `
-                        ${originalGradient},
-                        linear-gradient(180deg, ${theme.alpha(theme.palette.contrast[50], .04)},
-                        ${theme.alpha(theme.palette.contrast[900], .04)})
-                        ${elevation === 0 ?//Aclara un poco el elevation=0
-                            `,linear-gradient(${theme.alpha(theme.palette.contrast[50], .03)})`
-                            : ""}
+                        ${originalGradient}
+                        ${false ? `, ${newGradient}` : ""}
+                        ${elevation === 0 ? `, ${lightOverlay}` : "" /*Aclara un poco el elevation=0*/}
         `}
             })]
         })

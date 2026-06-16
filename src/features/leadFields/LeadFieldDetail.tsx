@@ -93,12 +93,12 @@ export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeS
                         </Stack>
                     </Stack>
                     <Stack spacing={1} direction="row" useFlexGap sx={{ flexWrap: "wrap", justifyContent: "center" }}>
-                        {leadField.required ? <CustomChip color='success' label="Obligatorio" /> :
-                            <CustomChip color='error' label="Opcional" />}
-                        {leadField.is_primary ? <CustomChip color='success' label="Único" /> :
-                            <CustomChip color='error' label="Repetible" />}
-                        {leadField.is_visible ? <CustomChip color='success' label="Visible" /> :
-                            <CustomChip color='error' label="Oculto" />}
+                        {leadField.required ? <CustomChip chipColor='success' label="Obligatorio" /> :
+                            <CustomChip chipColor='error' label="Opcional" />}
+                        {leadField.is_primary ? <CustomChip chipColor='success' label="Único" /> :
+                            <CustomChip chipColor='error' label="Repetible" />}
+                        {leadField.is_visible ? <CustomChip chipColor='success' label="Visible" /> :
+                            <CustomChip chipColor='error' label="Oculto" />}
                     </Stack>
                     <Divider />
                     <Stack spacing={1}>

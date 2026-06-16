@@ -26,9 +26,10 @@ export interface LeadStatePost {
 }
 
 export interface LeadState extends Omit<LeadStatePost, "order"> {
-  id: number
-  organization_id: number | null
-  order: number | null
+  id: number,
+  organization_id: number | null,
+  order: number | null,
+  active: boolean
 }
 
 export interface LeadStateDetailed extends LeadState, Metadata { }
