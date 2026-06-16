@@ -105,6 +105,8 @@ export const CampaignDetails = () => {
                                         <ButtonGroup sx={{ marginLeft: "auto" }}>
                                             <CommonButton component={RouterLink} variant='outlined' to={`/leads?workspace=${campaign.workspace_id}&campaign=${campaign.id}`}
                                                 actionType="LIST" onlyTooltip color="secondary">Ver Leads</CommonButton>
+                                            <CommonButton component={RouterLink} variant='outlined' to={`/automations/?campaign_id=${campaign.id}`}
+                                                actionType="LIST">Automatizaciones</CommonButton>
                                             <HandleActiveButton active={campaign.active} handleActive={() => setDeletingCmp(campaign)} onlyTooltip />
                                             <CommonButton onClick={() => handleSidebar("UPDATE_CMP", null)} actionType="MODIFY" onlyTooltip>Modificar</CommonButton>
                                         </ButtonGroup>

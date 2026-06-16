@@ -3,10 +3,11 @@ import { ChipTooltip } from 'shared/ui/details/ChipTooltip';
 import { Link, useLocation } from 'react-router-dom';
 import { List, ListItem, ListItemButton, ListItemIcon, ListItemText, useTheme } from '@mui/material'
 import { alpha } from '@mui/material/styles';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import PersonIcon from '@mui/icons-material/Person';
-import WorkIcon from '@mui/icons-material/Work';
 import StoreIcon from '@mui/icons-material/Store';
 import LabelIcon from '@mui/icons-material/Label';
+import WorkIcon from '@mui/icons-material/Work';
 import TuneIcon from '@mui/icons-material/Tune';
 
 const options = [
@@ -14,7 +15,8 @@ const options = [
   { name: "Campañas", icon: <WorkIcon />, link: "/campaigns" },
   { name: "Organizaciones", icon: <StoreIcon />, link: "/organizations" },
   { name: "Nomencladores", icon: <LabelIcon />, link: "/nomenclators" },
-  { name: "Propiedades de Lead", icon: <TuneIcon />, link: "/lead-properties" }
+  { name: "Propiedades de Lead", icon: <TuneIcon />, link: "/lead-properties" },
+  { name: "Automatizaciones", icon: <AutoFixHighIcon />, link: "/automations" },
 ]
 
 interface NavbarProps {
