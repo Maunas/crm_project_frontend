@@ -23,7 +23,7 @@ export const ChipTooltip = memo(({ show = true, boxed = false, title, color = "p
     return (<Tooltip arrow placement={placement} title={<Box sx={{ fontWeight: 500 }}>{title}</Box>}
         slots={{
             tooltip: (props) =>
-                <CustomChip label={props.children} color={color} size={size} {...props} />
+                <CustomChip label={props.children} chipColor={color} size={size} {...props} />
         }}
         slotProps={{
             popper: {

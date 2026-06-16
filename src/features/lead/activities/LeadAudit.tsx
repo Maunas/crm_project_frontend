@@ -186,17 +186,17 @@ const chipSx = {
 
 const LeadAuditValue = ({ value, fieldName, id, size = "medium", color = "primary" }: LeadAuditValueProps) => {
   if (!value) {
-    return <CustomChip size={size} color={color} label="---" title="Sin valor" sx={chipSx} />
+    return <CustomChip size={size} chipColor={color} label="---" title="Sin valor" sx={chipSx} />
   }
   if (typeof value === "number") {
-    return <CustomChip size={size} color={color} label={value} title={`${value}`} sx={chipSx} />
+    return <CustomChip size={size} chipColor={color} label={value} title={`${value}`} sx={chipSx} />
   }
   if (typeof value === "string") {
-    return <CustomChip size={size} color={color} label={showValue(value, fieldName)} title={value} sx={chipSx} />
+    return <CustomChip size={size} chipColor={color} label={showValue(value, fieldName)} title={value} sx={chipSx} />
   }
   return <Stack spacing={.5} direction="row" useFlexGap sx={{ flexWrap: "wrap", direction: "row", justifyContent: "start" }}>
     {value?.map(item =>
-      <CustomChip size={size} color={color} key={`audit-value-${id}-${value}`} label={showValue(`${item}`, fieldName)} title={`${item}`} sx={chipSx} />
+      <CustomChip size={size} chipColor={color} key={`audit-value-${id}-${value}`} label={showValue(`${item}`, fieldName)} title={`${item}`} sx={chipSx} />
     )}
   </Stack>
 }

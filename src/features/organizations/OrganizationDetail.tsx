@@ -23,10 +23,10 @@ const OrganizationDetails = ({ entity, closeSidebar, handleSidebar, handleActive
             <Stack direction="row" useFlexGap spacing={2} sx={{ flexWrap: "wrap", justifyContent: "space-between", alignItems: "center" }}>
                 <Typography variant="h2">{entity.name}</Typography>
                 <Stack direction="row" spacing={1} sx={{ marginLeft: "auto" }} >
-                    {entity.active ? <CustomChip color='success' label="Habilitado" /> :
-                        <CustomChip color='error' label="Deshabilitado" />}
+                    {entity.active ? <CustomChip chipColor='success' label="Habilitado" /> :
+                        <CustomChip chipColor='error' label="Deshabilitado" />}
                     {activeOrg?.id === entity.id &&
-                        <CustomChip color='info' label="Activo" />}
+                        <CustomChip chipColor='info' label="Activo" />}
                 </Stack>
             </Stack>
             <Stack spacing={2} sx={{ alignItems: "start" }} >
