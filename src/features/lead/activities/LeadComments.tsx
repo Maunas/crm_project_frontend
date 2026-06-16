@@ -61,15 +61,15 @@ export const LeadComments = ({ leadId }: { leadId: number }) => {
     return (
         <LoadingScreenWrapper loading={loading}>
             <Stack spacing={2} sx={{ height: "100%" }}>
-                <Stack spacing={2} component={GenericPaper} elevation={0} sx={{
+                <Stack spacing={2} component={GenericPaper} elevation={1} sx={{
                     flexGrow: 1, justifyContent: "space-between", alignItems: "end"
                 }}>
                     <Grid container spacing={2} sx={{
                         justifyContent: "end", alignItems: "start", alignContent: "start",
-                        width: "100%", minWidth: "20rem"
+                        width: "100%", minWidth: "15rem"
                     }}>
                         {comments?.items.map(com =>
-                            <Grid key={com.id} size="grow" sx={{ minWidth: "20rem" }}>
+                            <Grid key={com.id} size="grow" sx={{ minWidth: "15rem" }}>
                                 {com.id !== selectedCommentId ? (
                                     <CommentInstance comment={com} onEdit={() => setSelectedCommentId(com.id)}
                                         onDelete={() => setDeletingCom(com)} title={<MetadataShort metadata={com} onlyUser />}

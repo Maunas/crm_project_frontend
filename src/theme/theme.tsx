@@ -110,7 +110,8 @@ const theme = createTheme({
         root: ({ theme }) => (theme.applyStyles("dark", {
           '&:not([data-noborder])': {
             border: `1px solid ${theme.palette.divider}`,
-            borderTop: `1px solid ${theme.alpha(theme.palette.common.white, .3)}`,
+            borderTop: `1px solid ${theme.alpha(theme.palette.divider, .3)}`,
+            borderBottom: `1px solid ${theme.alpha(theme.palette.divider, .05)}`,
           }
         })
         )

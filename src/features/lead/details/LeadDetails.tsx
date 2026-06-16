@@ -19,6 +19,7 @@ import { Link as RouterLink, useNavigate, useParams } from "react-router-dom"
 import { Grid, Typography, ButtonGroup, Stack, Breadcrumbs, Link, Box, CircularProgress, Fab, Slide } from "@mui/material"
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import { LeadDetailsState } from "./LeadDetailsState.tsx"
 
 export const LeadDetailsLayout = () => {
 
@@ -134,7 +135,7 @@ export const LeadDetailsLayout = () => {
     if (numId === undefined) return <p>Id inválido</p>
     return (
         <LoadingScreenWrapper loading={loading && !lastMove}>
-            <Stack direction="row" spacing={2} sx={{ alignItems: 'stretch', px: 2 }}>
+            <Stack direction="row" spacing={2} sx={{ alignItems: 'stretch', pb: 3 }}>
                 {isNavigationValid(numId) &&
                     <Box sx={{ flexShrink: 0, width: "2.5rem", position: "relative" }}>
                         <Box sx={{ position: 'sticky', top: '50vh', transform: 'translateY(-50%)', zIndex: 10 }}>
@@ -152,7 +153,7 @@ export const LeadDetailsLayout = () => {
                 <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                     <Slide in={!loading && !isLoadingNavigation} appear={false} unmountOnExit
                         direction={setSlideDirection}>
-                        <Stack spacing={3}>
+                        <Stack spacing={2}>
                             {campaign &&
                                 <Breadcrumbs aria-label="breadcrumb">
                                     <Link component={RouterLink} to={`/leads?workspace=${campaign?.workspace_id}&campaign=${campaign?.id}`}
@@ -162,11 +163,11 @@ export const LeadDetailsLayout = () => {
                                     <Typography sx={{ color: 'text.primary' }}>{leadTitle?.join(" ")}</Typography>
                                 </Breadcrumbs>}
                             {lead &&
-                                <Grid container spacing={3}>
-                                    <Grid size={{ xs: 12, md: 4, lg: 4 }} sx={{ minWidth: "20rem" }} >
+                                <Grid container spacing={2}>
+                                    <Grid size="grow" sx={{ minWidth: "20rem", flexGrow: 2 }} >
                                         <LeadInfo lead={lead} handleActive={() => setIsDeleting(lead)} leadTitle={leadTitle} updateLeadInfo={updateLeadInfo} />
                                     </Grid>
-                                    <Grid size="grow" sx={{ minWidth: "20rem" }} component={GenericPaper} >
+                                    <Grid size="grow" sx={{ minWidth: "22rem", flexGrow: 3 }} component={GenericPaper} >
                                         <LeadActivities leadId={lead.id} reloadAudit={reloadAudit} />
                                     </Grid>
                                 </Grid >
@@ -207,7 +208,7 @@ export const LeadInfo = ({ lead, leadTitle, handleActive, updateLeadInfo }: Lead
     return (
         <Stack spacing={2}>
             <GenericPaper>
-                <Stack spacing={3} sx={{ alignItems: "center" }}>
+                <Stack spacing={3} sx={{ alignItems: "start" }}>
                     <Stack spacing={1} sx={{ width: "100%" }}>
                         <LeadTags lead={lead} updateLeadInfo={updateLeadInfo} />
                         <TitleAndActive active={lead?.active} >
@@ -226,6 +227,7 @@ export const LeadInfo = ({ lead, leadTitle, handleActive, updateLeadInfo }: Lead
                             Modificar
                         </CommonButton>
                     </ButtonGroup>
+                    <LeadDetailsState leadId={lead.id} contactState={lead.contact_state} flowState={lead.current_state} />
                 </Stack>
             </GenericPaper>
             <LeadFieldSections lead={lead} updateLeadInfo={updateLeadInfo} />

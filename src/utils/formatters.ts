@@ -65,3 +65,7 @@ export const isValidURL = (url: string) => {
 }
 
 export const sanitizePhone = (phone: string) => phone.replace(/\D/g, "")
+
+export const isHex = (color: string) => {
+    return color?.charAt(0) === "#"
+}

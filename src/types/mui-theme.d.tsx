@@ -49,6 +49,7 @@ declare module '@mui/material/Chip' {
   }
   interface ChipOwnProps {
     defaultColor?: ColorTypes;
+    chipColor?: string,
   }
 }
 declare module '@mui/material/Chip' {

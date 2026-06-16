@@ -9,6 +9,7 @@ export interface UserSignup extends UserLogin {
 }
 export interface UserData extends Metadata {
     id: number,
+    name: string,
     email: string,
     is_superuser: boolean,
     organizations_access: OrganizationAccess[]
