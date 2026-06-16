@@ -168,7 +168,7 @@ export const LeadDetailsLayout = () => {
                                         <LeadInfo lead={lead} handleActive={() => setIsDeleting(lead)} leadTitle={leadTitle} updateLeadInfo={updateLeadInfo} />
                                     </Grid>
                                     <Grid size="grow" sx={{ minWidth: "22rem", flexGrow: 3 }} component={GenericPaper} >
-                                        <LeadActivities leadId={lead.id} reloadAudit={reloadAudit} />
+                                        <LeadActivities lead={lead} reloadAudit={reloadAudit} />
                                     </Grid>
                                 </Grid >
                             }
@@ -200,17 +200,15 @@ interface LeadInfoProps {
     lead: LeadDetailed,
     handleActive: (lead: LeadDetailed) => void,
     leadTitle: (string | undefined)[] | null,
-    updateLeadInfo: (lead: LeadDetailed) => void
+    updateLeadInfo: (lead: LeadDetailed, reloadAudits?: boolean) => void
 }
 
 export const LeadInfo = ({ lead, leadTitle, handleActive, updateLeadInfo }: LeadInfoProps) => {
-
     return (
         <Stack spacing={2}>
-            <GenericPaper>
+            <GenericPaper elevation={0}>
                 <Stack spacing={3} sx={{ alignItems: "start" }}>
                     <Stack spacing={1} sx={{ width: "100%" }}>
-                        <LeadTags lead={lead} updateLeadInfo={updateLeadInfo} />
                         <TitleAndActive active={lead?.active} >
                             <Typography sx={{ textOverflow: "ellipsis" }} variant="h1">
                                 {(leadTitle && leadTitle?.length > 0) ? leadTitle?.join(" ") : "Título no encontrado"}
@@ -227,7 +225,8 @@ export const LeadInfo = ({ lead, leadTitle, handleActive, updateLeadInfo }: Lead
                             Modificar
                         </CommonButton>
                     </ButtonGroup>
-                    <LeadDetailsState leadId={lead.id} contactState={lead.contact_state} flowState={lead.current_state} />
+                    <LeadTags lead={lead} updateLeadInfo={updateLeadInfo} />
+                    <LeadDetailsState lead={lead} updateLeadInfo={updateLeadInfo} contactState={lead.contact_state} flowState={lead.current_state} />
                 </Stack>
             </GenericPaper>
             <LeadFieldSections lead={lead} updateLeadInfo={updateLeadInfo} />

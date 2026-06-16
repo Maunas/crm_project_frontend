@@ -46,10 +46,13 @@ export interface LeadComment extends LeadCommentPost, Metadata {
 export interface LeadAudit extends Metadata {
   id: number,
   lead_id: number,
-  activity_type: "LEAD_CREATED" | "FIELDS_UPDATED",
+  activity_type: "LEAD_CREATED" | "FIELDS_UPDATED" | "STATE_CHANGED",
   details: {
     message?: string,
+    notes?: string,
     changes?: LeadAuditChange
+    to_state_id?: number
+    from_state_id?: number
   }
 }
 
