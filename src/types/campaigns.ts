@@ -7,9 +7,10 @@ export interface CampaignPost {
   workspace_id: number;
   lead_flow_id?: number;
 }
-export interface Campaign extends CampaignPost {
+export interface Campaign extends Omit<CampaignPost, "workspace_id"> {
   id: number;
   organization_id: number | null;
+  workspace_id: number | null;
 }
 
 export interface CampaignDetailed extends Campaign, Metadata { }

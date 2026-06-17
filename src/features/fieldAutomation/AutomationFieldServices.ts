@@ -1,6 +1,6 @@
-import type { DeleteResponse, FieldAutomationParams, Paginable } from "../../types/common"
-import type { FieldAutomation, FieldAutomationDetailed, FieldAutomationPost } from "../../types/automation"
-import { API_BASE_URL, axiosCRM } from "../../generalService"
+import type { DeleteResponse, FieldAutomationParams, Paginable } from "src/types/shared"
+import type { FieldAutomation, FieldAutomationDetailed, FieldAutomationPost } from "src/types/automation"
+import axiosCRM, { API_BASE_URL } from "src/lib/axios"
 
 
 export const getFieldAutomations = async<T extends FieldAutomationParams>(params?: T):

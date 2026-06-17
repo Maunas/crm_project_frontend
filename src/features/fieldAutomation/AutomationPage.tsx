@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { Box, CircularProgress, Typography, IconButton, Tooltip, Paper, Button, Chip, alpha, useTheme } from '@mui/material';
+import { Box, CircularProgress, Typography, IconButton, Paper, Button, Chip, alpha, useTheme } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
@@ -12,51 +12,22 @@ import type { LeadField } from '../../types/leadFields';
 
 export const AutomationPage = () => {
   const theme = useTheme();
-  const { id } = useParams<{ id: string }>(); 
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const campaignQueryParam = searchParams.get('campaign_id');
   const campaignId = campaignQueryParam ? Number(campaignQueryParam) : null;
   const duplicateFromId = searchParams.get('duplicate_from');
-  
+
   const isEditing = Boolean(id && !isNaN(Number(id)));
   const isDuplicating = Boolean(duplicateFromId);
   const [readOnly, setReadOnly] = useState(isEditing && searchParams.get('edit') !== 'true');
   const [isSaving, setIsSaving] = useState(false);
   const [initialData, setInitialData] = useState<FieldAutomationDetailed | undefined>(undefined);
-  const [loading, setLoading] = useState(true); 
+  const [loading, setLoading] = useState(true);
   const [fields, setFields] = useState<LeadField[]>([]);
 
   const formSubmitRef = useRef<() => void>(null);
-
-  if (!campaignId || isNaN(campaignId)) {
-    return (
-      <Box sx={{ 
-        height: '80vh', 
-        display: 'flex', 
-        flexDirection: 'column', 
-        justifyContent: 'center', 
-        alignItems: 'center',
-        gap: 2,
-        p: 3 
-      }}>
-        <Typography variant="h5" color="error" fontWeight={700}>
-          Campaña no identificada
-        </Typography>
-        <Typography variant="body1" color="text.secondary" textAlign="center">
-          No se puede cargar el configurador porque falta el identificador de la campaña.<br/>
-          Por favor, selecciona una campaña desde la lista antes de continuar.
-        </Typography>
-        <Button 
-          variant="contained" 
-          startIcon={<ArrowBackIcon />} 
-          onClick={() => navigate('/automations')}
-        >
-          Volver a la lista
-        </Button>
-      </Box>
-    );
-  }
 
   // Carga de datos inicial (igual que antes)
   useEffect(() => {
@@ -71,7 +42,7 @@ export const AutomationPage = () => {
         setInitialData({ ...data, name: `Copia de ${data.name}` } as FieldAutomationDetailed);
       }).finally(() => setLoading(false));
     } else {
-      setLoading(false); 
+      setLoading(false);
     }
   }, [id, isEditing, isDuplicating, duplicateFromId, campaignId]);
 
@@ -80,25 +51,54 @@ export const AutomationPage = () => {
     try {
       if (isEditing) await updateFieldAutomation(payload, Number(id));
       else await createFieldAutomation(payload);
-      navigate(-1); 
+      navigate(-1);
     } catch (error) {
-      setIsSaving(false); 
+      setIsSaving(false);
     }
   };
+
+  if (!campaignId || isNaN(campaignId)) {
+    return (
+      <Box sx={{
+        height: '80vh',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: 2,
+        p: 3
+      }}>
+        <Typography variant="h5" color="error" fontWeight={700}>
+          Campaña no identificada
+        </Typography>
+        <Typography variant="body1" color="text.secondary" textAlign="center">
+          No se puede cargar el configurador porque falta el identificador de la campaña.<br />
+          Por favor, selecciona una campaña desde la lista antes de continuar.
+        </Typography>
+        <Button
+          variant="contained"
+          startIcon={<ArrowBackIcon />}
+          onClick={() => navigate('/automations')}
+        >
+          Volver a la lista
+        </Button>
+      </Box>
+    );
+  }
 
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}><CircularProgress /></Box>;
 
   return (
     <Box sx={{ bgcolor: 'background.default', minHeight: '100vh' }}>
-      <Paper 
-        elevation={0} 
-        sx={{ 
-          position: 'sticky', 
+      <Paper
+        elevation={0}
+        sx={{
+          position: 'sticky',
           top: { xs: 56, sm: 64 }, // Offset para no quedar debajo del navbar
           zIndex: theme.zIndex.appBar - 1,
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'space-between', 
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
           px: 3,
           py: 1,
           borderBottom: '1px solid',
@@ -119,7 +119,7 @@ export const AutomationPage = () => {
               {isEditing ? initialData?.name : 'Nueva Automatización'}
             </Typography>
             {/* Badge de Estado: Se integra aquí el texto de "Modo visualización" */}
-            <Chip 
+            <Chip
               label={readOnly ? "Solo Lectura" : isDuplicating ? "Duplicando" : "Editando"}
               size="small"
               color={readOnly ? "default" : "primary"}
@@ -132,9 +132,9 @@ export const AutomationPage = () => {
         {/* Derecha: Botones de Acción */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           {readOnly ? (
-            <Button 
-              variant="contained" 
-              color="primary" 
+            <Button
+              variant="contained"
+              color="primary"
               size="small"
               startIcon={<EditIcon />}
               onClick={() => setReadOnly(false)}
@@ -147,7 +147,7 @@ export const AutomationPage = () => {
               color="primary" // Color de "Nuevo" de las listas
               size="small"
               startIcon={isSaving ? <CircularProgress size={16} color="inherit" /> : <SaveIcon />}
-              onClick={() => formSubmitRef.current?.()} 
+              onClick={() => formSubmitRef.current?.()}
               disabled={isSaving}
             >
               Guardar

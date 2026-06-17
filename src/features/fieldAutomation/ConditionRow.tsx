@@ -1,23 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-  Box,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  TextField,
-  IconButton,
-  Paper,
-  Typography,
-  Tooltip,
-  Chip,
-  alpha,
-} from '@mui/material';
+import { Box, FormControl, InputLabel, Select, MenuItem, TextField, IconButton, Paper, Typography, Tooltip, Chip, alpha, } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import {
-  ConditionOperatorEnum,
-  CONDITION_OPERATOR_LABELS,
-} from '../../types/automation';
+import { ConditionOperatorEnum, CONDITION_OPERATOR_LABELS, } from '../../types/automation';
 import { getNomenclatorItems } from '../nomenclators/nomenclatorService';
 import type { LeadField } from '../../types/leadFields';
 import type { RuleCondition } from '../../types/automation';
@@ -71,10 +55,10 @@ export const ConditionRow: React.FC<ConditionRowProps> = ({
       if (isSelector && selectedField?.nomenclator_id) {
         setLoadingOptions(true);
         try {
-          const response = await getNomenclatorItems({ 
-            nomenclator_id: selectedField.nomenclator_id, 
-            page_size: 0, 
-            only_active: true 
+          const response = await getNomenclatorItems({
+            nomenclator_id: selectedField.nomenclator_id,
+            page_size: 0,
+            only_active: true
           });
           setSelectorOptions(response.items);
         } catch (error) {
@@ -83,7 +67,7 @@ export const ConditionRow: React.FC<ConditionRowProps> = ({
           setLoadingOptions(false);
         }
       } else {
-        setSelectorOptions([]); 
+        setSelectorOptions([]);
       }
     };
     fetchOptions();
@@ -91,7 +75,7 @@ export const ConditionRow: React.FC<ConditionRowProps> = ({
 
   const getAvailableOperators = (field: LeadField | undefined): ConditionOperatorEnum[] => {
     if (!field) return [ConditionOperatorEnum.EQUALS];
-    
+
     switch (field.field_type.code) {
       case 'NUMBER': case 'INT': case 'MONEY': case 'CALCULATED': case 'DATE': case 'DATE_TIME':
         return [
@@ -147,7 +131,7 @@ export const ConditionRow: React.FC<ConditionRowProps> = ({
               onChange={(e) => onUpdate({ ...condition, value: e.target.value })}
             >
               {selectorOptions.map((opt) => (
-                <MenuItem key={opt.id} value={opt.id}>{opt.value || opt.name}</MenuItem>
+                <MenuItem key={opt.id} value={opt.id}>{opt.value}</MenuItem>
               ))}
             </Select>
           </FormControl>
@@ -179,7 +163,7 @@ export const ConditionRow: React.FC<ConditionRowProps> = ({
             sx={{ flex: 1, minWidth: 150 }}
           />
         );
-      case 'DATE': case 'DATE_TIME':
+      case 'DATE': case 'DATE_TIME': {
         const isDateTime = selectedField.field_type.code === 'DATE_TIME';
         // Revisamos si el valor actual es una de nuestras variables mágicas
         const dynamicOptions = ['{{CURRENT_DATE}}', '{{CURRENT_DATETIME}}', '{{YESTERDAY}}', '{{TOMORROW}}'];
@@ -222,6 +206,7 @@ export const ConditionRow: React.FC<ConditionRowProps> = ({
             )}
           </Box>
         );
+      }
       default:
         return (
           <TextField
@@ -259,8 +244,8 @@ export const ConditionRow: React.FC<ConditionRowProps> = ({
           disabled={readOnly}
           value={condition.field_id ?? ''}
           label="Campo"
-          onChange={(e) => onUpdate({ 
-            ...condition, 
+          onChange={(e) => onUpdate({
+            ...condition,
             field_id: e.target.value as number,
             value: null,
             operator: getAvailableOperators(allowedFields.find(f => f.id === e.target.value))[0]
@@ -285,8 +270,8 @@ export const ConditionRow: React.FC<ConditionRowProps> = ({
           disabled={readOnly}
           value={condition.operator}
           label="Operador"
-          onChange={(e) => onUpdate({ 
-            ...condition, 
+          onChange={(e) => onUpdate({
+            ...condition,
             operator: e.target.value as ConditionOperatorEnum,
             value: NO_VALUE_OPERATORS.includes(e.target.value as ConditionOperatorEnum) ? null : condition.value,
           })}

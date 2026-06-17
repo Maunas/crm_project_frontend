@@ -1,24 +1,10 @@
 import React from 'react';
-import {
-  Box,
-  Button,
-  Paper,
-  Typography,
-  ToggleButton,
-  ToggleButtonGroup,
-  IconButton,
-  Tooltip,
-  Collapse,
-} from '@mui/material';
+import { Box, Button, Paper, Typography, ToggleButton, ToggleButtonGroup, IconButton, Tooltip, Collapse } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FolderIcon from '@mui/icons-material/CreateNewFolder';
 import { v4 as uuidv4 } from 'uuid';
-import {
-  LogicalOperatorEnum,
-  ConditionOperatorEnum,
-  LOGICAL_OPERATOR_LABELS,
-} from '../../types/automation';
+import { LogicalOperatorEnum, ConditionOperatorEnum, LOGICAL_OPERATOR_LABELS, } from '../../types/automation';
 import type { RuleGroup, RuleCondition } from '../../types/automation';
 import { ConditionRow } from './ConditionRow';
 import type { LeadField } from '../../types/leadFields';
@@ -122,7 +108,7 @@ export const ConditionBuilder: React.FC<ConditionBuilderProps> = ({
           <Typography variant="subtitle2" color="text.secondary">
             {isRoot ? 'Condiciones' : `Grupo (nivel ${depth + 1})`}
           </Typography>
-          
+
           <ToggleButtonGroup
             value={group.operator}
             disabled={readOnly}
@@ -170,7 +156,7 @@ export const ConditionBuilder: React.FC<ConditionBuilderProps> = ({
                   {group.operator === LogicalOperatorEnum.AND ? '— Y —' : '— O —'}
                 </Typography>
               )}
-              
+
               {rule.type === 'condition' ? (
                 <ConditionRow
                   condition={rule as RuleCondition}
@@ -205,7 +191,7 @@ export const ConditionBuilder: React.FC<ConditionBuilderProps> = ({
           >
             Agregar condición
           </Button>
-          
+
           {depth < MAX_DEPTH && (
             <Tooltip title="Agregar un grupo de condiciones anidado">
               <Button

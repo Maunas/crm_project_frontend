@@ -1,10 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Box, TextField, FormControl, InputLabel, Select, MenuItem, Checkbox,
-  ListItemText, OutlinedInput, Card, CardContent, Typography, Button,
-  Divider, Chip, Alert, Snackbar, Paper, IconButton, Tooltip, Collapse, alpha,
-} from '@mui/material';
-import SaveIcon from '@mui/icons-material/Save';
+import { Box, TextField, FormControl, InputLabel, Select, MenuItem, Checkbox, ListItemText, OutlinedInput, Card, CardContent, Typography, Divider, Chip, Alert, Snackbar, Paper, IconButton, Collapse, alpha, } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
@@ -39,7 +34,7 @@ const createInitialActions = (): AutomationAction[] => [
 // REHIDRATAR: Le devuelve los IDs y el 'type' a la data que viene del Backend
 const rehydrateConditions = (node: any): any => {
   if (!node) return createInitialConditions();
-  
+
   if ('rules' in node && Array.isArray(node.rules)) {
     return {
       ...node,
@@ -65,7 +60,7 @@ const rehydrateActions = (actions: any[]): any[] => {
 interface AutomationFormProps {
   initialData?: FieldAutomationDetailed; // Si viene data, estamos editando
   campaignId: number;
-  onSave: (data: FieldAutomationPost) => Promise<void>; 
+  onSave: (data: FieldAutomationPost) => Promise<void>;
   fields?: LeadField[];
   readOnly?: boolean;
   isDuplicating?: boolean;
@@ -80,7 +75,7 @@ export const AutomationForm: React.FC<AutomationFormProps> = ({
   readOnly = false,
   isDuplicating = false,
   submitRef = null,
-  
+
 }) => {
   const [isSaving, setIsSaving] = useState(false);
 
@@ -319,9 +314,9 @@ export const AutomationForm: React.FC<AutomationFormProps> = ({
     <Box sx={{ maxWidth: 1000, mx: 'auto' }}>
       {/* Header */}
       {isDuplicating && (
-        <Alert 
-          severity="info" 
-          icon={<ContentCopyIcon />} 
+        <Alert
+          severity="info"
+          icon={<ContentCopyIcon />}
           sx={{ mb: 3, border: '1px solid', borderColor: 'info.light' }}
         >
           <Typography variant="subtitle2">Estás creando un duplicado</Typography>
@@ -335,7 +330,7 @@ export const AutomationForm: React.FC<AutomationFormProps> = ({
         sx={(theme) => ({
           p: 3,
           mb: 3,
-          background: readOnly 
+          background: readOnly
             ? alpha(theme.palette.text.disabled, 0.1) // Más tenue si es solo lectura
             : `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
           color: readOnly ? 'text.primary' : 'white',
@@ -350,10 +345,10 @@ export const AutomationForm: React.FC<AutomationFormProps> = ({
         <AutoFixHighIcon sx={{ fontSize: 40, opacity: readOnly ? 0.5 : 1 }} />
         <Box>
           <Typography variant="h5" fontWeight={700}>
-             Configuración de Reglas
+            Configuración de Reglas
           </Typography>
           <Typography variant="body2" sx={{ opacity: 0.8 }}>
-            {readOnly 
+            {readOnly
               ? 'Los cambios están deshabilitados. Pulsa el botón "Editar" en la parte superior para modificar.'
               : 'Define disparadores y acciones para automatizar tu flujo de leads.'
             }
@@ -530,19 +525,19 @@ export const AutomationForm: React.FC<AutomationFormProps> = ({
             <Alert severity="success" sx={{ mb: 2 }} icon={<PlayArrowIcon />}>
               Las acciones se ejecutarán en orden cuando las condiciones se cumplan.
             </Alert>
-            <ActionBuilder actions={automation.actions} onChange={handleActionsChange} fields={fields} readOnly={readOnly}/>
+            <ActionBuilder actions={automation.actions} onChange={handleActionsChange} fields={fields} readOnly={readOnly} />
           </CardContent>
         </Collapse>
       </Card>
-      
+
 
       {/* Preview Section */}
       <Card sx={{ mb: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', m: 2 }}>
-              <Typography variant="body2" color="text.secondary">
-                Resumen: {generateDescription()}
-              </Typography>
-            </Box>
+          <Typography variant="body2" color="text.secondary">
+            Resumen: {generateDescription()}
+          </Typography>
+        </Box>
       </Card>
 
       {/* Snackbar */}

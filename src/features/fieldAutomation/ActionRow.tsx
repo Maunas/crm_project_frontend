@@ -1,26 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-  Box,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  TextField,
-  IconButton,
-  Paper,
-  Typography,
-  Tooltip,
-  Chip,
-  alpha,
-} from '@mui/material';
+import { Box, FormControl, InputLabel, Select, MenuItem, TextField, IconButton, Paper, Typography, Tooltip, Chip, alpha } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import {
-  ActionTypeEnum,
-  ACTION_TYPE_LABELS,
-  ACTION_TYPE_DESCRIPTIONS,
-} from '../../types/automation';
-
+import { ActionTypeEnum, ACTION_TYPE_LABELS, ACTION_TYPE_DESCRIPTIONS, } from '../../types/automation';
 import type { LeadField } from '../../types/leadFields';
 import type { AutomationAction } from '../../types/automation';
 import { getNomenclatorItems } from '../nomenclators/nomenclatorService';
@@ -45,16 +27,8 @@ const getActionColor = (type: ActionTypeEnum) => {
   }
 };
 
-export const ActionRow: React.FC<ActionRowProps> = ({
-  action,
-  onUpdate,
-  onDelete,
-  isOnly,
-  index,
-  fields,
-  readOnly = false,
-}) => {
-  
+export const ActionRow: React.FC<ActionRowProps> = ({ action, onUpdate, onDelete, isOnly, index, fields, readOnly = false }) => {
+
   // 1. FILTRADO DE CAMPOS PARA ACCIONES
   const allowedTargetFields = useMemo(() => {
     const invalidTargetTypes = ['CALCULATED', 'LEAD', 'FILE'];
@@ -90,10 +64,10 @@ export const ActionRow: React.FC<ActionRowProps> = ({
       if (isSelector && targetField?.nomenclator_id) {
         setLoadingOptions(true);
         try {
-          const response = await getNomenclatorItems({ 
-            nomenclator_id: targetField.nomenclator_id, 
-            page_size: 0, 
-            only_active: true 
+          const response = await getNomenclatorItems({
+            nomenclator_id: targetField.nomenclator_id,
+            page_size: 0,
+            only_active: true
           });
           setSelectorOptions(response.items);
         } catch (error) {
@@ -102,7 +76,7 @@ export const ActionRow: React.FC<ActionRowProps> = ({
           setLoadingOptions(false);
         }
       } else {
-        setSelectorOptions([]); 
+        setSelectorOptions([]);
       }
     };
     fetchOptions();
@@ -118,8 +92,8 @@ export const ActionRow: React.FC<ActionRowProps> = ({
     switch (action.type) {
       case ActionTypeEnum.CLEAR_VALUE:
         return null;
-        
-      case ActionTypeEnum.COPY_FROM_FIELD:
+
+      case ActionTypeEnum.COPY_FROM_FIELD: {
         const compatibleFields = getCompatibleFieldsForCopy(targetField);
         return (
           <>
@@ -146,7 +120,7 @@ export const ActionRow: React.FC<ActionRowProps> = ({
             </FormControl>
           </>
         );
-        
+      }
       case ActionTypeEnum.SET_VALUE:
         if (!targetField) {
           return (
@@ -178,7 +152,7 @@ export const ActionRow: React.FC<ActionRowProps> = ({
                     onChange={(e) => onUpdate({ ...action, value: e.target.value })}
                   >
                     {selectorOptions.map((opt) => (
-                      <MenuItem key={opt.id} value={opt.id}>{opt.value || opt.name}</MenuItem>
+                      <MenuItem key={opt.id} value={opt.id}>{opt.value}</MenuItem>
                     ))}
                   </Select>
                 </FormControl>
@@ -217,7 +191,7 @@ export const ActionRow: React.FC<ActionRowProps> = ({
                 />
               </>
             );
-          case 'DATE': case 'DATE_TIME':
+          case 'DATE': case 'DATE_TIME': {
             const isDateTime = targetField.field_type.code === 'DATE_TIME';
             const dynamicOptions = ['{{CURRENT_DATE}}', '{{CURRENT_DATETIME}}', '{{YESTERDAY}}', '{{TOMORROW}}'];
             const isDynamic = dynamicOptions.includes(String(action.value));
@@ -259,6 +233,7 @@ export const ActionRow: React.FC<ActionRowProps> = ({
                 </Box>
               </>
             );
+          }
           default:
             return (
               <>
@@ -280,8 +255,8 @@ export const ActionRow: React.FC<ActionRowProps> = ({
   };
 
   const handleTargetFieldChange = (fieldId: number) => {
-    onUpdate({ 
-      ...action, 
+    onUpdate({
+      ...action,
       target_field_id: fieldId,
       value: null,
       source_field_id: null,

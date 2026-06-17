@@ -1,16 +1,11 @@
 import React from 'react';
-import {
-  Box,
-  Button,
-  Paper,
-  Typography,
-} from '@mui/material';
+import { Box, Button, Paper, Typography, } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { v4 as uuidv4 } from 'uuid';
-import { ActionTypeEnum} from '../../types/automation';
-import type { AutomationAction } from '../../types/automation';
+import { ActionTypeEnum } from 'src/types/automation';
+import type { AutomationAction } from 'src/types/automation';
 import { ActionRow } from './ActionRow';
-import type { LeadField } from '../../types/leadFields';
+import type { LeadField } from 'src/types/leadFields';
 
 interface ActionBuilderProps {
   actions: AutomationAction[];

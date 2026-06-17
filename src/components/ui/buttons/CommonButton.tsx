@@ -48,13 +48,20 @@ const CommonButton = ({ actionType = "NONE", onlyTooltip = false, loading = fals
     const actionIcon = loading ? styleIcon("LOADING") : styleIcon(actionType)
 
     if (onlyTooltip) return (
-        <ChipTooltip title={children} color={color} >
+        (btnProps.disabled || loading) ?
             <LightButton variant='contained' disabled={loading} {...btnProps}>
                 <Stack spacing={.5} useFlexGap direction="row" sx={{ alignItems: "center", textAlign: "center" }}>
                     {actionIcon}
                 </Stack>
             </LightButton>
-        </ChipTooltip>
+            :
+            <ChipTooltip title={children} color={color} >
+                <LightButton variant='contained' disabled={loading} {...btnProps}>
+                    <Stack spacing={.5} useFlexGap direction="row" sx={{ alignItems: "center", textAlign: "center" }}>
+                        {actionIcon}
+                    </Stack>
+                </LightButton>
+            </ChipTooltip>
     )
 
     return (
