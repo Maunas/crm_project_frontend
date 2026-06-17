@@ -58,9 +58,9 @@ const rehydrateActions = (actions: any[]): any[] => {
   }));
 };
 interface AutomationFormProps {
-  initialData?: FieldAutomationDetailed; // Si viene data, estamos editando
+  initialData?: FieldAutomationDetailed | null; // Si viene data, estamos editando
   campaignId: number;
-  onSave: (data: FieldAutomationPost) => Promise<void>;
+  onSave: (data: FieldAutomationPost) => Promise<unknown>;
   fields?: LeadField[];
   readOnly?: boolean;
   isDuplicating?: boolean;
@@ -311,7 +311,7 @@ export const AutomationForm: React.FC<AutomationFormProps> = ({
   };
 
   return (
-    <Box sx={{ maxWidth: 1000, mx: 'auto' }}>
+    <Box sx={{ py: 3, px: 2 }}>
       {/* Header */}
       {isDuplicating && (
         <Alert

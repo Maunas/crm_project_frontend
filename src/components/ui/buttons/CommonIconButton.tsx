@@ -7,16 +7,17 @@ import { IconButton, type IconButtonProps } from "@mui/material"
 
 interface CommonIconButtonProps extends Omit<IconButtonProps, "color"> {
     actionType?: ActionType,
-    title: string,
+    title?: string,
     size?: "small" | "medium"
     tooltipSize?: "small" | "medium" | "large" | "xlarge",
     component?: React.ElementType,
     to?: string,
     color?: ColorTypes | "action" | "disabled",
     loading?: boolean
+    noTooltip?: boolean
 }
 
-export const CommonIconButton = ({ actionType = "NONE", title, color = "action", size = "medium", tooltipSize = "medium", loading = false, ...props }: CommonIconButtonProps) => {
+export const CommonIconButton = ({ actionType = "NONE", title, color = "action", size = "medium", noTooltip = false, tooltipSize = "medium", loading = false, ...props }: CommonIconButtonProps) => {
 
     const styleIcon = (actionType: ActionType) => {
         if (actionType === "NONE") return ACTION_ICONS.NONE
@@ -33,9 +34,17 @@ export const CommonIconButton = ({ actionType = "NONE", title, color = "action",
     const chipColor = color === "action" ? "primary"
         : color === "disabled" ? "contrast" : color
 
+    if (noTooltip) return (
+        <IconButton edge="end" aria-label={title} size={size} disabled={loading}
+            {...props} sx={{ border: '1px solid', borderColor: 'divider', ...props.sx }}>
+            {actionIcon}
+        </IconButton>
+    )
+
     return (
         <ChipTooltip title={title} color={chipColor} size={tooltipSize}>
-            <IconButton edge="end" aria-label={title} size={size} disabled={loading} {...props}>
+            <IconButton edge="end" aria-label={title} size={size} disabled={loading}
+                {...props} sx={{ border: '1px solid', borderColor: 'divider', ...props.sx }}>
                 {actionIcon}
             </IconButton>
         </ChipTooltip>

@@ -115,7 +115,7 @@ export const AutomationList = () => {
             onlyTooltip
             disabled={!isCampaignSelected}
             component={Link}
-            to={`/automations/create?campaign_id=${selectedCampaignId}`}
+            to={`/automations/create?campaign=${selectedCampaignId}`}
             sx={{ ml: "auto" }}
           >
             Nueva Automatización

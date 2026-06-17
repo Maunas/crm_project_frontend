@@ -21,33 +21,33 @@ const theme = createTheme({
       'sans-serif',
     ].join(','),
     h1: {
-      fontSize: '2rem',
+      fontSize: textTheme.title.fontSize.h1,
       fontWeight: 700,
       lineHeight: textTheme.title.lineHeight
     },
     h2: {
-      fontSize: '1.7rem',
+      fontSize: textTheme.title.fontSize.h2,
       fontWeight: 700,
       lineHeight: textTheme.title.lineHeight
     },
     h3: {
-      fontSize: '1.37rem',
-      fontWeight: 700,
+      fontSize: textTheme.title.fontSize.h3,
+      fontWeight: 600,
       lineHeight: textTheme.title.lineHeight
     },
     h4: {
-      fontSize: '1.2rem',
-      fontWeight: 700,
+      fontSize: textTheme.title.fontSize.h4,
+      fontWeight: 600,
       lineHeight: textTheme.title.lineHeight
     },
     h5: {
-      fontSize: '1.03rem',
-      fontWeight: 700,
+      fontSize: textTheme.title.fontSize.h5,
+      fontWeight: 500,
       lineHeight: textTheme.title.lineHeight
     },
     h6: {
-      fontSize: '0.87rem',
-      fontWeight: 700,
+      fontSize: textTheme.title.fontSize.h6,
+      fontWeight: 500,
       lineHeight: textTheme.title.lineHeight
     },
     button: {
