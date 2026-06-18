@@ -53,6 +53,14 @@ export const LeadListContent = memo(({ leads, leadFields, selectedFieldIds, acti
     //Da los estilos y funcionalidad del drag and drop de columnas, a través de sus ids.
     const dragProps = useDragAndDrop(selectedFieldIds, (items) => handleSelectedFieldIds(items))
 
+    // El board carga sus propios leads por columna — no depende de los arrays del padre
+    if (presentationMode === "BOARD") {
+        return <LeadBoardPresentation
+                campaignId={campaignId}
+                activeFilters={filters}
+            />
+    }
+
     if (leads.length === 0) return (
         <Stack spacing={3} sx={{ my: 3, alignItems: "center" }}>
             <Stack spacing={2} sx={{ alignItems: "center" }}>
@@ -89,11 +97,6 @@ export const LeadListContent = memo(({ leads, leadFields, selectedFieldIds, acti
 
     switch (presentationMode) {
         case "LIST": return <p>Lista</p>
-        case "BOARD": 
-            return <LeadBoardPresentation 
-                    campaignId={campaignId} 
-                    activeFilters={filters} 
-                />
         case "GRID": return <p>Grid</p>
         default: return <LeadTablePresentation leads={leads} selectedColumns={selectedColumns}
             dragProps={dragProps} orderProps={orderProps} modalProps={modalProps} selectCheckboxProps={selectCheckboxProps} />

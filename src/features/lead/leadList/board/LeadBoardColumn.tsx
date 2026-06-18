@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Droppable } from '@hello-pangea/dnd';
-import { Stack, Typography, Box, alpha, CircularProgress } from '@mui/material';
+import { Stack, Typography, Box, alpha, CircularProgress, Chip } from '@mui/material';
 import type { LeadContactState } from 'src/types/leadContactState';
 import type { Lead } from 'src/types/leads';
 import { getFilteredLeads } from '../../leadService';
@@ -10,10 +10,9 @@ interface LeadBoardColumnProps {
     column: LeadContactState;
     campaignId: number | string;
     activeFilters: any[];
-    dragHandleProps: any;
 }
 
-export const LeadBoardColumn = ({ column, campaignId, activeFilters, dragHandleProps }: LeadBoardColumnProps) => {
+export const LeadBoardColumn = ({ column, campaignId, activeFilters }: LeadBoardColumnProps) => {
     const [leads, setLeads] = useState<Lead[]>([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
@@ -24,7 +23,7 @@ export const LeadBoardColumn = ({ column, campaignId, activeFilters, dragHandleP
     useEffect(() => {
         leadsRef.current = leads;
     }, [leads]);
-    
+
     // Referencia para el intersection observer (scroll infinito)
     const observer = useRef<IntersectionObserver | null>(null);
     const lastLeadElementRef = useCallback((node: HTMLDivElement) => {
@@ -38,19 +37,34 @@ export const LeadBoardColumn = ({ column, campaignId, activeFilters, dragHandleP
         if (node) observer.current.observe(node);
     }, [loading, hasMore]);
 
-    // Fetch leads
+    // Resetea la paginación cuando cambian los filtros o la campaña,
+    // para que el fetch siguiente siempre empiece desde la página 1
     useEffect(() => {
+        setPage(1);
+        setLeads([]);
+        setHasMore(true);
+        setTotalCount(0);
+    }, [campaignId, column.id, activeFilters]);
+
+    // Fetch leads — usa un flag para ignorar respuestas de requests cancelados
+    useEffect(() => {
+        let cancelled = false;
         setLoading(true);
         // Enviamos el contact_state_id como filtro para esta columna específica
         const filters = [...activeFilters, { field_id: "contact_state_id", operator: "eq", value: column.id }];
-        
+
         getFilteredLeads({ filters }, { campaign_id: Number(campaignId), page, page_size: 15 })
             .then(res => {
+                if (cancelled) return;
                 setLeads(prev => page === 1 ? res.items : [...prev, ...res.items]);
                 setHasMore(res.page < res.total_pages);
                 setTotalCount(res.total);
             })
-            .finally(() => setLoading(false));
+            .finally(() => {
+                if (!cancelled) setLoading(false);
+            });
+
+        return () => { cancelled = true; };
     }, [campaignId, column.id, page, activeFilters]);
 
     useEffect(() => {
@@ -107,30 +121,60 @@ export const LeadBoardColumn = ({ column, campaignId, activeFilters, dragHandleP
     }, [column.id]);
 
     return (
-        <Box sx={{ 
-            minWidth: 300, 
-            maxWidth: 300, 
-            backgroundColor: theme => alpha(theme.palette.background.paper, 0.5), 
-            borderRadius: 2, 
-            display: 'flex', 
+        <Box sx={{
+            minWidth: 300,
+            maxWidth: 300,
+            backgroundColor: theme => theme.palette.mode === 'dark'
+                ? 'rgba(18, 18, 35, 0.80)'
+                : 'rgba(255, 255, 255, 0.78)',
+            border: '1px solid',
+            borderColor: theme => theme.palette.mode === 'dark'
+                ? 'rgba(255, 255, 255, 0.08)'
+                : 'rgba(255, 255, 255, 0.9)',
+            boxShadow: `
+                inset 0 1px 0 rgba(255,255,255,0.18),
+                0 -3px 20px ${alpha(column.color || '#888', 0.35)},
+                0 4px 8px rgba(0,0,0,0.06),
+                0 12px 32px rgba(0,0,0,0.10),
+                0 24px 64px rgba(0,0,0,0.06)
+            `,
+            borderRadius: 3,
+            display: 'flex',
             flexDirection: 'column',
             borderTop: `4px solid ${column.color || '#ccc'}`,
-            height: '100%'
+            height: '100%',
         }}>
-            <Box 
-                {...dragHandleProps} 
-                sx={{ 
-                    p: 2, 
-                    borderBottom: 1, 
-                    borderColor: 'divider',
-                    cursor: 'grab',
-                    '&:active': { cursor: 'grabbing' },
-                    userSelect: 'none'
+            <Box
+                sx={{
+                    px: 2,
+                    py: 1.5,
+                    borderBottom: '1px solid',
+                    borderColor: theme => theme.palette.mode === 'dark'
+                        ? 'rgba(255,255,255,0.06)'
+                        : 'rgba(0,0,0,0.06)',
+                    userSelect: 'none',
+                    background: `linear-gradient(to bottom, ${alpha(column.color || '#888', 0.14)}, ${alpha(column.color || '#888', 0.02)})`,
+                    borderRadius: '12px 12px 0 0',
                 }}
             >
-                <Typography variant="subtitle1" fontWeight="bold">
-                    {column.name} ({totalCount})
-                </Typography>
+                <Stack direction="row" alignItems="center" justifyContent="space-between">
+                    <Typography variant="subtitle1" fontWeight="bold">
+                        {column.name}
+                    </Typography>
+                    <Chip
+                        label={totalCount}
+                        size="small"
+                        sx={{
+                            backgroundColor: alpha(column.color || '#888', 0.18),
+                            color: column.color || 'text.primary',
+                            fontWeight: 'bold',
+                            height: 22,
+                            fontSize: '0.72rem',
+                            border: `1px solid ${alpha(column.color || '#888', 0.3)}`,
+                            '& .MuiChip-label': { px: 1 },
+                        }}
+                    />
+                </Stack>
             </Box>
 
             <Droppable droppableId={String(column.id)} type="card">
@@ -138,23 +182,25 @@ export const LeadBoardColumn = ({ column, campaignId, activeFilters, dragHandleP
                     <Box
                         ref={provided.innerRef}
                         {...provided.droppableProps}
-                        sx={{ 
-                            flexGrow: 1, 
-                            p: 1.5, 
+                        className="scrollbar-thin"
+                        style={{ '--scrollbar-color': alpha(column.color || '#888', 0.45) } as React.CSSProperties}
+                        sx={{
+                            flexGrow: 1,
+                            p: 1.5,
                             overflowY: 'auto',
+                            minHeight: 120,
                             backgroundColor: snapshot.isDraggingOver ? 'action.hover' : 'transparent',
                             transition: 'background-color 0.2s ease',
                         }}
                     >
-                        {/* 1. QUITAMOS EL STACK Y USAMOS SOLO EL ARRAY */}
                         {leads.map((lead, index) => {
                             const isLast = index === leads.length - 1;
                             return (
-                                <LeadBoardCard 
-                                    key={lead.id} 
-                                    lead={lead} 
+                                <LeadBoardCard
+                                    key={lead.id}
+                                    lead={lead}
                                     index={index}
-                                    // 2. PASAMOS LA REF DIRECTAMENTE A LA TARJETA
+                                    columnColor={column.color}
                                     observerRef={isLast ? lastLeadElementRef : undefined}
                                 />
                             );

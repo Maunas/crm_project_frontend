@@ -263,7 +263,7 @@ export const LeadListPage = () => {
                         <Typography variant="h4">Revisa que haya una campaña seleccionada</Typography>
                     </Stack>
                 }
-                <PaginationComponent {...pageComponentProps} />
+                {presentationMode === "TABLE" && <PaginationComponent {...pageComponentProps} />}
             </Stack >
             <GenericModal idModal="columns_selector" modalProps={modalProps} buttonText="Modificar Columnas" maxWidth="md" fullWidth showButton={false}>
                 <LeadColumnSelector originalList={leadFields} selectedFieldIds={selectedFieldIds!} handleSelectedFieldIds={handleSelectedFieldIds} handleClose={modalProps.handleClose} showField="name" />

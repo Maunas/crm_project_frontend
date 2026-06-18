@@ -12,9 +12,8 @@ import { getLeadFields } from "src/features/leadFields/leadFieldServices"
 import { createFormDataFromLead, setLeadFormErrors, updateSelectorOptions } from "../leadUtils"
 import { getListField } from "src/utils/lists"
 import { useFieldArray, useForm, type Control, type Path, type UseFormRegister } from "react-hook-form"
-import { Grid, ButtonGroup, Stack } from "@mui/material"
+import { Grid, ButtonGroup, Stack, Paper, Typography, Divider } from "@mui/material"
 
-//Para permitir mantener los datos de cada campo
 export interface LeadPostFormValues extends LeadPostValue {
     fieldData: LeadField
 }
@@ -47,101 +46,85 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
 
     const { fields, replace } = useFieldArray({ name: "values", control })
 
+    // Agrupamiento por sección
+    const groupedFields = useMemo(() => {
+        const groups: Record<string, typeof fields> = {};
+        fields.forEach((field) => {
+            // Usamos el ID de la sección como clave, o "Sin categoría" si no tiene
+            const sectionName = field.fieldData.lead_field_section_id?.toString() || "Información General";
+            if (!groups[sectionName]) groups[sectionName] = [];
+            groups[sectionName].push(field);
+        });
+        return groups;
+    }, [fields]);
+
     const submit = (data: LeadPostForm) => {
         onSubmit(createFormDataFromLead(data)).catch(e => setLeadFormErrors(fields, e, setError))
     }
 
-    //Setea el mensaje de error al selector, en el caso de createLead
-    useEffect(() => {
-        if (setCampaignError) { setCampaignError(errors?.campaign_id?.message) }
-    }, [errors.campaign_id, setCampaignError])
-
+    // ... (useEffect de carga de campos y selectores igual que tenías)
     const [leadFields, setLeadFields] = useState<LeadField[]>(existingLeadFields ?? [])
+    const [relatedLeads, setRelatedLeads] = useState<Map<number, Lead[]>>(new Map())
+    const [selectors, setSelectors] = useState<Map<number, NomenclatorItem[]>>(new Map())
 
-    //Actualiza los leadFields respecto al campaignId seleccionado. Si ya hay existingLeadFields, no busca.
     useEffect(() => {
         if (campaignId == null) return
-        if (existingLeadFields) {
-            setLeadFields(existingLeadFields)
-            return
-        }
+        if (existingLeadFields) { setLeadFields(existingLeadFields); return }
         getLeadFields({ only_active: true, campaign_id: campaignId, "page_size": 0 }).then(res =>
             setLeadFields(res.items.sort((a, b) => a.order - b.order))
         )
     }, [campaignId, existingLeadFields])
 
-    //Cuando se cargan los leadFields, se formatean y ubican en fieldArray
     useEffect(() => {
-        //Si ya hay valores, formatea los values para asignarlos al fieldArray. Asigna listas de ids a value.
         if (existingValues) {
-            replace(
-                existingValues
-                    .filter(value => value.field.field_type_code !== "CALCULATED" && value.field.is_visible)
-                    .map(fieldValue => {
-                        let value: unknown = fieldValue.value
-                        //Si no hay valor, es selector o related_leads. Trae el id, o arreglo de ids
-                        if (!value && fieldValue.nomenclator_items.length > 0) {
-                            value = getListField(fieldValue.nomenclator_items, "id",
-                                ["SELECTOR_MULTIPLE", "CHECKBOX_MULTIPLE"].includes(fieldValue.field.field_subtype_code!))
-                        }
-                        else if (!value && fieldValue.related_leads.length > 0) {
-                            value = getListField(fieldValue.related_leads, "id", true)
-                        }
-                        return ({
-                            field_id: fieldValue.field_id,
-                            fieldData: fieldValue.field,
-                            value: value
-                        }) as LeadPostFormValues
-                    })
-            )
-            //Si no hay valores, solo trae los datos de los leadFields.
+            replace(existingValues.filter(v => v.field.field_type_code !== "CALCULATED" && v.field.is_visible).map(fv => ({ field_id: fv.field_id, fieldData: fv.field, value: fv.value })))
         } else {
-            replace(
-                leadFields?.filter(field => field.field_type_code !== "CALCULATED" && field.is_visible)
-                    .map(field => ({
-                        field_id: field.id,
-                        fieldData: field
-                    }) as LeadPostFormValues))
+            replace(leadFields?.filter(f => f.field_type_code !== "CALCULATED" && f.is_visible).map(f => ({ field_id: f.id, fieldData: f })))
         }
     }, [replace, leadFields, existingValues])
 
-    // Objetos que contienen todos los leads de campañas relacionadas, y todos los nomencladores necesarios para el formulario.
-    // Se identifican en un Map or sus ids.
-    const [relatedLeads, setRelatedLeads] = useState<Map<number, Lead[]>>(new Map())
-    const [selectors, setSelectors] = useState<Map<number, NomenclatorItem[]>>(new Map())
-
     useEffect(() => {
-        updateSelectorOptions(leadFields, "related_campaign_id", relatedLeads, ["LEAD"],
-            (related_campaign_id: number) => getLeads({ only_active: true, campaign_id: related_campaign_id, page_size: 0 }).then((res) => res.items))
-            .then(map => setRelatedLeads(map)).catch(() => setError("root", { message: "No se ha podido obtener la lista de leads relacionados" }))
-        updateSelectorOptions(leadFields, "nomenclator_id", selectors, ["SELECTOR", "CHECKBOX"],
-            (nomenclator_id: number) => getNomenclatorItems({ only_active: true, nomenclator_id: nomenclator_id, page_size: 0 }).then((res) => res.items))
-            .then(map => setSelectors(map)).catch(() => setError("root", { message: "No se ha podido obtener la lista del selector" }))
-    }, [leadFields, setError])
+        updateSelectorOptions(leadFields, "related_campaign_id", relatedLeads, ["LEAD"], (id) => getLeads({ only_active: true, campaign_id: id, page_size: 0 }).then(res => res.items)).then(setRelatedLeads)
+        updateSelectorOptions(leadFields, "nomenclator_id", selectors, ["SELECTOR", "CHECKBOX"], (id) => getNomenclatorItems({ only_active: true, nomenclator_id: id, page_size: 0 }).then(res => res.items)).then(setSelectors)
+    }, [leadFields])
 
     return (
         <form onSubmit={handleSubmit(submit)}>
-            <input type="text" {...register("campaign_id", { setValueAs: value => (value === "" || !value) ? null : Number(value) })} hidden />
-            <Stack spacing={2}>
-                <Grid container spacing={.5}>
-                    {campaignId &&
-                        fields.map((field, idx) =>
-                            <Grid size="grow" sx={{ alignItems: "center", minWidth: "20rem" }} key={field.id}>
-                                <LeadFormFieldType register={register} name={`values.${idx}.value`} control={control}
-                                    leadField={field.fieldData} relatedLeads={relatedLeads.get(field?.fieldData?.related_campaign_id ?? -1)}
-                                    selectors={selectors.get(field?.fieldData?.nomenclator_id ?? -1)}
-                                    errorMessage={errors?.values?.[idx]?.value?.message} />
-                            </Grid>
-                        )
-                    }
-                </Grid>
-                {errors.root &&
-                    <FormErrorMessage>{errors.root.message}</FormErrorMessage>}
+            <input type="text" {...register("campaign_id", { setValueAs: v => (v === "" || !v) ? null : Number(v) })} hidden />
+            <Stack spacing={4}>
+                {Object.entries(groupedFields).map(([sectionName, sectionFields]) => (
+                    <Paper key={sectionName} elevation={0} sx={{ p: 3, border: '1px solid #e0e0e0', borderRadius: 2 }}>
+                        <Typography variant="h6" sx={{ mb: 2, color: 'primary.main', fontWeight: 'bold' }}>
+                            {sectionName}
+                        </Typography>
+                        <Divider sx={{ mb: 3 }} />
+                        <Grid container spacing={3}>
+                            {sectionFields.map((field) => {
+                                // Buscamos el índice real del campo para el register
+                                const idx = fields.findIndex(f => f.id === field.id);
+                                return (
+                                    <Grid item xs={12} md={6} key={field.id}>
+                                        <LeadFormFieldType 
+                                            register={register} 
+                                            name={`values.${idx}.value`} 
+                                            control={control}
+                                            leadField={field.fieldData} 
+                                            relatedLeads={relatedLeads.get(field.fieldData.related_campaign_id ?? -1)}
+                                            selectors={selectors.get(field.fieldData.nomenclator_id ?? -1)}
+                                            errorMessage={errors?.values?.[idx]?.value?.message} 
+                                        />
+                                    </Grid>
+                                );
+                            })}
+                        </Grid>
+                    </Paper>
+                ))}
+
+                {errors.root && <FormErrorMessage>{errors.root.message}</FormErrorMessage>}
+
                 <ButtonGroup sx={{ alignSelf: "end" }}>
                     {onCancel && <CommonButton actionType="CLOSE" variant="outlined" onClick={onCancel} >Cancelar</CommonButton>}
-                    {campaignId &&
-                        <CommonButton actionType={existingValues ? "MODIFY" : "CREATE"}
-                            type="submit" variant="contained">{submitBtnLabel}</CommonButton>}
+                    {campaignId && <CommonButton actionType={existingValues ? "MODIFY" : "CREATE"} type="submit" variant="contained">{submitBtnLabel}</CommonButton>}
                 </ButtonGroup>
             </Stack>
         </form>

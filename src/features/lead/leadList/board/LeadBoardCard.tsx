@@ -1,19 +1,20 @@
 import { Draggable } from '@hello-pangea/dnd';
-import { Card, Typography, Box, Avatar, Stack, Chip, Tooltip } from '@mui/material';
+import { Card, Typography, Box, Avatar, Stack, Tooltip, alpha } from '@mui/material'; // Avatar se usa aún para equipo/usuario asignado
 import PersonIcon from '@mui/icons-material/Person';
 import GroupsIcon from '@mui/icons-material/Groups';
 import type { Lead } from 'src/types/leads';
 import { getLeadTitleArray } from '../../leadUtils';
-import CustomChip from 'src/components/ui/details/CustomChip'
+import CustomChip from 'src/components/ui/details/CustomChip';
+import { UserAvatar } from 'src/components/ui/UserAvatar';
 
 interface LeadBoardCardProps {
     lead: Lead;
     index: number;
-    // Nueva prop para recibir el observer del scroll infinito
+    columnColor?: string;
     observerRef?: (node: HTMLDivElement | null) => void;
 }
 
-export const LeadBoardCard = ({ lead, index, observerRef }: LeadBoardCardProps) => {
+export const LeadBoardCard = ({ lead, index, columnColor, observerRef }: LeadBoardCardProps) => {
     const titleArray = getLeadTitleArray(lead);
     const mainTitle = titleArray[0] || "Sin nombre";
     const subTitle = titleArray.slice(1).join(" • ");
@@ -22,34 +23,52 @@ export const LeadBoardCard = ({ lead, index, observerRef }: LeadBoardCardProps) 
         <Draggable draggableId={String(lead.id)} index={index}>
             {(provided, snapshot) => (
                 <Card
-                    // UNIMOS LOS DOS REFS (El de la librería DND y nuestro Observer de scroll)
                     ref={(node) => {
                         provided.innerRef(node);
                         if (observerRef) observerRef(node);
                     }}
                     {...provided.draggableProps}
                     {...provided.dragHandleProps}
-                    elevation={snapshot.isDragging ? 8 : 1}
+                    elevation={0}
                     sx={{
                         p: 2,
-                        mb: 1.5, // USAMOS MARGIN BOTTOM AQUÍ EN VEZ DEL GAP DEL STACK PADRE
+                        mb: 1.5,
                         borderRadius: 2,
                         cursor: 'grab',
+                        // Fondo sólido para que se distinga claramente del fondo del board
                         backgroundColor: 'background.paper',
-                        // ELIMINAMOS transform Y transition DE AQUÍ PARA EVITAR CONFLICTOS
+                        // Accent border izquierdo con el color de la columna
+                        borderLeft: `3px solid ${columnColor || 'transparent'}`,
+                        // Sombra en capas: cercanía + profundidad + tinte del color de columna
+                        boxShadow: columnColor
+                            ? `0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.6)`
+                            : `0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.6)`,
+                        transition: snapshot.isDragging
+                            ? 'none'
+                            : 'transform 0.15s ease, box-shadow 0.15s ease',
+                        ...(!snapshot.isDragging && {
+                            '&:hover': {
+                                transform: 'translateY(-2px)',
+                                boxShadow: columnColor
+                                    ? `0 4px 8px rgba(0,0,0,0.1), 0 12px 28px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.04), 0 0 16px ${alpha(columnColor, 0.15)}`
+                                    : `0 4px 8px rgba(0,0,0,0.1), 0 12px 28px rgba(0,0,0,0.12)`,
+                            },
+                        }),
                     }}
-                    // VITAL: Esto aplica las físicas exactas calculadas por la librería (evita el salto lateral)
+                    // VITAL: físicas exactas calculadas por la librería (evita el salto lateral)
                     style={provided.draggableProps.style}
                 >
-                    {/* El contenido interno de la tarjeta puede usar Stack sin problemas */}
                     <Stack spacing={1.5}>
                         <Stack direction="row" spacing={1.5} alignItems="center">
-                            <Avatar 
-                                src={lead.picture_avatar_url || undefined} 
-                                sx={{ width: 40, height: 40 }}
-                            >
-                                {!lead.picture_avatar_url && mainTitle.charAt(0)}
-                            </Avatar>
+                            <UserAvatar
+                                name={mainTitle}
+                                src={lead.picture_avatar_url || undefined}
+                                size={40}
+                                sx={columnColor ? {
+                                    outline: `2px solid ${alpha(columnColor, 0.4)}`,
+                                    outlineOffset: '1px',
+                                } : undefined}
+                            />
                             <Box sx={{ overflow: 'hidden' }}>
                                 <Typography variant="subtitle2" noWrap fontWeight="bold">
                                     {mainTitle}
@@ -65,38 +84,34 @@ export const LeadBoardCard = ({ lead, index, observerRef }: LeadBoardCardProps) 
                         {lead.tags && lead.tags.length > 0 && (
                             <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
                                 {lead.tags.map(tag => (
-                                    <CustomChip 
-                                        key={tag.id} 
-                                        label={tag.name} 
-                                        color={tag.color as any} 
-                                        size="small" 
+                                    <CustomChip
+                                        key={tag.id}
+                                        label={tag.name}
+                                        color={tag.color as any}
+                                        size="small"
                                     />
                                 ))}
                             </Stack>
                         )}
 
-                        <Stack direction="row" justifyContent="space-between" alignItems="center">
-                            {lead.current_state_id ? (
-                                <Chip label={`Estado #${lead.current_state_id}`} size="small" variant="outlined" />
-                            ) : <Box />}
-
-                            <Stack direction="row" spacing={1}>
+                        {(lead.team_id || lead.assigned_to_user_id) && (
+                            <Stack direction="row" justifyContent="flex-end" alignItems="center" spacing={1}>
                                 {lead.team_id && (
-                                    <Tooltip title={`Equipo #${lead.team_id}`}>
+                                    <Tooltip title="Equipo asignado">
                                         <Avatar sx={{ width: 24, height: 24, bgcolor: 'secondary.main' }}>
                                             <GroupsIcon sx={{ fontSize: 16 }} />
                                         </Avatar>
                                     </Tooltip>
                                 )}
                                 {lead.assigned_to_user_id && (
-                                    <Tooltip title={`Usuario asignado`}>
+                                    <Tooltip title="Usuario asignado">
                                         <Avatar sx={{ width: 24, height: 24, bgcolor: 'primary.main' }}>
                                             <PersonIcon sx={{ fontSize: 16 }} />
                                         </Avatar>
                                     </Tooltip>
                                 )}
                             </Stack>
-                        </Stack>
+                        )}
                     </Stack>
                 </Card>
             )}
