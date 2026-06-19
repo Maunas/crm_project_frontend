@@ -1,25 +1,27 @@
-import React, { useState } from 'react';
-import { Box, TextField, FormControl, InputLabel, Select, MenuItem, Checkbox, ListItemText, OutlinedInput, Card, CardContent, Typography, Divider, Chip, Alert, Snackbar, Paper, IconButton, Collapse, alpha, } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { Typography, Divider, Alert, Paper, alpha, Stack, Accordion, AccordionSummary, AccordionDetails, Grid, } from '@mui/material';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import InfoIcon from '@mui/icons-material/Info';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { v4 as uuidv4 } from 'uuid';
-import {
-  TriggerEventEnum, LogicalOperatorEnum, ConditionOperatorEnum,
-  ActionTypeEnum, TRIGGER_EVENT_LABELS,
-} from '../../types/automation';
-import type { FieldAutomationPost, RuleGroup, FieldAutomationDetailed, AutomationAction } from '../../types/automation';
+import { TriggerEventEnum, LogicalOperatorEnum, ConditionOperatorEnum, ActionTypeEnum, TRIGGER_EVENT_LABELS, } from 'src/types/automation';
+import type { FieldAutomationPost, RuleGroup, FieldAutomationDetailed, AutomationAction, RuleCondition } from 'src/types/automation';
 import { ConditionBuilder } from './ConditionBuilder';
 import { ActionBuilder } from './ActionBuilder';
-import type { LeadField } from '../../types/leadFields';
+import type { LeadField } from 'src/types/leadFields';
+import GenericPaper from 'src/components/layout/container/GenericPaper';
+import CustomChip from 'src/components/ui/details/CustomChip';
+import { showCommonErrorToast, showToast } from 'src/utils/feedback';
+import { useForm, useWatch, type Control } from 'react-hook-form';
+import { ControlledNumber, RegisteredTextInput } from 'src/components/ui/forms/CustomInputs';
+import { ControlledAutocomplete } from 'src/components/ui/forms/CustomMultipleInputs';
+import { ChipTooltip } from 'src/components/ui/details/ChipTooltip';
 
 // ==========================================
 // FUNCIONES DE INICIALIZACIÓN Y REHIDRATACIÓN
 // ==========================================
-const createEmptyCondition = (): any => ({
+const createEmptyCondition = (): RuleCondition => ({
   id: uuidv4(), type: 'condition', field_id: null, operator: ConditionOperatorEnum.EQUALS, value: null,
 });
 
@@ -32,31 +34,32 @@ const createInitialActions = (): AutomationAction[] => [
 ];
 
 // REHIDRATAR: Le devuelve los IDs y el 'type' a la data que viene del Backend
-const rehydrateConditions = (node: any): any => {
+const rehydrateConditions = (node?: RuleCondition | RuleGroup): RuleCondition | RuleGroup => {
   if (!node) return createInitialConditions();
 
   if ('rules' in node && Array.isArray(node.rules)) {
     return {
       ...node,
-      id: node.id || uuidv4(),
+      id: node.id ?? uuidv4(),
       type: 'group',
       rules: node.rules.map(rehydrateConditions),
     };
   } else {
     return {
-      ...node,
-      id: node.id || uuidv4(),
+      ...node as RuleCondition,
+      id: node.id ?? uuidv4(),
       type: 'condition',
     };
   }
 };
 
-const rehydrateActions = (actions: any[]): any[] => {
-  return (actions || []).map((action) => ({
+const rehydrateActions = (actions: AutomationAction[]): AutomationAction[] => {
+  return (actions ?? []).map((action) => ({
     ...action,
-    id: action.id || uuidv4(),
+    id: action.id ?? uuidv4(),
   }));
 };
+
 interface AutomationFormProps {
   initialData?: FieldAutomationDetailed | null; // Si viene data, estamos editando
   campaignId: number;
@@ -64,29 +67,21 @@ interface AutomationFormProps {
   fields?: LeadField[];
   readOnly?: boolean;
   isDuplicating?: boolean;
-  submitRef?: React.MutableRefObject<(() => void) | null>;
+  submitRef?: React.RefObject<(() => void) | null>
 }
 
-export const AutomationForm: React.FC<AutomationFormProps> = ({
-  initialData,
-  onSave,
-  campaignId = 1,
-  fields = [],
-  readOnly = false,
-  isDuplicating = false,
-  submitRef = null,
+/**Formulario */
+export const AutomationForm: React.FC<AutomationFormProps> = ({ initialData, onSave,
+  campaignId = 1, fields = [], readOnly = false, isDuplicating = false, submitRef = null }) => {
 
-}) => {
-  const [isSaving, setIsSaving] = useState(false);
-
-  // INICIALIZACIÓN INTELIGENTE: Si hay initialData lo rehidrata, si no, lo crea vacío.
-  const [automation, setAutomation] = useState<FieldAutomationPost & { id?: number }>(() => {
+  // INICIALIZACIÓN
+  const defaultValues = useMemo(() => {
     if (initialData) {
       return {
         ...initialData,
         conditions: rehydrateConditions(initialData.conditions),
         actions: rehydrateActions(initialData.actions),
-      };
+      } as FieldAutomationPost
     }
     return {
       name: '',
@@ -96,153 +91,139 @@ export const AutomationForm: React.FC<AutomationFormProps> = ({
       priority: 1,
       conditions: createInitialConditions(),
       actions: createInitialActions(),
-    };
-  });
+    } as FieldAutomationPost
+  }, [initialData, campaignId])
 
-  const [expandedSections, setExpandedSections] = useState({
-    general: true,
-    conditions: true,
-    actions: true,
-    preview: false,
-  });
+  const { register, control, handleSubmit } = useForm<FieldAutomationPost>({ defaultValues })
 
-  const [snackbar, setSnackbar] = useState<{
-    open: boolean;
-    message: string;
-    severity: 'success' | 'error' | 'info';
-  }>({
-    open: false,
-    message: '',
-    severity: 'success',
-  });
+  const defaultConditions = useMemo(() =>
+    initialData ? rehydrateConditions(initialData.conditions) as RuleGroup
+      : createInitialConditions() as RuleGroup
+    , [initialData])
 
-  React.useEffect(() => {
-    if (submitRef) {
-      submitRef.current = handleSave;
-    }
-  }, [automation, submitRef]);
+  const [conditions, setConditions] = useState<RuleGroup>(defaultConditions)
 
-  const toggleSection = (section: keyof typeof expandedSections) => {
-    setExpandedSections((prev) => ({
-      ...prev,
-      [section]: !prev[section],
-    }));
-  };
+  const defaultActions = useMemo(() =>
+    initialData ? rehydrateActions(initialData.actions)
+      : createInitialActions()
+    , [initialData])
 
-  const handleTriggerChange = (events: TriggerEventEnum[]) => {
-    if (events.length > 0) {
-      setAutomation((prev) => ({ ...prev, trigger_events: events }));
-    }
-  };
+  const [actions, setActions] = useState<AutomationAction[]>(defaultActions)
 
   const handleConditionsChange = (conditions: RuleGroup) => {
-    setAutomation((prev) => ({ ...prev, conditions }));
+    setConditions(conditions);
   };
 
   const handleActionsChange = (actions: AutomationAction[]) => {
-    setAutomation((prev) => ({ ...prev, actions }));
+    setActions(actions);
   };
 
-  const validateAutomation = (): string[] => {
-    const errors: string[] = [];
+  const validateAutomation = useCallback(
+    (automation: FieldAutomationPost, conditions: RuleGroup, actions: AutomationAction[]): string[] => {
+      const errors: string[] = [];
 
-    if (!automation.name.trim()) {
-      errors.push('El nombre es requerido');
-    }
+      if (!automation.name.trim()) {
+        errors.push('El nombre es requerido');
+      }
 
-    if (automation.trigger_events.length === 0) {
-      errors.push('Debe seleccionar al menos un evento disparador');
-    }
+      if (automation.trigger_events.length === 0) {
+        errors.push('Debe seleccionar al menos un evento disparador');
+      }
 
-    // Validar condiciones
-    const validateConditions = (group: RuleGroup): void => {
-      for (const rule of group.rules) {
-        if (rule.type === 'condition') {
-          if (rule.field_id === null) {
-            errors.push('Todas las condiciones deben tener un campo seleccionado');
+      // Validar condiciones
+      const validateConditions = (group: RuleGroup) => {
+        for (const rule of group.rules) {
+          if (rule.type === 'condition') {
+            if (rule.field_id === null) {
+              errors.push('Todas las condiciones deben tener un campo seleccionado');
+            }
+          } else {
+            validateConditions(rule as RuleGroup);
           }
-        } else {
-          validateConditions(rule);
+        }
+      };
+      validateConditions(conditions);
+
+      // Validar acciones
+      for (const action of actions) {
+        if (action.target_field_id === null) {
+          errors.push('Todas las acciones deben tener un campo destino');
+        }
+        if (action.type === ActionTypeEnum.COPY_FROM_FIELD && !action.source_field_id) {
+          errors.push('Las acciones de copiar deben tener un campo origen');
+        }
+        if (action.type === ActionTypeEnum.SET_VALUE && action.value === null) {
+          errors.push('Las acciones de establecer valor deben tener un valor');
         }
       }
-    };
-    validateConditions(automation.conditions);
 
-    // Validar acciones
-    for (const action of automation.actions) {
-      if (action.target_field_id === null) {
-        errors.push('Todas las acciones deben tener un campo destino');
+      return [...new Set(errors)];
+    }, [])
+
+  const handleSave = useCallback(
+    async (automation: FieldAutomationPost, conditions: RuleGroup, actions: AutomationAction[]) => {
+      console.log({ ...automation, conditions, actions })
+      const errors = validateAutomation(automation, conditions, actions);
+      if (errors.length > 0) {
+        showToast(errors[0], "error")
+        return;
       }
-      if (action.type === ActionTypeEnum.COPY_FROM_FIELD && !action.source_field_id) {
-        errors.push('Las acciones de copiar deben tener un campo origen');
-      }
-      if (action.type === ActionTypeEnum.SET_VALUE && action.value === null) {
-        errors.push('Las acciones de establecer valor deben tener un valor');
-      }
-    }
 
-    return [...new Set(errors)];
-  };
-
-  const handleSave = async () => {
-    const errors = validateAutomation();
-    if (errors.length > 0) {
-      setSnackbar({ open: true, message: errors[0], severity: 'error' });
-      return;
-    }
-
-    // Limpiamos los IDs internos de la UI
-    const cleanConditions = (group: any): any => ({
-      operator: group.operator,
-      rules: group.rules.map((rule: any) => {
-        if (rule.type === 'condition') {
-          return {
-            field_id: rule.field_id,
-            operator: rule.operator,
-            ...(rule.value !== null && { value: rule.value }),
-          };
-        }
-        return cleanConditions(rule);
-      }),
-    });
-
-    const cleanActions = automation.actions.map((action: any) => ({
-      type: action.type,
-      target_field_id: action.target_field_id,
-      ...(action.value !== null && { value: action.value }),
-      ...(action.source_field_id && { source_field_id: action.source_field_id }),
-    }));
-
-    const payloadToBackend: FieldAutomationPost = {
-      name: automation.name,
-      description: automation.description || undefined,
-      campaign_id: campaignId,
-      trigger_events: automation.trigger_events,
-      priority: automation.priority,
-      conditions: cleanConditions(automation.conditions),
-      actions: cleanActions,
-    };
-
-    try {
-      setIsSaving(true);
-      await onSave(payloadToBackend);
-      setSnackbar({
-        open: true,
-        message: '¡Automatización guardada con éxito!',
-        severity: 'success',
+      // Limpiamos los IDs internos de la UI
+      const cleanConditions = (group: RuleGroup): RuleGroup => ({
+        operator: group.operator,
+        rules: group.rules.map(rule => {
+          if (rule.type === 'condition') {
+            return {
+              field_id: rule.field_id,
+              operator: rule.operator,
+              ...(rule.value !== null && { value: rule.value }),
+            };
+          }
+          return cleanConditions(rule as RuleGroup);
+        }),
       });
-    } catch (error) {
-      setSnackbar({
-        open: true,
-        message: 'Error al guardar la automatización.',
-        severity: 'error',
-      });
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
-  const handleCopyJson = () => {
+      const cleanActions = actions.map(action => ({
+        type: action.type,
+        target_field_id: action.target_field_id,
+        ...(action.value !== null && { value: action.value }),
+        ...(action.source_field_id && { source_field_id: action.source_field_id }),
+      }));
+
+      const payloadToBackend: FieldAutomationPost = {
+        name: automation.name,
+        description: automation.description || undefined,
+        campaign_id: campaignId,
+        trigger_events: automation.trigger_events,
+        priority: automation.priority,
+        conditions: cleanConditions(conditions),
+        actions: cleanActions,
+      };
+
+      try {
+        await onSave(payloadToBackend);
+        showToast('Automatización guardada con éxito')
+      } catch (error) {
+        showCommonErrorToast(error, 'Error al guardar la automatización.')
+      }
+    }, [campaignId, onSave, validateAutomation])
+
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const submitHandler = useCallback(
+    handleSubmit(data => handleSave(data, conditions, actions)),
+    [handleSubmit, handleSave, conditions, actions])
+
+  useEffect(() => {
+    if (submitRef) {
+      submitRef.current = submitHandler;
+    }
+  }, [submitRef, submitHandler]);
+
+  /*
+  const handleCopyJson = useCallback((actions: AutomationAction[], conditions:RuleGroup) => {
+    const automation = getValues()
     // Preparar el JSON sin los IDs internos
     const cleanConditions = (group: RuleGroup): object => ({
       operator: group.operator,
@@ -258,7 +239,7 @@ export const AutomationForm: React.FC<AutomationFormProps> = ({
       }),
     });
 
-    const cleanActions = automation.actions.map((action) => ({
+    const cleanActions = actions.map((action) => ({
       type: action.type,
       target_field_id: action.target_field_id,
       ...(action.value !== null && { value: action.value }),
@@ -271,290 +252,242 @@ export const AutomationForm: React.FC<AutomationFormProps> = ({
       campaign_id: automation.campaign_id,
       trigger_events: automation.trigger_events,
       priority: automation.priority,
-      conditions: cleanConditions(automation.conditions),
+      conditions: cleanConditions(conditions),
       actions: cleanActions,
     };
 
     navigator.clipboard.writeText(JSON.stringify(jsonData, null, 2));
-    setSnackbar({
-      open: true,
-      message: 'JSON copiado al portapapeles',
-      severity: 'info',
-    });
-  };
+    showToast("JSON copiado al portapapeles", "info")
+  },[])
+*/
 
-  const generateDescription = (): string => {
-    const triggers = automation.trigger_events
+  return (
+    <form onSubmit={submitHandler}>
+      <Stack spacing={2} sx={{ py: 3, px: 2 }}>
+        {/* Header */}
+        {isDuplicating && (
+          <Alert
+            severity="info"
+            icon={<ContentCopyIcon />}
+            sx={{ border: '1px solid', borderColor: 'info.light', color: "text.primary" }}
+          >
+            <Typography variant="subtitle2">Estás creando un duplicado</Typography>
+            <Typography variant="body2">
+              Los datos fueron copiados de otra automatización. Revisa las condiciones y haz clic en <b>Guardar</b> para confirmar la creación de esta nueva regla.
+            </Typography>
+          </Alert>
+        )}
+        <Paper
+          elevation={1}
+          sx={(theme) => ({
+            p: 3,
+            background: readOnly
+              ? alpha(theme.palette.text.disabled, 0.1) // Más tenue si es solo lectura
+              : `linear-gradient(190deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.dark} 80%)`,
+            color: readOnly ? 'text.primary' : 'white',
+            border: readOnly ? '1px dashed' : 'none',
+            borderColor: 'divider',
+            ...theme.applyStyles("dark", {
+              background: readOnly
+                ? alpha(theme.palette.text.disabled, 0.1) // Más tenue si es solo lectura
+                : `linear-gradient(190deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary[600]} 70%)`,
+            })
+          })}
+        >
+          <Stack direction="row" spacing={2} sx={{ alignItems: "center" }} >
+            <AutoFixHighIcon sx={{ fontSize: 40, opacity: readOnly ? 0.5 : 1 }} />
+            <Stack spacing={1}>
+              <Typography variant="h4" component="p">
+                Configuración de Reglas
+              </Typography>
+              <Typography variant="body2" sx={{ opacity: .9 }}>
+                {readOnly
+                  ? 'Los cambios están deshabilitados. Pulsa el botón "Editar" en la parte superior para modificar.'
+                  : 'Define disparadores y acciones para automatizar tu flujo de leads.'
+                }
+              </Typography>
+            </Stack>
+          </Stack>
+        </Paper>
+
+        {/* General Info Section */}
+        <Accordion disableGutters defaultExpanded
+          component={GenericPaper} elevation={0} sx={{ p: 0, borderRadius: 1 }}>
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls={`gen-info-content`}
+            id={`gen-info-header`}
+            sx={{
+              '&:hover': { bgcolor: 'action.hover' },
+            }}>
+            <Typography component="span" sx={{ fontWeight: 500 }}>Información General</Typography>
+          </AccordionSummary>
+          <AccordionDetails sx={{ pt: 0 }}>
+            <Divider sx={{ mb: 2, mx: -2 }} />
+            <Grid container spacing={1}>
+              <RegisteredTextInput
+                register={register}
+                name="name"
+                disabled={readOnly}
+                label="Nombre de la automatización"
+                fullWidth
+                required
+                placeholder="Ej: Autocompletar provincia según nomenclador"
+              />
+              <RegisteredTextInput
+                register={register}
+                name="description"
+                disabled={readOnly}
+                label="Descripción (opcional)"
+                fullWidth
+                multiline
+                rows={2}
+                placeholder="Describe qué hace esta automatización..."
+              />
+              <Grid size="grow" sx={{ flexGrow: 5 }}>
+                <ControlledAutocomplete
+                  control={control}
+                  name="trigger_events"
+                  options={Object.values(TriggerEventEnum)}
+                  getOptionLabel={op => TRIGGER_EVENT_LABELS[op]}
+                  getOptionKey={op => op}
+                  disabled={readOnly}
+                  label="Eventos disparadores"
+                  multiple
+                />
+              </Grid>
+              <Grid size="grow" sx={{ flexGrow: 2 }}>
+                <ChipTooltip title="Orden de ejecución" color="info" boxed>
+                  <ControlledNumber
+                    control={control}
+                    name="priority"
+                    type="field"
+                    label="Orden"
+                    min={1}
+                    max={100}
+                  />
+                </ChipTooltip>
+              </Grid>
+            </Grid>
+          </AccordionDetails>
+        </Accordion>
+
+        {/* Conditions Section */}
+        <Accordion disableGutters defaultExpanded
+          component={GenericPaper} elevation={0} sx={{ p: 0, borderRadius: 1 }}>
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls={`gen-info-content`}
+            id={`gen-info-header`}
+            sx={{
+              '&:hover': { bgcolor: 'action.hover' },
+            }}>
+            <Stack direction="row" spacing={2}>
+              <Typography component="span" sx={{ fontWeight: 500 }}>Condiciones</Typography>
+              <CustomChip
+                label={`${conditions.rules.length} regla${conditions.rules.length > 1 ? "s" : ""}`}
+                size="small"
+                variant="outlined"
+                color="primary"
+              />
+            </Stack>
+          </AccordionSummary>
+          <AccordionDetails sx={{ pt: 0 }}>
+            <Divider sx={{ mb: 2, mx: -2 }} />
+            <Alert severity="info" sx={{ mb: 2, color: "text.primary" }} >
+              Define las condiciones que deben cumplirse para ejecutar las acciones. Puedes crear
+              grupos anidados con operadores Y/O.
+            </Alert>
+            <ConditionBuilder
+              group={conditions}
+              onChange={handleConditionsChange}
+              isRoot
+              fields={fields}
+              readOnly={readOnly}
+            />
+          </AccordionDetails>
+        </Accordion>
+
+
+        {/* Actions Section */}
+        <Accordion disableGutters defaultExpanded
+          component={GenericPaper} elevation={0} sx={{ p: 0, borderRadius: 1 }}>
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls={`gen-info-content`}
+            id={`gen-info-header`}
+            sx={{
+              '&:hover': { bgcolor: 'action.hover' },
+            }}>
+            <Stack direction="row" spacing={2}>
+              <Typography component="span" sx={{ fontWeight: 500 }}>Acciones</Typography>
+              <CustomChip
+                label={`${actions.length} acción${actions.length > 1 ? "es" : ""}`}
+                size="small"
+                chipColor="success"
+              />
+            </Stack>
+          </AccordionSummary>
+          <AccordionDetails sx={{ pt: 0 }}>
+            <Divider sx={{ mb: 2, mx: -2 }} />
+            <Alert severity="success" sx={{ mb: 2, color: "text.primary" }} icon={<PlayArrowIcon />}>
+              Las acciones se ejecutarán en orden cuando las condiciones se cumplan.
+            </Alert>
+            <ActionBuilder actions={actions} onChange={handleActionsChange} fields={fields} readOnly={readOnly} />
+          </AccordionDetails>
+        </Accordion>
+
+        {/* Preview Section */}
+        <Description control={control} conditions={conditions} actions={actions} fields={fields} />
+      </Stack >
+    </form>
+  );
+};
+
+interface DescriptionProps {
+  control: Control<FieldAutomationPost, unknown, FieldAutomationPost>,
+  conditions: RuleGroup,
+  actions: AutomationAction[],
+  fields: LeadField[]
+  ,
+}
+//Separado para evitar que useWatch laguee el formulario entero.
+const Description = memo(({ control, conditions, actions, fields }: DescriptionProps) => {
+  const triggerEvents = useWatch({ control, name: "trigger_events" })
+
+  const generateDescription = useMemo(() => {
+    const triggers = triggerEvents
       .map((e) => TRIGGER_EVENT_LABELS[e].toLowerCase())
       .join(' o ');
 
     const describeCondition = (group: RuleGroup): string => {
       if (!group || !group.rules) return '';
-      const conditions = group.rules.map((rule) => {
+      const conditions = group.rules.map(rule => {
         if (rule.type === 'condition') {
-          const field = fields.find((f) => f.id === rule.field_id);
+          const field = fields.find(f => f.id === rule.field_id);
           return field ? `${field.name}` : 'campo';
         }
-        return `(${describeCondition(rule)})`;
+        return `(${describeCondition(rule as RuleGroup)})`;
       });
       return conditions.join(group.operator === LogicalOperatorEnum.AND ? ' y ' : ' o ');
     };
 
-    const actionsDesc = automation.actions
+    const actionsDesc = actions
       .map((action) => {
         const targetField = fields.find((f) => f.id === action.target_field_id);
         return targetField ? targetField.name : 'campo';
       })
       .join(', ');
 
-    return `Cuando se ejecute "${triggers}", si ${describeCondition(automation.conditions)}, entonces modificar: ${actionsDesc}`;
-  };
+    return `Cuando se ejecute "${triggers}", si ${describeCondition(conditions)}, entonces modificar: ${actionsDesc}`;
+  }, [actions, conditions, fields, triggerEvents])
 
   return (
-    <Box sx={{ py: 3, px: 2 }}>
-      {/* Header */}
-      {isDuplicating && (
-        <Alert
-          severity="info"
-          icon={<ContentCopyIcon />}
-          sx={{ mb: 3, border: '1px solid', borderColor: 'info.light' }}
-        >
-          <Typography variant="subtitle2">Estás creando un duplicado</Typography>
-          <Typography variant="body2">
-            Los datos fueron copiados de otra automatización. Revisa las condiciones y haz clic en <b>Guardar</b> para confirmar la creación de esta nueva regla.
-          </Typography>
-        </Alert>
-      )}
-      <Paper
-        elevation={0}
-        sx={(theme) => ({
-          p: 3,
-          mb: 3,
-          background: readOnly
-            ? alpha(theme.palette.text.disabled, 0.1) // Más tenue si es solo lectura
-            : `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-          color: readOnly ? 'text.primary' : 'white',
-          borderRadius: 3,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 2,
-          border: readOnly ? '1px dashed' : 'none',
-          borderColor: 'divider'
-        })}
-      >
-        <AutoFixHighIcon sx={{ fontSize: 40, opacity: readOnly ? 0.5 : 1 }} />
-        <Box>
-          <Typography variant="h5" fontWeight={700}>
-            Configuración de Reglas
-          </Typography>
-          <Typography variant="body2" sx={{ opacity: 0.8 }}>
-            {readOnly
-              ? 'Los cambios están deshabilitados. Pulsa el botón "Editar" en la parte superior para modificar.'
-              : 'Define disparadores y acciones para automatizar tu flujo de leads.'
-            }
-          </Typography>
-        </Box>
-      </Paper>
-
-      {/* General Info Section */}
-      <Card sx={{ mb: 3 }}>
-        <Box
-          sx={{
-            px: 3,
-            py: 2,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            cursor: 'pointer',
-            '&:hover': { bgcolor: 'action.hover' },
-          }}
-          onClick={() => toggleSection('general')}
-        >
-          <Typography variant="h6">Información General</Typography>
-          <IconButton size="small">
-            {expandedSections.general ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-          </IconButton>
-        </Box>
-        <Collapse in={expandedSections.general}>
-          <Divider />
-          <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <TextField
-              disabled={readOnly}
-              label="Nombre de la automatización"
-              value={automation.name}
-              onChange={(e) => setAutomation((prev) => ({ ...prev, name: e.target.value }))}
-              fullWidth
-              required
-              placeholder="Ej: Autocompletar provincia según nomenclador"
-            />
-
-            <TextField
-              disabled={readOnly}
-              label="Descripción (opcional)"
-              value={automation.description ?? ''}
-              onChange={(e) => setAutomation((prev) => ({ ...prev, description: e.target.value }))}
-              fullWidth
-              multiline
-              rows={2}
-              placeholder="Describe qué hace esta automatización..."
-            />
-
-            <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
-              <FormControl sx={{ minWidth: 300 }}>
-                <InputLabel>Eventos disparadores</InputLabel>
-                <Select
-                  disabled={readOnly}
-                  multiple
-                  value={automation.trigger_events}
-                  onChange={(e) => handleTriggerChange(e.target.value as TriggerEventEnum[])}
-                  input={<OutlinedInput label="Eventos disparadores" />}
-                  renderValue={(selected) => (
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                      {selected.map((value) => (
-                        <Chip
-                          key={value}
-                          label={TRIGGER_EVENT_LABELS[value]}
-                          size="small"
-                          color="primary"
-                        />
-                      ))}
-                    </Box>
-                  )}
-                >
-                  {Object.values(TriggerEventEnum).map((event) => (
-                    <MenuItem key={event} value={event}>
-                      <Checkbox checked={automation.trigger_events.includes(event)} />
-                      <ListItemText primary={TRIGGER_EVENT_LABELS[event]} />
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              <TextField
-                label="Orden"
-                title="Orden de ejecución"
-                disabled={readOnly}
-                type="number"
-                value={automation.priority}
-                onChange={(e) =>
-                  setAutomation((prev) => ({ ...prev, priority: Number(e.target.value) }))
-                }
-                sx={{ width: 120 }}
-                inputProps={{ min: 1, max: 100 }}
-                helperText="(1 = primero en ejecutarse)"
-              />
-            </Box>
-          </CardContent>
-        </Collapse>
-      </Card>
-
-      {/* Conditions Section */}
-      <Card sx={{ mb: 3 }}>
-        <Box
-          sx={{
-            px: 3,
-            py: 2,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            cursor: 'pointer',
-            '&:hover': { bgcolor: 'action.hover' },
-          }}
-          onClick={() => toggleSection('conditions')}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="h6">Condiciones</Typography>
-            <Chip
-              label={`${automation.conditions.rules.length} regla(s)`}
-              size="small"
-              variant="outlined"
-            />
-          </Box>
-          <IconButton size="small">
-            {expandedSections.conditions ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-          </IconButton>
-        </Box>
-        <Collapse in={expandedSections.conditions}>
-          <Divider />
-          <CardContent>
-            <Alert severity="info" sx={{ mb: 2 }} icon={<InfoIcon />}>
-              Define las condiciones que deben cumplirse para ejecutar las acciones. Puedes crear
-              grupos anidados con operadores Y/O.
-            </Alert>
-            <ConditionBuilder
-              group={automation.conditions}
-              onChange={handleConditionsChange}
-              isRoot
-              fields={fields}
-              readOnly={readOnly}
-            />
-          </CardContent>
-        </Collapse>
-      </Card>
-
-      {/* Actions Section */}
-      <Card sx={{ mb: 3 }}>
-        <Box
-          sx={{
-            px: 3,
-            py: 2,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            cursor: 'pointer',
-            '&:hover': { bgcolor: 'action.hover' },
-          }}
-          onClick={() => toggleSection('actions')}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="h6">Acciones</Typography>
-            <Chip
-              label={`${automation.actions.length} acción(es)`}
-              size="small"
-              variant="outlined"
-              color="success"
-            />
-          </Box>
-          <IconButton size="small">
-            {expandedSections.actions ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-          </IconButton>
-        </Box>
-        <Collapse in={expandedSections.actions}>
-          <Divider />
-          <CardContent>
-            <Alert severity="success" sx={{ mb: 2 }} icon={<PlayArrowIcon />}>
-              Las acciones se ejecutarán en orden cuando las condiciones se cumplan.
-            </Alert>
-            <ActionBuilder actions={automation.actions} onChange={handleActionsChange} fields={fields} readOnly={readOnly} />
-          </CardContent>
-        </Collapse>
-      </Card>
-
-
-      {/* Preview Section */}
-      <Card sx={{ mb: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', m: 2 }}>
-          <Typography variant="body2" color="text.secondary">
-            Resumen: {generateDescription()}
-          </Typography>
-        </Box>
-      </Card>
-
-      {/* Snackbar */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert
-          onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
-          severity={snackbar.severity}
-          variant="filled"
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-    </Box>
-  );
-};
+    <GenericPaper sx={{ p: 2 }}>
+      <Typography variant="body2" color="text.secondary">
+        Resumen: {generateDescription}
+      </Typography>
+    </GenericPaper>
+  )
+}
+)

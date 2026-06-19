@@ -9,7 +9,7 @@ export default function Toast({ data, toastProps }: CustomToastContentProps) {
     const toastType = toastProps.type === "default" ? undefined : toastProps.type
     return (
         <Alert severity={toastType}
-            sx={{ width: "100%", height: "100%", display: "flex", alignItems: "center" }}>
+            sx={{ width: "100%", height: "100%", display: "flex", alignItems: "center", color: "text.primary" }}>
             {data.message}
         </Alert>
     )

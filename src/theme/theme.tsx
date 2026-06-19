@@ -60,19 +60,7 @@ const theme = createTheme({
   components: {
     MuiCssBaseline: {
       styleOverrides: {
-        html: {
-          width: '100%',
-          height: '100%',
-        },
-        body: {
-          width: '100%',
-          height: '100%',
-          margin: 0,
-          padding: 0,
-        },
         '#root': {
-          width: '100%',
-          height: '100%',
           ...textTheme.root
         },
       },

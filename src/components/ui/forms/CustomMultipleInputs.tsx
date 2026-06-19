@@ -1,8 +1,9 @@
-import { Autocomplete, Checkbox, CircularProgress, FormControl, FormControlLabel, FormGroup, FormHelperText, FormLabel, Radio, RadioGroup, Stack, TextField, type InputProps } from '@mui/material'
+import { Autocomplete, Checkbox, CircularProgress, FormControl, FormControlLabel, FormGroup, FormHelperText, FormLabel, Radio, RadioGroup, Stack, TextField, type AutocompleteRenderValueGetItemProps, type InputProps } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { Controller, type Control, type ControllerRenderProps, type FieldValues, type Path } from 'react-hook-form'
 import { FormErrorMessage } from './FormFeedback'
 import type { ReactNode } from 'react';
+import CustomChip from '../details/CustomChip';
 
 interface BasicMultipleInputProps<Option> {
     label?: string,
@@ -19,7 +20,8 @@ interface BasicControlFormInput<T extends FieldValues, Option> extends BasicMult
     returnField?: keyof Option | null,
 }
 
-interface ControlledACProps<T extends FieldValues, Option> extends BasicControlFormInput<T, Option> {
+interface ControlledACProps<T extends FieldValues, Option>
+    extends BasicControlFormInput<T, Option> {
     getOptionLabel?: (option: Option) => string,
     getOptionKey: (option: Option) => string,
     disabled?: boolean,
@@ -30,12 +32,16 @@ interface ControlledACProps<T extends FieldValues, Option> extends BasicControlF
     helper?: string,
     placeholder?: string
     renderOption?: (props: React.HTMLAttributes<HTMLLIElement>, option: Option) => ReactNode;
+    renderValue?: (
+        value: Option | Option[],
+        getItemProps: AutocompleteRenderValueGetItemProps<boolean>
+    ) => ReactNode
 }
 
 export const ControlledAutocomplete = <T extends FieldValues, Option>
     ({ control, name, label, options, getOptionLabel, getOptionKey, returnField = null, renderOption,
         required = false, multiple = false, disabled = false, hidden = false, disableClearable = false,
-        errorMessage = null, autocomplete = "one-time-code", helper, placeholder, size = "medium", ...props }: ControlledACProps<T, Option>) => {
+        errorMessage = null, autocomplete = "one-time-code", helper, placeholder, size = "medium", renderValue, ...props }: ControlledACProps<T, Option>) => {
 
     const handleChange = (field: ControllerRenderProps<T, Path<T>>, values: Option | Option[] | null) => {
         //Por defecto, si no hay valores devuelve null o []
@@ -83,6 +89,25 @@ export const ControlledAutocomplete = <T extends FieldValues, Option>
                     getOptionLabel={getOptionLabel} getOptionKey={getOptionKey} renderOption={renderOption}
                     isOptionEqualToValue={(option, value) => getOptionKey(option) === getOptionKey(value)}
                     fullWidth
+                    renderValue={renderValue ??
+                        ((values, getItemProps) => {
+                            //No se puede hacer genérico sin cambiar todo. Identifica si es una o varias opciones.
+                            if (!Array.isArray(values)) return getOptionLabel?.(values) ?? `${values}`
+                            //Castea la función para que actue con múltiples opciones
+                            const getMultipleItemProps = getItemProps as AutocompleteRenderValueGetItemProps<true>
+                            return values.map((option, index) => {
+                                const { key, ...itemProps } = getMultipleItemProps({ index });
+                                return (
+                                    <CustomChip
+                                        key={key}
+                                        label={getOptionLabel?.(option) ?? `${option}`}
+                                        size="small"
+                                        {...itemProps}
+                                    />
+                                );
+                            })
+                        })
+                    }
                     renderInput={(params) =>
                         <>
                             <TextField {...params} label={label} required={required}

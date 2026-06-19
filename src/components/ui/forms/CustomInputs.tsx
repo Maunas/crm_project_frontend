@@ -1,9 +1,9 @@
-import { useState, type HTMLInputTypeAttribute, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import NumberField, { NumberSpinner } from "./NumberField";
 import { FormErrorMessage } from "./FormFeedback";
 import { ChipTooltip } from "../details/ChipTooltip";
 import { Controller, type Control, type FieldValues, type Path, type PathValue, type UseFormRegister, } from "react-hook-form";
-import { Box, Checkbox, FormControl, FormControlLabel, FormLabel, Grid, IconButton, InputAdornment, InputLabel, OutlinedInput, Rating, Slider, Stack, Switch, TextField, Typography, useColorScheme, type InputProps, } from "@mui/material";
+import { Box, Checkbox, FormControl, FormControlLabel, FormLabel, Grid, IconButton, InputAdornment, InputLabel, OutlinedInput, Rating, Slider, Stack, Switch, TextField, Typography, useColorScheme, type InputProps, type TextFieldProps, } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
@@ -13,7 +13,8 @@ interface BasicFormInput<T extends FieldValues> {
   required?: boolean;
   errorMessage?: string;
   autoComplete?: string;
-  size?: "small" | "medium"
+  size?: "small" | "medium",
+  disabled?: boolean
 }
 interface RegisterFormInput<T extends FieldValues> extends BasicFormInput<T> {
   register: UseFormRegister<T>;
@@ -247,12 +248,12 @@ export const SingleFileField = <T extends FieldValues>
   );
 };
 
-interface RegisteredTextProps<T extends FieldValues> extends RegisterFormInput<T> {
-  id?: string | null;
-  type?: HTMLInputTypeAttribute;
-  onChange?: () => void,
-  multiline?: boolean
-}
+type RegisteredTextProps<T extends FieldValues> =
+  RegisterFormInput<T> &
+  Omit<TextFieldProps, "name" | "required" | "onChange" | "id"> & {
+    id?: string | null;
+    onChange?: () => void;
+  };
 
 export const RegisteredTextInput = <T extends FieldValues>
   ({ register, name, label, required = false, errorMessage, autoComplete = "one-time-code", multiline = false,
@@ -264,7 +265,8 @@ export const RegisteredTextInput = <T extends FieldValues>
     <>
       <TextField {...register(name)} label={label ?? name} id={id ?? name} type={type}
         onChange={e => { register(name).onChange(e); onChange() }}
-        required={required} error={!!errorMessage} autoComplete={autoComplete} multiline={multiline} fullWidth size={size}
+        required={required} error={!!errorMessage} autoComplete={autoComplete} multiline={multiline}
+        fullWidth size={size}
         slotProps={{
           input: { startAdornment: props.startAdornment },
           htmlInput: {
@@ -275,6 +277,7 @@ export const RegisteredTextInput = <T extends FieldValues>
             },
           },
         }}
+        {...props}
       />
       {errorMessage && typeof errorMessage === "string" && (
         <FormErrorMessage>{errorMessage}</FormErrorMessage>

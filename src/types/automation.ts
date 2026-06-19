@@ -37,22 +37,22 @@ export type ActionTypeEnum = typeof ActionTypeEnum[keyof typeof ActionTypeEnum];
 // INTERFACES
 // ==========================================
 export interface RuleCondition {
-  id: string;
-  type: 'condition';
+  id?: string;
+  type?: 'condition';
   field_id: number | null;
   operator: ConditionOperatorEnum;
   value?: string | number | boolean | null;
 }
 
 export interface RuleGroup {
-  id: string;
-  type: 'group';
+  id?: string;
+  type?: 'group';
   operator: LogicalOperatorEnum;
   rules: (RuleCondition | RuleGroup)[];
 }
 
 export interface AutomationAction {
-  id: string;
+  id?: string;
   type: ActionTypeEnum;
   target_field_id: number | null;
   value?: string | number | boolean | null;

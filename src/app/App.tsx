@@ -1,6 +1,5 @@
 import { RouterProvider } from 'react-router-dom';
 import { router } from 'src/routes';
-import './App.css'
 import { UserProvider } from 'src/stores/UserContext';
 import { Bounce, ToastContainer } from 'react-toastify';
 import { useColorScheme } from '@mui/material';

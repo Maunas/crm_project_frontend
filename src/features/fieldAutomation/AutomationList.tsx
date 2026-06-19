@@ -55,7 +55,7 @@ export const AutomationList = () => {
   const fetchAutomations = useCallback((fetchPage: number, pageSize: number, selectedCampaignId: number) => {
     return getFieldAutomations({
       detailed: true, page_size: pageSize, page: fetchPage,
-      campaign_id: selectedCampaignId as number, order_by: 'priority', ascending: true
+      campaign: selectedCampaignId as number, order_by: 'priority', ascending: true
     })
       .then(setAutomations)
       .catch(e => showCommonErrorToast(e));
@@ -83,7 +83,7 @@ export const AutomationList = () => {
     if (window.confirm(`¿Seguro que deseas eliminar "${auto.name}"?`)) {
       deleteFieldAutomation(auto.id).then(() => {
         // Refrescar la lista
-        getFieldAutomations({ detailed: true, page_size: pageSize, page: fetchPage, campaign_id: selectedCampaignId as number, order_by: 'priority', ascending: true }).then(setAutomations);
+        getFieldAutomations({ detailed: true, page_size: pageSize, page: fetchPage, campaign: selectedCampaignId as number, order_by: 'priority', ascending: true }).then(setAutomations);
       }).catch(console.error);
     }
   };
@@ -137,19 +137,19 @@ export const AutomationList = () => {
                         <Stack direction="row" spacing={1}>
                           {/* Navega a la vista de detalles */}
                           <CommonIconButton actionType='DETAILS' title="Detalles" size="small"
-                            onClick={() => navigate(`/automations/${auto.id}?campaign_id=${selectedCampaignId}`)} />
+                            onClick={() => navigate(`/automations/${auto.id}?campaign=${selectedCampaignId}`)} />
 
                           <CommonIconButton actionType='MODIFY' title="Modificar" tooltipSize="small" size="small"
-                            onClick={() => navigate(`/automations/${auto.id}?campaign_id=${selectedCampaignId}&edit=true`)} />
+                            onClick={() => navigate(`/automations/${auto.id}?campaign=${selectedCampaignId}&edit=true`)} />
 
                           <CommonIconButton actionType="DUPLICATE" title="Duplicar" size="small"
-                            onClick={() => navigate(`/automations/create?campaign_id=${selectedCampaignId}&duplicate_from=${auto.id}`)} />
+                            onClick={() => navigate(`/automations/create?campaign=${selectedCampaignId}&duplicate_from=${auto.id}`)} />
 
                           <CommonIconButton actionType="DISABLE" title="Eliminar" color="error" size="small"
                             onClick={() => handleDelete(auto)} />
                         </Stack>
                       }>
-                        <ListItemButton onClick={() => navigate(`/automations/${auto.id}?campaign_id=${selectedCampaignId}`)}>
+                        <ListItemButton onClick={() => navigate(`/automations/${auto.id}?campaign=${selectedCampaignId}`)}>
                           <ListItemText
                             primary={
                               <Stack spacing={1} sx={{ direction: "row", alignItems: "center" }}>
