@@ -1,32 +1,29 @@
-import { NotFound } from "./pages/NotFound";
+import { CreateLeadFormPage, UpdateLeadFormPage } from "features/lead/leadForm/LeadFormWraper";
+import { OrganizationList } from "features/organizations/OrganizationList";
+import LeadProperties from "./features/leadProperties/leadPropertiesList";
+import { AutomationList } from "features/fieldAutomation/AutomationList";
+import { AutomationPage } from "features/fieldAutomation/AutomationPage";
+import { NomenclatorList } from "features/nomenclators/NomenclatorList";
+import { LeadFlowEditor } from "src/features/leadFlows/FlowEditorPage";
 import { LeadDetailsLayout } from "features/lead/details/LeadDetails";
 import { CampaignDetails } from "features/campaigns/CampaignDetails";
-import { WorkspaceList } from "features/workspaces/WorkspaceList";
-import { CreateLeadFormPage, UpdateLeadFormPage } from "features/lead/leadForm/LeadFormWraper";
 import { LeadListPage } from "features/lead/leadList/LeadListPage";
-import { OrganizationList } from "features/organizations/OrganizationList";
-import { NomenclatorList } from "features/nomenclators/NomenclatorList";
+import { SearchResultsList } from "features/search/SearchResults";
+import { WorkspaceList } from "features/workspaces/WorkspaceList";
 import { LoginFormPage } from "./features/auth/LoginForm";
 import { SignupFormPage } from "features/auth/SignupForm";
-import { SearchResultsList } from "features/search/SearchResults";
 import MainLayout from "./app/mainLayout";
+import { NotFound } from "./pages/NotFound";
 import { createBrowserRouter, Outlet } from "react-router-dom";
-import { LeadFlowEditor } from "src/features/leadFlows/FlowEditorPage";
-import { LeadNavigationProvider } from 'features/lead/stores/LeadNavigationContext';
-import LeadProperties from "./features/leadProperties/leadPropertiesList";
 
 export const router = createBrowserRouter([
     {
         path: "/login",
-        element: (
-            <LoginFormPage />
-        ),
+        Component: LoginFormPage,
     },
     {
         path: "/signup",
-        element: (
-            <SignupFormPage />
-        ),
+        Component: SignupFormPage,
     },
     {
         // Layout principal
@@ -41,23 +38,19 @@ export const router = createBrowserRouter([
 
             {
                 path: "/leads",
-                element: (
-                    <LeadNavigationProvider>
-                        <Outlet />
-                    </LeadNavigationProvider>
-                ),
+                Component: Outlet,
                 children: [
                     {
                         path: "/leads/",
-                        element: <LeadListPage />
+                        Component: LeadListPage
                     },
                     {
                         path: "/leads/new",
-                        element: <CreateLeadFormPage />
+                        Component: CreateLeadFormPage
                     },
                     {
                         path: "/leads/modify/:id",
-                        element: <UpdateLeadFormPage />
+                        Component: UpdateLeadFormPage
                     },
                     {
                         path: "/leads/:id",
@@ -77,6 +70,14 @@ export const router = createBrowserRouter([
             {
                 path: "/organizations/",
                 Component: OrganizationList
+            },
+            {
+                path: "/automations/",
+                Component: AutomationList
+            },
+            {
+                path: "/automations/:id",
+                Component: AutomationPage
             },
             {
                 path: "/campaigns/:id",

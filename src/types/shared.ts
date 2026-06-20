@@ -64,6 +64,10 @@ export interface FlowStateParams extends LeadFlowParams {
   lead_flow_id: number
 }
 
+export interface FieldAutomationParams extends ListParams {
+  campaign_id?: number
+}
+
 /**
  * Contiene los formatos de mensaje de error.
  */
@@ -136,7 +140,8 @@ export interface Dictionary {
   "routing_condition_types"?: DictionaryItem[]
   "team_roles"?: DictionaryItem[]
   "lead_states_categories"?: DictionaryItem[],
-  lead_view_visibilities?: DictionaryItem[]
+  "lead_view_visibilities"?: DictionaryItem[],
+  "automation_compatibility_matrix"?: AutomationCompatibility[],
 }
 
 export interface DictionaryItem {
@@ -147,3 +152,10 @@ export interface DictionaryItem {
 export type DateFormat = "dateTime" | "dateTimeLong" | "date" | "dateLong" | "time" | "custom"
 
 export type OptionWithAction<T> = ((T & { isAction: boolean }) | { id: string, name: string, isAction: boolean })
+
+export interface AutomationCompatibility {
+  "field_type": {
+    "operators": string[],
+    "actions": string[],
+  }
+}

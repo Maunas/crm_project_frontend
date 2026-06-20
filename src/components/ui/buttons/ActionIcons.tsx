@@ -20,6 +20,8 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 
 const ACTION_ICONS = {
     NONE: <></>,
@@ -45,6 +47,8 @@ const ACTION_ICONS = {
     CLOSE_LIST: <KeyboardArrowUpIcon sx={{ display: "block" }} />,
     DRAG: <DragIndicatorIcon sx={{ display: "block" }} />,
     EDIT_TEXT: <DriveFileRenameOutlineIcon sx={{ display: "block" }} />,
+    DUPLICATE: <ContentCopyIcon sx={{ display: "block" }} />,
+    AUTOMATE: <AutoFixHighIcon sx={{ display: "block" }} />
 }
 
 export type ActionType = keyof typeof ACTION_ICONS

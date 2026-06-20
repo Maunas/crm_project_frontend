@@ -26,7 +26,7 @@ const GenericPaper = styled(
                 "&&": {
                     backgroundImage: `
                         ${originalGradient}
-                        ${false ? `, ${newGradient}` : ""}
+                        ${`, ${newGradient}`}
                         ${elevation === 0 ? `, ${lightOverlay}` : "" /*Aclara un poco el elevation=0*/}
         `}
             })]
