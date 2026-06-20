@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { GenericContainer } from 'shared/layout/container/GenericContainer';
-import { CommonIconButton } from 'shared/ui/buttons/CommonIconButton';
 import PaginationComponent from 'shared/ui/lists/PaginationComponent';
-import { CustomListItem } from 'shared/ui/lists/CustomListItem';
+import { ResponsiveListItem } from 'shared/ui/lists/CustomListItem';
 import CommonButton from 'shared/ui/buttons/CommonButton';
 import { EnabledIcon } from 'shared/ui/lists/Icons';
 import { useListPagination } from 'src/hooks/useListPagination';
@@ -12,10 +11,13 @@ import type { Paginable } from 'src/types/shared';
 import { getFieldAutomations, deleteFieldAutomation } from './AutomationFieldServices';
 import { getCampaigns } from '../campaigns/campaignServices';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Autocomplete, Box, List, ListItemButton, ListItemText, Stack, TextField, Tooltip, Typography } from '@mui/material';
+import { Autocomplete, List, ListItemText, Stack, TextField, Typography } from '@mui/material';
 import { showCommonErrorToast } from 'src/utils/feedback';
 import { useLoading } from 'src/hooks/useLoading';
 import LoadingScreenWrapper from 'src/components/feedback/LoadingScreen';
+import CustomChip from 'src/components/ui/details/CustomChip';
+import { ChipTooltip } from 'src/components/ui/details/ChipTooltip';
+import { DisableConfirmDialog } from 'src/components/feedback/ConfirmationDialog';
 
 const NONE_OPTION: Campaign = {
   id: -1,
@@ -58,7 +60,7 @@ export const AutomationList = () => {
       campaign: selectedCampaignId as number, order_by: 'priority', ascending: true
     })
       .then(setAutomations)
-      .catch(e => showCommonErrorToast(e));
+      .catch(e => showCommonErrorToast(e, "Error recuperando la lista de automatizaciones."));
   }, [])
 
   const { fnWithLoading: fetchAutoLoad, loading: autoLoading } = useLoading(fetchAutomations)
@@ -79,17 +81,18 @@ export const AutomationList = () => {
     }
   };
 
-  const handleDelete = (auto: FieldAutomationDetailed) => {
-    if (window.confirm(`¿Seguro que deseas eliminar "${auto.name}"?`)) {
-      deleteFieldAutomation(auto.id).then(() => {
-        // Refrescar la lista
-        getFieldAutomations({ detailed: true, page_size: pageSize, page: fetchPage, campaign: selectedCampaignId as number, order_by: 'priority', ascending: true }).then(setAutomations);
-      }).catch(console.error);
-    }
-  };
+  const handleDelete = useCallback((auto: FieldAutomationDetailed) => {
+    return deleteFieldAutomation(auto.id).then(() => {
+      // Refrescar la lista
+      fetchAutomations(fetchPage, pageSize, selectedCampaignId as number)
+    })
+      .catch(e => showCommonErrorToast(e, "Error eliminando la automatización."));
+  }, [fetchPage, pageSize, selectedCampaignId, fetchAutomations])
+
+  const [deletingAuto, setDeletingAuto] = useState<FieldAutomationDetailed | null>(null)
 
   return (
-    <GenericContainer children={
+    <GenericContainer>
       <Stack spacing={3}>
         <Stack spacing={2} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
           <Stack direction="row" sx={{ alignItems: 'center', gap: 3, flexWrap: "wrap" }}>
@@ -133,57 +136,40 @@ export const AutomationList = () => {
                 <>
                   <List>
                     {automations.items.map(auto => (
-                      <CustomListItem key={auto.id} disablePadding secondaryAction={
-                        <Stack direction="row" spacing={1}>
-                          {/* Navega a la vista de detalles */}
-                          <CommonIconButton actionType='DETAILS' title="Detalles" size="small"
-                            onClick={() => navigate(`/automations/${auto.id}?campaign=${selectedCampaignId}`)} />
+                      <ResponsiveListItem key={auto.id} disablePadding
+                        onClick={() => navigate(`/automations/${auto.id}?campaign=${selectedCampaignId}`)}
+                        actions={[
+                          {
+                            actionType: "DETAILS", label: "Detalles", component: Link,
+                            to: `/automations/${auto.id}?campaign=${selectedCampaignId}`
+                          },
+                          {
+                            actionType: "MODIFY", label: "Modificar", component: Link,
+                            to: `/automations/${auto.id}?campaign=${selectedCampaignId}&edit=true`
+                          },
+                          {
+                            actionType: "DUPLICATE", label: "Duplicar", component: Link,
+                            to: `/automations/create?campaign=${selectedCampaignId}&duplicate_from=${auto.id}`
+                          },
+                          {
+                            actionType: "DISABLE", label: "Eliminar", color: "error", onClick: () => setDeletingAuto(auto)
+                          },
+                        ]}>
+                        <ListItemText
+                          primary={
+                            <Stack spacing={1} direction="row" sx={{ alignItems: "center" }}>
+                              <EnabledIcon active={auto.active} />
+                              <Typography sx={{ fontWeight: "bold" }}>{auto.name}</Typography>
 
-                          <CommonIconButton actionType='MODIFY' title="Modificar" tooltipSize="small" size="small"
-                            onClick={() => navigate(`/automations/${auto.id}?campaign=${selectedCampaignId}&edit=true`)} />
-
-                          <CommonIconButton actionType="DUPLICATE" title="Duplicar" size="small"
-                            onClick={() => navigate(`/automations/create?campaign=${selectedCampaignId}&duplicate_from=${auto.id}`)} />
-
-                          <CommonIconButton actionType="DISABLE" title="Eliminar" color="error" size="small"
-                            onClick={() => handleDelete(auto)} />
-                        </Stack>
-                      }>
-                        <ListItemButton onClick={() => navigate(`/automations/${auto.id}?campaign=${selectedCampaignId}`)}>
-                          <ListItemText
-                            primary={
-                              <Stack spacing={1} sx={{ direction: "row", alignItems: "center" }}>
-                                <EnabledIcon active={auto.active} />
-                                <Typography sx={{ fontWeight: "bold" }}>{auto.name}</Typography>
-
-                                {/* CHIP DE PRIORIDAD */}
-                                <Tooltip title="Prioridad de ejecución (menor número = se ejecuta primero)">
-                                  <Box
-                                    sx={{
-                                      border: '1px solid',             // Agregamos el borde
-                                      borderColor: 'primary.main',     // Color del borde
-                                      color: 'primary.main',           // Color del texto
-                                      bgcolor: 'transparent',          // Fondo transparente
-                                      px: 1,
-                                      py: 0.2,
-                                      borderRadius: 2,
-                                      fontSize: '0.75rem',
-                                      fontWeight: 'bold',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      ml: 1
-                                    }}
-                                  >
-                                    {auto.priority}
-                                  </Box>
-                                </Tooltip>
-                              </Stack>
-                            }
-                            secondary={auto.description || "Sin descripción"}
-                          />
-                        </ListItemButton>
-                      </CustomListItem>
+                              {/* CHIP DE PRIORIDAD */}
+                              <ChipTooltip title="Prioridad de ejecución (menor número = se ejecuta primero)">
+                                <CustomChip label={auto.priority} size="small" />
+                              </ChipTooltip>
+                            </Stack>
+                          }
+                          secondary={auto.description || "Sin descripción"}
+                        />
+                      </ResponsiveListItem>
                     ))}
                   </List>
                   <PaginationComponent {...pageComponentProps} />
@@ -197,6 +183,8 @@ export const AutomationList = () => {
           }
         </Stack>
       </Stack>
-    } />
+      <DisableConfirmDialog idModal='conf-delete-cmp-list' entity={deletingAuto} clearEntity={() => setDeletingAuto(null)}
+        entityTypeName="la automatización" onlyDelete onConfirm={() => handleDelete(deletingAuto!)} />
+    </GenericContainer>
   );
 };
