@@ -75,6 +75,12 @@ export const ActionRow = ({ control, register, onDelete, isOnly, index, fields, 
 
   const actionColor = useMemo(() => getActionColor(currentActionType), [currentActionType]);
 
+  const updateTypeValue = (value?: LeadField | LeadField[] | null) => {
+    if (!value || Array.isArray(value)) onUpdate(`actions.${index}.value`, null)
+    else if (["NUMBER", "INT"].includes(value.field_type.code)) onUpdate(`actions.${index}.value`, 0)
+    else onUpdate(`actions.${index}.value`, null)
+  }
+
   return (
     <Paper
       elevation={0}
@@ -118,7 +124,7 @@ export const ActionRow = ({ control, register, onDelete, isOnly, index, fields, 
             size="small"
             returnField="id"
             getOptionKey={op => `${op.id}`} getOptionLabel={op => op.name}
-            onChangeBefore={() => onUpdate(`actions.${index}.value`, null)}
+            onChangeBefore={updateTypeValue}
             renderOption={({ key, ...props }, op) => (
               <Stack component="li" direction="row" spacing={1} sx={{ alignItems: "center" }} key={key} {...props}>
                 <Typography>{op.name}</Typography>

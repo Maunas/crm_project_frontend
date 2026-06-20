@@ -4,6 +4,7 @@ import { ChipTooltip } from "../details/ChipTooltip"
 import ACTION_ICONS from "./ActionIcons"
 import type { ColorTypes } from "src/types/mui-theme.d"
 import { IconButton, type IconButtonProps } from "@mui/material"
+import type { IconProps } from "react-toastify"
 
 interface CommonIconButtonProps extends Omit<IconButtonProps, "color"> {
     actionType?: ActionType,
@@ -54,4 +55,24 @@ export const CommonIconButton = ({ actionType = "NONE", title, color = "action",
         </ChipTooltip>
 
     )
+}
+
+interface CommonIconProps extends Omit<IconProps, "color" | "type" | "theme"> {
+    actionType?: ActionType,
+    size?: "small" | "medium"
+    color?: ColorTypes | "action" | "disabled",
+}
+export const CommonIcon = ({ actionType = "NONE", color = "action", size = "medium", ...props }: CommonIconProps) => {
+
+    const styleIcon = (actionType: ActionType) => {
+        if (actionType === "NONE") return ACTION_ICONS.NONE
+        if (actionType === "LOADING") return cloneElement(
+            ACTION_ICONS[actionType], { size: (size === "small" ? 18 : 24), color, ...props }
+        )
+        return cloneElement(
+            ACTION_ICONS[actionType], { fontSize: size, color, ...props }
+        )
+    }
+
+    return styleIcon(actionType)
 }

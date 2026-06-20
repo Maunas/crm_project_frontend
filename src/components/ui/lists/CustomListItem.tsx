@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react'
-import { CommonIconButton } from '../buttons/CommonIconButton'
+import { CommonIcon, CommonIconButton } from '../buttons/CommonIconButton'
 import type { ActionType } from '../buttons/ActionIcons'
-import ACTION_ICONS from '../buttons/ActionIcons'
 import type { ColorTypes } from 'src/types/mui-theme.d'
 import { IconButton, ListItem, ListItemAvatar, ListItemButton, ListItemIcon, ListItemText, Menu, MenuItem, Paper, Stack, useMediaQuery, type ListItemOwnProps } from '@mui/material'
 import { alpha, styled } from '@mui/material/styles'
@@ -79,7 +78,7 @@ export const ResponsiveListItem = ({ size = "small", actions, children, onClick,
             <Stack direction="row" sx={{ mr: -1 }}>
                 {actions.map(action => (
                     <CommonIconButton actionType={action.actionType} key={action.label} title={action.label}
-                        onClick={action.onClick} color={action.color ?? "action"} size={size} tooltipSize={size} />
+                        onClick={action.onClick} component={action.component} to={action.to} color={action.color ?? "action"} size={size} tooltipSize={size} />
                 ))}
             </Stack>}>
         <ListItemButton onClick={() => showMenu ? setAnchorEl(menuButton.current) : onClick?.()}
@@ -93,7 +92,9 @@ export const ResponsiveListItem = ({ size = "small", actions, children, onClick,
 export interface ListItemAction {
     actionType: ActionType
     label: string
-    onClick: () => void
+    onClick?: () => void
+    component?: React.ElementType,
+    to?: string,
     color?: ColorTypes | "action"
 }
 
@@ -118,9 +119,15 @@ const ListActionMenu = ({ actions, anchorEl, closeMenu }: ActionGroupProps) => {
                     horizontal: 'right',
                 }}>
                 {actions.map(action => (
-                    <MenuItem key={action.label} onClick={() => { action.onClick(); closeMenu() }}>
+                    <MenuItem key={action.label}
+                        onClick={() => {
+                            if (action.onClick) action.onClick()
+                            closeMenu()
+                        }}
+                        {...(action.component ? { component: action.component, to: action.to } : {})}
+                    >
                         <ListItemIcon color={action.color ?? "action"} >
-                            {ACTION_ICONS[action.actionType]}
+                            <CommonIcon actionType={action.actionType} color={action.color ?? "action"} />
                         </ListItemIcon>
                         <ListItemText>{action.label}</ListItemText>
                     </MenuItem>
