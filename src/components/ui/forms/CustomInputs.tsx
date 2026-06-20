@@ -6,6 +6,7 @@ import { Controller, type Control, type FieldValues, type Path, type PathValue, 
 import { Box, Checkbox, FormControl, FormControlLabel, FormLabel, Grid, IconButton, InputAdornment, InputLabel, OutlinedInput, Rating, Slider, Stack, Switch, TextField, Typography, useColorScheme, type InputProps, type TextFieldProps, } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import { formatDate } from "src/utils/formatters";
 
 interface BasicFormInput<T extends FieldValues> {
   label?: string;
@@ -25,19 +26,38 @@ interface ControlFormInput<T extends FieldValues> extends BasicFormInput<T> {
   startAdornment?: InputProps["startAdornment"]
 }
 
-interface ControlledTextProps<T extends FieldValues> extends ControlFormInput<T> {
-  id?: string;
-  type?: string;
-}
+type ControlledTextProps<T extends FieldValues> =
+  ControlFormInput<T> &
+  Omit<TextFieldProps, "name" | "required" | "onChange" | "id"> & {
+    id?: string | null;
+  };
+
 export const ControlledTextInput = <T extends FieldValues>
-  ({ control, label, name, required = false, errorMessage, autoComplete = "one-time-code", id, type = "text", size = "medium" }: ControlledTextProps<T>) => {
+  ({ control, label, name, required = false, errorMessage, autoComplete = "one-time-code", id, size = "medium", ...props }: ControlledTextProps<T>) => {
+  const { mode } = useColorScheme();
   return (
     <Controller control={control} name={name} render={({ field }) => (
       <>
         <TextField {...field} size={size}
           value={field.value ?? ""}
-          label={label} id={id ?? name} type={type}
+          label={label} id={id ?? name}
           required={required} error={!!errorMessage} autoComplete={autoComplete} fullWidth
+          {...props}
+          slotProps={{
+            ...props.slotProps,
+            input: {
+              ...props.slotProps?.input,
+              startAdornment: props.startAdornment
+            },
+            htmlInput: {
+              ...props.slotProps?.htmlInput,
+              sx: {
+                '&::-webkit-calendar-picker-indicator': {
+                  filter: mode === "dark" ? 'invert(1)' : "none",
+                },
+              },
+            },
+          }}
         />
         {errorMessage && (
           <FormErrorMessage>{errorMessage}</FormErrorMessage>
@@ -253,23 +273,29 @@ type RegisteredTextProps<T extends FieldValues> =
   Omit<TextFieldProps, "name" | "required" | "onChange" | "id"> & {
     id?: string | null;
     onChange?: () => void;
+    setValueAs?: (value: string) => unknown
   };
 
 export const RegisteredTextInput = <T extends FieldValues>
   ({ register, name, label, required = false, errorMessage, autoComplete = "one-time-code", multiline = false,
-    id = null, type = "text", size = "medium", onChange = () => { }, ...props }: RegisteredTextProps<T>) => {
+    id = null, type = "text", size = "medium", onChange = () => { }, setValueAs = (value) => value, slotProps, ...props }: RegisteredTextProps<T>) => {
 
   const { mode } = useColorScheme();
 
   return (
     <>
-      <TextField {...register(name)} label={label ?? name} id={id ?? name} type={type}
+      <TextField {...register(name, { setValueAs })} label={label ?? name} id={id ?? name} type={type}
         onChange={e => { register(name).onChange(e); onChange() }}
         required={required} error={!!errorMessage} autoComplete={autoComplete} multiline={multiline}
         fullWidth size={size}
         slotProps={{
-          input: { startAdornment: props.startAdornment },
+          ...slotProps,
+          input: {
+            ...slotProps?.input,
+            startAdornment: props.startAdornment
+          },
           htmlInput: {
+            ...slotProps?.htmlInput,
             sx: {
               '&::-webkit-calendar-picker-indicator': {
                 filter: mode === "dark" ? 'invert(1)' : "none",
@@ -285,3 +311,20 @@ export const RegisteredTextInput = <T extends FieldValues>
     </>
   );
 };
+
+
+const DATE_INPUT_TYPE = {
+  DATE_TIME: { inputType: "datetime-local", format: "YYYY-MM-DD HH:mm:ss" },
+  TIME: { inputType: "time", format: "HH:mm:ss" },
+  DATE: { inputType: "date", format: "YYYY-MM-DD" },
+}
+
+type RegisteredDateInputProps<T extends FieldValues> =
+  Omit<RegisteredTextProps<T>, "type"> & { dateType?: keyof typeof DATE_INPUT_TYPE }
+
+export const RegisteredDateInput = <T extends FieldValues>({ dateType = "DATE", ...props }: RegisteredDateInputProps<T>) => {
+
+  return <RegisteredTextInput setValueAs={(value) => formatDate(value, "custom", DATE_INPUT_TYPE[dateType].format)}
+    type={DATE_INPUT_TYPE[dateType].inputType} {...props}
+  />
+}

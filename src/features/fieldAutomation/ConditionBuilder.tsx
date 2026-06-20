@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Box, Button, Paper, Typography, ToggleButton, ToggleButtonGroup, IconButton, Tooltip, Collapse } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -36,7 +36,7 @@ const createEmptyGroup = (): RuleGroup => ({
   rules: [createEmptyCondition()],
 });
 
-export const ConditionBuilder: React.FC<ConditionBuilderProps> = ({
+export const ConditionBuilder = memo(({
   group,
   onChange,
   onDelete,
@@ -44,7 +44,7 @@ export const ConditionBuilder: React.FC<ConditionBuilderProps> = ({
   isRoot = false,
   fields = [],
   readOnly = false,
-}) => {
+}: ConditionBuilderProps) => {
   const handleOperatorChange = (
     _: React.MouseEvent<HTMLElement>,
     newOperator: LogicalOperatorEnum | null
@@ -209,4 +209,4 @@ export const ConditionBuilder: React.FC<ConditionBuilderProps> = ({
       )}
     </Paper>
   );
-};
+})

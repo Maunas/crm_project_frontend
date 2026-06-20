@@ -14,10 +14,12 @@ interface CommonIconButtonProps extends Omit<IconButtonProps, "color"> {
     to?: string,
     color?: ColorTypes | "action" | "disabled",
     loading?: boolean
-    noTooltip?: boolean
+    noTooltip?: boolean,
+    border?: boolean
 }
 
-export const CommonIconButton = ({ actionType = "NONE", title, color = "action", size = "medium", noTooltip = false, tooltipSize = "medium", loading = false, ...props }: CommonIconButtonProps) => {
+export const CommonIconButton = ({ actionType = "NONE", title, color = "action", size = "medium",
+    noTooltip = false, tooltipSize = "medium", border = false, loading = false, ...props }: CommonIconButtonProps) => {
 
     const styleIcon = (actionType: ActionType) => {
         if (actionType === "NONE") return ACTION_ICONS.NONE
@@ -34,9 +36,11 @@ export const CommonIconButton = ({ actionType = "NONE", title, color = "action",
     const chipColor = color === "action" ? "primary"
         : color === "disabled" ? "contrast" : color
 
+    const borderStyle = border ? { border: '1px solid', borderColor: 'divider' } : {}
+
     if (noTooltip) return (
         <IconButton edge="end" aria-label={title} size={size} disabled={loading}
-            {...props} sx={{ border: '1px solid', borderColor: 'divider', ...props.sx }}>
+            {...props} sx={{ ...borderStyle, ...props.sx }}>
             {actionIcon}
         </IconButton>
     )
@@ -44,7 +48,7 @@ export const CommonIconButton = ({ actionType = "NONE", title, color = "action",
     return (
         <ChipTooltip title={title} color={chipColor} size={tooltipSize}>
             <IconButton edge="end" aria-label={title} size={size} disabled={loading}
-                {...props} sx={{ border: '1px solid', borderColor: 'divider', ...props.sx }}>
+                {...props} sx={{ ...borderStyle, ...props.sx }}>
                 {actionIcon}
             </IconButton>
         </ChipTooltip>

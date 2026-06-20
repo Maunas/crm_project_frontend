@@ -90,7 +90,7 @@ export const AutomationPage = () => {
           >
             <Stack direction="row" spacing={2} useFlexGap sx={{ justifyContent: "space-between", flexWrap: "wrap" }}>
               <Stack direction="row" sx={{ alignItems: 'center', rowGap: 1, columnGap: 2, flexWrap: "wrap" }}>
-                <CommonIconButton actionType='RETURN' size="small" noTooltip
+                <CommonIconButton actionType='RETURN' size="small" noTooltip border
                   component={Link} to={`/automations${campaignId ? `?campaign=${campaignId}` : ""}`} />
                 <Typography variant="h2" component="h1" >
                   {isEditing ? initialData?.name : 'Nueva Automatización'}

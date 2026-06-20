@@ -1,104 +1,113 @@
-import React from 'react';
-import { Box, Button, Paper, Typography, } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import { v4 as uuidv4 } from 'uuid';
+import React, { memo } from 'react';
+import { Accordion, AccordionDetails, AccordionSummary, Divider, Stack, Typography, } from '@mui/material';
 import { ActionTypeEnum } from 'src/types/automation';
-import type { AutomationAction } from 'src/types/automation';
+import type { AutomationAction, FieldAutomationPost } from 'src/types/automation';
 import { ActionRow } from './ActionRow';
 import type { LeadField } from 'src/types/leadFields';
+import { useFieldArray, type Control, type Path, type UseFormRegister, type UseFormSetValue } from 'react-hook-form';
+import CommonButton from 'src/components/ui/buttons/CommonButton';
+import GenericPaper from 'src/components/layout/container/GenericPaper';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import CustomChip from 'src/components/ui/details/CustomChip';
+import { CustomAlert } from 'src/components/feedback/CustomAlert';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 
 interface ActionBuilderProps {
-  actions: AutomationAction[];
-  onChange: (actions: AutomationAction[]) => void;
-  fields: LeadField[];
+  leadFields: LeadField[];
   readOnly?: boolean;
+  control: Control<FieldAutomationPost, unknown, FieldAutomationPost>,
+  register: UseFormRegister<FieldAutomationPost>,
+  setValue: UseFormSetValue<FieldAutomationPost>
 }
 
 const createEmptyAction = (): AutomationAction => ({
-  id: uuidv4(),
   type: ActionTypeEnum.SET_VALUE,
   target_field_id: null,
   value: null,
 });
 
-export const ActionBuilder: React.FC<ActionBuilderProps> = ({
-  actions,
-  onChange,
-  fields,
-  readOnly = false,
-}) => {
-  const handleAddAction = () => {
-    onChange([...actions, createEmptyAction()]);
-  };
+export const ActionBuilder = memo(({ control, register, leadFields, readOnly = false, setValue }: ActionBuilderProps) => {
 
-  const handleUpdateAction = (index: number, updatedAction: AutomationAction) => {
-    const newActions = [...actions];
-    newActions[index] = updatedAction;
-    onChange(newActions);
+  const { fields, append, remove } = useFieldArray({ name: "actions", control, keyName: "idField" })
+
+  const handleAddAction = () => {
+    append(createEmptyAction())
   };
 
   const handleDeleteAction = (index: number) => {
-    if (actions.length > 1) {
-      const newActions = actions.filter((_, i) => i !== index);
-      onChange(newActions);
-    }
+    if (fields.length > 1) { remove(index) }
+  };
+
+  const handleUpdateAction = (name: Path<FieldAutomationPost>, value?: string | number | boolean | null) => {
+    setValue(name, value)
   };
 
   return (
-    <Paper
-      elevation={0}
-      sx={{
-        p: 2,
-        borderLeft: 4,
-        borderColor: 'success.main',
-        bgcolor: 'background.paper',
-        borderRadius: 2,
-      }}
-    >
-      <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 2 }}>
-        Acciones a ejecutar
-      </Typography>
-
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        {actions.map((action, index) => (
-          <Box key={action.id}>
-            {index > 0 && (
-              <Typography
-                variant="caption"
-                sx={{
-                  display: 'block',
-                  textAlign: 'center',
-                  py: 1,
-                  color: 'text.secondary',
-                  fontWeight: 600,
-                }}
-              >
-                — LUEGO —
-              </Typography>
-            )}
-            <ActionRow
-              action={action}
-              onUpdate={(updated) => handleUpdateAction(index, updated)}
-              onDelete={() => handleDeleteAction(index)}
-              isOnly={actions.length === 1}
-              index={index}
-              fields={fields}
-              readOnly={readOnly}
-            />
-          </Box>
-        ))}
-      </Box>
-
-      {!readOnly && (<Button
-        size="small"
-        startIcon={<AddIcon />}
-        onClick={handleAddAction}
-        variant="outlined"
-        color="success"
-        sx={{ mt: 2 }}
-      >
-        Agregar acción
-      </Button>)}
-    </Paper>
+    <Accordion disableGutters defaultExpanded
+      component={GenericPaper} elevation={0} sx={{ p: 0, borderRadius: 1 }}>
+      <AccordionSummary
+        expandIcon={<ExpandMoreIcon />}
+        aria-controls={`gen-info-content`}
+        id={`gen-info-header`}
+        sx={{
+          '&:hover': { bgcolor: 'action.hover' },
+        }}>
+        <Stack direction="row" spacing={2}>
+          <Typography component="span" sx={{ fontWeight: 500 }}>Acciones a Ejecutar</Typography>
+          <CustomChip
+            label={`${fields.length} acci${fields.length > 1 ? "ones" : "ón"}`}
+            size="small"
+            chipColor="success"
+          />
+        </Stack>
+      </AccordionSummary>
+      <AccordionDetails sx={{ pt: 0 }}>
+        <Divider sx={{ mb: 2, mx: -2 }} />
+        <CustomAlert severity="success" sx={{ mb: 2 }} icon={<PlayArrowIcon />}>
+          Las acciones se ejecutarán en orden cuando las condiciones se cumplan.
+        </CustomAlert>
+        <Stack spacing={2} sx={{ alignItems: "start" }}>
+          <Stack spacing={1} sx={{ width: "100%" }}>
+            {fields.map((action, index) => (
+              <React.Fragment key={action.idField}>
+                {index > 0 && (
+                  <Typography
+                    variant="subtitle2"
+                    sx={{
+                      display: 'block',
+                      textAlign: 'center',
+                      color: 'text.secondary',
+                      fontWeight: 600,
+                      pt: 1
+                    }}
+                  >
+                    — LUEGO —
+                  </Typography>
+                )}
+                <ActionRow
+                  control={control}
+                  register={register}
+                  onDelete={() => handleDeleteAction(index)}
+                  isOnly={fields.length === 1}
+                  index={index}
+                  fields={leadFields}
+                  readOnly={readOnly}
+                  onUpdate={handleUpdateAction}
+                />
+              </React.Fragment>
+            ))}
+          </Stack>
+          {!readOnly && (<CommonButton
+            actionType='CREATE'
+            size="small"
+            onClick={handleAddAction}
+            variant="outlined"
+            color="success">
+            Agregar acción
+          </CommonButton>)}
+        </Stack>
+      </AccordionDetails>
+    </Accordion>
   );
-};
+}
+)

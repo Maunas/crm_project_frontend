@@ -1,8 +1,7 @@
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { Typography, Divider, Alert, Paper, alpha, Stack, Accordion, AccordionSummary, AccordionDetails, Grid, } from '@mui/material';
+import { Typography, Divider, Paper, alpha, Stack, Accordion, AccordionSummary, AccordionDetails, Grid, } from '@mui/material';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { v4 as uuidv4 } from 'uuid';
 import { TriggerEventEnum, LogicalOperatorEnum, ConditionOperatorEnum, ActionTypeEnum, TRIGGER_EVENT_LABELS, } from 'src/types/automation';
@@ -17,6 +16,7 @@ import { useForm, useWatch, type Control } from 'react-hook-form';
 import { ControlledNumber, RegisteredTextInput } from 'src/components/ui/forms/CustomInputs';
 import { ControlledAutocomplete } from 'src/components/ui/forms/CustomMultipleInputs';
 import { ChipTooltip } from 'src/components/ui/details/ChipTooltip';
+import { CustomAlert } from 'src/components/feedback/CustomAlert';
 
 // ==========================================
 // FUNCIONES DE INICIALIZACIÓN Y REHIDRATACIÓN
@@ -30,7 +30,7 @@ const createInitialConditions = (): RuleGroup => ({
 });
 
 const createInitialActions = (): AutomationAction[] => [
-  { id: uuidv4(), type: ActionTypeEnum.SET_VALUE, target_field_id: null, value: null },
+  { type: ActionTypeEnum.SET_VALUE, target_field_id: null, value: null },
 ];
 
 // REHIDRATAR: Le devuelve los IDs y el 'type' a la data que viene del Backend
@@ -53,13 +53,6 @@ const rehydrateConditions = (node?: RuleCondition | RuleGroup): RuleCondition | 
   }
 };
 
-const rehydrateActions = (actions: AutomationAction[]): AutomationAction[] => {
-  return (actions ?? []).map((action) => ({
-    ...action,
-    id: action.id ?? uuidv4(),
-  }));
-};
-
 interface AutomationFormProps {
   initialData?: FieldAutomationDetailed | null; // Si viene data, estamos editando
   campaignId: number;
@@ -80,7 +73,7 @@ export const AutomationForm: React.FC<AutomationFormProps> = ({ initialData, onS
       return {
         ...initialData,
         conditions: rehydrateConditions(initialData.conditions),
-        actions: rehydrateActions(initialData.actions),
+        actions: initialData.actions,
       } as FieldAutomationPost
     }
     return {
@@ -94,7 +87,7 @@ export const AutomationForm: React.FC<AutomationFormProps> = ({ initialData, onS
     } as FieldAutomationPost
   }, [initialData, campaignId])
 
-  const { register, control, handleSubmit } = useForm<FieldAutomationPost>({ defaultValues })
+  const { register, control, handleSubmit, setValue } = useForm<FieldAutomationPost>({ defaultValues })
 
   const defaultConditions = useMemo(() =>
     initialData ? rehydrateConditions(initialData.conditions) as RuleGroup
@@ -103,23 +96,12 @@ export const AutomationForm: React.FC<AutomationFormProps> = ({ initialData, onS
 
   const [conditions, setConditions] = useState<RuleGroup>(defaultConditions)
 
-  const defaultActions = useMemo(() =>
-    initialData ? rehydrateActions(initialData.actions)
-      : createInitialActions()
-    , [initialData])
-
-  const [actions, setActions] = useState<AutomationAction[]>(defaultActions)
-
-  const handleConditionsChange = (conditions: RuleGroup) => {
+  const handleConditionsChange = useCallback((conditions: RuleGroup) => {
     setConditions(conditions);
-  };
-
-  const handleActionsChange = (actions: AutomationAction[]) => {
-    setActions(actions);
-  };
+  }, [])
 
   const validateAutomation = useCallback(
-    (automation: FieldAutomationPost, conditions: RuleGroup, actions: AutomationAction[]): string[] => {
+    (automation: FieldAutomationPost, conditions: RuleGroup): string[] => {
       const errors: string[] = [];
 
       if (!automation.name.trim()) {
@@ -145,7 +127,7 @@ export const AutomationForm: React.FC<AutomationFormProps> = ({ initialData, onS
       validateConditions(conditions);
 
       // Validar acciones
-      for (const action of actions) {
+      for (const action of automation.actions) {
         if (action.target_field_id === null) {
           errors.push('Todas las acciones deben tener un campo destino');
         }
@@ -161,9 +143,9 @@ export const AutomationForm: React.FC<AutomationFormProps> = ({ initialData, onS
     }, [])
 
   const handleSave = useCallback(
-    async (automation: FieldAutomationPost, conditions: RuleGroup, actions: AutomationAction[]) => {
-      console.log({ ...automation, conditions, actions })
-      const errors = validateAutomation(automation, conditions, actions);
+    async (automation: FieldAutomationPost, conditions: RuleGroup) => {
+      console.log({ ...automation, conditions })
+      const errors = validateAutomation(automation, conditions);
       if (errors.length > 0) {
         showToast(errors[0], "error")
         return;
@@ -184,7 +166,7 @@ export const AutomationForm: React.FC<AutomationFormProps> = ({ initialData, onS
         }),
       });
 
-      const cleanActions = actions.map(action => ({
+      const cleanActions = automation.actions.map(action => ({
         type: action.type,
         target_field_id: action.target_field_id,
         ...(action.value !== null && { value: action.value }),
@@ -212,8 +194,8 @@ export const AutomationForm: React.FC<AutomationFormProps> = ({ initialData, onS
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const submitHandler = useCallback(
-    handleSubmit(data => handleSave(data, conditions, actions)),
-    [handleSubmit, handleSave, conditions, actions])
+    handleSubmit(data => handleSave(data, conditions)),
+    [handleSubmit, handleSave, conditions])
 
   useEffect(() => {
     if (submitRef) {
@@ -266,7 +248,7 @@ export const AutomationForm: React.FC<AutomationFormProps> = ({ initialData, onS
       <Stack spacing={2} sx={{ py: 3, px: 2 }}>
         {/* Header */}
         {isDuplicating && (
-          <Alert
+          <CustomAlert
             severity="info"
             icon={<ContentCopyIcon />}
             sx={{ border: '1px solid', borderColor: 'info.light', color: "text.primary" }}
@@ -275,7 +257,7 @@ export const AutomationForm: React.FC<AutomationFormProps> = ({ initialData, onS
             <Typography variant="body2">
               Los datos fueron copiados de otra automatización. Revisa las condiciones y haz clic en <b>Guardar</b> para confirmar la creación de esta nueva regla.
             </Typography>
-          </Alert>
+          </CustomAlert>
         )}
         <Paper
           elevation={1}
@@ -394,10 +376,10 @@ export const AutomationForm: React.FC<AutomationFormProps> = ({ initialData, onS
           </AccordionSummary>
           <AccordionDetails sx={{ pt: 0 }}>
             <Divider sx={{ mb: 2, mx: -2 }} />
-            <Alert severity="info" sx={{ mb: 2, color: "text.primary" }} >
+            <CustomAlert severity="info" sx={{ mb: 2, color: "text.primary" }} >
               Define las condiciones que deben cumplirse para ejecutar las acciones. Puedes crear
               grupos anidados con operadores Y/O.
-            </Alert>
+            </CustomAlert>
             <ConditionBuilder
               group={conditions}
               onChange={handleConditionsChange}
@@ -410,35 +392,10 @@ export const AutomationForm: React.FC<AutomationFormProps> = ({ initialData, onS
 
 
         {/* Actions Section */}
-        <Accordion disableGutters defaultExpanded
-          component={GenericPaper} elevation={0} sx={{ p: 0, borderRadius: 1 }}>
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon />}
-            aria-controls={`gen-info-content`}
-            id={`gen-info-header`}
-            sx={{
-              '&:hover': { bgcolor: 'action.hover' },
-            }}>
-            <Stack direction="row" spacing={2}>
-              <Typography component="span" sx={{ fontWeight: 500 }}>Acciones</Typography>
-              <CustomChip
-                label={`${actions.length} acción${actions.length > 1 ? "es" : ""}`}
-                size="small"
-                chipColor="success"
-              />
-            </Stack>
-          </AccordionSummary>
-          <AccordionDetails sx={{ pt: 0 }}>
-            <Divider sx={{ mb: 2, mx: -2 }} />
-            <Alert severity="success" sx={{ mb: 2, color: "text.primary" }} icon={<PlayArrowIcon />}>
-              Las acciones se ejecutarán en orden cuando las condiciones se cumplan.
-            </Alert>
-            <ActionBuilder actions={actions} onChange={handleActionsChange} fields={fields} readOnly={readOnly} />
-          </AccordionDetails>
-        </Accordion>
+        <ActionBuilder control={control} register={register} leadFields={fields} readOnly={readOnly} setValue={setValue} />
 
         {/* Preview Section */}
-        <Description control={control} conditions={conditions} actions={actions} fields={fields} />
+        <Description control={control} conditions={conditions} fields={fields} />
       </Stack >
     </form>
   );
@@ -447,13 +404,13 @@ export const AutomationForm: React.FC<AutomationFormProps> = ({ initialData, onS
 interface DescriptionProps {
   control: Control<FieldAutomationPost, unknown, FieldAutomationPost>,
   conditions: RuleGroup,
-  actions: AutomationAction[],
   fields: LeadField[]
   ,
 }
 //Separado para evitar que useWatch laguee el formulario entero.
-const Description = memo(({ control, conditions, actions, fields }: DescriptionProps) => {
+const Description = memo(({ control, conditions, fields }: DescriptionProps) => {
   const triggerEvents = useWatch({ control, name: "trigger_events" })
+  const actions = useWatch({ control, name: "actions" })
 
   const generateDescription = useMemo(() => {
     const triggers = triggerEvents
