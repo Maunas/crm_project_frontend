@@ -15,6 +15,7 @@ import { SignupFormPage } from "features/auth/SignupForm";
 import MainLayout from "./app/mainLayout";
 import { NotFound } from "./pages/NotFound";
 import { createBrowserRouter, Outlet } from "react-router-dom";
+import { ImportLeadsPage } from "./features/lead/ImportLeadsPage";
 
 export const router = createBrowserRouter([
     {
@@ -59,6 +60,10 @@ export const router = createBrowserRouter([
                 ]
             },
 
+            {
+                path: "/leads/import",
+                Component: ImportLeadsPage
+            },
             {
                 path: "/campaigns/",
                 Component: WorkspaceList

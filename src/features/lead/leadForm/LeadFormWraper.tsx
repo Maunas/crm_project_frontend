@@ -63,7 +63,7 @@ export const CreateLeadFormPage = () => {
     }, [nav])
 
     return (
-        <GenericContainer containerSize="xl">
+        <GenericContainer containerSize="lg">
             <Stack spacing={3}>
                 <Typography variant="h1">Nuevo Lead</Typography>
                 <Stack spacing={2}>

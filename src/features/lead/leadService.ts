@@ -78,3 +78,56 @@ export const deleteView = async (id: number): Promise<DeleteResponse> => {
   const view = await axiosCRM.delete(`lead_views/${id}`);
   return view.data;
 };
+
+
+export const exportLeads = async (campaignId: number): Promise<void> => {
+  const response = await axiosCRM.get(`export/${campaignId}`, {
+    responseType: 'blob', // Crucial para archivos
+  });
+
+  // 1. Intentar extraer el nombre del archivo de los headers del backend
+  let filename = `leads_campana_${campaignId}.xlsx`; // Fallback de seguridad
+  const disposition = response.headers['content-disposition'];
+
+  if (disposition && disposition.indexOf('attachment') !== -1) {
+    const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+    const matches = filenameRegex.exec(disposition);
+    if (matches != null && matches[1]) {
+      // Limpiamos las comillas que puedan venir del backend
+      filename = matches[1].replace(/['"]/g, ''); 
+    }
+  }
+
+  // 2. Crea una URL para el blob y fuerza la descarga en el navegador
+  const url = window.URL.createObjectURL(new Blob([response.data]));
+  const link = document.createElement('a');
+  link.href = url;
+  
+  // 3. Asignamos el nombre dinámico que extrajimos
+  link.setAttribute('download', filename); 
+  document.body.appendChild(link);
+  link.click();
+
+  // Limpieza del DOM
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
+};
+
+//Detección de headers
+export const detectImportHeaders = async (file: File): Promise<{ headers: string[] }> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    // Asumiendo que configuraste tu axios para manejar FormData
+    const res = await axiosCRM.post(`import/detect-headers`, formData);
+    return res.data;
+};
+
+//Procesa import
+export const processImport = async (campaignId: number, file: File, mapping: Record<string, string>): Promise<any> => {
+    const formData = new FormData();
+    formData.append("campaign_id", campaignId.toString());
+    formData.append("mapping", JSON.stringify(mapping));
+    formData.append("file", file);
+    const res = await axiosCRM.post(`import/process`, formData);
+    return res.data;
+};
