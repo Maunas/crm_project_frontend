@@ -16,12 +16,12 @@ import { useModal } from 'src/hooks/useModal'
 import type { LeadFilter, LeadListParams, ListParams, OrderParams, Paginable } from 'src/types/shared'
 import type { Lead, LeadView, LeadViewParams } from 'src/types/leads'
 import type { LeadField } from 'src/types/leadFields'
-import { bulkDeleteLead, createView, getFilteredLeads, getLeads, updateView } from '../leadService'
+import { bulkDeleteLead, createView, getFilteredLeads, getLeads, updateView, exportLeads } from '../leadService'
 import { getLeadFields } from 'src/features/leadFields/leadFieldServices'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { useLeadNavigation } from '../stores/LeadNavigationContext'
-import { Link as RouterLink, useSearchParams } from 'react-router-dom'
-import { Typography, Stack } from '@mui/material'
+import { Link as RouterLink, useNavigate, useSearchParams } from 'react-router-dom'
+import { Typography, Stack, ButtonGroup } from '@mui/material'
 
 const DEFAULT_N_OF_FIELDS = 6
 
@@ -29,6 +29,8 @@ export const LeadListPage = () => {
 
     const [params, setParams] = useSearchParams()
     const { modalProps } = useModal()
+
+    const navigate = useNavigate()
 
     const [leads, setLeads] = useState<Paginable<Lead> | null>(null)
 
@@ -286,17 +288,55 @@ export const LeadListPage = () => {
 
     const [bulkDeleteOpen, setBulkDeleteOpen] = useState<boolean>(false)
 
+
+    //Exportar Leads
+    const handleExport = useCallback(async () => {
+        if (!campaignId) return;
+        try {
+            await exportLeads(Number(campaignId));
+        } catch (error) {
+            console.error("Error al exportar los leads", error);
+        }
+    }, [campaignId]);
+
+    const { fnWithLoading: exportLoad, loading: exporting } = useLoading(handleExport)
+
+    //Importar Leads
+    const handleImport = useCallback(() => {
+        if (!campaignId) return;
+        navigate(`/leads/import?campaign=${campaignId}`);
+    }, [campaignId, navigate]);
+
     return (
         <GenericContainer containerSize="xl">
             <Stack spacing={3} sx={{ minWidth: 0 }}>
                 <Stack useFlexGap direction="row" sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }} spacing={2}>
                     <Typography variant="h1">Lista de Leads</Typography>
-                    {areThereLeads &&
-                        <CommonButton actionType='CREATE' variant="contained" color="primary"
-                            component={RouterLink} to={`/leads/new?workspace=${workspaceId}&campaign=${campaignId}`} onlyTooltip>
-                            Agregar
-                        </CommonButton>
-                    }
+                    <ButtonGroup>
+                        <CommonButton
+                            actionType='IMPORT'
+                            variant="outlined"
+                            color="secondary"
+                            onClick={handleImport}
+                            onlyTooltip
+                        >Importar Leads</CommonButton>
+                        {areThereLeads &&
+                            <CommonButton
+                                actionType='DOWNLOAD'
+                                loading={exporting}
+                                variant="outlined"
+                                color="secondary"
+                                onClick={exportLoad}
+                                onlyTooltip
+                            >Exportar Leads</CommonButton>
+                        }
+                        {areThereLeads &&
+                            <CommonButton actionType='CREATE' variant="contained" color="primary"
+                                component={RouterLink} to={`/leads/new?workspace=${workspaceId}&campaign=${campaignId}`} onlyTooltip>
+                                Agregar
+                            </CommonButton>
+                        }
+                    </ButtonGroup>
                 </Stack>
                 <Stack spacing={2} sx={{ minWidth: 0 }}>
                     <LeadListOptions areThereLeads={areThereLeads} campaignId={campaignId} modalProps={modalProps} campaignSelectorProps={campaignSelectorProps} presentationProps={presentationProps}
@@ -323,7 +363,7 @@ export const LeadListPage = () => {
                 <GenericModal idModal="columns_selector" {...modalProps} buttonText="Modificar Columnas" maxWidth="md" fullWidth showButton={false}>
                     <LeadColumnSelector originalList={leadFields} selectedFieldIds={selectedFieldIds!} handleSelectedFieldIds={handleSelectedFieldIds} handleClose={modalProps.handleClose} showField="name" />
                 </GenericModal>
-            </Stack>
-        </GenericContainer>
+            </Stack >
+        </GenericContainer >
     )
 }

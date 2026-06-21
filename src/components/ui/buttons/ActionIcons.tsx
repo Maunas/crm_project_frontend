@@ -22,6 +22,8 @@ import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import DownloadIcon from '@mui/icons-material/Download';
+import UploadIcon from '@mui/icons-material/Upload'
 
 const ACTION_ICONS = {
     NONE: <></>,
@@ -48,7 +50,9 @@ const ACTION_ICONS = {
     DRAG: <DragIndicatorIcon sx={{ display: "block" }} />,
     EDIT_TEXT: <DriveFileRenameOutlineIcon sx={{ display: "block" }} />,
     DUPLICATE: <ContentCopyIcon sx={{ display: "block" }} />,
-    AUTOMATE: <AutoFixHighIcon sx={{ display: "block" }} />
+    AUTOMATE: <AutoFixHighIcon sx={{ display: "block" }} />,
+    DOWNLOAD: <DownloadIcon sx={{ display: "block" }} />,
+    IMPORT: <UploadIcon sx={{ display: "block" }} />
 }
 
 export type ActionType = keyof typeof ACTION_ICONS

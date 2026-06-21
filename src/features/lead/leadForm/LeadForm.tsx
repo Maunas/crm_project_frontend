@@ -200,7 +200,7 @@ const LeadFormFieldType = ({ register, control, name, leadField, relatedLeads, s
             return (<LeadFormRelatedLead control={control} name={name} options={relatedLeads}
                 label={label} required={required} errorMessage={errorMessage} showAdornment />)
         case "FILE":
-            return (<LeadFormFile register={register} name={name} required={required}
+            return (<LeadFormFile register={register} name={name} label={label} required={required}
                 errorMessage={errorMessage} showAdornment />)
         case "SELECTOR":
             return (<LeadFormSelector control={control} name={name} options={selectors}
