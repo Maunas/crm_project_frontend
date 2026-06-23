@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { ControlledAutocomplete } from "shared/ui/forms/CustomMultipleInputs"
 import { RegisteredTextInput } from "shared/ui/forms/CustomInputs"
 import { FormErrorMessage } from "shared/ui/forms/FormFeedback"
@@ -52,15 +52,16 @@ export const CreateCampaignFormSidebar = ({ handleSidebar, workspace }: CreateCa
 
     const { palette } = useTheme()
 
-    const submit = (data: CampaignPost) => {
+    const submit = useCallback((data: CampaignPost) => {
         return createCampaign(data)
             .then(res => {
                 //Busca el workspace y muestra su detalle.
                 showToast(`Campaña "${res.name}" creada con éxito`)
+                if (!res.workspace_id) return
                 getWorkspace(res.workspace_id)
                     .then(wsp => handleSidebar("DETAILS_WSP", wsp))
             })
-    }
+    }, [handleSidebar])
     const handleClose = () => handleSidebar("DETAILS_WSP", workspace)
 
     return <SidebarContentWrapper title="Nueva Campaña" subtitle={workspace.name}
@@ -68,6 +69,8 @@ export const CreateCampaignFormSidebar = ({ handleSidebar, workspace }: CreateCa
         <CampaignForm submit={submit} onCancel={handleClose} workspaceId={workspace.id} />
     </SidebarContentWrapper>
 }
+
+const AUDIENCES = ["B2C", "B2B"]
 
 interface CampaignProps {
     existingCmp?: CampaignDetailed,
@@ -104,7 +107,8 @@ export const CampaignForm = ({ existingCmp, workspaceId, submit, onCancel }: Cam
         name: existingCmp?.name,
         description: existingCmp?.description,
         workspace_id: existingCmp?.workspace_id ?? workspaceId ?? undefined,
-        lead_flow_id: existingCmp?.lead_flow_id
+        lead_flow_id: existingCmp?.lead_flow_id,
+        target_audience: existingCmp?.target_audience ?? undefined,
     }), [existingCmp, workspaceId])
 
     const { register, handleSubmit, reset, control, formState: { errors }, setError, getValues }
@@ -161,6 +165,14 @@ export const CampaignForm = ({ existingCmp, workspaceId, submit, onCancel }: Cam
                         <RegisteredTextInput name="name" register={register} label="Nombre"
                             required errorMessage={errors.name?.message} />
                     </Grid>
+
+                    {!existingCmp &&
+                        <Grid size="grow" sx={{ minWidth: "20rem" }}>
+                            <ControlledAutocomplete control={control} label="Audiencia Objetivo" name="target_audience" options={AUDIENCES}
+                                getOptionLabel={option => option} getOptionKey={option => `${option}`}
+                                errorMessage={errors?.target_audience?.message} />
+                        </Grid>
+                    }
                     <Grid size="grow" sx={{ minWidth: "20rem" }}>
                         <RegisteredTextInput name="description" register={register} label="Descripción"
                             errorMessage={errors.description?.message} multiline />

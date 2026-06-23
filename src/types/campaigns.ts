@@ -6,6 +6,7 @@ export interface CampaignPost {
   description?: string;
   workspace_id: number;
   lead_flow_id?: number;
+  target_audience?: string | null;
 }
 export interface Campaign extends Omit<CampaignPost, "workspace_id"> {
   id: number;

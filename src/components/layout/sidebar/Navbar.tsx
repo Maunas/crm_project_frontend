@@ -9,6 +9,7 @@ import StoreIcon from '@mui/icons-material/Store';
 import LabelIcon from '@mui/icons-material/Label';
 import WorkIcon from '@mui/icons-material/Work';
 import TuneIcon from '@mui/icons-material/Tune';
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 
 const options = [
   { name: "Leads", icon: <PersonIcon />, link: "/leads" },
@@ -17,6 +18,7 @@ const options = [
   { name: "Nomencladores", icon: <LabelIcon />, link: "/nomenclators" },
   { name: "Propiedades de Lead", icon: <TuneIcon />, link: "/lead-properties" },
   { name: "Automatizaciones", icon: <AutoFixHighIcon />, link: "/automations" },
+  { name: "Auditoría de Sistema", icon: <VerifiedUserIcon />, link: "/audit-logs" }
 ]
 
 interface NavbarProps {

@@ -1,15 +1,19 @@
 import type {
     LeadField, LeadFieldDetailed, LeadFieldPost, LeadFieldType, LeadFieldTypeDetailed, LeadFieldTemplate, LeadFieldSection, LeadFieldSectionDetailed,
-    InputMaskTemplate,
-    LeadFieldsReorderBody
-} from "../../types/leadFields";
-import type { BulkDeleteResponse, BulkEnableResponse, DeleteResponse, EnableResponse, ListParams, Paginable } from "../../types/shared";
+    InputMaskTemplate, LeadFieldsReorderBody, ExcelFormulaTemplate
+} from "src/types/leadFields";
+import type { BulkDeleteResponse, BulkEnableResponse, DeleteResponse, EnableResponse, ListParams, Paginable } from "src/types/shared";
 import { orderListByField } from "src/utils/lists";
 import axiosCRM from "src/lib/axios";
 
 interface LeadFieldParams extends ListParams {
     campaign_id?: number;
 }
+
+export const getExcelFormulaTemplates = async (): Promise<ExcelFormulaTemplate[]> => {
+    const tmp = await axiosCRM.get(`templates/excel_formulas`);
+    return tmp.data;
+};
 
 export const getLeadFields = async <T extends LeadFieldParams>(
     params?: T,

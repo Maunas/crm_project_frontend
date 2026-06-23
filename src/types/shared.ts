@@ -32,9 +32,23 @@ export interface Metadata {
   updater?: UserData | null;
 }
 
+export interface Creator {
+  id: number;
+  name: string | null;
+  email: string | null;
+}
+
+export interface Updater {
+  id: number;
+  name: string | null;
+  email: string | null;
+}
+
 /**
  * Contienen los parámetros permitidos de cada request.
  */
+
+
 export interface OrderParams {
   order_by?: number | string | null,
   ascending?: boolean
@@ -66,6 +80,12 @@ export interface FlowStateParams extends LeadFlowParams {
 
 export interface FieldAutomationParams extends ListParams {
   campaign_id?: number
+}
+
+export interface SystemAuditParams extends ListParams {
+  start_date?: string,
+  end_date?: string,
+  date_field?: string,
 }
 
 /**
@@ -142,6 +162,8 @@ export interface Dictionary {
   "lead_states_categories"?: DictionaryItem[],
   "lead_view_visibilities"?: DictionaryItem[],
   "automation_compatibility_matrix"?: AutomationCompatibility[],
+  "entities"?: DictionaryItem[],
+  "system_audit_log_actions"?: DictionaryItem[],
 }
 
 export interface DictionaryItem {
