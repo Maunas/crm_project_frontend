@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { 
-    Box, Button, Container, Grid, Paper, Step, StepLabel, Stepper, 
-    Typography, Stack, Select, MenuItem, FormControl, InputLabel, Alert, 
+import {
+    Box, Button, Container, Grid, Paper, Step, StepLabel, Stepper,
+    Typography, Stack, Select, MenuItem, FormControl, InputLabel, Alert,
     CircularProgress, useTheme, alpha, Divider, Card, CardContent
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
@@ -13,6 +13,7 @@ import WarningIcon from '@mui/icons-material/Warning';
 import type { LeadField } from 'src/types/leadFields';
 import { getLeadFields } from 'src/features/leadFields/leadFieldServices';
 import { detectImportHeaders, processImport } from './leadService';
+import { showCommonErrorToast } from 'src/utils/feedback';
 
 // Agregamos el paso de Resultados
 const STEPS = ['Subir archivo Excel', 'Mapear Columnas', 'Resultados'];
@@ -52,7 +53,7 @@ export const ImportLeadsPage = () => {
     const [file, setFile] = useState<File | null>(null);
     const [excelHeaders, setExcelHeaders] = useState<string[]>([]);
     const [leadFields, setLeadFields] = useState<LeadField[]>([]);
-    
+
     const [uiMapping, setUiMapping] = useState<Record<string, string>>({});
 
     useEffect(() => {
@@ -81,9 +82,9 @@ export const ImportLeadsPage = () => {
 
             leadFields.forEach(field => {
                 const normDbField = normalizeString(field.name);
-                
+
                 let matchIdx = availableHeaders.findIndex(h => normalizeString(h) === normDbField);
-                
+
                 if (matchIdx === -1) {
                     matchIdx = availableHeaders.findIndex(h => {
                         const normH = normalizeString(h);
@@ -96,14 +97,14 @@ export const ImportLeadsPage = () => {
 
                 if (matchIdx !== -1) {
                     newMapping[field.name] = availableHeaders[matchIdx];
-                    availableHeaders.splice(matchIdx, 1); 
+                    availableHeaders.splice(matchIdx, 1);
                 }
             });
 
             setUiMapping(newMapping);
-            setActiveStep(1); 
+            setActiveStep(1);
         } catch (err) {
-            setError("Error al leer el archivo Excel. Asegúrate de que sea un formato válido.");
+            showCommonErrorToast(err, "Error al leer el archivo Excel. Asegúrate de que sea un formato válido.")
             setFile(null);
             setUiMapping({});
         } finally {
@@ -181,7 +182,7 @@ export const ImportLeadsPage = () => {
         // Ejemplo de entrada: "Fila 2: 400: [{'field': 'Nombre', 'message': 'Ya existe...'}]"
         try {
             // Separa "Fila 2" del resto
-            const splitByRow = errString.split(": 400: "); 
+            const splitByRow = errString.split(": 400: ");
             if (splitByRow.length !== 2) return <Typography variant="body2">{errString}</Typography>;
 
             const rowNumber = splitByRow[0];
@@ -214,8 +215,8 @@ export const ImportLeadsPage = () => {
             <Stack spacing={4}>
                 <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center", mb: 1 }}>
                     <Typography variant="h2" sx={{ fontWeight: "bold" }}>Importar Leads</Typography>
-                    <Button 
-                        variant="outlined" 
+                    <Button
+                        variant="outlined"
                         color="secondary"
                         startIcon={<ArrowBackIcon />}
                         onClick={() => navigate(`/leads?campaign=${campaignId}`)}
@@ -235,7 +236,7 @@ export const ImportLeadsPage = () => {
                 {error && <Alert severity="error" sx={{ borderRadius: 2 }}>{error}</Alert>}
 
                 <Paper elevation={3} sx={{ p: { xs: 3, md: 5 }, borderRadius: 3, minHeight: '400px' }}>
-                    
+
                     {/* PASO 1: ZONA DRAG AND DROP */}
                     {activeStep === 0 && (
                         <Box
@@ -262,11 +263,11 @@ export const ImportLeadsPage = () => {
                             }}
                             component="label"
                         >
-                            <input 
-                                type="file" 
-                                hidden 
-                                accept=".xlsx, .xls, .csv" 
-                                onChange={handleFileInputChange} 
+                            <input
+                                type="file"
+                                hidden
+                                accept=".xlsx, .xls, .csv"
+                                onChange={handleFileInputChange}
                                 disabled={isLoading}
                             />
                             {isLoading ? (
@@ -278,12 +279,12 @@ export const ImportLeadsPage = () => {
                                 </Stack>
                             ) : (
                                 <Stack spacing={2} sx={{ alignItems: "center", textAlign: 'center' }}>
-                                    <CloudUploadIcon 
-                                        sx={{ 
-                                            fontSize: 56, 
+                                    <CloudUploadIcon
+                                        sx={{
+                                            fontSize: 56,
                                             color: isDragging ? theme.palette.primary.main : theme.palette.text.secondary,
                                             transition: 'color 0.2s'
-                                        }} 
+                                        }}
                                     />
                                     <Typography variant="h5" sx={{ fontWeight: 600 }}>
                                         Arrastrá tu archivo Excel acá
@@ -300,8 +301,8 @@ export const ImportLeadsPage = () => {
                     {activeStep === 1 && (
                         <Stack spacing={4}>
                             <Alert severity={isMappingValid ? "success" : "warning"} sx={{ borderRadius: 2 }}>
-                                {isMappingValid 
-                                    ? "Todos los campos obligatorios fueron asociados exitosamente." 
+                                {isMappingValid
+                                    ? "Todos los campos obligatorios fueron asociados exitosamente."
                                     : `Faltan asociar columnas obligatorias: ${missingRequiredFields.map(f => f.name).join(', ')}`}
                             </Alert>
 
@@ -356,17 +357,17 @@ export const ImportLeadsPage = () => {
                             </Grid>
 
                             <Stack direction="row" sx={{ justifyContent: "space-between", mt: 4, pt: 2 }}>
-                                <Button 
-                                    variant="outlined" 
+                                <Button
+                                    variant="outlined"
                                     color="inherit"
                                     onClick={() => { setActiveStep(0); setFile(null); setUiMapping({}); }}
                                     disabled={isLoading}
                                 >
                                     Elegir otro archivo
                                 </Button>
-                                <Button 
-                                    variant="contained" 
-                                    color="primary" 
+                                <Button
+                                    variant="contained"
+                                    color="primary"
                                     disabled={!isMappingValid || isLoading}
                                     onClick={handleSubmit}
                                     startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <CheckCircleIcon />}
@@ -430,8 +431,8 @@ export const ImportLeadsPage = () => {
                             )}
 
                             <Stack direction="row" sx={{ justifyContent: "center", mt: 4 }}>
-                                <Button 
-                                    variant="contained" 
+                                <Button
+                                    variant="contained"
                                     size="large"
                                     onClick={() => navigate(`/leads?campaign=${campaignId}`)}
                                 >

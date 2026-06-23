@@ -346,9 +346,9 @@ export const LeadListPage = () => {
                         {(leads && campaignId !== null && workspaceId !== null) ?
                             <>
                                 <LeadListContent leads={leads.items} leadFields={leadFields} selectedFieldIds={selectedFieldIds} modalProps={modalProps} presentationMode={presentationMode}
-                                    activeFilters={filters.length} orderProps={orderProps} handleSelectedFieldIds={handleSelectedFieldIds} selectCheckboxProps={selectCheckboxProps}
-                                    workspaceId={workspaceId ? parseInt(`${workspaceId}`) : undefined} campaignId={campaignId ? parseInt(`${campaignId}`) : undefined} />
-                                <PaginationComponent {...pageComponentProps} />
+                                    activeFilters={filters.length} orderProps={orderProps} handleSelectedFieldIds={handleSelectedFieldIds} selectCheckboxProps={selectCheckboxProps} campaignId={campaignId} filters={filters} />
+                                {presentationMode === "TABLE" && <PaginationComponent {...pageComponentProps} />}
+
                             </>
                             :
                             <Stack spacing={3} sx={{ alignItems: "center", py: 6 }}>

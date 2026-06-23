@@ -17,7 +17,6 @@ import { useFieldArray, useForm, type Control, type Path, type UseFormRegister }
 import { Grid, ButtonGroup, Stack, Typography, Divider } from "@mui/material"
 import { getLeadFormFieldsBySections, orderFieldsBySections } from "src/features/leadFields/leadFieldUtils"
 
-//Para permitir mantener los datos de cada campo
 export interface LeadPostFormValues extends LeadPostValue {
     fieldData: LeadField
 }
@@ -50,6 +49,19 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
 
     const { fields, replace } = useFieldArray({ name: "values", control })
 
+    /*
+    // Agrupamiento por sección
+    const groupedFields = useMemo(() => {
+        const groups: Record<string, typeof fields> = {};
+        fields.forEach((field) => {
+            // Usamos el ID de la sección como clave, o "Sin categoría" si no tiene
+            const sectionName = field.fieldData.lead_field_section.id?.toString() || "Información General";
+            if (!groups[sectionName]) groups[sectionName] = [];
+            groups[sectionName].push(field);
+        });
+        return groups;
+    }, [fields]);
+*/
     const submit = (data: LeadPostForm) => {
         return onSubmit(createFormDataFromLead(data))
             .catch(e => setLeadFormErrors(fields, e, setError))
@@ -63,6 +75,8 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
     }, [errors.campaign_id, setCampaignError])
 
     const [leadFields, setLeadFields] = useState<LeadField[]>(existingLeadFields ?? [])
+    const [relatedLeads, setRelatedLeads] = useState<Map<number, Lead[]>>(new Map())
+    const [selectors, setSelectors] = useState<Map<number, NomenclatorItem[]>>(new Map())
 
     //Cuando se cargan los leadFields, se formatean y ubican en fieldArray
     const loadFieldValues = useCallback((newLeadFields: LeadField[], existingValues?: LeadFieldValue[]) => {
@@ -118,11 +132,6 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
     useEffect(() => {
         fetchFieldsLoad(campaignId, existingLeadFields, existingValues)
     }, [fetchFieldsLoad, campaignId, existingLeadFields, existingValues])
-
-    // Objetos que contienen todos los leads de campañas relacionadas, y todos los nomencladores necesarios para el formulario.
-    // Se identifican en un Map or sus ids.
-    const [relatedLeads, setRelatedLeads] = useState<Map<number, Lead[]>>(new Map())
-    const [selectors, setSelectors] = useState<Map<number, NomenclatorItem[]>>(new Map())
 
     useEffect(() => {
         updateSelectorOptions(leadFields, "related_campaign_id", relatedLeads, ["LEAD"],
