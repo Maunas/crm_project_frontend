@@ -59,7 +59,7 @@ export const LeadBoardCard = ({ lead, index, columnColor, observerRef }: LeadBoa
                     style={provided.draggableProps.style}
                 >
                     <Stack spacing={1.5}>
-                        <Stack direction="row" sx={{ spacing: 1.5, alignItems: "center" }}>
+                        <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
                             <UserAvatar
                                 name={mainTitle}
                                 src={lead.picture_avatar_url || undefined}
@@ -114,7 +114,8 @@ export const LeadBoardCard = ({ lead, index, columnColor, observerRef }: LeadBoa
                         )}
                     </Stack>
                 </Card>
-            )}
-        </Draggable>
+            )
+            }
+        </Draggable >
     );
 };
