@@ -5,6 +5,16 @@ import type { Nomenclator, NomenclatorItem } from "./nomenclators";
 import type { FieldArrayWithId } from "react-hook-form";
 import type { LeadPostForm } from "src/features/lead/leadForm/LeadForm";
 
+export interface ExcelFormulaTemplate {
+    name_spanish: string;
+    name_english: string;
+    description: string;
+    syntax: string;
+    example: string;
+    category: string;
+    note: string;
+}
+
 export interface LeadFieldValue {
   id: number;
   field_id: number;

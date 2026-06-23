@@ -16,6 +16,7 @@ import MainLayout from "./app/mainLayout";
 import { NotFound } from "./pages/NotFound";
 import { createBrowserRouter, Outlet } from "react-router-dom";
 import { ImportLeadsPage } from "./features/lead/ImportLeadsPage";
+import { SystemAuditList } from "./features/audit/SystemAuditLogs";
 
 export const router = createBrowserRouter([
     {
@@ -71,6 +72,10 @@ export const router = createBrowserRouter([
             {
                 path: "/nomenclators/",
                 Component: NomenclatorList
+            },
+            {
+                path: "/audit-logs/",
+                Component: SystemAuditList
             },
             {
                 path: "/organizations/",
