@@ -7,6 +7,7 @@ import type { LeadField } from "src/types/leadFields"
 import type { Lead } from "src/types/leads"
 import { Link } from "react-router-dom"
 import { Stack, Typography, ButtonGroup, Badge } from "@mui/material"
+import { LeadBoardPresentation } from "./board/LeadBoardPresentation"
 
 interface LeadListContentProps {
     leads: Lead[],
@@ -32,14 +33,15 @@ interface LeadListContentProps {
     },
     presentationMode: string,
     workspaceId?: number,
-    campaignId?: number,
+    campaignId?: number | string,
+    filters: unknown[]
 }
 
 /**
  * Wrapper del contenido, realiza la lógica de selectedColumns, y elige el modo de vista deseado.
  */
 export const LeadListContent = memo(({ leads, leadFields, selectedFieldIds, activeFilters = 0, modalProps, orderProps, handleSelectedFieldIds,
-    selectCheckboxProps, presentationMode, workspaceId, campaignId }: LeadListContentProps) => {
+    selectCheckboxProps, presentationMode, workspaceId, campaignId, filters }: LeadListContentProps) => {
 
     //Filtra los objetos LeadField para seguir el orden del arreglo de ids.
     const selectedColumns = useMemo(() => {
@@ -51,6 +53,14 @@ export const LeadListContent = memo(({ leads, leadFields, selectedFieldIds, acti
 
     //Da los estilos y funcionalidad del drag and drop de columnas, a través de sus ids.
     const dragProps = useDragAndDrop(selectedFieldIds, (items) => handleSelectedFieldIds(items))
+
+    // El board carga sus propios leads por columna — no depende de los arrays del padre
+    if (presentationMode === "BOARD" && campaignId) {
+        return <LeadBoardPresentation
+            campaignId={campaignId}
+            activeFilters={filters}
+        />
+    }
 
     if (leads.length === 0) return (
         <Stack spacing={3} sx={{ my: 3, alignItems: "center" }}>

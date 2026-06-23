@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react'
-import { 
-    Stack, Typography, Box, Collapse, TextField, IconButton, Paper, 
+import {
+    Stack, Typography, Box, Collapse, TextField, IconButton, Paper,
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow
 } from '@mui/material'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
@@ -12,13 +12,13 @@ import { useListPagination } from 'src/hooks/useListPagination'
 import PaginationComponent from 'shared/ui/lists/PaginationComponent'
 
 // Servicios y Tipos
-import { getSystemAudit } from './systemAuditServices'
 import { getDictionaries } from 'src/services/generalService'
 import type { SystemAuditLog } from 'src/types/systemAudit'
 import type { Paginable } from 'src/types/shared'
 
 // Componente que pasaste
 import { ControlledAutocomplete } from 'src/components/ui/forms/CustomMultipleInputs' // <-- Ajusta este path a donde lo tengas
+import { getSystemAudit } from './SystemAuditServices'
 
 // --- Interfaces para los Filtros ---
 interface AuditFilters {
@@ -35,12 +35,12 @@ interface SelectOption {
 }
 
 // --- Componente de Fila ---
-const AuditTableRow = ({ 
-    log, 
-    mappings 
-}: { 
-    log: SystemAuditLog, 
-    mappings: any 
+const AuditTableRow = ({
+    log,
+    mappings
+}: {
+    log: SystemAuditLog,
+    mappings: unknown
 }) => {
     const [open, setOpen] = useState(false)
     const hasChanges = log.changes && Object.keys(log.changes).length > 0;
@@ -51,9 +51,9 @@ const AuditTableRow = ({
 
     return (
         <>
-            <TableRow 
+            <TableRow
                 onClick={() => hasChanges && setOpen(!open)} // <-- Clic en toda la fila
-                sx={{ 
+                sx={{
                     '& > *': { borderBottom: 'unset' },
                     cursor: hasChanges ? 'pointer' : 'default', // Cambia el cursor si hay cambios
                     '&:hover': {
@@ -69,8 +69,8 @@ const AuditTableRow = ({
                 <TableCell>{new Date(log.created_at).toLocaleString()}</TableCell>
                 <TableCell align="right">
                     {hasChanges && (
-                        <IconButton 
-                            size="small" 
+                        <IconButton
+                            size="small"
                             onClick={(e) => {
                                 e.stopPropagation(); // <-- Evita que el clic en el botón active también el clic de la fila
                                 setOpen(!open);
@@ -104,11 +104,11 @@ const AuditTableRow = ({
 // --- Componente Principal ---
 export const SystemAuditList = () => {
     const [logs, setLogs] = useState<Paginable<SystemAuditLog> | null>(null)
-    const [defs, setDefs] = useState<{ entities: any, actions: any } | null>(null)
+    const [defs, setDefs] = useState<{ entities: unknown, actions: unknown } | null>(null)
     const { fetchPage, pageSize, refresh, pageComponentProps } = useListPagination(logs)
 
     // 1. Inicializamos React Hook Form para los filtros
-    const { control, register, watch } = useForm<AuditFilters>({
+    const { control, register } = useForm<AuditFilters>({
         defaultValues: {
             entity_type: null,
             action: null,
@@ -119,7 +119,7 @@ export const SystemAuditList = () => {
     })
 
     // 2. Observamos todos los cambios del formulario
-    const formValues = watch()
+    const formValues = useWatch({ control })
     const [debouncedFilters, setDebouncedFilters] = useState<AuditFilters>(formValues)
 
     useEffect(() => {
@@ -150,7 +150,7 @@ export const SystemAuditList = () => {
 
     // Petición a la API
     useEffect(() => {
-        const params: any = {
+        const params: unknown = {
             page: fetchPage,
             page_size: pageSize,
             order_by: "created_at",
@@ -214,10 +214,10 @@ export const SystemAuditList = () => {
                                 />
                             </TableCell>
                             <TableCell>
-                                <TextField 
+                                <TextField
                                     {...register("creator_name")}
-                                    placeholder="Nombre del creador" 
-                                    size="small" 
+                                    placeholder="Nombre del creador"
+                                    size="small"
                                     variant="standard"
                                 />
                             </TableCell>

@@ -79,7 +79,6 @@ export const deleteView = async (id: number): Promise<DeleteResponse> => {
   return view.data;
 };
 
-
 export const exportLeads = async (campaignId: number): Promise<void> => {
   const response = await axiosCRM.get(`export/${campaignId}`, {
     responseType: 'blob', // Crucial para archivos
@@ -94,7 +93,7 @@ export const exportLeads = async (campaignId: number): Promise<void> => {
     const matches = filenameRegex.exec(disposition);
     if (matches != null && matches[1]) {
       // Limpiamos las comillas que puedan venir del backend
-      filename = matches[1].replace(/['"]/g, ''); 
+      filename = matches[1].replace(/['"]/g, '');
     }
   }
 
@@ -102,9 +101,9 @@ export const exportLeads = async (campaignId: number): Promise<void> => {
   const url = window.URL.createObjectURL(new Blob([response.data]));
   const link = document.createElement('a');
   link.href = url;
-  
+
   // 3. Asignamos el nombre dinámico que extrajimos
-  link.setAttribute('download', filename); 
+  link.setAttribute('download', filename);
   document.body.appendChild(link);
   link.click();
 
@@ -115,19 +114,31 @@ export const exportLeads = async (campaignId: number): Promise<void> => {
 
 //Detección de headers
 export const detectImportHeaders = async (file: File): Promise<{ headers: string[] }> => {
-    const formData = new FormData();
-    formData.append("file", file);
-    // Asumiendo que configuraste tu axios para manejar FormData
-    const res = await axiosCRM.post(`import/detect-headers`, formData);
-    return res.data;
+  const formData = new FormData();
+  formData.append("file", file);
+  // Asumiendo que configuraste tu axios para manejar FormData
+  const res = await axiosCRM.post(`import/detect-headers`, formData);
+  return res.data;
 };
 
 //Procesa import
-export const processImport = async (campaignId: number, file: File, mapping: Record<string, string>): Promise<any> => {
-    const formData = new FormData();
-    formData.append("campaign_id", campaignId.toString());
-    formData.append("mapping", JSON.stringify(mapping));
-    formData.append("file", file);
-    const res = await axiosCRM.post(`import/process`, formData);
-    return res.data;
+export const processImport = async (campaignId: number, file: File, mapping: Record<string, string>): Promise<unknown> => {
+  const formData = new FormData();
+  formData.append("campaign_id", campaignId.toString());
+  formData.append("mapping", JSON.stringify(mapping));
+  formData.append("file", file);
+  const res = await axiosCRM.post(`import/process`, formData);
+  return res.data;
+}
+
+export const changeStateLead = async (lead_id: number, state_id: number): Promise<LeadDetailed> => {
+  const body = { "new_state_id": state_id }
+  const response = await axiosCRM.post(`leads/${lead_id}/change_state`, body);
+  return response.data;
+};
+
+export const changeContactStateLead = async (lead_id: number, state_id: number): Promise<LeadDetailed> => {
+  const body = { "contact_state_id": state_id }
+  const response = await axiosCRM.put(`leads/${lead_id}`, body);
+  return response.data;
 };

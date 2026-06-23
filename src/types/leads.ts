@@ -24,8 +24,9 @@ export interface Lead {
   contact_state_id: number,
   contact_state: LeadContactState,
   picture_url?: string,
-  assigned_to_user_id: unknown,
-  team_id: unknown,
+  assigned_to_user_id: number | null,
+  team_id: number | null,
+  picture_avatar_url?: string | null;
 }
 export interface LeadDetailed extends Lead, Metadata {
   field_values: LeadFieldValueDetailed[];

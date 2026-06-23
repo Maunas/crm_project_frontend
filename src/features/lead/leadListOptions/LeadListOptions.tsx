@@ -15,6 +15,7 @@ import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import WindowIcon from '@mui/icons-material/Window';
+import ViewColumnIcon from '@mui/icons-material/ViewColumn';
 
 interface LeadCampaignSelectorsProps {
     workspaceId: string | number | null,
@@ -150,6 +151,11 @@ export const LeadListOptions = memo(({ areThereLeads, campaignId, filters, heade
                     <ChipTooltip title='Tabla' color="contrast">
                         <ToggleButton value="TABLE">
                             <TableChartIcon />
+                        </ToggleButton>
+                    </ChipTooltip>
+                    <ChipTooltip title='Tablero' color="contrast">
+                        <ToggleButton value="BOARD">
+                            <ViewColumnIcon />
                         </ToggleButton>
                     </ChipTooltip>
                     <ToggleButton value="LIST" disabled>
