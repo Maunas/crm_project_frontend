@@ -1,13 +1,16 @@
-import type { ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { LeadFlowList } from '../leadFlows/LeadFlowList';
 import { CustomListItem, CustomListItemAvatar } from 'shared/ui/lists/CustomListItem';
-import ContainerWithSidebar from 'shared/layout/container/GenericContainer';
+import ContainerWithSidebar, { SidebarContentWrapper } from 'shared/layout/container/GenericContainer';
 import { CommonIconButton } from 'shared/ui/buttons/CommonIconButton';
 import { useSidebar } from 'src/hooks/useSidebar';
 import type { ColorTypes } from 'src/types/mui-theme.d';
 import { useSearchParams } from 'react-router-dom';
 import { Avatar, List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import ViewColumnIcon from '@mui/icons-material/ViewColumn';
+import { ContactStateList } from '../contactState/ContactStateList';
+import CommonButton from 'src/components/ui/buttons/CommonButton';
 
 export interface LeadPropertiesItem {
     label: string,
@@ -20,6 +23,12 @@ export const LEAD_PROPERTIES: LeadPropertiesItem[] = [{
     id: "FLOW",
     icon: <AccountTreeIcon />,
     color: "primary"
+},
+{
+    label: "Estados de Contacto",
+    id: "CONTACT",
+    icon: <ViewColumnIcon />,
+    color: "secondary"
 }]
 
 export const LeadProperties = () => {
@@ -74,9 +83,20 @@ interface SidebarProps {
 }
 const LeadPropertiesSidebar = ({ mode, entity, closeSidebar }: SidebarProps) => {
 
-    switch (mode) {
-        case "FLOW":
-            return <LeadFlowList closeSidebar={closeSidebar} property={entity} />
-    }
+    const content = useMemo(() => {
+        switch (mode) {
+            case "FLOW":
+                return <LeadFlowList />
+            case "CONTACT":
+                return <ContactStateList />
+        }
+    }, [mode])
 
+    return (
+        <SidebarContentWrapper title={entity?.label} subtitle="Propiedades de Organización"
+            icon={entity?.icon} iconColor={entity?.color}
+            actions={<CommonButton actionType="CLOSE" variant="outlined" onClick={closeSidebar}>Cerrar</CommonButton>} >
+            {content}
+        </SidebarContentWrapper>
+    )
 }

@@ -2,6 +2,7 @@ import '@mui/material/styles';
 
 export type ColorTypes = "primary" | "secondary" | "contrast" | "info" | "success" | "warning" | "error"
 
+export const colorTypesArray = ["primary", "secondary", "contrast", "info", "success", "warning", "error"]
 
 declare module '@mui/material/styles' {
   interface Palette {

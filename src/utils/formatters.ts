@@ -1,5 +1,7 @@
+import type { Theme } from '@mui/material'
 import dayjs from 'dayjs'
 import 'dayjs/locale/es'
+import { colorTypesArray, type ColorTypes } from 'src/types/mui-theme.d'
 import type { DateFormat } from 'src/types/shared'
 dayjs.locale('es')
 
@@ -67,5 +69,31 @@ export const isValidURL = (url: string) => {
 export const sanitizePhone = (phone: string) => phone.replace(/\D/g, "")
 
 export const isHex = (color: string) => {
-    return color?.charAt(0) === "#"
+    const hexRegex = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/
+    return hexRegex.test(color)
+}
+
+export const isColorType = (color: string): color is ColorTypes => {
+    return colorTypesArray.includes(color)
+}
+
+export const getColorPalette = (color: string, theme: Theme) => {
+    const isColorHex = isHex(color)
+    if (isColorHex) return {
+        LIGHTER: theme.lighten(color, .6),
+        LIGHT: theme.lighten(color, .3),
+        MAIN: color,
+        DARK: theme.darken(color, .3),
+        DARKER: theme.darken(color, .6)
+    }
+
+    const themeColor = isColorType(color) ? color : "primary"
+
+    return {
+        LIGHTER: theme.palette[themeColor].lighter,
+        LIGHT: theme.palette[themeColor].light,
+        MAIN: theme.palette[themeColor].main,
+        DARK: theme.palette[themeColor].dark,
+        DARKER: theme.palette[themeColor].darker
+    }
 }

@@ -10,7 +10,7 @@ import { createValidation, deleteValidation, getValidationTemplates, updateValid
 import { getValidationDataByType, setValFormErrors } from "./validationUtils";
 import { showToast } from "src/utils/feedback";
 import { useFieldArray, useForm, useWatch, type Control, type FieldErrors, type UseFieldArrayRemove, type UseFormClearErrors, type UseFormGetValues, type UseFormRegister, type UseFormSetValue } from "react-hook-form";
-import { Divider, Grid, Stack, Typography, ButtonGroup, Avatar, useTheme } from "@mui/material";
+import { Divider, Grid, Stack, Typography, ButtonGroup } from "@mui/material";
 import { SidebarContentActionsWrapper, SidebarContentWrapper } from "src/components/layout/container/GenericContainer";
 import RuleIcon from '@mui/icons-material/Rule';
 
@@ -35,8 +35,6 @@ export interface ValidationSidebarProps {
 }
 
 export const ValidationFormSidebar = ({ leadField, updateEntityOnList, handleSidebar }: ValidationSidebarProps) => {
-
-    const { palette } = useTheme()
 
     const submit = (val: FieldValidationListPostInstance) => {
         if (val.to_delete && val.id) return deleteValidation(val.id)
@@ -65,8 +63,7 @@ export const ValidationFormSidebar = ({ leadField, updateEntityOnList, handleSid
     }
 
     return (
-        <SidebarContentWrapper title="Reglas de validación" subtitle={leadField.name}
-            avatar={<Avatar sx={{ bgcolor: palette.primary.main }} variant="rounded"><RuleIcon /></Avatar>}>
+        <SidebarContentWrapper title="Reglas de validación" subtitle={leadField.name} icon={<RuleIcon />}>
             <ValidationRuleForm leadField={leadField} submit={submit} submitAll={submitAll} onErrorAll={onErrorAll}
                 onCancel={() => handleSidebar("DETAILS_FIELD", leadField)} />
         </SidebarContentWrapper>

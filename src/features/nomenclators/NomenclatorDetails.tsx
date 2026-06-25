@@ -21,7 +21,8 @@ export const NomenclatorDetails = ({ nomenclator, closeSidebar, handleSidebar, h
     const { activeOrg } = useUserContext()
 
     if (nomenclator) return (
-        <SidebarContentWrapper title={nomenclator.name} avatar={<EnabledIcon active={nomenclator.active} />}
+        <SidebarContentWrapper title={nomenclator.name} icon={<EnabledIcon active={nomenclator.active} isAvatar />}
+            iconColor={nomenclator.active ? "success" : "error"}
             subtitle={!nomenclator.organization_id ? "Nomenclador del Sistema" : "Nomenclador"}
             actions={
                 <ButtonGroup>

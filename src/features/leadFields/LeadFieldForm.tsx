@@ -15,7 +15,7 @@ import { getCampaigns } from "../campaigns/campaignServices";
 import { getFieldDataByType } from "./leadFieldUtils";
 import { setFormErrors } from "src/utils/forms";
 import { showToast } from "src/utils/feedback";
-import { Grid, FormGroup, Stack, Avatar, useTheme, Divider, ButtonGroup } from "@mui/material";
+import { Grid, FormGroup, Stack, Divider, ButtonGroup } from "@mui/material";
 import { Controller, useForm, useWatch, type Control, type FieldErrors, type UseFormGetValues, type UseFormSetValue } from "react-hook-form";
 import { InputAdornment, IconButton } from "@mui/material";
 import { getExcelFormulaTemplates } from "./leadFieldServices";
@@ -38,8 +38,6 @@ interface LeadFieldSidebarProps {
 //Wrapper de CampaignForm para crear desde un Sidebar
 export const LeadFieldFormSidebar = ({ existingLF, campaign, updateEntityOnList, closeSidebar, handleSidebar }: LeadFieldSidebarProps) => {
 
-  const { palette } = useTheme()
-
   const submit = (data: LeadFieldPost, reset: boolean = false) => {
     const updateInfo = (data: LeadFieldDetailed) => {
       updateEntityOnList(data)
@@ -60,7 +58,7 @@ export const LeadFieldFormSidebar = ({ existingLF, campaign, updateEntityOnList,
   }
   return <SidebarContentWrapper subtitle={campaign.name}
     title={existingLF ? `Modificar "${existingLF.name}"` : "Crear Campo"}
-    avatar={<Avatar sx={{ bgcolor: palette.primary.main }} variant="rounded">{ACTION_ICONS.CREATE}</Avatar>}>
+    icon={ACTION_ICONS.CREATE}>
     <LeadFieldForm existingLF={existingLF} campaign={campaign} submit={submit} onCancel={closeSidebar} />
   </SidebarContentWrapper>
 }

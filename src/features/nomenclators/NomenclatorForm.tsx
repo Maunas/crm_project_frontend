@@ -3,7 +3,7 @@ import { SidebarContentActionsWrapper, SidebarContentWrapper } from "shared/layo
 import { ControlledAutocomplete } from "shared/ui/forms/CustomMultipleInputs"
 import { ControlledTextInput } from "shared/ui/forms/CustomInputs"
 import { FormErrorMessage } from "shared/ui/forms/FormFeedback"
-import CommonButton, { CommonAvatar } from "shared/ui/buttons/CommonButton"
+import CommonButton from "shared/ui/buttons/CommonButton"
 import { useLoading } from "src/hooks/useLoading"
 import type { Nomenclator, NomenclatorDetailed, NomenclatorPost } from "src/types/nomenclators"
 import { createNomenclator, getNomenclators, updateNomenclator } from "./nomenclatorService"
@@ -11,6 +11,7 @@ import { setFormErrors } from "src/utils/forms"
 import { showToast } from "src/utils/feedback"
 import { useForm } from "react-hook-form"
 import { Grid, ButtonGroup, Stack } from "@mui/material"
+import ACTION_ICONS from "src/components/ui/buttons/ActionIcons"
 
 interface NomenclatorSidebarProps {
     existingNom?: NomenclatorDetailed,
@@ -49,7 +50,7 @@ export const NomenclatorFormSidebar = ({ existingNom, handleSidebar, closeSideba
 
     return <SidebarContentWrapper title={existingNom ? `Modificar "${existingNom.name}"` : "Agregar Nomenclador"}
         subtitle="Nomencladores"
-        avatar={<CommonAvatar actionType={existingNom ? "MODIFY" : "CREATE"} />}>
+        icon={existingNom ? ACTION_ICONS.MODIFY : ACTION_ICONS.CREATE}>
         <NomenclatorForm existingNom={existingNom} submit={submit} onCancel={handleClose} />
     </SidebarContentWrapper>
 }

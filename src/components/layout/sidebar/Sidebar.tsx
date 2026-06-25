@@ -100,7 +100,7 @@ export default function LayoutSidebar({ children }: SidebarProps) {
     };
 
     return (
-        <Stack sx={{ minHeight: 0, height: "100%", width: "100%", minWidth: 0 }}>
+        <Stack sx={{ minHeight: "100vh", height: "100%", width: "100%", minWidth: 0 }}>
             <Header handleDrawerOpen={handleDrawerOpen} open={open} />
             <Stack direction="row" sx={{ flexGrow: 1, minHeight: 0, minWidth: 0, height: "100%" }}>
                 <Drawer variant="permanent" open={open}
