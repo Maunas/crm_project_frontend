@@ -3,12 +3,13 @@ import type { StateCategory } from 'src/types/leadFlow'
 import { CATEGORY_CONFIG } from './leadFlowServices/leadFlowUtils'
 import { Handle, Position } from 'reactflow'
 import type { NodeProps } from 'reactflow'
-import { Box, Typography, Chip, IconButton } from '@mui/material'
+import { Box, Typography, Chip, IconButton, useTheme } from '@mui/material'
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import DeleteIcon from '@mui/icons-material/Delete'
 import CircleIcon from '@mui/icons-material/Circle';
 import CancelIcon from '@mui/icons-material/Cancel';
+import { getColorShades } from 'src/utils/formatters'
 
 export interface StateNodeData {
   label: string;
@@ -35,7 +36,8 @@ const getCategoryIcon = (category: StateCategory) => {
 function StateNodeComponent({ id, data, selected }: NodeProps<{ data: StateNodeData }>) {
   const { label, category, isInitial, color, onEdit, onDelete } = data.data ?? data;
   const categoryConfig = CATEGORY_CONFIG[category];
-  const nodeColor = color || categoryConfig?.color || '#64748b';
+  const theme = useTheme()
+  const nodeColorShades = getColorShades(color ?? categoryConfig?.color ?? 'secondary', theme);
 
   return (
     <Box
@@ -46,12 +48,12 @@ function StateNodeComponent({ id, data, selected }: NodeProps<{ data: StateNodeD
         backgroundColor: 'background.paper',
         borderRadius: 2,
         border: 2,
-        borderColor: selected ? 'primary.main' : nodeColor,
-        boxShadow: selected ? `0 0 0 2px ${nodeColor}40` : 'none',
+        borderColor: selected ? 'primary.main' : nodeColorShades.MAIN,
+        boxShadow: selected ? `0 0 2px 2px ${theme.alpha(nodeColorShades.LIGHT, .25)}` : 'none',
         transition: 'all 0.2s ease',
         cursor: 'pointer',
         '&:hover': {
-          boxShadow: `0 4px 20px ${nodeColor}30`,
+          boxShadow: `0 4px 20px ${theme.alpha(nodeColorShades.LIGHT, .2)}`,
           '& .node-actions': { opacity: 1 },
         },
       }}
@@ -61,14 +63,14 @@ function StateNodeComponent({ id, data, selected }: NodeProps<{ data: StateNodeD
         <Handle
           type="target"
           position={Position.Top}
-          style={{ width: 12, height: 12, top: -6, backgroundColor: nodeColor, border: '2px solid #1e293b' }}
+          style={{ width: 12, height: 12, top: -6, backgroundColor: nodeColorShades.LIGHT, border: '2px solid #1e293b' }}
         />
       )}
 
       {/* Header con categoría */}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 1.5, py: 0.75, borderBottom: 1, borderColor: 'divider', backgroundColor: `${nodeColor}15` }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 1.5, py: 0.75, borderBottom: 1, borderColor: 'divider', backgroundColor: `${theme.alpha(nodeColorShades.DARK, .1)}` }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-          {isInitial && <PlayArrowIcon sx={{ fontSize: 16, color: nodeColor }} />}
+          {isInitial && <PlayArrowIcon sx={{ fontSize: 16, color: nodeColorShades.LIGHT }} />}
           <Chip
             icon={getCategoryIcon(category)}
             label={categoryConfig?.label || category}
@@ -77,10 +79,10 @@ function StateNodeComponent({ id, data, selected }: NodeProps<{ data: StateNodeD
               height: 20,
               fontSize: '0.65rem',
               fontWeight: 600,
-              backgroundColor: `${nodeColor}30`,
-              color: nodeColor,
+              backgroundColor: `${theme.alpha(nodeColorShades.DARKER, .6)}`,
+              color: nodeColorShades.LIGHT,
               '& .MuiChip-icon': {
-                color: nodeColor,
+                color: nodeColorShades.LIGHT,
                 marginLeft: '4px'
               }
             }}
@@ -107,7 +109,7 @@ function StateNodeComponent({ id, data, selected }: NodeProps<{ data: StateNodeD
       <Handle
         type="source"
         position={Position.Bottom}
-        style={{ width: 12, height: 12, bottom: -6, backgroundColor: nodeColor, border: '2px solid #1e293b' }}
+        style={{ width: 12, height: 12, bottom: -6, backgroundColor: nodeColorShades.LIGHT, border: '2px solid #1e293b' }}
       />
     </Box>
   );
