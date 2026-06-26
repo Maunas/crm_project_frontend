@@ -1,22 +1,61 @@
-import { useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { FormErrorMessage } from "shared/ui/forms/FormFeedback"
 import CommonButton from "shared/ui/buttons/CommonButton"
 import { useLoading } from "src/hooks/useLoading"
-import type { LeadTag, LeadTagPost } from "src/types/leads"
-import { createTag, updateTag } from "features/lead/details/LeadDetailsService"
+import type { LeadTag, LeadTagDetailed, LeadTagPost } from "src/types/leads"
 import { setFormErrors } from "src/utils/forms"
 import { showToast } from "src/utils/feedback"
-import { useForm, useWatch } from "react-hook-form"
-import { alpha, ButtonGroup, Popover, Stack, TextField, Typography, useTheme } from "@mui/material"
+import { useForm } from "react-hook-form"
+import { ButtonGroup, Popover, Stack, TextField, Typography } from "@mui/material"
 import { ControlledColorPicker } from "src/components/ui/forms/ColorPicker"
-import { getColorShades } from "src/utils/formatters"
+import { createTag, updateTag } from "./LeadTagService"
+import { CustomAvatar } from "src/components/ui/details/CustomAvatar"
+import ACTION_ICONS from "src/components/ui/buttons/ActionIcons"
 
+
+interface TagFormSidebarProps {
+    onClose: () => void,
+    onSubmit: (entity?: LeadTagDetailed | undefined, update?: boolean) => void
+    existingTag?: LeadTagDetailed | null
+}
+
+export const TagFormSidebarWrapper = ({ existingTag, onClose, onSubmit }: TagFormSidebarProps) => {
+
+    const [color, setColor] = useState<string>(existingTag?.color ?? "primary")
+
+    const onPostTag = useCallback((data: LeadTagPost) => {
+        if (existingTag) {
+            return updateTag(data, existingTag.id)
+                .then(res => {
+                    onSubmit(res, true)
+                    showToast(`Etiqueta "${res.name}" actualizada con éxito`)
+                    onClose()
+                })
+        }
+        return createTag(data)
+            .then(res => {
+                onSubmit()
+                showToast(`Etiqueta "${res.name}" creada con éxito`)
+                onClose()
+            })
+    }, [existingTag, onClose, onSubmit])
+
+    return (
+        <Stack spacing={2}>
+            <Stack spacing={2} direction="row" sx={{ alignItems: "center" }}>
+                <CustomAvatar size="small" color={color}>{ACTION_ICONS[existingTag ? "MODIFY" : "CREATE"]}</CustomAvatar>
+                <Typography variant="h3">{existingTag ? `Modificar Etiqueta "${existingTag.name}"` : "Crear Etiqueta"}</Typography>
+            </Stack>
+            <LeadTagForm existingTag={existingTag} onCancel={onClose} onSubmit={onPostTag} setColor={setColor} />
+        </Stack>
+    )
+}
 
 interface TagFormMenuProps {
     formAnchor: null | HTMLElement,
     handleClose: () => void,
     handleTagsUpdate: (modifiedTag?: LeadTag | undefined) => void,
-    existingTag: LeadTag | null
+    existingTag?: LeadTag | null,
 }
 
 export const TagFormMenuWrapper = ({ existingTag, formAnchor, handleClose, handleTagsUpdate }: TagFormMenuProps) => {
@@ -52,21 +91,21 @@ export const TagFormMenuWrapper = ({ existingTag, formAnchor, handleClose, handl
         >
             <Stack spacing={2} sx={{ p: 2 }}>
                 <Typography variant="h4" component="h3">{existingTag ? "Modificar Etiqueta" : "Crear Etiqueta"}</Typography>
-                <LeadTagForm existingTag={existingTag} onCancel={handleClose} onSubmit={onPostTag} />
+                <LeadTagForm existingTag={existingTag} onCancel={handleClose} onSubmit={onPostTag} popover />
             </Stack>
         </Popover >
     )
 }
 
 interface LeadTagFormProps {
-    existingTag: LeadTag | null,
+    existingTag?: LeadTag | null,
     onCancel: () => void,
     onSubmit: (data: LeadTagPost) => Promise<void>,
+    popover?: boolean,
+    setColor?: React.Dispatch<React.SetStateAction<string>>
 }
 
-export const LeadTagForm = ({ existingTag, onCancel, onSubmit }: LeadTagFormProps) => {
-
-    const theme = useTheme()
+const LeadTagForm = ({ existingTag, onCancel, onSubmit, popover = false, setColor }: LeadTagFormProps) => {
 
     const defaultValues = useMemo(() => ({
         name: existingTag?.name ?? undefined,
@@ -94,20 +133,16 @@ export const LeadTagForm = ({ existingTag, onCancel, onSubmit }: LeadTagFormProp
         onCancel()
     }
 
-    const color = useWatch({ name: "color", control })
-
-    const colorShades = useMemo(() => getColorShades(color ?? "primary", theme), [color, theme])
-
     return (
         <form onSubmit={handleSubmit(postLoad)} style={{ minWidth: "15rem" }}>
-            <Stack spacing={1}>
-                <Stack spacing={.5}>
-                    <TextField id="tag-name" label="Nombre" size="small" {...register("name")}
-                        sx={{ backgroundColor: alpha(colorShades.DARKER, .2) }} />
+            <Stack spacing={2}>
+                <Stack spacing={1}>
+                    <TextField id="tag-name" label="Nombre" size={popover ? "small" : "medium"} {...register("name")} />
                     {errors?.name?.message && <FormErrorMessage>{errors?.name?.message}</FormErrorMessage>}
                 </Stack>
-                <ControlledColorPicker control={control} name="color" size="small" row />
-                <ButtonGroup fullWidth>
+                <ControlledColorPicker control={control} name="color" size={popover ? "small" : "medium"} row
+                    onBeforeChange={(color) => setColor ? setColor(color) : undefined} />
+                <ButtonGroup fullWidth={popover} sx={{ alignSelf: "end" }}>
                     <CommonButton actionType="CLOSE" variant="outlined" color="error" onClick={handleCancel} disabled={loading}>
                         Cancelar
                     </CommonButton>

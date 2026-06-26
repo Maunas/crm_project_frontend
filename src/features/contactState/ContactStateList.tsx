@@ -12,7 +12,7 @@ import { useListPagination } from 'src/hooks/useListPagination'
 import { useLoading } from 'src/hooks/useLoading'
 import type { LeadContactStateDetailed } from 'src/types/contactState'
 import type { Paginable } from 'src/types/shared'
-import { getContactStates } from '../orgProperties/contactStatesServices'
+import { getContactStates } from './contactStatesServices'
 import { disableLeadContactState, enableLeadContactState } from 'src/services/leadContactStateService'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { Divider, Grid, ListItemText, Stack, Typography } from '@mui/material'
@@ -29,6 +29,7 @@ export const ContactStateList = () => {
             page: fetchPage, page_size: pageSize
         })
             .then(setStates)
+            .catch(e => showCommonErrorToast(e, "Error recuperando la lista de estados"))
     }, [])
 
     const { fnWithLoading: fetchStatesLoad, loading } = useLoading(fetchStates)
@@ -98,7 +99,7 @@ export const ContactStateListData = ({ states, toggleUpdate, updateList }: Conta
 
     const [disableState, setDisableState] = useState<LeadContactStateDetailed | null>(null)
 
-    const handleEnableDisable = (id: number, isActive: boolean) => {
+    const handleEnableDisable = useCallback((id: number, isActive: boolean) => {
         if (!isActive) {
             return enableLeadContactState(id)
                 .then(() => {
@@ -114,7 +115,7 @@ export const ContactStateListData = ({ states, toggleUpdate, updateList }: Conta
                 updateList()
             })
             .catch(e => { showCommonErrorToast(e, "Error deshabilitando el estado.") })
-    }
+    }, [updateList])
 
     return (
         <>
@@ -144,7 +145,7 @@ export const ContactStateListData = ({ states, toggleUpdate, updateList }: Conta
                 )}
             </Grid >
             {disableState &&
-                <DisableConfirmDialog idModal='conf-delete-flow' entity={disableState} clearEntity={() => setDisableState(null)} entityTypeName="el estado"
+                <DisableConfirmDialog idModal='conf-delete-contact' entity={disableState} clearEntity={() => setDisableState(null)} entityTypeName="el estado"
                     onConfirm={() => handleEnableDisable(disableState?.id, disableState?.active)} />
             }
         </>

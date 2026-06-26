@@ -28,7 +28,8 @@ export const ControlledColorPicker = <T extends FieldValues>({ control, size = "
                                 sx={{ justifyContent: "space-evenly", alignItems: "center", flexWrap: "wrap" }}>
                                 <Stack direction="row" useFlexGap sx={{ alignItems: "center", justifyContent: "center", flexWrap: "wrap" }}>
                                     {colorTypesArray.map(colorName => (
-                                        <ColorPickerButton field={field} size={size} colorName={colorName} theme={theme} onBeforeChange={onBeforeChange} />
+                                        <ColorPickerButton field={field} size={size} key={colorName}
+                                            colorName={colorName} theme={theme} onBeforeChange={onBeforeChange} />
                                     ))
                                     }
                                 </Stack>

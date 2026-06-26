@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { LeadFlowList } from '../leadFlows/LeadFlowList';
 import { CustomListItem, CustomListItemAvatar } from 'shared/ui/lists/CustomListItem';
 import ContainerWithSidebar, { SidebarContentWrapper } from 'shared/layout/container/GenericContainer';
@@ -11,24 +11,44 @@ import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import ViewColumnIcon from '@mui/icons-material/ViewColumn';
 import { ContactStateList } from '../contactState/ContactStateList';
 import CommonButton from 'src/components/ui/buttons/CommonButton';
+import DiscountIcon from '@mui/icons-material/Discount';
+import FolderCopyIcon from '@mui/icons-material/FolderCopy';
+import { LeadTagsList } from '../tags/LeadTagsList';
 
 export interface OrgPropertiesItem {
     label: string,
-    id: "FLOW" | "CONTACT" | "TAGS",
+    id: "FLOW" | "CONTACT" | "TAGS" | "SECTIONS",
     icon: ReactNode,
-    color: ColorTypes
+    color: ColorTypes,
+    content: ReactNode
 }
 export const LEAD_PROPERTIES: OrgPropertiesItem[] = [{
     label: "Flujo de Estados",
     id: "FLOW",
     icon: <AccountTreeIcon />,
-    color: "primary"
+    color: "primary",
+    content: <LeadFlowList />
 },
 {
     label: "Estados de Contacto",
     id: "CONTACT",
     icon: <ViewColumnIcon />,
-    color: "secondary"
+    color: "secondary",
+    content: <ContactStateList />
+},
+{
+    label: "Etiquetas de Lead",
+    id: "TAGS",
+    icon: <DiscountIcon />,
+    color: "info",
+    content: <LeadTagsList />
+},
+{
+    label: "Secciones de Campo",
+    id: "SECTIONS",
+    icon: <FolderCopyIcon />,
+    color: "success",
+    content: <ContactStateList />
 }]
 
 const OrgProperties = () => {
@@ -40,7 +60,7 @@ const OrgProperties = () => {
     return (
         <ContainerWithSidebar isSidebarOpen={Boolean(sidebarMode)} closeSidebar={closeSidebar}
             sidebarComponent={
-                <OrgPropertiesSidebar mode={sidebarMode} entity={selectedEntity} handleSidebar={handleSidebar}
+                <OrgPropertiesSidebar entity={selectedEntity} handleSidebar={handleSidebar}
                     closeSidebar={closeSidebar} />
             }>
             <Stack spacing={3}>
@@ -76,27 +96,17 @@ const OrgProperties = () => {
 export default OrgProperties
 
 interface SidebarProps {
-    mode: string | null,
     entity: OrgPropertiesItem | null,
     closeSidebar: () => void,
     handleSidebar: (mode: string, entity: OrgPropertiesItem | null) => void,
 }
-const OrgPropertiesSidebar = ({ mode, entity, closeSidebar }: SidebarProps) => {
-
-    const content = useMemo(() => {
-        switch (mode) {
-            case "FLOW":
-                return <LeadFlowList />
-            case "CONTACT":
-                return <ContactStateList />
-        }
-    }, [mode])
+const OrgPropertiesSidebar = ({ entity, closeSidebar }: SidebarProps) => {
 
     return (
         <SidebarContentWrapper title={entity?.label} subtitle="Propiedades de Organización"
             icon={entity?.icon} iconColor={entity?.color}
             actions={<CommonButton actionType="CLOSE" variant="outlined" onClick={closeSidebar}>Cerrar</CommonButton>} >
-            {content}
+            {entity?.content}
         </SidebarContentWrapper>
     )
 }

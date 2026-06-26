@@ -11,10 +11,10 @@ import { useListPagination } from 'src/hooks/useListPagination'
 import { useLoading } from 'src/hooks/useLoading'
 import type { LeadDetailed, LeadTag, LeadTagDetailed } from 'src/types/leads'
 import type { Paginable } from 'src/types/shared'
-import { deleteTag, getTags, updateLeadTags } from '../lead/details/LeadDetailsService'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { Box, Button, Checkbox, List, ListItemButton, ListItemIcon, Popover, Stack, Typography, ListItemText, ButtonGroup } from '@mui/material'
 import AddIcon from "@mui/icons-material/Add"
+import { deleteTag, getTags, updateLeadTags } from './LeadTagService'
 
 export const LeadTags = ({ lead, updateLeadInfo }: { lead: LeadDetailed, updateLeadInfo: (lead: LeadDetailed) => void }) => {
 

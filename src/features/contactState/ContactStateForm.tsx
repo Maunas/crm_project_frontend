@@ -10,6 +10,7 @@ import { setFormErrors } from "src/utils/forms"
 import { showToast } from "src/utils/feedback"
 import { useForm, useWatch } from "react-hook-form"
 import { ButtonGroup, Grid, Stack, Typography } from "@mui/material"
+import { useLoading } from "src/hooks/useLoading"
 
 interface ContactStateFormProps {
     existingState?: LeadContactStateDetailed,
@@ -37,22 +38,24 @@ export const ContactStateForm = ({ existingState, onClose, onSubmit }: ContactSt
             .then(res => {
                 onSubmit(res, true)
                 onClose()
-                showToast(`Estado ${res.name} actualizado con éxito`)
+                showToast(`Estado "${res.name}" actualizado con éxito`)
             })
             .catch(e => setFormErrors(e, setError))
         else return createLeadContactState(data)
             .then(res => {
                 onSubmit()
                 onClose()
-                showToast(`Estado ${res.name} creado con éxito`)
+                showToast(`Estado "${res.name}" creado con éxito`)
             })
             .catch(e => setFormErrors(e, setError))
     }
 
+    const { fnWithLoading: saveStateLoad, loading } = useLoading(saveState)
+
     const color = useWatch({ control, name: "color" })
 
     return (
-        <form onSubmit={handleSubmit(saveState)}>
+        <form onSubmit={handleSubmit(saveStateLoad)}>
             <Stack spacing={2}>
                 <Stack spacing={2} direction="row" sx={{ alignItems: "center" }}>
                     <CustomAvatar size="small" color={color}>{ACTION_ICONS[existingState ? "MODIFY" : "CREATE"]}</CustomAvatar>
@@ -71,7 +74,7 @@ export const ContactStateForm = ({ existingState, onClose, onSubmit }: ContactSt
                 </Grid>
                 <ButtonGroup sx={{ ml: "auto", alignSelf: "end" }}>
                     <CommonButton actionType="CLOSE" color="error" variant="outlined" onClick={onClose}>Cancelar</CommonButton>
-                    <CommonButton actionType="SAVE" type="submit">Guardar</CommonButton>
+                    <CommonButton actionType="SAVE" type="submit" loading={loading}>Guardar</CommonButton>
                 </ButtonGroup>
             </Stack>
         </form>
