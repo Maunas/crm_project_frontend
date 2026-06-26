@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { LeadFieldSections } from "./LeadDetailsSections"
-import { LeadTags } from "./LeadTags"
+import { LeadTags } from "features/tags/LeadTagsMenu.tsx"
 import { LeadActivities } from "../activities/LeadActivities"
 import { DisableConfirmDialog } from "shared/feedback/ConfirmationDialog.tsx"
 import LoadingScreenWrapper from "shared/feedback/LoadingScreen.tsx"

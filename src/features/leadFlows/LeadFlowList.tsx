@@ -39,7 +39,7 @@ export const LeadFlowList = () => {
         <Stack spacing={2}>
             <Stack spacing={1} direction="row" useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
                 {(flows?.items && flows.items.length > 0) &&
-                    <CommonButton actionType="CREATE" onClick={() => nav("/lead-flow-editor")} >
+                    <CommonButton actionType="CREATE" component={Link} to="/lead-flow-editor" >
                         Abrir Editor
                     </CommonButton>}
             </Stack>

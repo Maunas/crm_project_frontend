@@ -90,3 +90,9 @@ declare module '@mui/material/Paper' {
     "data-noborder"?: true;
   }
 }
+
+declare module '@mui/material/Avatar' {
+  interface AvatarOwnProps {
+    "size"?: "small" | "medium";
+  }
+}

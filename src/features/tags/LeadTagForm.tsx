@@ -3,14 +3,13 @@ import { FormErrorMessage } from "shared/ui/forms/FormFeedback"
 import CommonButton from "shared/ui/buttons/CommonButton"
 import { useLoading } from "src/hooks/useLoading"
 import type { LeadTag, LeadTagPost } from "src/types/leads"
-import type { ColorTypes } from "src/types/mui-theme.d"
-import { createTag, updateTag } from "./LeadDetailsService"
+import { createTag, updateTag } from "features/lead/details/LeadDetailsService"
 import { setFormErrors } from "src/utils/forms"
 import { showToast } from "src/utils/feedback"
-import { COLORS } from "src/utils/constants"
-import { Controller, useForm, useWatch, type Control, type FieldValues, type Path } from "react-hook-form"
-import { alpha, IconButton, Popover, Stack, TextField, Typography, useTheme, type PaletteColor } from "@mui/material"
-import CircleIcon from '@mui/icons-material/Circle'
+import { useForm, useWatch } from "react-hook-form"
+import { alpha, ButtonGroup, Popover, Stack, TextField, Typography, useTheme } from "@mui/material"
+import { ControlledColorPicker } from "src/components/ui/forms/ColorPicker"
+import { getColorShades } from "src/utils/formatters"
 
 
 interface TagFormMenuProps {
@@ -67,7 +66,7 @@ interface LeadTagFormProps {
 
 export const LeadTagForm = ({ existingTag, onCancel, onSubmit }: LeadTagFormProps) => {
 
-    const { palette } = useTheme()
+    const theme = useTheme()
 
     const defaultValues = useMemo(() => ({
         name: existingTag?.name ?? undefined,
@@ -97,64 +96,27 @@ export const LeadTagForm = ({ existingTag, onCancel, onSubmit }: LeadTagFormProp
 
     const color = useWatch({ name: "color", control })
 
+    const colorShades = useMemo(() => getColorShades(color ?? "primary", theme), [color, theme])
+
     return (
-        <form onSubmit={handleSubmit(postLoad)}>
+        <form onSubmit={handleSubmit(postLoad)} style={{ minWidth: "15rem" }}>
             <Stack spacing={1}>
                 <Stack spacing={.5}>
                     <TextField id="tag-name" label="Nombre" size="small" {...register("name")}
-                        sx={{ backgroundColor: alpha(palette[color as ColorTypes].darker, .2) }} />
+                        sx={{ backgroundColor: alpha(colorShades.DARKER, .2) }} />
                     {errors?.name?.message && <FormErrorMessage>{errors?.name?.message}</FormErrorMessage>}
                 </Stack>
-                <ControlledColorPicker control={control} name="color" />
-                <Stack>
-                    <CommonButton actionType="CLOSE" variant="text" color="error" onClick={handleCancel} disabled={loading}>
+                <ControlledColorPicker control={control} name="color" size="small" row />
+                <ButtonGroup fullWidth>
+                    <CommonButton actionType="CLOSE" variant="outlined" color="error" onClick={handleCancel} disabled={loading}>
                         Cancelar
                     </CommonButton>
                     <CommonButton actionType={existingTag ? "MODIFY" : "CREATE"} variant="contained" type="submit" loading={loading}>
                         Guardar
                     </CommonButton>
-                </Stack>
+                </ButtonGroup>
             </Stack>
         </form>
     )
 }
 
-interface ColorSelectorProps<T extends FieldValues> {
-    control: Control<T>,
-    name: Path<T>
-}
-
-export const ControlledColorPicker = <T extends FieldValues>({ control, name }: ColorSelectorProps<T>) => {
-    const { palette } = useTheme()
-    return (
-        <Controller control={control} name={name}
-            render={({ field, fieldState }) => {
-                return (
-                    <Stack spacing={1}>
-                        <Stack direction="row" spacing={.5} useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
-                            {COLORS.map(colorName => {
-                                const paletteColor: PaletteColor = palette[colorName]
-                                return (
-                                    <IconButton size="small" key={colorName}
-                                        onClick={() => {
-                                            field.onChange(colorName)
-                                        }}>
-                                        <CircleIcon sx={{
-                                            color: field.value === colorName ? paletteColor.main : paletteColor.light,
-                                            borderRadius: "50%",
-                                            border: field.value === colorName ? `2px solid ${palette.text.secondary}` : ""
-                                        }} fontSize="small" />
-                                    </IconButton>
-                                )
-                            })
-                            }
-                        </Stack>
-                        {fieldState.error?.message && typeof fieldState.error?.message === "string" && (
-                            <FormErrorMessage>{fieldState.error?.message}</FormErrorMessage>
-                        )}
-                    </Stack>
-                )
-            }} />
-
-    )
-}

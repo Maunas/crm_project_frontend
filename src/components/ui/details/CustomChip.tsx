@@ -3,7 +3,7 @@ import { textTheme } from "../../../theme/typographyTheme";
 import { Chip, type ChipTypeMap } from "@mui/material";
 import type { OverridableComponent } from "@mui/material/OverridableComponent";
 import { styled } from "@mui/material/styles";
-import { getColorPalette } from "src/utils/formatters";
+import { getColorShades } from "src/utils/formatters";
 
 const CHIP_OPACITY = .3
 const CHIP_SIZES = {
@@ -21,7 +21,7 @@ const CustomChip = memo(styled(Chip, {
     ({ theme, chipColor, defaultColor = "primary", size = "medium" }) => {
 
         const resolvedColor = chipColor ?? defaultColor
-        const paletteColors = getColorPalette(resolvedColor, theme)
+        const paletteColors = getColorShades(resolvedColor, theme)
         const sizeObject = CHIP_SIZES[size as keyof typeof CHIP_SIZES]
 
         return [{

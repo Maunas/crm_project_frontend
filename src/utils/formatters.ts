@@ -77,7 +77,31 @@ export const isColorType = (color: string): color is ColorTypes => {
     return colorTypesArray.includes(color)
 }
 
-export const getColorPalette = (color: string, theme: Theme) => {
+export function hslStringToHex(hsl: string): string {
+    const match = hsl.match(/hsl\(\s*(\d+)\s*,\s*(\d+)%\s*,\s*(\d+)%\s*\)/)
+    if (!match) return "#000000"
+
+    const h = Number(match[1])
+    const s = Number(match[2]) / 100
+    const l = Number(match[3]) / 100
+
+    const c = (1 - Math.abs(2 * l - 1)) * s
+    const x = c * (1 - Math.abs(((h / 60) % 2) - 1))
+    const m = l - c / 2
+
+    let r, g, b
+    if (h < 60) [r, g, b] = [c, x, 0]
+    else if (h < 120) [r, g, b] = [x, c, 0]
+    else if (h < 180) [r, g, b] = [0, c, x]
+    else if (h < 240) [r, g, b] = [0, x, c]
+    else if (h < 300) [r, g, b] = [x, 0, c]
+    else[r, g, b] = [c, 0, x]
+
+    const toHex = (n: number) => Math.round((n + m) * 255).toString(16).padStart(2, "0")
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`
+}
+
+export const getColorShades = (color: string, theme: Theme) => {
     const isColorHex = isHex(color)
     if (isColorHex) return {
         LIGHTER: theme.lighten(color, .6),
@@ -90,10 +114,10 @@ export const getColorPalette = (color: string, theme: Theme) => {
     const themeColor = isColorType(color) ? color : "primary"
 
     return {
-        LIGHTER: theme.palette[themeColor].lighter,
-        LIGHT: theme.palette[themeColor].light,
-        MAIN: theme.palette[themeColor].main,
-        DARK: theme.palette[themeColor].dark,
-        DARKER: theme.palette[themeColor].darker
+        LIGHTER: hslStringToHex(theme.palette[themeColor].lighter),
+        LIGHT: hslStringToHex(theme.palette[themeColor].light),
+        MAIN: hslStringToHex(theme.palette[themeColor].main),
+        DARK: hslStringToHex(theme.palette[themeColor].dark),
+        DARKER: hslStringToHex(theme.palette[themeColor].darker)
     }
 }

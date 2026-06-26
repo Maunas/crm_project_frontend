@@ -2,14 +2,14 @@ import type { Metadata } from "./shared"
 
 export interface LeadContactStatePost {
     name: string,
-    color: string
+    color: string,
+    is_initial: boolean
+    order?: number,
 }
 
 export interface LeadContactState extends LeadContactStatePost {
     id: number,
     active: boolean,
-    order: number,
-    is_initial: boolean
     organization_id: number
 }
 
