@@ -12,13 +12,13 @@ import ViewColumnIcon from '@mui/icons-material/ViewColumn';
 import { ContactStateList } from '../contactState/ContactStateList';
 import CommonButton from 'src/components/ui/buttons/CommonButton';
 
-export interface LeadPropertiesItem {
+export interface OrgPropertiesItem {
     label: string,
     id: "FLOW" | "CONTACT" | "TAGS",
     icon: ReactNode,
     color: ColorTypes
 }
-export const LEAD_PROPERTIES: LeadPropertiesItem[] = [{
+export const LEAD_PROPERTIES: OrgPropertiesItem[] = [{
     label: "Flujo de Estados",
     id: "FLOW",
     icon: <AccountTreeIcon />,
@@ -31,20 +31,20 @@ export const LEAD_PROPERTIES: LeadPropertiesItem[] = [{
     color: "secondary"
 }]
 
-export const LeadProperties = () => {
+const OrgProperties = () => {
 
     const [params, setParams] = useSearchParams()
 
-    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<LeadPropertiesItem>("id", params, setParams,)
+    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<OrgPropertiesItem>("id", params, setParams)
 
     return (
-        <ContainerWithSidebar isSidebarOpen={Boolean(sidebarMode)} closeSidebar={closeSidebar} sidebarWidth='45rem'
+        <ContainerWithSidebar isSidebarOpen={Boolean(sidebarMode)} closeSidebar={closeSidebar}
             sidebarComponent={
-                <LeadPropertiesSidebar mode={sidebarMode} entity={selectedEntity} handleSidebar={handleSidebar}
+                <OrgPropertiesSidebar mode={sidebarMode} entity={selectedEntity} handleSidebar={handleSidebar}
                     closeSidebar={closeSidebar} />
             }>
             <Stack spacing={3}>
-                <Typography variant="h1">Propiedades de Lead</Typography>
+                <Typography variant="h1">Propiedades de Organización</Typography>
                 <Stack spacing={2}>
                     <List>
                         {LEAD_PROPERTIES.map(prop =>
@@ -73,15 +73,15 @@ export const LeadProperties = () => {
     )
 }
 
-export default LeadProperties
+export default OrgProperties
 
 interface SidebarProps {
     mode: string | null,
-    entity: LeadPropertiesItem | null,
+    entity: OrgPropertiesItem | null,
     closeSidebar: () => void,
-    handleSidebar: (mode: string, entity: LeadPropertiesItem | null) => void,
+    handleSidebar: (mode: string, entity: OrgPropertiesItem | null) => void,
 }
-const LeadPropertiesSidebar = ({ mode, entity, closeSidebar }: SidebarProps) => {
+const OrgPropertiesSidebar = ({ mode, entity, closeSidebar }: SidebarProps) => {
 
     const content = useMemo(() => {
         switch (mode) {
