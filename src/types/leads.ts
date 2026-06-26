@@ -1,8 +1,8 @@
 import type { LeadFieldValue, LeadFieldValueDetailed } from "./leadFields";
 import type { LeadFilter, ListParams, Metadata } from "./shared";
-import type { LeadContactState, LeadContactStateDetailed } from "./contactState";
 import type { LeadState, LeadStateDetailed } from "./leadFlow";
 import type { ColorTypes } from "./mui-theme.d";
+import type { LeadContactState, LeadContactStateDetailed, LeadTag } from "./orgProperties";
 
 export interface LeadPostValue {
   field_id: number;
@@ -112,15 +112,3 @@ export interface LeadView extends LeadViewPost {
 
 export interface LeadViewDetailed extends LeadView, Metadata { }
 
-
-export interface LeadTagPost {
-  name: string,
-  color?: string
-}
-export interface LeadTag extends LeadTagPost {
-  id: number,
-  organization_id: number
-  color: ColorTypes
-}
-
-export interface LeadTagDetailed extends LeadTag, Metadata { }

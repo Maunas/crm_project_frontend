@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Droppable } from '@hello-pangea/dnd';
 import { Stack, Typography, Box, alpha, CircularProgress, Chip } from '@mui/material';
-import type { LeadContactState } from 'src/types/leadContactState';
+import type { LeadContactState } from 'src/types/orgProperties';
 import type { Lead } from 'src/types/leads';
 import { getFilteredLeads } from '../../leadService';
 import { LeadBoardCard } from './LeadBoardCard';

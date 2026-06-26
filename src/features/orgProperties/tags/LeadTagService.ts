@@ -1,6 +1,6 @@
-import type { Lead, LeadTag, LeadTagDetailed, LeadTagPost } from "src/types/leads";
 import type { DeleteResponse, ListParams, Paginable } from "src/types/shared";
 import axiosCRM from "src/lib/axios";
+import type { LeadTag, LeadTagDetailed, LeadTagPost } from "src/types/orgProperties";
 
 export const getTags = async <T extends ListParams>(params?: T)
     : Promise<Paginable<T["detailed"] extends true ? LeadTagDetailed : LeadTag>> => {
@@ -21,9 +21,4 @@ export const updateTag = async (body: LeadTagPost, id: number): Promise<LeadTagD
 export const deleteTag = async (id: number): Promise<DeleteResponse> => {
     const tag = await axiosCRM.delete(`tags/${id}`);
     return tag.data;
-};
-
-export const updateLeadTags = async (ids: number[], leadId: number): Promise<Lead> => {
-    const lead = await axiosCRM.put(`leads/${leadId}`, { tag_ids: ids });
-    return lead.data;
 };

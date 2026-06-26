@@ -84,7 +84,7 @@ export const GenericSidebar = ({ isSidebarOpen = false, closeSidebar, sidebarCom
                         },
                     },
                     theme.applyStyles("light", {
-                        backgroundColor: theme.palette.background.default
+                        backgroundColor: theme.palette.contrast[50]
                     })]
                 }
             }}
@@ -113,7 +113,7 @@ export const SidebarContentWrapper = ({ title, subtitle, icon, actions, iconColo
 
     return (
         <Stack spacing={2} sx={{ height: "100%" }} useFlexGap>
-            <GenericSidebarHeader >
+            <GenericSidebarHeader color={iconColor} >
                 <Stack direction="row" spacing={2} sx={{ p: "1rem 4rem 1rem 1.5rem", height: "6rem", alignItems: "center" }}>
                     <CustomAvatar color={iconColor}>{icon}</CustomAvatar>
                     <Stack>

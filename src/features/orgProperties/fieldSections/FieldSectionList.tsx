@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { ContactStateForm } from './ContactStateForm'
+import { ContactStateForm } from './FieldSectionForm'
 import { DisableConfirmDialog } from 'shared/feedback/ConfirmationDialog'
 import PaginationComponent from 'shared/ui/lists/PaginationComponent'
 import { ResponsiveListItem } from 'shared/ui/lists/CustomListItem'
@@ -10,12 +10,12 @@ import CustomChip from 'shared/ui/details/CustomChip'
 import { EnabledIcon } from 'shared/ui/lists/Icons'
 import { useListPagination } from 'src/hooks/useListPagination'
 import { useLoading } from 'src/hooks/useLoading'
-import type { LeadContactStateDetailed } from 'src/types/contactState'
 import type { Paginable } from 'src/types/shared'
-import { getContactStates } from './contactStatesServices'
 import { disableLeadContactState, enableLeadContactState } from 'src/services/leadContactStateService'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { Divider, Grid, ListItemText, Stack, Typography } from '@mui/material'
+import type { LeadContactStateDetailed } from 'src/types/orgProperties'
+import { getContactStates } from '../contactState/contactStatesServices'
 
 export const ContactStateList = () => {
 

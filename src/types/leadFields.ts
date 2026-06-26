@@ -4,15 +4,16 @@ import type { Lead } from "./leads";
 import type { Nomenclator, NomenclatorItem } from "./nomenclators";
 import type { FieldArrayWithId } from "react-hook-form";
 import type { LeadPostForm } from "src/features/lead/leadForm/LeadForm";
+import type { LeadFieldSection, LeadFieldSectionDetailed } from "./orgProperties";
 
 export interface ExcelFormulaTemplate {
-    name_spanish: string;
-    name_english: string;
-    description: string;
-    syntax: string;
-    example: string;
-    category: string;
-    note: string;
+  name_spanish: string;
+  name_english: string;
+  description: string;
+  syntax: string;
+  example: string;
+  category: string;
+  note: string;
 }
 
 export interface LeadFieldValue {
@@ -123,18 +124,6 @@ export interface FieldValidationRuleTemplate {
   description?: string;
   required_params: string[];
 }
-
-export interface LeadFieldSectionPost {
-  name: string;
-  organization_id: number;
-}
-
-export interface LeadFieldSection extends LeadFieldSectionPost {
-  id: number;
-}
-
-export interface LeadFieldSectionDetailed extends LeadFieldSection, Metadata { }
-
 
 export interface LeadFieldsReorderBody {
   campaign_id: number,

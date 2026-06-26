@@ -9,11 +9,11 @@ import { useSearchParams } from 'react-router-dom';
 import { Avatar, List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import ViewColumnIcon from '@mui/icons-material/ViewColumn';
-import { ContactStateList } from '../contactState/ContactStateList';
+import { ContactStateList } from './contactState/ContactStateList';
 import CommonButton from 'src/components/ui/buttons/CommonButton';
 import DiscountIcon from '@mui/icons-material/Discount';
 import FolderCopyIcon from '@mui/icons-material/FolderCopy';
-import { LeadTagsList } from '../tags/LeadTagsList';
+import { LeadTagsList } from './tags/LeadTagsList';
 
 export interface OrgPropertiesItem {
     label: string,

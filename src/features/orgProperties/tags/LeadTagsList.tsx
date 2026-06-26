@@ -11,9 +11,9 @@ import { useLoading } from 'src/hooks/useLoading'
 import type { Paginable } from 'src/types/shared'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { Divider, Grid, ListItemText, Stack, Typography } from '@mui/material'
-import type { LeadTagDetailed } from 'src/types/leads'
 import { deleteTag, getTags } from './LeadTagService'
 import { TagFormSidebarWrapper } from './LeadTagForm'
+import type { LeadTagDetailed } from 'src/types/orgProperties'
 
 export const LeadTagsList = () => {
 

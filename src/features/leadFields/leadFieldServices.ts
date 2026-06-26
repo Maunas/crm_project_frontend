@@ -1,5 +1,5 @@
 import type {
-    LeadField, LeadFieldDetailed, LeadFieldPost, LeadFieldType, LeadFieldTypeDetailed, LeadFieldTemplate, LeadFieldSection, LeadFieldSectionDetailed,
+    LeadField, LeadFieldDetailed, LeadFieldPost, LeadFieldType, LeadFieldTypeDetailed, LeadFieldTemplate,
     InputMaskTemplate, LeadFieldsReorderBody, ExcelFormulaTemplate
 } from "src/types/leadFields";
 import type { BulkDeleteResponse, BulkEnableResponse, DeleteResponse, EnableResponse, ListParams, Paginable } from "src/types/shared";
@@ -63,13 +63,6 @@ export const getFieldTypes = async <T extends ListParams>(params?: T): Promise<P
 >> => {
     const tmp = await axiosCRM.get(`lead_field_types`, { params });
     return { ...tmp.data, items: orderListByField(tmp.data.items, "id") };
-};
-
-export const getFieldSections = async <T extends ListParams>(params?: T): Promise<Paginable<
-    T["detailed"] extends true ? LeadFieldSectionDetailed : LeadFieldSection
->> => {
-    const sections = await axiosCRM.get(`lead_field_sections`, { params });
-    return { ...sections.data, items: orderListByField(sections.data.items, "id") };
 };
 
 export const reorderLeadFields = async (data: LeadFieldsReorderBody): Promise<{ message: string, campaign_id: number }> => {

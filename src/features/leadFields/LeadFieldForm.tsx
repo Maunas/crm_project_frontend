@@ -6,10 +6,10 @@ import { FormErrorMessage } from "shared/ui/forms/FormFeedback";
 import CommonButton from "shared/ui/buttons/CommonButton";
 import ACTION_ICONS from "shared/ui/buttons/ActionIcons";
 import { useLoading } from "src/hooks/useLoading";
-import type { InputMaskTemplate, LeadFieldDetailed, LeadFieldPost, LeadFieldSection, LeadFieldTemplate, LeadFieldTypeDetailed } from "src/types/leadFields";
+import type { InputMaskTemplate, LeadFieldDetailed, LeadFieldPost, LeadFieldTemplate, LeadFieldTypeDetailed } from "src/types/leadFields";
 import type { Campaign, CampaignDetailed } from "src/types/campaigns";
 import type { Nomenclator } from "src/types/nomenclators";
-import { createLeadField, getFieldSections, getFieldTemplates, getFieldTypes, getInputMaskTemplates, updateLeadField } from "./leadFieldServices";
+import { createLeadField, getFieldTemplates, getFieldTypes, getInputMaskTemplates, updateLeadField } from "./leadFieldServices";
 import { getNomenclators } from "../nomenclators/nomenclatorService";
 import { getCampaigns } from "../campaigns/campaignServices";
 import { getFieldDataByType } from "./leadFieldUtils";
@@ -23,6 +23,8 @@ import type { ExcelFormulaTemplate } from "src/types/leadFields";
 import { FormulaHelperPanel } from "src/components/ui/modals/FormulaHelperModal";
 import FunctionsIcon from '@mui/icons-material/Functions';
 import { FormControl, InputLabel, OutlinedInput, FormHelperText, } from "@mui/material";
+import { getFieldSections } from "../orgProperties/fieldSections/fieldSectionsServices";
+import type { LeadFieldSection } from "src/types/orgProperties";
 
 
 interface LeadFieldSidebarProps {
