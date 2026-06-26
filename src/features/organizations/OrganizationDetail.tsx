@@ -34,12 +34,14 @@ const OrganizationDetails = ({ entity, closeSidebar, handleSidebar, handleActive
                     <Typography variant="body1">{entity.description}</Typography>
                 }
                 <Divider />
-                <ButtonGroup fullWidth>
-                    {activeOrg?.id !== entity.id ?
-                        <CommonButton actionType="CHECK" color="info" variant='outlined' onClick={() => setActiveOrg(entity)} >Seleccionar como Activo</CommonButton>
-                        : <CommonButton actionType="LIST" component={Link} to={`/campaigns`} >Ver Espacios de Trabajo</CommonButton>
-                    }
-                </ButtonGroup>
+                {activeOrg?.id !== entity.id ?
+                    <CommonButton actionType="CHECK" color="info" variant='outlined' onClick={() => setActiveOrg(entity)} >Seleccionar como Activo</CommonButton>
+                    :
+                    <ButtonGroup fullWidth>
+                        <CommonButton actionType="PARAMETERS" variant="outlined" component={Link} to={`/campaigns`} >Propiedades</CommonButton>
+                        <CommonButton actionType="LIST" variant="outlined" component={Link} to={`/campaigns`} >Espacios de Trabajo</CommonButton>
+                    </ButtonGroup>
+                }
                 <Divider />
                 <DetailsMetadata entity={entity} />
                 <Divider />
