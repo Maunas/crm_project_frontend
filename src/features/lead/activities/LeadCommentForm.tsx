@@ -1,19 +1,17 @@
 import { useMemo, useState } from "react"
 import { CommentInstance } from "./LeadComments"
 import { RegisteredTextInput } from "shared/ui/forms/CustomInputs"
-import { FormErrorMessage } from "shared/ui/forms/FormFeedback"
 import CommonButton from "shared/ui/buttons/CommonButton"
 import { useLoading } from "src/hooks/useLoading"
 import type { LeadComment, LeadCommentPost } from "src/types/leads"
-import type { ColorTypes } from "src/types/mui-theme.d"
 import { createComment, updateComment } from "./leadActivitiesService"
 import { setFormErrors } from "src/utils/forms"
 import { showToast } from "src/utils/feedback"
-import { COLORS } from "src/utils/constants"
-import { Controller, useForm, type Control } from "react-hook-form"
-import { Box, Grid, IconButton, Stack } from "@mui/material"
-import { alpha, styled, useTheme, type PaletteColor } from "@mui/material/styles"
-import CircleIcon from '@mui/icons-material/Circle';
+import { useForm } from "react-hook-form"
+import { Box, Grid, Stack } from "@mui/material"
+import { alpha, styled, useTheme } from "@mui/material/styles"
+import { ControlledColorPicker } from "src/components/ui/forms/ColorPicker"
+import { getColorShades } from "src/utils/formatters"
 
 interface CommentFromNoteProps {
     leadId: number,
@@ -24,7 +22,7 @@ interface CommentFromNoteProps {
 
 export const UpdateCommentFromNote = ({ existingComment, leadId, onUpdate, onClose }: CommentFromNoteProps) => {
 
-    const [color, setColor] = useState<ColorTypes>(existingComment?.color ?? "secondary")
+    const [color, setColor] = useState<string>(existingComment?.color ?? "secondary")
 
     const postComment = ((data: LeadCommentPost) => {
         return updateComment({ ...data }, existingComment.id).then((res) => {
@@ -47,12 +45,12 @@ export const UpdateCommentFromNote = ({ existingComment, leadId, onUpdate, onClo
 }
 
 const NewCommentBox = styled(Box)(({ theme, color = "secondary" }) => {
-    const paletteColor = theme.palette[color as ColorTypes] ?? theme.palette.secondary
+    const colorShades = getColorShades(color ?? "secondary", theme)
     const OPACITY = .12
     return [{
         border: "1px solid",
-        borderColor: alpha(paletteColor.main, .5),
-        backgroundColor: alpha(paletteColor.light, OPACITY),
+        borderColor: alpha(colorShades.MAIN, .5),
+        backgroundColor: alpha(colorShades.LIGHT, OPACITY),
         width: "100%",
         "& .MuiInputBase-root": {
             backgroundColor: theme.palette.background.paper,
@@ -60,8 +58,8 @@ const NewCommentBox = styled(Box)(({ theme, color = "secondary" }) => {
     },
     //Invierte los tonos en darkmode
     theme.applyStyles('dark', {
-        backgroundColor: alpha(paletteColor.darker, OPACITY),
-        borderColor: alpha(paletteColor.dark, .5),
+        backgroundColor: alpha(colorShades.DARKER, OPACITY),
+        borderColor: alpha(colorShades.DARK, .5),
     })
     ]
 })
@@ -73,7 +71,7 @@ interface CommentWrapperProps {
 
 export const CreateCommentWrapper = ({ leadId, onCreate }: CommentWrapperProps) => {
 
-    const [color, setColor] = useState<ColorTypes>("secondary")
+    const [color, setColor] = useState<string>("secondary")
 
     const { palette } = useTheme()
 
@@ -98,7 +96,7 @@ interface CommentFormProps {
     leadId: number,
     submit: (data: LeadCommentPost) => Promise<void>,
     onClose?: () => void,
-    setColor: React.Dispatch<React.SetStateAction<ColorTypes>>,
+    setColor: React.Dispatch<React.SetStateAction<string>>,
     size?: "small" | "medium"
 }
 
@@ -129,7 +127,7 @@ const CommentForm = ({ existingComment, leadId, onClose, submit, setColor, size 
                 <RegisteredTextInput register={register} name={"content"} label="Comentario"
                     errorMessage={errors.content?.message} size={size} multiline />
                 <Stack direction="row" spacing={1} useFlexGap sx={{ justifyContent: "space-between", flexWrap: "wrap", width: "100%" }}>
-                    <CommentColorSelector control={control} setColor={setColor} />
+                    <ControlledColorPicker control={control} name="color" size={size} row onBeforeChange={setColor} />
                     <CommonButton actionType="SAVE" variant="contained" color="primary" loading={loading}
                         type="submit" size={size} sx={{ ml: "auto" }}>
                         Guardar
@@ -137,40 +135,5 @@ const CommentForm = ({ existingComment, leadId, onClose, submit, setColor, size 
                 </Stack >
             </Stack >
         </form >
-    )
-}
-
-interface CommentColorSelectorProps {
-    control: Control<LeadCommentPost>,
-    setColor?: React.Dispatch<React.SetStateAction<ColorTypes>>
-}
-
-const CommentColorSelector = ({ control, setColor }: CommentColorSelectorProps) => {
-
-    const { palette } = useTheme()
-    return (
-        <Controller control={control} name="color"
-            render={({ field, fieldState }) => (
-                <Stack direction="row" sx={{ flexWrap: "wrap", alignItems: "center" }}>
-                    {fieldState.error?.message && typeof fieldState.error?.message === "string" && (
-                        <FormErrorMessage>{fieldState.error?.message}</FormErrorMessage>
-                    )}
-                    {COLORS.map(colorName => {
-                        const paletteColor: PaletteColor = palette[colorName]
-                        return <IconButton size="small" key={colorName}
-                            onClick={() => {
-                                field.onChange(colorName)
-                                if (setColor) setColor(colorName)
-                            }}>
-                            <CircleIcon sx={{
-                                color: field.value === colorName ? paletteColor.main : paletteColor.light,
-                                borderRadius: "50%",
-                                border: field.value === colorName ? `2px solid ${palette.text.secondary}` : ""
-                            }} fontSize="small" />
-                        </IconButton>
-                    })}
-                </Stack>
-            )}
-        />
     )
 }

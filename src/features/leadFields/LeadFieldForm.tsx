@@ -6,16 +6,16 @@ import { FormErrorMessage } from "shared/ui/forms/FormFeedback";
 import CommonButton from "shared/ui/buttons/CommonButton";
 import ACTION_ICONS from "shared/ui/buttons/ActionIcons";
 import { useLoading } from "src/hooks/useLoading";
-import type { InputMaskTemplate, LeadFieldDetailed, LeadFieldPost, LeadFieldSection, LeadFieldTemplate, LeadFieldTypeDetailed } from "src/types/leadFields";
+import type { InputMaskTemplate, LeadFieldDetailed, LeadFieldPost, LeadFieldTemplate, LeadFieldTypeDetailed } from "src/types/leadFields";
 import type { Campaign, CampaignDetailed } from "src/types/campaigns";
 import type { Nomenclator } from "src/types/nomenclators";
-import { createLeadField, getFieldSections, getFieldTemplates, getFieldTypes, getInputMaskTemplates, updateLeadField } from "./leadFieldServices";
+import { createLeadField, getFieldTemplates, getFieldTypes, getInputMaskTemplates, updateLeadField } from "./leadFieldServices";
 import { getNomenclators } from "../nomenclators/nomenclatorService";
 import { getCampaigns } from "../campaigns/campaignServices";
 import { getFieldDataByType } from "./leadFieldUtils";
 import { setFormErrors } from "src/utils/forms";
 import { showToast } from "src/utils/feedback";
-import { Grid, FormGroup, Stack, Avatar, useTheme, Divider, ButtonGroup } from "@mui/material";
+import { Grid, FormGroup, Stack, Divider, ButtonGroup } from "@mui/material";
 import { Controller, useForm, useWatch, type Control, type FieldErrors, type UseFormGetValues, type UseFormSetValue } from "react-hook-form";
 import { InputAdornment, IconButton } from "@mui/material";
 import { getExcelFormulaTemplates } from "./leadFieldServices";
@@ -23,6 +23,8 @@ import type { ExcelFormulaTemplate } from "src/types/leadFields";
 import { FormulaHelperPanel } from "src/components/ui/modals/FormulaHelperModal";
 import FunctionsIcon from '@mui/icons-material/Functions';
 import { FormControl, InputLabel, OutlinedInput, FormHelperText, } from "@mui/material";
+import { getFieldSections } from "../orgProperties/fieldSections/fieldSectionsServices";
+import type { LeadFieldSection } from "src/types/orgProperties";
 
 
 interface LeadFieldSidebarProps {
@@ -37,8 +39,6 @@ interface LeadFieldSidebarProps {
 }
 //Wrapper de CampaignForm para crear desde un Sidebar
 export const LeadFieldFormSidebar = ({ existingLF, campaign, updateEntityOnList, closeSidebar, handleSidebar }: LeadFieldSidebarProps) => {
-
-  const { palette } = useTheme()
 
   const submit = (data: LeadFieldPost, reset: boolean = false) => {
     const updateInfo = (data: LeadFieldDetailed) => {
@@ -60,7 +60,7 @@ export const LeadFieldFormSidebar = ({ existingLF, campaign, updateEntityOnList,
   }
   return <SidebarContentWrapper subtitle={campaign.name}
     title={existingLF ? `Modificar "${existingLF.name}"` : "Crear Campo"}
-    avatar={<Avatar sx={{ bgcolor: palette.primary.main }} variant="rounded">{ACTION_ICONS.CREATE}</Avatar>}>
+    icon={ACTION_ICONS.CREATE}>
     <LeadFieldForm existingLF={existingLF} campaign={campaign} submit={submit} onCancel={closeSidebar} />
   </SidebarContentWrapper>
 }

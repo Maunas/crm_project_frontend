@@ -1,41 +1,71 @@
-import type { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { LeadFlowList } from '../leadFlows/LeadFlowList';
 import { CustomListItem, CustomListItemAvatar } from 'shared/ui/lists/CustomListItem';
-import ContainerWithSidebar from 'shared/layout/container/GenericContainer';
+import ContainerWithSidebar, { SidebarContentWrapper } from 'shared/layout/container/GenericContainer';
 import { CommonIconButton } from 'shared/ui/buttons/CommonIconButton';
 import { useSidebar } from 'src/hooks/useSidebar';
 import type { ColorTypes } from 'src/types/mui-theme.d';
 import { useSearchParams } from 'react-router-dom';
 import { Avatar, List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import ViewColumnIcon from '@mui/icons-material/ViewColumn';
+import { ContactStateList } from './contactState/ContactStateList';
+import CommonButton from 'src/components/ui/buttons/CommonButton';
+import DiscountIcon from '@mui/icons-material/Discount';
+import FolderCopyIcon from '@mui/icons-material/FolderCopy';
+import { LeadTagsList } from './tags/LeadTagsList';
+import { FieldSectionList } from './fieldSections/FieldSectionList';
 
-export interface LeadPropertiesItem {
+export interface OrgPropertiesItem {
     label: string,
-    id: "FLOW" | "CONTACT" | "TAGS",
+    id: "FLOW" | "CONTACT" | "TAGS" | "SECTIONS",
     icon: ReactNode,
-    color: ColorTypes
+    color: ColorTypes,
+    content: ReactNode
 }
-export const LEAD_PROPERTIES: LeadPropertiesItem[] = [{
+export const LEAD_PROPERTIES: OrgPropertiesItem[] = [{
     label: "Flujo de Estados",
     id: "FLOW",
     icon: <AccountTreeIcon />,
-    color: "primary"
+    color: "primary",
+    content: <LeadFlowList />
+},
+{
+    label: "Estados de Contacto",
+    id: "CONTACT",
+    icon: <ViewColumnIcon />,
+    color: "secondary",
+    content: <ContactStateList />
+},
+{
+    label: "Etiquetas de Lead",
+    id: "TAGS",
+    icon: <DiscountIcon />,
+    color: "info",
+    content: <LeadTagsList />
+},
+{
+    label: "Secciones de Campo",
+    id: "SECTIONS",
+    icon: <FolderCopyIcon />,
+    color: "success",
+    content: <FieldSectionList />
 }]
 
-export const LeadProperties = () => {
+const OrgProperties = () => {
 
     const [params, setParams] = useSearchParams()
 
-    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<LeadPropertiesItem>("id", params, setParams,)
+    const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<OrgPropertiesItem>("id", params, setParams)
 
     return (
-        <ContainerWithSidebar isSidebarOpen={Boolean(sidebarMode)} closeSidebar={closeSidebar} sidebarWidth='45rem'
+        <ContainerWithSidebar isSidebarOpen={Boolean(sidebarMode)} closeSidebar={closeSidebar}
             sidebarComponent={
-                <LeadPropertiesSidebar mode={sidebarMode} entity={selectedEntity} handleSidebar={handleSidebar}
+                <OrgPropertiesSidebar entity={selectedEntity} handleSidebar={handleSidebar}
                     closeSidebar={closeSidebar} />
             }>
             <Stack spacing={3}>
-                <Typography variant="h1">Propiedades de Lead</Typography>
+                <Typography variant="h1">Propiedades de Organización</Typography>
                 <Stack spacing={2}>
                     <List>
                         {LEAD_PROPERTIES.map(prop =>
@@ -64,19 +94,20 @@ export const LeadProperties = () => {
     )
 }
 
-export default LeadProperties
+export default OrgProperties
 
 interface SidebarProps {
-    mode: string | null,
-    entity: LeadPropertiesItem | null,
+    entity: OrgPropertiesItem | null,
     closeSidebar: () => void,
-    handleSidebar: (mode: string, entity: LeadPropertiesItem | null) => void,
+    handleSidebar: (mode: string, entity: OrgPropertiesItem | null) => void,
 }
-const LeadPropertiesSidebar = ({ mode, entity, closeSidebar }: SidebarProps) => {
+const OrgPropertiesSidebar = ({ entity, closeSidebar }: SidebarProps) => {
 
-    switch (mode) {
-        case "FLOW":
-            return <LeadFlowList closeSidebar={closeSidebar} property={entity} />
-    }
-
+    return (
+        <SidebarContentWrapper title={entity?.label} subtitle="Propiedades de Organización"
+            icon={entity?.icon} iconColor={entity?.color}
+            actions={<CommonButton actionType="CLOSE" variant="outlined" onClick={closeSidebar}>Cerrar</CommonButton>} >
+            {entity?.content}
+        </SidebarContentWrapper>
+    )
 }

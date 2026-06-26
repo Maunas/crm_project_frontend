@@ -3,12 +3,12 @@ import { useCallback, useEffect, useState } from 'react'
 import GenericPaper from 'src/components/layout/container/GenericPaper'
 import CustomChip from 'src/components/ui/details/CustomChip'
 import { getNextFlowState } from 'src/features/leadFlows/leadFlowServices/FlowService'
-import { getContactStates } from 'src/features/leadProperties/contactStatesServices'
-import type { LeadContactState, LeadContactStateDetailed } from 'src/types/contactState'
+import type { LeadContactState, LeadContactStateDetailed } from 'src/types/orgProperties'
 import type { LeadState, LeadStateDetailed } from 'src/types/leadFlow'
 import type { Lead, LeadDetailed } from 'src/types/leads'
 import { changeContactState, changeFlowState } from './LeadDetailsService'
 import { showCommonErrorToast } from 'src/utils/feedback'
+import { getLeadContactStates } from 'src/features/orgProperties/contactState/contactStatesServices'
 
 interface LeadDetailsState {
     lead: LeadDetailed,
@@ -23,7 +23,7 @@ export const LeadDetailsState = ({ lead, contactState, flowState, updateLeadInfo
     const [contactStates, setContactStates] = useState<LeadContactState[]>([])
 
     useEffect(() => {
-        getContactStates({ only_active: true, page_size: 0, detailed: false })
+        getLeadContactStates({ only_active: true, page_size: 0, detailed: false })
             .then(res => setContactStates(res.items.filter(i => i.id !== contactState.id)))
     }, [contactState])
 

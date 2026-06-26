@@ -16,7 +16,7 @@ const options = [
   { name: "Campañas", icon: <WorkIcon />, link: "/campaigns" },
   { name: "Organizaciones", icon: <StoreIcon />, link: "/organizations" },
   { name: "Nomencladores", icon: <LabelIcon />, link: "/nomenclators" },
-  { name: "Propiedades de Lead", icon: <TuneIcon />, link: "/lead-properties" },
+  { name: "Propiedades de Organización", icon: <TuneIcon />, link: "/org-properties" },
   { name: "Automatizaciones", icon: <AutoFixHighIcon />, link: "/automations" },
   { name: "Auditoría de Sistema", icon: <VerifiedUserIcon />, link: "/audit-logs" }
 ]

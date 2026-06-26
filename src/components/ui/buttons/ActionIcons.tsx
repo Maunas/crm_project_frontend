@@ -24,6 +24,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import DownloadIcon from '@mui/icons-material/Download';
 import UploadIcon from '@mui/icons-material/Upload'
+import TuneIcon from '@mui/icons-material/Tune'
 
 const ACTION_ICONS = {
     NONE: <></>,
@@ -52,7 +53,8 @@ const ACTION_ICONS = {
     DUPLICATE: <ContentCopyIcon sx={{ display: "block" }} />,
     AUTOMATE: <AutoFixHighIcon sx={{ display: "block" }} />,
     DOWNLOAD: <DownloadIcon sx={{ display: "block" }} />,
-    IMPORT: <UploadIcon sx={{ display: "block" }} />
+    IMPORT: <UploadIcon sx={{ display: "block" }} />,
+    PARAMETERS: <TuneIcon sx={{ display: "block" }} />
 }
 
 export type ActionType = keyof typeof ACTION_ICONS

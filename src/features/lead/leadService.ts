@@ -42,12 +42,15 @@ export const disableLead = async (id: number): Promise<DeleteResponse> => {
   return lead.data;
 };
 
-
 export const bulkDeleteLead = async (body: { ids: number[] }): Promise<BulkDeleteResponse> => {
   const res = await axiosCRM.post(`leads/bulk-delete`, body);
   return res.data;
 };
 
+export const updateLeadTags = async (ids: number[], leadId: number): Promise<Lead> => {
+  const lead = await axiosCRM.put(`leads/${leadId}`, { tag_ids: ids });
+  return lead.data;
+};
 
 export const getLeadViews = async <T extends LeadListParams>(params?: T)
   : Promise<Paginable<T["detailed"] extends true ? LeadViewDetailed : LeadView>> => {

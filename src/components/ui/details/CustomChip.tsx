@@ -3,8 +3,7 @@ import { textTheme } from "../../../theme/typographyTheme";
 import { Chip, type ChipTypeMap } from "@mui/material";
 import type { OverridableComponent } from "@mui/material/OverridableComponent";
 import { styled } from "@mui/material/styles";
-import { isHex } from "src/utils/formatters";
-import type { ColorTypes } from "src/types/mui-theme.d";
+import { getColorShades } from "src/utils/formatters";
 
 const CHIP_OPACITY = .3
 const CHIP_SIZES = {
@@ -22,12 +21,7 @@ const CustomChip = memo(styled(Chip, {
     ({ theme, chipColor, defaultColor = "primary", size = "medium" }) => {
 
         const resolvedColor = chipColor ?? defaultColor
-        const isColorHex = isHex(resolvedColor)
-        const paletteColors = {
-            LIGHT: isColorHex ? theme.lighten(resolvedColor, .3) : theme.palette[resolvedColor as ColorTypes].light,
-            MAIN: isColorHex ? resolvedColor : theme.palette[resolvedColor as ColorTypes].main,
-            DARK: isColorHex ? theme.darken(resolvedColor, .3) : theme.palette[resolvedColor as ColorTypes].darker
-        }
+        const paletteColors = getColorShades(resolvedColor, theme)
         const sizeObject = CHIP_SIZES[size as keyof typeof CHIP_SIZES]
 
         return [{
@@ -46,7 +40,7 @@ const CustomChip = memo(styled(Chip, {
         },
         //Invierte los tonos en darkmode
         theme.applyStyles('dark', {
-            backgroundColor: theme.alpha(paletteColors.DARK, CHIP_OPACITY),
+            backgroundColor: theme.alpha(paletteColors.DARKER, CHIP_OPACITY),
             color: theme.palette.contrast[50],
         }),
         ]

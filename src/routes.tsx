@@ -1,6 +1,6 @@
 import { CreateLeadFormPage, UpdateLeadFormPage } from "features/lead/leadForm/LeadFormWraper";
 import { OrganizationList } from "features/organizations/OrganizationList";
-import LeadProperties from "./features/leadProperties/leadPropertiesList";
+import OrgProperties from "./features/orgProperties/orgPropertiesList";
 import { AutomationList } from "features/fieldAutomation/AutomationList";
 import { AutomationPage } from "features/fieldAutomation/AutomationPage";
 import { NomenclatorList } from "features/nomenclators/NomenclatorList";
@@ -98,8 +98,8 @@ export const router = createBrowserRouter([
                 Component: SearchResultsList,
             },
             {
-                path: "/lead-properties/",
-                Component: LeadProperties,
+                path: "/org-properties/",
+                Component: OrgProperties,
             },
             {
                 path: "/lead-flow-editor/:id?",

@@ -3,6 +3,7 @@ import { GenericSidebarContent, GenericSidebarHeader } from "./GenericSidebarHea
 import GenericPaper from "./GenericPaper"
 import { CommonIconButton } from "shared/ui/buttons/CommonIconButton"
 import { Container, Divider, Drawer, Stack, useMediaQuery, useTheme, type Breakpoint, type ContainerProps, type DrawerProps, type PaperProps, Typography, Box, type ContainerOwnProps } from "@mui/material"
+import { CustomAvatar } from "src/components/ui/details/CustomAvatar"
 
 export interface GenericContainerProps extends ContainerProps {
     children?: ReactNode,
@@ -83,7 +84,7 @@ export const GenericSidebar = ({ isSidebarOpen = false, closeSidebar, sidebarCom
                         },
                     },
                     theme.applyStyles("light", {
-                        backgroundColor: theme.palette.background.default
+                        backgroundColor: theme.palette.contrast[50]
                     })]
                 }
             }}
@@ -100,19 +101,21 @@ export const GenericSidebar = ({ isSidebarOpen = false, closeSidebar, sidebarCom
 interface SidebarContentWrapperProps {
     title?: ReactNode,
     subtitle?: ReactNode,
-    avatar?: ReactNode,
+    icon?: ReactNode,
     actions?: ReactNode,
     children?: ReactNode,
+    iconColor?: string
 }
 /**Wrapper que le agrega al contenido de un sidebar un header formateado.
  * Si se asigna actions, se muestran en un footer, si no, se deja solo el contenido.
  */
-export const SidebarContentWrapper = ({ title, subtitle, avatar, actions, children }: SidebarContentWrapperProps) => {
+export const SidebarContentWrapper = ({ title, subtitle, icon, actions, iconColor, children }: SidebarContentWrapperProps) => {
+
     return (
         <Stack spacing={2} sx={{ height: "100%" }} useFlexGap>
-            <GenericSidebarHeader >
+            <GenericSidebarHeader color={iconColor} >
                 <Stack direction="row" spacing={2} sx={{ p: "1rem 4rem 1rem 1.5rem", height: "6rem", alignItems: "center" }}>
-                    {avatar}
+                    <CustomAvatar color={iconColor}>{icon}</CustomAvatar>
                     <Stack>
                         <Typography variant="subtitle2" color="textSecondary"
                             sx={{ textTransform: "uppercase", fontWeight: "bold" }} >{subtitle}</Typography>

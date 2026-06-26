@@ -59,7 +59,8 @@ export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeS
 
     return (
         <SidebarContentWrapper subtitle={campaignName}
-            title={<span>{leadField.name}</span>} avatar={<EnabledIcon active={leadField.active} />}
+            title={<span>{leadField.name}</span>} icon={<EnabledIcon active={leadField.active} isAvatar />}
+            iconColor={leadField.active ? "success" : "error"}
             actions={
                 <ButtonGroup sx={{ ml: "auto" }}>
                     <CommonButton onClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>

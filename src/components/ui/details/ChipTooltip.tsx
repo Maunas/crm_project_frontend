@@ -38,6 +38,6 @@ export const ChipTooltip = memo(({ show = true, boxed = false, title, color = "p
                 sx: { color: palette[color].main }
             }
         }} >
-        {boxed ? <Box>{children}</Box> : children}
+        {boxed ? <Box sx={{ p: 0, m: 0, display: "inline-flex" }}>{children}</Box> : children}
     </Tooltip >)
 })

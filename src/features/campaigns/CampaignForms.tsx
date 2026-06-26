@@ -14,7 +14,7 @@ import { setFormErrors } from "src/utils/forms"
 import { showToast } from "src/utils/feedback"
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
-import { ButtonGroup, Grid, Stack, Typography, IconButton, Box, Avatar, useTheme } from "@mui/material"
+import { ButtonGroup, Grid, Stack, Typography, IconButton, Box } from "@mui/material"
 import EditIcon from "@mui/icons-material/Edit"
 import CreateIcon from "@mui/icons-material/Create"
 import { SidebarContentActionsWrapper, SidebarContentWrapper } from "src/components/layout/container/GenericContainer"
@@ -27,8 +27,6 @@ interface UpdateCampaignSidebarProps {
 //Wrapper de CampaignForm para modificar desde un Sidebar
 export const UpdateCampaignFormSidebar = ({ existingCmp, updateCampaignData, closeSidebar }: UpdateCampaignSidebarProps) => {
 
-    const { palette } = useTheme()
-
     const submit = (data: CampaignPost) => {
         return updateCampaign(data, existingCmp.id)
             .then(res => {
@@ -38,7 +36,7 @@ export const UpdateCampaignFormSidebar = ({ existingCmp, updateCampaignData, clo
             })
     }
     return <SidebarContentWrapper title="Modificar Campaña" subtitle={existingCmp.name}
-        avatar={<Avatar sx={{ bgcolor: palette.primary.main }} variant="rounded"><EditIcon /></Avatar>}>
+        icon={<EditIcon />}>
         <CampaignForm existingCmp={existingCmp} submit={submit} onCancel={closeSidebar} />
     </SidebarContentWrapper>
 }
@@ -50,7 +48,6 @@ interface CreateCampaignSidebarProps {
 //Wrapper de CampaignForm para crear desde un Sidebar
 export const CreateCampaignFormSidebar = ({ handleSidebar, workspace }: CreateCampaignSidebarProps) => {
 
-    const { palette } = useTheme()
 
     const submit = useCallback((data: CampaignPost) => {
         return createCampaign(data)
@@ -65,7 +62,7 @@ export const CreateCampaignFormSidebar = ({ handleSidebar, workspace }: CreateCa
     const handleClose = () => handleSidebar("DETAILS_WSP", workspace)
 
     return <SidebarContentWrapper title="Nueva Campaña" subtitle={workspace.name}
-        avatar={<Avatar sx={{ bgcolor: palette.primary.main }} variant="rounded"><CreateIcon /></Avatar>}>
+        icon={<CreateIcon />}>
         <CampaignForm submit={submit} onCancel={handleClose} workspaceId={workspace.id} />
     </SidebarContentWrapper>
 }

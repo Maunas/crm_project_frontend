@@ -9,13 +9,14 @@ import CommonButton from 'shared/ui/buttons/CommonButton'
 import CustomChip from 'shared/ui/details/CustomChip'
 import { useListPagination } from 'src/hooks/useListPagination'
 import { useLoading } from 'src/hooks/useLoading'
-import type { LeadDetailed, LeadTag, LeadTagDetailed } from 'src/types/leads'
-import type { ColorTypes } from 'src/types/mui-theme.d'
+import type { LeadDetailed } from 'src/types/leads'
 import type { Paginable } from 'src/types/shared'
-import { deleteTag, getTags, updateLeadTags } from './LeadDetailsService'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
-import { Box, Button, Checkbox, List, ListItemButton, ListItemIcon, Popover, Stack, Typography, ListItemText } from '@mui/material'
+import { Box, Button, Checkbox, List, ListItemButton, ListItemIcon, Popover, Stack, Typography, ListItemText, ButtonGroup } from '@mui/material'
 import AddIcon from "@mui/icons-material/Add"
+import { deleteTag, getTags } from './LeadTagService'
+import type { LeadTag, LeadTagDetailed } from 'src/types/orgProperties'
+import { updateLeadTags } from 'src/features/lead/leadService'
 
 export const LeadTags = ({ lead, updateLeadInfo }: { lead: LeadDetailed, updateLeadInfo: (lead: LeadDetailed) => void }) => {
 
@@ -125,9 +126,6 @@ export const LeadTags = ({ lead, updateLeadInfo }: { lead: LeadDetailed, updateL
 
 }
 
-const isHex = (color: string) => color.slice(0, 1) === "#"
-const tagColor = (color: string) => isHex(color) ? "secondary" as ColorTypes : color as ColorTypes
-
 interface TagsMenuProps {
     leadId: number,
     tagList?: LeadTag[],
@@ -209,7 +207,7 @@ const LeadTagsMenu = ({ leadId, tagList, leadTags, menuAnchor, handleClose, page
 
     return (
         <>
-            <Popover disableScrollLock disableAutoFocus id="tags-menu"
+            <Popover disableScrollLock disableAutoFocus id="tags-menu" elevation={3}
                 anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={handleClose}
                 anchorOrigin={{
                     vertical: 'bottom',
@@ -242,7 +240,7 @@ const LeadTagsMenu = ({ leadId, tagList, leadTags, menuAnchor, handleClose, page
                                                     edge="start" sx={{ py: 0 }} onChange={() => handleCheckboxToggle(tag.id)} />
                                             </ListItemIcon>
                                             <ListItemText sx={{ my: 0, mr: 3 }} primary={
-                                                <CustomChip chipColor={tagColor(tag.color)} label={tag.name} sx={{ width: "100%" }} />
+                                                <CustomChip chipColor={tag.color} label={tag.name} sx={{ width: "100%" }} />
                                             } />
                                         </ListItemButton>
                                     </CustomListItem>
@@ -253,16 +251,16 @@ const LeadTagsMenu = ({ leadId, tagList, leadTags, menuAnchor, handleClose, page
                             <PaginationComponent {...pageComponentProps} />
                         }
                     </LoadingScreenWrapper>
-                    <Stack sx={{ width: "100%", pb: .5, px: .5 }}>
-                        <CommonButton actionType='CREATE' onClick={toggleCreateTag} variant='text' fullWidth disabled={loadingSave}>
-                            Agregar Tag
+                    <ButtonGroup fullWidth>
+                        <CommonButton actionType='CREATE' onClick={toggleCreateTag} variant='outlined' fullWidth disabled={loadingSave}>
+                            Agregar
                         </CommonButton>
                         {isListChanged &&
                             <CommonButton actionType='SAVE' onClick={saveTagsLoad} variant='contained' fullWidth loading={loadingSave}>
                                 Guardar
                             </CommonButton>
                         }
-                    </Stack >
+                    </ButtonGroup >
                 </Stack >
             </Popover >
             <TagFormMenuWrapper formAnchor={formAnchor} handleClose={() => setFormAnchor(null)} handleTagsUpdate={handleTagsUpdate} existingTag={editTag} />

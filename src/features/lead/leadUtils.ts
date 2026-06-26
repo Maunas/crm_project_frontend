@@ -1,10 +1,10 @@
 import type { LeadPostForm } from "./leadForm/LeadForm"
-import type { ErrorBody, ErrorMessage } from "src/types/shared"
 import type { Lead, LeadDetailed, LeadPostValue } from "src/types/leads"
 import type { LeadField, LeadFieldValue } from "src/types/leadFields"
+import type { ErrorBody, ErrorMessage } from "src/types/shared"
 import { setFormErrors } from "src/utils/forms"
-import type { FieldArrayWithId, UseFormSetError } from "react-hook-form"
 import { OPERATORS as OP } from "src/mocks/operators"
+import type { FieldArrayWithId, UseFormSetError } from "react-hook-form"
 
 
 const NOT_TITLE_TYPES = ["LEAD", "FILE", "BOOL", "HTML", "MARKDOWN",

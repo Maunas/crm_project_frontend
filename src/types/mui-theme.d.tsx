@@ -2,6 +2,7 @@ import '@mui/material/styles';
 
 export type ColorTypes = "primary" | "secondary" | "contrast" | "info" | "success" | "warning" | "error"
 
+export const colorTypesArray = ["primary", "secondary", "contrast", "info", "success", "warning", "error"]
 
 declare module '@mui/material/styles' {
   interface Palette {
@@ -87,5 +88,11 @@ declare module '@mui/material/Button' {
 declare module '@mui/material/Paper' {
   interface PaperOwnProps {
     "data-noborder"?: true;
+  }
+}
+
+declare module '@mui/material/Avatar' {
+  interface AvatarOwnProps {
+    "size"?: "small" | "medium";
   }
 }
