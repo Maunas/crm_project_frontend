@@ -9,12 +9,14 @@ import CommonButton from 'shared/ui/buttons/CommonButton'
 import CustomChip from 'shared/ui/details/CustomChip'
 import { useListPagination } from 'src/hooks/useListPagination'
 import { useLoading } from 'src/hooks/useLoading'
-import type { LeadDetailed, LeadTag, LeadTagDetailed } from 'src/types/leads'
+import type { LeadDetailed } from 'src/types/leads'
 import type { Paginable } from 'src/types/shared'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { Box, Button, Checkbox, List, ListItemButton, ListItemIcon, Popover, Stack, Typography, ListItemText, ButtonGroup } from '@mui/material'
 import AddIcon from "@mui/icons-material/Add"
-import { deleteTag, getTags, updateLeadTags } from './LeadTagService'
+import { deleteTag, getTags } from './LeadTagService'
+import type { LeadTag, LeadTagDetailed } from 'src/types/orgProperties'
+import { updateLeadTags } from 'src/features/lead/leadService'
 
 export const LeadTags = ({ lead, updateLeadInfo }: { lead: LeadDetailed, updateLeadInfo: (lead: LeadDetailed) => void }) => {
 

@@ -1,34 +1,33 @@
 import axiosCRM from "src/lib/axios"
-import type { LeadContactState, LeadContactStateDetailed, LeadContactStatePost } from "src/types/contactState"
+import type { LeadContactState, LeadContactStateDetailed, LeadContactStatePost } from "src/types/orgProperties"
 import type { DeleteResponse, EnableResponse, ListParams, Paginable } from "src/types/shared"
 
-export const getContactStates = async<T extends ListParams>(params?: T):
-    Promise<Paginable<T["detailed"] extends true ? LeadContactStateDetailed : LeadContactState>> => {
-    const leadStates = await axiosCRM.get(`/lead_contact_states`, { params })
-    return leadStates.data
-}
+export const getLeadContactStates = async <T extends ListParams>(params?: T)
+    : Promise<Paginable<T["detailed"] extends true ? LeadContactStateDetailed : LeadContactState>> => {
+    const LeadContactState = await axiosCRM.get(`lead_contact_states`, { params });
+    return LeadContactState.data;
+};
 
-export const getContactState = async (id: number): Promise<LeadContactStateDetailed> => {
-    const leadState = await axiosCRM.get(`/lead_contact_states/${id}`)
-    return leadState.data
-}
+export const getLeadContactState = async (id: number): Promise<LeadContactStateDetailed> => {
+    const LeadContactState = await axiosCRM.get(`lead_contact_states/${id}`);
+    return LeadContactState.data;
+};
 
-export const postLeadFlow = async (leadFlow: LeadContactStatePost): Promise<LeadContactStateDetailed> => {
-    const leadStates = await axiosCRM.post(`/lead_contact_states`, leadFlow)
-    return leadStates.data
-}
+export const createLeadContactState = async (body: LeadContactStatePost): Promise<LeadContactStateDetailed> => {
+    const LeadContactState = await axiosCRM.post(`lead_contact_states`, body);
+    return LeadContactState.data;
+};
 
-export const updateLeadFlow = async (id: number, stateData: LeadContactStatePost): Promise<LeadContactStateDetailed> => {
-    const response = await axiosCRM.put(`/lead_contact_states/${id}`, stateData)
-    return response.data
-}
+export const updateLeadContactState = async (body: LeadContactStatePost, id: number): Promise<LeadContactStateDetailed> => {
+    const LeadContactState = await axiosCRM.put(`lead_contact_states/${id}`, body);
+    return LeadContactState.data;
+};
 
-export const deleteLeadFlow = async (id: number): Promise<DeleteResponse> => {
-    const response = await axiosCRM.delete(`/lead_contact_states/${id}`)
-    return response.data
-}
-
-export const enableLeadFlow = async (id: number): Promise<EnableResponse> => {
-    const response = await axiosCRM.put(`/lead_contact_states/active/${id}`)
-    return response.data
-}
+export const enableLeadContactState = async (id: number): Promise<EnableResponse> => {
+    const LeadContactState = await axiosCRM.put(`lead_contact_states/active/${id}`);
+    return LeadContactState.data;
+};
+export const disableLeadContactState = async (id: number): Promise<DeleteResponse> => {
+    const LeadContactState = await axiosCRM.delete(`lead_contact_states/${id}`);
+    return LeadContactState.data;
+};

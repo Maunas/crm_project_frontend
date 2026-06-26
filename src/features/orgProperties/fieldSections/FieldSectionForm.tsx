@@ -1,51 +1,49 @@
 import { useEffect, useMemo } from "react"
-import { ControlledSwitch, RegisteredTextInput } from "shared/ui/forms/CustomInputs"
 import { ControlledColorPicker } from "shared/ui/forms/ColorPicker"
+import { RegisteredTextInput } from "shared/ui/forms/CustomInputs"
 import { CustomAvatar } from "shared/ui/details/CustomAvatar"
 import CommonButton from "shared/ui/buttons/CommonButton"
 import ACTION_ICONS from "shared/ui/buttons/ActionIcons"
-import type { LeadContactStateDetailed, LeadContactStatePost } from "src/types/contactState"
-import { createLeadContactState, updateLeadContactState } from "src/services/leadContactStateService"
+import { useLoading } from "src/hooks/useLoading"
+import type { LeadFieldSectionDetailed, LeadFieldSectionPost } from "src/types/orgProperties"
+import { createFieldSection, updateFieldSection } from "./fieldSectionsServices"
 import { setFormErrors } from "src/utils/forms"
 import { showToast } from "src/utils/feedback"
 import { useForm, useWatch } from "react-hook-form"
 import { ButtonGroup, Grid, Stack, Typography } from "@mui/material"
-import { useLoading } from "src/hooks/useLoading"
 
-interface ContactStateFormProps {
-    existingState?: LeadContactStateDetailed,
+interface FieldSectionFormProps {
+    existingSection?: LeadFieldSectionDetailed,
     onClose: () => void,
-    onSubmit: (entity?: LeadContactStateDetailed | undefined, update?: boolean) => void
+    onSubmit: (entity?: LeadFieldSectionDetailed | undefined, update?: boolean) => void
 }
 
-export const ContactStateForm = ({ existingState, onClose, onSubmit }: ContactStateFormProps) => {
+export const FieldSectionForm = ({ existingSection, onClose, onSubmit }: FieldSectionFormProps) => {
 
-    const defaultValues: LeadContactStatePost = useMemo(() => ({
-        name: existingState?.name ?? '',
-        color: existingState?.color ?? "primary",
-        is_initial: existingState?.is_initial ?? false,
-        order: existingState?.order
-    }), [existingState])
+    const defaultValues: LeadFieldSectionPost = useMemo(() => ({
+        name: existingSection?.name ?? '',
+        color: existingSection?.color ?? "primary",
+    }), [existingSection])
 
-    const { register, control, reset, setError, formState: { errors }, handleSubmit } = useForm<LeadContactStatePost>({ defaultValues })
+    const { register, control, reset, setError, formState: { errors }, handleSubmit } = useForm<LeadFieldSectionPost>({ defaultValues })
 
     useEffect(() => {
         reset(defaultValues)
     }, [defaultValues, reset])
 
-    const saveState = (data: LeadContactStatePost) => {
-        if (existingState) return updateLeadContactState(data, existingState.id)
+    const saveState = (data: LeadFieldSectionPost) => {
+        if (existingSection) return updateFieldSection(data, existingSection.id)
             .then(res => {
                 onSubmit(res, true)
                 onClose()
-                showToast(`Estado "${res.name}" actualizado con éxito`)
+                showToast(`Sección "${res.name}" actualizada con éxito`)
             })
             .catch(e => setFormErrors(e, setError))
-        else return createLeadContactState(data)
+        else return createFieldSection(data)
             .then(res => {
                 onSubmit()
                 onClose()
-                showToast(`Estado "${res.name}" creado con éxito`)
+                showToast(`Sección "${res.name}" creada con éxito`)
             })
             .catch(e => setFormErrors(e, setError))
     }
@@ -58,8 +56,8 @@ export const ContactStateForm = ({ existingState, onClose, onSubmit }: ContactSt
         <form onSubmit={handleSubmit(saveStateLoad)}>
             <Stack spacing={2}>
                 <Stack spacing={2} direction="row" sx={{ alignItems: "center" }}>
-                    <CustomAvatar size="small" color={color}>{ACTION_ICONS[existingState ? "MODIFY" : "CREATE"]}</CustomAvatar>
-                    <Typography variant="h3">{existingState ? `Modificar ${existingState.name}` : "Agregar Estado"}</Typography>
+                    <CustomAvatar size="small" color={color}>{ACTION_ICONS[existingSection ? "MODIFY" : "CREATE"]}</CustomAvatar>
+                    <Typography variant="h3">{existingSection ? `Modificar "${existingSection.name}"` : "Agregar Sección"}</Typography>
                 </Stack>
                 <Grid container spacing={1} sx={{ alignItems: "center" }}>
                     <Grid sx={{ minWidth: "15rem" }} size="grow">
@@ -67,9 +65,6 @@ export const ContactStateForm = ({ existingState, onClose, onSubmit }: ContactSt
                     </Grid>
                     <Grid sx={{ minWidth: "15rem" }} size="grow">
                         <ControlledColorPicker control={control} name="color" />
-                    </Grid>
-                    <Grid sx={{ minWidth: "15rem" }} size="grow">
-                        <ControlledSwitch control={control} name="is_initial" label="Es inicial" errorMessage={errors?.is_initial?.message} />
                     </Grid>
                 </Grid>
                 <ButtonGroup sx={{ ml: "auto", alignSelf: "end" }}>

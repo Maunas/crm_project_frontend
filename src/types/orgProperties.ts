@@ -18,11 +18,12 @@ export interface LeadTagDetailed extends LeadTag, Metadata { }
 
 export interface LeadFieldSectionPost {
     name: string;
-    organization_id: number;
+    color: string;
 }
 
 export interface LeadFieldSection extends LeadFieldSectionPost {
     id: number;
+    organization_id: number;
 }
 
 export interface LeadFieldSectionDetailed extends LeadFieldSection, Metadata { }

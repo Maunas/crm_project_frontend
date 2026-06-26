@@ -1,85 +1,80 @@
 import { useCallback, useEffect, useState } from 'react'
-import { ContactStateForm } from './FieldSectionForm'
 import { DisableConfirmDialog } from 'shared/feedback/ConfirmationDialog'
 import PaginationComponent from 'shared/ui/lists/PaginationComponent'
 import { ResponsiveListItem } from 'shared/ui/lists/CustomListItem'
 import LoadingScreenWrapper from 'shared/feedback/LoadingScreen'
 import GenericPaper from 'shared/layout/container/GenericPaper'
 import CommonButton from 'shared/ui/buttons/CommonButton'
-import CustomChip from 'shared/ui/details/CustomChip'
 import { EnabledIcon } from 'shared/ui/lists/Icons'
 import { useListPagination } from 'src/hooks/useListPagination'
 import { useLoading } from 'src/hooks/useLoading'
 import type { Paginable } from 'src/types/shared'
-import { disableLeadContactState, enableLeadContactState } from 'src/services/leadContactStateService'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { Divider, Grid, ListItemText, Stack, Typography } from '@mui/material'
-import type { LeadContactStateDetailed } from 'src/types/orgProperties'
-import { getContactStates } from '../contactState/contactStatesServices'
+import type { LeadFieldSectionDetailed } from 'src/types/orgProperties'
+import { disableFieldSection, enableFieldSection, getFieldSections } from './fieldSectionsServices'
+import { FieldSectionForm } from './FieldSectionForm'
 
-export const ContactStateList = () => {
+export const FieldSectionList = () => {
 
-    const [states, setStates] = useState<Paginable<LeadContactStateDetailed> | null>(null)
+    const [sections, setSections] = useState<Paginable<LeadFieldSectionDetailed> | null>(null)
 
-    const { fetchPage, pageSize, pageComponentProps } = useListPagination(states)
+    const { fetchPage, pageSize, pageComponentProps } = useListPagination(sections)
 
-    const fetchStates = useCallback((fetchPage: number, pageSize: number) => {
-        return getContactStates({
-            detailed: true, only_active: false,
-            page: fetchPage, page_size: pageSize
+    const fetchSections = useCallback((fetchPage: number, pageSize: number) => {
+        return getFieldSections({
+            detailed: true, only_active: false, page: fetchPage, page_size: pageSize
         })
-            .then(setStates)
-            .catch(e => showCommonErrorToast(e, "Error recuperando la lista de estados"))
+            .then(setSections)
+            .catch(e => showCommonErrorToast(e, "Error recuperando la lista de secciones"))
     }, [])
 
-    const { fnWithLoading: fetchStatesLoad, loading } = useLoading(fetchStates)
+    const { fnWithLoading: fetchSectionsLoad, loading } = useLoading(fetchSections)
 
     useEffect(() => {
-        fetchStatesLoad(fetchPage, pageSize)
-    }, [fetchStatesLoad, fetchPage, pageSize])
+        fetchSectionsLoad(fetchPage, pageSize)
+    }, [fetchSectionsLoad, fetchPage, pageSize])
 
-    const [editingState, setEditingState] = useState<LeadContactStateDetailed | null | undefined>(null)
+    const [editingSection, setEditingSection] = useState<LeadFieldSectionDetailed | null | undefined>(null)
 
-    const updateList = useCallback((entity?: LeadContactStateDetailed, update: boolean = false) => {
+    const updateList = useCallback((entity?: LeadFieldSectionDetailed, update: boolean = false) => {
         if (update) {
-            if (!states || !entity) return
-            const statesCopy = [...states.items]
-            const idx = statesCopy.findIndex(state => entity.id === state.id)
+            if (!sections || !entity) return
+            const sectionsCopy = [...sections.items]
+            const idx = sectionsCopy.findIndex(section => entity.id === section.id)
             if (idx === -1) return
-            statesCopy[idx] = entity
-            return setStates({ ...states, items: statesCopy })
+            sectionsCopy[idx] = entity
+            return setSections({ ...sections, items: sectionsCopy })
 
-        } else fetchStatesLoad(fetchPage, pageSize)
-    }, [fetchPage, fetchStatesLoad, pageSize, states])
+        } else fetchSectionsLoad(fetchPage, pageSize)
+    }, [fetchPage, fetchSectionsLoad, pageSize, sections])
 
     return (
         <Stack spacing={2}>
             <LoadingScreenWrapper loading={loading}>
                 <Stack spacing={2}>
-                    {(states?.items && states.items.length > 0) ?
+                    {(sections?.items && sections.items.length > 0) ?
                         <Stack spacing={2}>
                             <CommonButton actionType="CREATE" variant="contained" sx={{ alignSelf: "start" }}
-                                onClick={() => setEditingState(undefined)}>Agregar</CommonButton>
-                            <ContactStateListData states={states.items}
-                                toggleUpdate={(state: LeadContactStateDetailed) => setEditingState(state)}
+                                onClick={() => setEditingSection(undefined)}>Agregar</CommonButton>
+                            <FieldSectionListData sections={sections.items}
+                                toggleUpdate={(state: LeadFieldSectionDetailed) => setEditingSection(state)}
                                 updateList={updateList} />
                             <PaginationComponent {...pageComponentProps} />
                         </Stack>
                         :
                         <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center", height: "30rem" }}>
-                            <Typography variant="h4">No se han encontrado estados de contacto...</Typography>
+                            <Typography variant="h4">No se han encontrado secciones de campo...</Typography>
                             <CommonButton actionType="CREATE" variant="contained"
-                                onClick={() => setEditingState(undefined)}>Agregar</CommonButton>
+                                onClick={() => setEditingSection(undefined)}>Agregar</CommonButton>
                         </Stack>
                     }
-                    {editingState !== null &&
+                    {editingSection !== null &&
                         <>
                             <Divider />
                             <GenericPaper elevation={4} sx={{ px: 3, py: 2 }}>
-                                <Stack spacing={2}>
-                                    <ContactStateForm existingState={editingState}
-                                        onClose={() => setEditingState(null)} onSubmit={updateList} />
-                                </Stack>
+                                <FieldSectionForm existingSection={editingSection}
+                                    onClose={() => setEditingSection(null)} onSubmit={updateList} />
                             </GenericPaper>
                         </>
                     }
@@ -89,64 +84,62 @@ export const ContactStateList = () => {
     )
 }
 
-interface ContactStateListDataProps {
-    states: LeadContactStateDetailed[],
-    toggleUpdate: (state: LeadContactStateDetailed) => void,
-    updateList: (entity?: LeadContactStateDetailed, update?: boolean) => void
+interface FieldSectionListDataProps {
+    sections: LeadFieldSectionDetailed[],
+    toggleUpdate: (state: LeadFieldSectionDetailed) => void,
+    updateList: (entity?: LeadFieldSectionDetailed, update?: boolean) => void
 }
 
-export const ContactStateListData = ({ states, toggleUpdate, updateList }: ContactStateListDataProps) => {
+const FieldSectionListData = ({ sections, toggleUpdate, updateList }: FieldSectionListDataProps) => {
 
-    const [disableState, setDisableState] = useState<LeadContactStateDetailed | null>(null)
+    const [disableSection, setDisableSection] = useState<LeadFieldSectionDetailed | null>(null)
 
     const handleEnableDisable = useCallback((id: number, isActive: boolean) => {
         if (!isActive) {
-            return enableLeadContactState(id)
+            return enableFieldSection(id)
                 .then(() => {
-                    showToast("Estado habilitado correctamente.", "success")
+                    showToast("Sección habilitada correctamente.", "success")
                     updateList()
                 })
-                .catch(e => { showCommonErrorToast(e, "Error habilitando el estado.") })
+                .catch(e => { showCommonErrorToast(e, "Error habilitando la sección.") })
         }
-        return disableLeadContactState(id)
+        return disableFieldSection(id)
             .then(res => {
-                if (res.action === "disabled") showToast("Estado deshabilitado correctamente.", "success")
-                else showToast("Estado eliminado permanentemente.", "success")
+                if (res.action === "disabled") showToast("Sección deshabilitada correctamente.", "success")
+                else showToast("Sección eliminada permanentemente.", "success")
                 updateList()
             })
-            .catch(e => { showCommonErrorToast(e, "Error deshabilitando el estado.") })
+            .catch(e => { showCommonErrorToast(e, "Error deshabilitando la sección.") })
     }, [updateList])
 
     return (
         <>
             <Grid container sx={{ marginInline: 1, alignItems: "stretch" }}>
-                {states.map((state, idx) =>
-                    <Grid key={`state-${idx}`} size="grow" sx={{ minWidth: "15rem", minHeight: "100%" }}>
+                {sections.map((section, idx) =>
+                    <Grid key={`section-${idx}`} size="grow" sx={{ minWidth: "15rem", minHeight: "100%" }}>
                         <ResponsiveListItem disablePadding sx={{ height: "100%" }}
-                            onClick={() => toggleUpdate(state)}
+                            onClick={() => toggleUpdate(section)}
                             actions={[
-                                { actionType: "MODIFY", label: "Editar", onClick: () => toggleUpdate(state) },
+                                { actionType: "MODIFY", label: "Editar", onClick: () => toggleUpdate(section) },
                                 {
-                                    actionType: state.active ? "DISABLE" : "ENABLE", color: state.active ? "error" : "success",
-                                    label: state.active ? "Deshabilitar" : "Habilitar",
-                                    onClick: () => setDisableState(state)
+                                    actionType: section.active ? "DISABLE" : "ENABLE", color: section.active ? "error" : "success",
+                                    label: section.active ? "Deshabilitar" : "Habilitar",
+                                    onClick: () => setDisableSection(section)
                                 }
                             ]}>
                             <ListItemText sx={{ mr: 4 }} primary={
                                 <Stack spacing={1} direction="row" color="inherit" sx={{ width: "100%", alignItems: "center" }}>
-                                    <EnabledIcon active={state.active} />
-                                    <Typography sx={{ fontWeight: "500" }} color="inherit">{state.name}</Typography>
-                                    {state.is_initial &&
-                                        <CustomChip chipColor='info' label="Inicial" size="small" />}
+                                    <EnabledIcon active={section.active} />
+                                    <Typography sx={{ fontWeight: "500" }} color="inherit">{section.name}</Typography>
                                 </Stack>
                             } />
                         </ResponsiveListItem>
                     </Grid>
                 )}
             </Grid >
-            {disableState &&
-                <DisableConfirmDialog idModal='conf-delete-contact' entity={disableState} clearEntity={() => setDisableState(null)} entityTypeName="el estado"
-                    onConfirm={() => handleEnableDisable(disableState?.id, disableState?.active)} />
+            {disableSection &&
+                <DisableConfirmDialog idModal='conf-delete-contact' entity={disableSection} clearEntity={() => setDisableSection(null)} entityTypeName="la sección"
+                    onConfirm={() => handleEnableDisable(disableSection?.id, disableSection?.active)} />
             }
         </>
     )

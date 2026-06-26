@@ -14,6 +14,7 @@ import CommonButton from 'src/components/ui/buttons/CommonButton';
 import DiscountIcon from '@mui/icons-material/Discount';
 import FolderCopyIcon from '@mui/icons-material/FolderCopy';
 import { LeadTagsList } from './tags/LeadTagsList';
+import { FieldSectionList } from './fieldSections/FieldSectionList';
 
 export interface OrgPropertiesItem {
     label: string,
@@ -48,7 +49,7 @@ export const LEAD_PROPERTIES: OrgPropertiesItem[] = [{
     id: "SECTIONS",
     icon: <FolderCopyIcon />,
     color: "success",
-    content: <ContactStateList />
+    content: <FieldSectionList />
 }]
 
 const OrgProperties = () => {

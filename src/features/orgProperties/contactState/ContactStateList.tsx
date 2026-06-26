@@ -11,11 +11,10 @@ import { EnabledIcon } from 'shared/ui/lists/Icons'
 import { useListPagination } from 'src/hooks/useListPagination'
 import { useLoading } from 'src/hooks/useLoading'
 import type { Paginable } from 'src/types/shared'
-import { getContactStates } from './contactStatesServices'
-import { disableLeadContactState, enableLeadContactState } from 'src/services/leadContactStateService'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { Divider, Grid, ListItemText, Stack, Typography } from '@mui/material'
 import type { LeadContactStateDetailed } from 'src/types/orgProperties'
+import { disableLeadContactState, enableLeadContactState, getLeadContactStates } from './contactStatesServices'
 
 export const ContactStateList = () => {
 
@@ -24,7 +23,7 @@ export const ContactStateList = () => {
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(states)
 
     const fetchStates = useCallback((fetchPage: number, pageSize: number) => {
-        return getContactStates({
+        return getLeadContactStates({
             detailed: true, only_active: false,
             page: fetchPage, page_size: pageSize
         })
