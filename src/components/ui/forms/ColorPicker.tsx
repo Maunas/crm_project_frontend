@@ -23,8 +23,8 @@ export const ControlledColorPicker = <T extends FieldValues>({ control, size = "
             render={({ field, fieldState }) => {
                 return (
                     <>
-                        <Stack spacing={1} sx={{ py: 1 }}>
-                            <Stack spacing={2} useFlexGap direction={row ? "row" : "column"}
+                        <Stack spacing={1}>
+                            <Stack spacing={.5} useFlexGap direction={row ? "row" : "column"}
                                 sx={{ justifyContent: "space-evenly", alignItems: "center", flexWrap: "wrap" }}>
                                 <Stack direction="row" useFlexGap sx={{ alignItems: "center", justifyContent: "center", flexWrap: "wrap" }}>
                                     {colorTypesArray.map(colorName => (
@@ -66,7 +66,7 @@ export const ColorPickerMenu = <T extends FieldValues>({ field, theme, size, row
                 minWidth: size === "small" ? "4rem" : "6rem",
                 maxWidth: size === "small" ? "9rem" : "15rem",
                 height: size === "small" ? "1.5rem" : "2rem", p: "2px",
-                border: `2px solid ${paletteColor.LIGHTER}`,
+                border: `2px solid ${paletteColor.LIGHT}`,
                 borderRadius: ".5rem",
             }}
                 onClick={e => setPickerAnchor(e.currentTarget)}

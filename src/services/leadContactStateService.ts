@@ -1,6 +1,7 @@
 import type { DeleteResponse, EnableResponse, ListParams, Paginable } from "src/types/shared";
-import type { LeadContactStateDetailed, LeadContactState } from "src/types/leadContactState";
+import type { LeadContactStateDetailed, LeadContactState } from "src/types/contactState";
 import axiosCRM from "src/lib/axios";
+import type { LeadContactStatePost } from "src/types/contactState";
 
 export const getLeadContactStates = async <T extends ListParams>(params?: T)
   : Promise<Paginable<T["detailed"] extends true ? LeadContactStateDetailed : LeadContactState>> => {
@@ -13,12 +14,12 @@ export const getLeadContactState = async (id: number): Promise<LeadContactStateD
   return LeadContactState.data;
 };
 
-export const createLeadContactState = async (body: FormData): Promise<LeadContactStateDetailed> => {
+export const createLeadContactState = async (body: LeadContactStatePost): Promise<LeadContactStateDetailed> => {
   const LeadContactState = await axiosCRM.post(`lead_contact_states`, body);
   return LeadContactState.data;
 };
 
-export const updateLeadContactState = async (body: FormData, id: number): Promise<LeadContactState> => {
+export const updateLeadContactState = async (body: LeadContactStatePost, id: number): Promise<LeadContactStateDetailed> => {
   const LeadContactState = await axiosCRM.put(`lead_contact_states/${id}`, body);
   return LeadContactState.data;
 };
