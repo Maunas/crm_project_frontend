@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Droppable } from '@hello-pangea/dnd';
-import { Stack, Typography, Box, alpha, CircularProgress, Chip } from '@mui/material';
+import { Stack, Typography, Box, alpha, CircularProgress, Chip, useTheme } from '@mui/material';
 import type { LeadContactState } from 'src/types/orgProperties';
 import type { Lead } from 'src/types/leads';
 import { getFilteredLeads } from '../../leadService';
 import { LeadBoardCard } from './LeadBoardCard';
+import { getColorShades } from 'src/utils/formatters';
 
 interface LeadBoardColumnProps {
     column: LeadContactState;
@@ -18,6 +19,10 @@ export const LeadBoardColumn = ({ column, campaignId, activeFilters }: LeadBoard
     const [hasMore, setHasMore] = useState(true);
     const [loading, setLoading] = useState(false);
     const [totalCount, setTotalCount] = useState(0);
+
+    const theme = useTheme()
+
+    const colorShades = getColorShades(column.color, theme)
 
     const leadsRef = useRef<Lead[]>([]);
     useEffect(() => {
@@ -135,7 +140,7 @@ export const LeadBoardColumn = ({ column, campaignId, activeFilters }: LeadBoard
                 : 'rgba(255, 255, 255, 0.9)',
             boxShadow: `
                 inset 0 1px 0 rgba(255,255,255,0.18),
-                0 -3px 20px ${alpha(column.color || '#888', 0.35)},
+                0 -3px 20px ${alpha(colorShades.MAIN || '#888', 0.35)},
                 0 4px 8px rgba(0,0,0,0.06),
                 0 12px 32px rgba(0,0,0,0.10),
                 0 24px 64px rgba(0,0,0,0.06)
@@ -143,7 +148,7 @@ export const LeadBoardColumn = ({ column, campaignId, activeFilters }: LeadBoard
             borderRadius: 3,
             display: 'flex',
             flexDirection: 'column',
-            borderTop: `4px solid ${column.color || '#ccc'}`,
+            borderTop: `4px solid ${colorShades.MAIN || '#ccc'}`,
             height: '100%',
         }}>
             <Box
@@ -155,7 +160,7 @@ export const LeadBoardColumn = ({ column, campaignId, activeFilters }: LeadBoard
                         ? 'rgba(255,255,255,0.06)'
                         : 'rgba(0,0,0,0.06)',
                     userSelect: 'none',
-                    background: `linear-gradient(to bottom, ${alpha(column.color || '#888', 0.14)}, ${alpha(column.color || '#888', 0.02)})`,
+                    background: `linear-gradient(to bottom, ${alpha(colorShades.MAIN || '#888', 0.14)}, ${alpha(colorShades.MAIN || '#888', 0.02)})`,
                     borderRadius: '12px 12px 0 0',
                 }}
             >
@@ -167,12 +172,12 @@ export const LeadBoardColumn = ({ column, campaignId, activeFilters }: LeadBoard
                         label={totalCount}
                         size="small"
                         sx={{
-                            backgroundColor: alpha(column.color || '#888', 0.18),
-                            color: column.color || 'text.primary',
+                            backgroundColor: alpha(colorShades.MAIN || '#888', 0.18),
+                            color: colorShades.MAIN || 'text.primary',
                             fontWeight: 'bold',
                             height: 22,
                             fontSize: '0.72rem',
-                            border: `1px solid ${alpha(column.color || '#888', 0.3)}`,
+                            border: `1px solid ${alpha(colorShades.MAIN || '#888', 0.3)}`,
                             '& .MuiChip-label': { px: 1 },
                         }}
                     />
@@ -185,7 +190,7 @@ export const LeadBoardColumn = ({ column, campaignId, activeFilters }: LeadBoard
                         ref={provided.innerRef}
                         {...provided.droppableProps}
                         className="scrollbar-thin"
-                        style={{ '--scrollbar-color': alpha(column.color || '#888', 0.45) } as React.CSSProperties}
+                        style={{ '--scrollbar-color': alpha(colorShades.MAIN || '#888', 0.45) } as React.CSSProperties}
                         sx={{
                             flexGrow: 1,
                             p: 1.5,
@@ -202,7 +207,7 @@ export const LeadBoardColumn = ({ column, campaignId, activeFilters }: LeadBoard
                                     key={lead.id}
                                     lead={lead}
                                     index={index}
-                                    columnColor={column.color}
+                                    columnColor={colorShades.MAIN}
                                     observerRef={isLast ? lastLeadElementRef : undefined}
                                 />
                             );
