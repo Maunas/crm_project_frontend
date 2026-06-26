@@ -2,10 +2,10 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { DragDropContext } from '@hello-pangea/dnd';
 import type { DropResult } from '@hello-pangea/dnd';
 import { Box, CircularProgress, alpha } from '@mui/material';
-import { getLeadContactStates } from 'src/services/leadContactStateService';
-import type { LeadContactState } from 'src/types/leadContactState';
 import { LeadBoardColumn } from './LeadBoardColumn';
 import { changeContactStateLead } from '../../leadService';
+import { getLeadContactStates } from 'src/features/orgProperties/contactState/contactStatesServices';
+import type { LeadContactState } from 'src/types/orgProperties';
 
 interface LeadBoardPresentationProps {
     campaignId: number | string;

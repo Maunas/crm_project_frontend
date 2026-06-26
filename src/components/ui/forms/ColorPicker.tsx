@@ -1,4 +1,4 @@
-import { Box, Button, IconButton, Popover, Stack, useTheme, type Theme } from "@mui/material"
+import { Box, Button, IconButton, Popover, Stack, useTheme, type BoxProps, type Theme } from "@mui/material"
 import { Controller, type Control, type ControllerRenderProps, type FieldValues, type Path } from "react-hook-form"
 import { colorTypesArray } from "src/types/mui-theme.d"
 import { FormErrorMessage } from "./FormFeedback"
@@ -7,7 +7,7 @@ import CircleIcon from '@mui/icons-material/Circle';
 import { HexColorInput, HexColorPicker } from "react-colorful";
 import { useMemo, useState } from "react"
 
-interface ColorSelectorProps<T extends FieldValues> {
+interface ColorSelectorProps<T extends FieldValues> extends BoxProps {
     control: Control<T>,
     name: Path<T>,
     size?: "medium" | "small",
@@ -15,14 +15,14 @@ interface ColorSelectorProps<T extends FieldValues> {
     onBeforeChange?: (color: string) => void
 }
 
-export const ControlledColorPicker = <T extends FieldValues>({ control, size = "medium", row = false, name, onBeforeChange }: ColorSelectorProps<T>) => {
+export const ControlledColorPicker = <T extends FieldValues>({ control, size = "medium", row = false, name, onBeforeChange, ...props }: ColorSelectorProps<T>) => {
     const theme = useTheme()
 
     return (
         <Controller control={control} name={name}
             render={({ field, fieldState }) => {
                 return (
-                    <>
+                    <Box {...props}>
                         <Stack spacing={1}>
                             <Stack spacing={.5} useFlexGap direction={row ? "row" : "column"}
                                 sx={{ justifyContent: "space-evenly", alignItems: "center", flexWrap: "wrap" }}>
@@ -39,8 +39,7 @@ export const ControlledColorPicker = <T extends FieldValues>({ control, size = "
                                 <FormErrorMessage>{fieldState.error?.message}</FormErrorMessage>
                             )}
                         </Stack>
-
-                    </>
+                    </Box>
                 )
             }} />
 

@@ -10,6 +10,7 @@ import { useForm, useWatch } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { Stack, Typography, ButtonGroup, Paper, IconButton, TextField } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import { ControlledColorPicker } from 'src/components/ui/forms/ColorPicker'
 
 export const CATEGORY_OPTIONS = [
   {
@@ -102,8 +103,7 @@ export default function StateForm({ existingState, onClose, onSave, hasInitialSt
           {canSelectInitial && (
             <ControlledSwitch control={control} name='is_initial' label="Es estado inicial" />
           )}
-          <RegisteredTextInput register={register} name='color' type="color"
-            label="Color del Estado" />
+          <ControlledColorPicker control={control} name="color" sx={{ width: "100%" }} />
           <FormErrorMessage>{errors?.root?.message}</FormErrorMessage>
         </Stack>
         <ButtonGroup sx={{ alignSelf: "end" }}>
