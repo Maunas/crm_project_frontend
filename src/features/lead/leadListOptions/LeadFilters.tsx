@@ -25,10 +25,12 @@ interface LeadFiltersProps {
     campaignId: number,
     filters: LeadListParams & LeadListFilters,
     applyFilters: (data: LeadListParams & LeadListFilters) => Promise<void>,
-    onClose: () => void
+    onClose: () => void,
+    showCancelButton?: boolean,
+    showTitle?: boolean
 }
 
-export const LeadFilters = memo(({ campaignId, filters, applyFilters, onClose }: LeadFiltersProps) => {
+export const LeadFilters = memo(({ campaignId, filters, applyFilters, onClose, showCancelButton = true, showTitle = true }: LeadFiltersProps) => {
 
     const [leadFields, setLeadFields] = useState<LeadField[]>([])
 
@@ -72,7 +74,7 @@ export const LeadFilters = memo(({ campaignId, filters, applyFilters, onClose }:
 
     return (
         <Stack spacing={3}>
-            <Typography variant="h2">Filtros de Búsqueda</Typography>
+            {showTitle && <Typography variant="h2">Filtros de Búsqueda</Typography>}
             <form onSubmit={handleSubmit(applyFilterLoad)} >
                 <Stack spacing={2}>
                     <Stack spacing={.5}>
@@ -109,7 +111,7 @@ export const LeadFilters = memo(({ campaignId, filters, applyFilters, onClose }:
                     )}
                     <Grid sx={{ alignSelf: "end" }}>
                         <ButtonGroup >
-                            {!!campaignId &&
+                            {!!campaignId && showCancelButton &&
                                 <CommonButton actionType='CLOSE' variant="outlined" color="primary" onClick={onClose} disabled={loading}>
                                     Cancelar
                                 </CommonButton>

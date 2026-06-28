@@ -52,8 +52,8 @@ export const LeadTablePresentation = memo(({ leads, selectedColumns, modalProps,
     const onRowClick = useCallback((id: number) => nav(`/leads/${id}`), [nav])
 
     return (
-        <TableContainer component={Paper} elevation={4}>
-            <Table sx={{ ...TABLE_SX }} aria-label="lead table">
+        <TableContainer component={Paper} elevation={4} sx={{ overflowX: 'auto' }}>
+            <Table sx={{ ...TABLE_SX, minWidth: 600 }} aria-label="lead table">
                 <TableHead>
                     <TableRow>
                         <TableCell padding="checkbox">

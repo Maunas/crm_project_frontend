@@ -10,12 +10,12 @@ import type { Campaign, Workspace } from "src/types/campaigns"
 import { getWorkspaces } from "src/features/workspaces/workspaceServices";
 import { getCampaigns } from "src/features/campaigns/campaignServices";
 import { useUserContext } from 'src/stores/UserContext';
-import { Autocomplete, Badge, Divider, Grid, Stack, TextField, ToggleButton, ToggleButtonGroup, type AutocompleteRenderInputParams, ButtonGroup } from "@mui/material"
+import { Badge, Button, Divider, Grid, Menu, MenuItem, Stack, ToggleButton, ToggleButtonGroup, Typography, ButtonGroup } from "@mui/material"
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import WindowIcon from '@mui/icons-material/Window';
 import ViewColumnIcon from '@mui/icons-material/ViewColumn';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
 interface LeadCampaignSelectorsProps {
     workspaceId: string | number | null,
@@ -65,25 +65,72 @@ export const LeadCampaignSelector = memo(({ workspaceId, handleWorkspaceChange, 
         })
     }, [handleWorkspaceChange, handleCampaignChange])
 
-    const autocompleteCommonProps = useCallback((list: (Campaign | Workspace)[], label: string) => ({
-        size: "small" as "small" | "medium",
-        disablePortal: true,
-        options: list.map(i => i.id),
-        getOptionLabel: (option: number | null) => list.find(i => i.id === option)?.name ?? "",
-        sx: { width: 200 },
-        renderInput: (params: AutocompleteRenderInputParams) => <TextField {...params} label={label} />
-    }), [])
+    const [workspaceAnchor, setWorkspaceAnchor] = useState<null | HTMLElement>(null)
+    const [campaignAnchor, setCampaignAnchor] = useState<null | HTMLElement>(null)
+
+    const selectedWorkspace = workspaces.find(ws => ws.id === Number(workspaceId))
+    const selectedCampaign = campaigns.find(c => c.id === Number(campaignId))
 
     return (
-        <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: "wrap", alignItems: "center" }}>
-            <Autocomplete {...autocompleteCommonProps(workspaces, "Espacio de Trabajo")}
-                value={Number(workspaceId)} onChange={(_, val) => onWorkspaceChange(val)}
-            />
-            <ArrowForwardIcon />
-            <Autocomplete {...autocompleteCommonProps(campaigns, "Campaña")}
-                value={Number(campaignId)} onChange={(_, val) => handleCampaignChange(val)}
+        <Stack direction="row" alignItems="center" spacing={0}>
+            {/* Workspace */}
+            <Button
+                variant="text"
+                size="small"
+                endIcon={<KeyboardArrowDownIcon />}
+                onClick={e => setWorkspaceAnchor(e.currentTarget)}
+                sx={{ fontWeight: 700, color: 'text.primary', px: 1, py: 0.5, minWidth: 0 }}
+            >
+                {selectedWorkspace?.name ?? 'Espacio de Trabajo'}
+            </Button>
+            <Menu
+                anchorEl={workspaceAnchor}
+                open={Boolean(workspaceAnchor)}
+                onClose={() => setWorkspaceAnchor(null)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+            >
+                {workspaces.map(ws => (
+                    <MenuItem
+                        key={ws.id}
+                        selected={ws.id === Number(workspaceId)}
+                        onClick={() => { onWorkspaceChange(ws.id); setWorkspaceAnchor(null) }}
+                        dense
+                    >
+                        {ws.name}
+                    </MenuItem>
+                ))}
+            </Menu>
+
+            <Typography color="text.disabled" sx={{ mx: 0.25, lineHeight: 1 }}>/</Typography>
+
+            {/* Campaign */}
+            <Button
+                variant="text"
+                size="small"
+                endIcon={<KeyboardArrowDownIcon />}
+                onClick={e => setCampaignAnchor(e.currentTarget)}
                 disabled={!workspaceId}
-            />
+                sx={{ color: 'text.secondary', px: 1, py: 0.5, minWidth: 0 }}
+            >
+                {selectedCampaign?.name ?? 'Campaña'}
+            </Button>
+            <Menu
+                anchorEl={campaignAnchor}
+                open={Boolean(campaignAnchor)}
+                onClose={() => setCampaignAnchor(null)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+            >
+                {campaigns.map(c => (
+                    <MenuItem
+                        key={c.id}
+                        selected={c.id === Number(campaignId)}
+                        onClick={() => { handleCampaignChange(c.id); setCampaignAnchor(null) }}
+                        dense
+                    >
+                        {c.name}
+                    </MenuItem>
+                ))}
+            </Menu>
         </Stack>
     )
 })

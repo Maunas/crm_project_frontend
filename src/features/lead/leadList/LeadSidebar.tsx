@@ -1,0 +1,364 @@
+import { memo, useCallback, useEffect, useRef, useState } from 'react'
+import { LeadFilters } from '../leadListOptions/LeadFilters'
+import { ViewForm } from '../leadListOptions/LeadViewMenu'
+import CommonButton from 'shared/ui/buttons/CommonButton'
+import PaginationComponent from 'shared/ui/lists/PaginationComponent'
+import { useListPagination } from 'src/hooks/useListPagination'
+import { deleteView, getLeadViews } from '../leadService'
+import { getDictionaries } from 'src/services/generalService'
+import { showToast } from 'src/utils/feedback'
+import type { LeadView, LeadViewParams } from 'src/types/leads'
+import type { LeadFilter, LeadListParams, Paginable, DictionaryItem } from 'src/types/shared'
+import {
+    alpha, Box, Button, Collapse, Divider, IconButton,
+    List, ListItem, ListItemButton, ListItemText, Stack,
+    ToggleButton, ToggleButtonGroup, Tooltip, Typography, useTheme
+} from '@mui/material'
+import FilterAltIcon from '@mui/icons-material/FilterAlt'
+import TableChartIcon from '@mui/icons-material/TableChart'
+import ViewColumnIcon from '@mui/icons-material/ViewColumn'
+import EditIcon from '@mui/icons-material/Edit'
+import DeleteIcon from '@mui/icons-material/Delete'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import PublicIcon from '@mui/icons-material/Public'
+import PeopleIcon from '@mui/icons-material/People'
+import LockIcon from '@mui/icons-material/Lock'
+import SaveIcon from '@mui/icons-material/Save'
+import AddIcon from '@mui/icons-material/Add'
+import SortIcon from '@mui/icons-material/Sort'
+
+interface LeadSidebarProps {
+    campaignId: number | string | null
+    filters: LeadFilter[]
+    headers: LeadListParams
+    setFiltersAndHeaders: (filters: LeadFilter[], headers: LeadListParams) => Promise<unknown>
+    presentationProps: {
+        presentationMode: string
+        handlePresentation: (mode: string) => void
+    }
+    viewUpdateProps: {
+        saveView: (name: string, visibility: string, existingView?: LeadView) => Promise<unknown>
+        loadView: (view: LeadView) => void
+        currentView: LeadViewParams | undefined
+    }
+    onToggle: () => void
+}
+
+// ── Grupos de visibilidad ─────────────────────────────────────────────────
+const VISIBILITY_GROUPS = [
+    { code: 'PUBLIC',  label: 'Públicas',  icon: PublicIcon,  color: '#16a34a' },  // green
+    { code: 'TEAM',    label: 'Equipo',    icon: PeopleIcon,  color: '#2563eb' },  // blue
+    { code: 'PRIVATE', label: 'Privadas',  icon: LockIcon,    color: '#d97706' },  // amber
+] as const
+
+// ── Componente ViewGroup ──────────────────────────────────────────────────
+interface ViewGroupProps {
+    group: typeof VISIBILITY_GROUPS[number]
+    views: LeadView[]
+    onLoad: (view: LeadView) => void
+    onEdit: (view: LeadView) => void
+    onDelete: (viewId: number) => void
+    visibilities: DictionaryItem[]
+}
+
+const ViewGroup = memo(({ group, views, onLoad, onEdit, onDelete }: ViewGroupProps) => {
+    const [open, setOpen] = useState(false)
+    const { palette } = useTheme()
+    const Icon = group.icon
+
+    return (
+        <Box>
+            <Button
+                variant="text"
+                size="small"
+                fullWidth
+                onClick={() => setOpen(prev => !prev)}
+                sx={{
+                    justifyContent: 'flex-start',
+                    gap: 1,
+                    px: 1.5,
+                    py: 0.5,
+                    color: 'text.secondary',
+                    '&:hover': { bgcolor: alpha(palette.action.hover, 0.6) },
+                }}
+                startIcon={
+                    open
+                        ? <ExpandMoreIcon sx={{ fontSize: '14px !important', color: 'text.disabled' }} />
+                        : <ChevronRightIcon sx={{ fontSize: '14px !important', color: 'text.disabled' }} />
+                }
+            >
+                <Icon sx={{ fontSize: 13, color: group.color }} />
+                <Typography variant="caption" fontWeight={500} sx={{ flexGrow: 1, textAlign: 'left' }}>
+                    {group.label}
+                </Typography>
+                <Typography variant="caption" color="text.disabled"
+                    sx={{ ml: 'auto', bgcolor: 'action.hover', borderRadius: 1, px: 0.75, py: 0.1 }}>
+                    {views.length}
+                </Typography>
+            </Button>
+
+            <Collapse in={open}>
+                <List dense disablePadding sx={{ pl: 2.5 }}>
+                    {views.map(view => (
+                        <ListItem
+                            key={view.id}
+                            disablePadding
+                            secondaryAction={
+                                <Stack direction="row">
+                                    <IconButton size="small" title="Renombrar"
+                                        onClick={() => onEdit(view)}
+                                        sx={{ color: 'text.disabled', '&:hover': { color: 'text.primary' } }}>
+                                        <EditIcon sx={{ fontSize: 13 }} />
+                                    </IconButton>
+                                    <IconButton size="small" title="Eliminar"
+                                        onClick={() => onDelete(view.id)}
+                                        sx={{ color: 'text.disabled', '&:hover': { color: 'error.main' } }}>
+                                        <DeleteIcon sx={{ fontSize: 13 }} />
+                                    </IconButton>
+                                </Stack>
+                            }
+                        >
+                            <ListItemButton
+                                onClick={() => onLoad(view)}
+                                sx={{ py: 0.5, pr: 7, borderRadius: 1, '&:hover': { bgcolor: alpha(palette.primary.main, 0.06) } }}
+                            >
+                                <ListItemText
+                                    sx={{ my: 0 }}
+                                    primary={
+                                        <Stack direction="row" spacing={0.5} alignItems="center">
+                                            {view.view_type === 'TABLE' && <TableChartIcon sx={{ fontSize: 12, color: 'text.disabled' }} />}
+                                            {view.view_type === 'BOARD' && <ViewColumnIcon sx={{ fontSize: 12, color: 'text.disabled' }} />}
+                                            {view.filters?.filters?.length > 0 && <FilterAltIcon sx={{ fontSize: 12, color: '#16a34a' }} />}
+                                            {view.sort_config?.order_by && <SortIcon sx={{ fontSize: 12, color: '#2563eb' }} />}
+                                            <Typography variant="caption" noWrap>{view.name}</Typography>
+                                        </Stack>
+                                    }
+                                />
+                            </ListItemButton>
+                        </ListItem>
+                    ))}
+                </List>
+            </Collapse>
+        </Box>
+    )
+})
+
+// ── Sidebar principal ─────────────────────────────────────────────────────
+export const LeadSidebar = memo(({
+    campaignId, filters, headers, setFiltersAndHeaders,
+    presentationProps, viewUpdateProps, onToggle
+}: LeadSidebarProps) => {
+
+    const { palette } = useTheme()
+
+    // ── Views state ──
+    const [currentViews, setCurrentViews] = useState<Paginable<LeadView> | null>(null)
+    const [visibilities, setVisibilities] = useState<DictionaryItem[]>([])
+    const { fetchPage, pageComponentProps, pageSize } = useListPagination(currentViews, 50)
+
+    const fetchLeadViews = useCallback((page: number) => {
+        if (!campaignId) return Promise.resolve()
+        return getLeadViews({ only_active: true, page_size: pageSize, page, campaign_id: Number(campaignId) })
+            .then(setCurrentViews)
+    }, [campaignId, pageSize])
+
+    useEffect(() => { fetchLeadViews(fetchPage) }, [fetchPage, fetchLeadViews])
+    useEffect(() => {
+        getDictionaries(['lead_view_visibilities']).then(res => setVisibilities(res.lead_view_visibilities ?? []))
+    }, [])
+
+    const handleDeleteView = useCallback((viewId: number) => {
+        deleteView(viewId).then(() => fetchLeadViews(fetchPage))
+    }, [fetchLeadViews, fetchPage])
+
+    // ── ViewForm popover ──
+    const [editView, setEditView] = useState<LeadView | undefined>(undefined)
+    const [viewFormAnchor, setViewFormAnchor] = useState<null | HTMLElement>(null)
+    const saveViewRef = useRef<HTMLDivElement>(null)
+
+    const handleEditView = useCallback((view: LeadView) => {
+        setEditView(view)
+        setViewFormAnchor(saveViewRef.current)
+    }, [])
+
+    const handleCloseForm = useCallback(() => {
+        setEditView(undefined)
+        setViewFormAnchor(null)
+    }, [])
+
+    const handleSaveView = useCallback((name: string, visibility: string, existingView?: LeadView) => {
+        return viewUpdateProps.saveView(name, visibility, existingView)
+            ?.then(() => {
+                fetchLeadViews(fetchPage)
+                showToast('Se ha guardado la vista actual.')
+            })
+    }, [viewUpdateProps, fetchLeadViews, fetchPage])
+
+    // ── Filters apply ──
+    const applyFilters = useCallback(async (data: { headers: LeadListParams; filters: LeadFilter[] }) => {
+        return setFiltersAndHeaders(data.filters, { ...headers, ...data.headers })
+    }, [setFiltersAndHeaders, headers])
+
+    // Group views by visibility
+    const viewsByGroup = VISIBILITY_GROUPS.map(group => ({
+        group,
+        views: currentViews?.items?.filter(v => v.visibility === group.code) ?? []
+    })).filter(({ views }) => views.length > 0)
+
+    const hasAnyViews = (currentViews?.items?.length ?? 0) > 0
+
+    return (
+        <Stack sx={{ height: '100%', overflow: 'hidden', bgcolor: 'background.paper' }}>
+
+            {/* ── Header ── */}
+            <Stack direction="row" justifyContent="space-between" alignItems="center"
+                sx={{ px: 2, py: 1.5, borderBottom: `1px solid ${palette.divider}`, flexShrink: 0 }}>
+                <Stack direction="row" spacing={1} alignItems="center">
+                    <FilterAltIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                    <Typography variant="subtitle2" fontWeight={600}>
+                        Filtros y Vistas
+                    </Typography>
+                </Stack>
+                <Tooltip title="Ocultar panel" placement="right">
+                    <IconButton size="small" onClick={onToggle}
+                        sx={{ color: 'text.secondary', '&:hover': { color: 'text.primary' } }}>
+                        <ChevronRightIcon sx={{ fontSize: 18, transform: 'rotate(180deg)' }} />
+                    </IconButton>
+                </Tooltip>
+            </Stack>
+
+            {/* ── Tipo de Vista ── */}
+            <Box sx={{ px: 2, py: 1.5, borderBottom: `1px solid ${palette.divider}`, flexShrink: 0 }}>
+                <Typography variant="caption" fontWeight={600}
+                    sx={{ textTransform: 'uppercase', letterSpacing: 0.7, color: 'text.disabled', display: 'block', mb: 1 }}>
+                    Tipo de Vista
+                </Typography>
+                <ToggleButtonGroup
+                    size="small"
+                    value={presentationProps.presentationMode}
+                    exclusive
+                    onChange={(_, v) => { if (v) presentationProps.handlePresentation(v) }}
+                    sx={{ width: '100%', '& .MuiToggleButton-root': { flex: 1, py: 0.5 } }}
+                >
+                    <Tooltip title="Tabla">
+                        <ToggleButton value="TABLE">
+                            <TableChartIcon sx={{ fontSize: 16, mr: 0.75 }} />
+                            <Typography variant="caption" fontWeight={600}>Tabla</Typography>
+                        </ToggleButton>
+                    </Tooltip>
+                    <Tooltip title="Tablero">
+                        <ToggleButton value="BOARD">
+                            <ViewColumnIcon sx={{ fontSize: 16, mr: 0.75 }} />
+                            <Typography variant="caption" fontWeight={600}>Tablero</Typography>
+                        </ToggleButton>
+                    </Tooltip>
+                </ToggleButtonGroup>
+            </Box>
+
+            {/* ── Área scrollable ── */}
+            <Box sx={{ flex: 1, overflowY: 'auto' }}>
+
+                {/* Vistas Guardadas */}
+                <Box sx={{ borderBottom: `1px solid ${palette.divider}`, py: 1 }}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center"
+                        sx={{ px: 2, pb: 0.75 }}>
+                        <Typography variant="caption" fontWeight={600}
+                            sx={{ textTransform: 'uppercase', letterSpacing: 0.7, color: 'text.disabled' }}>
+                            Vistas Guardadas
+                        </Typography>
+                    </Stack>
+
+                    {hasAnyViews ? (
+                        viewsByGroup.map(({ group, views }) => (
+                            <ViewGroup
+                                key={group.code}
+                                group={group}
+                                views={views}
+                                onLoad={viewUpdateProps.loadView}
+                                onEdit={handleEditView}
+                                onDelete={handleDeleteView}
+                                visibilities={visibilities}
+                            />
+                        ))
+                    ) : (
+                        <Box sx={{ px: 2, py: 1 }}>
+                            <Typography variant="caption" color="text.disabled">
+                                Sin vistas guardadas
+                            </Typography>
+                        </Box>
+                    )}
+
+                    {pageComponentProps.totalPages > 1 && (
+                        <PaginationComponent {...pageComponentProps} />
+                    )}
+
+                    <Box sx={{ px: 1.5, pt: 0.5 }}>
+                        <Button variant="text" size="small" fullWidth startIcon={<AddIcon sx={{ fontSize: '14px !important' }} />}
+                            onClick={() => setViewFormAnchor(saveViewRef.current)}
+                            sx={{ justifyContent: 'flex-start', color: 'text.secondary', fontSize: '0.75rem', py: 0.5 }}>
+                            Nueva Vista
+                        </Button>
+                    </Box>
+                </Box>
+
+                {/* Filtros */}
+                <Box sx={{ py: 1.5 }}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center"
+                        sx={{ px: 2, mb: 1 }}>
+                        <Typography variant="caption" fontWeight={600}
+                            sx={{ textTransform: 'uppercase', letterSpacing: 0.7, color: 'text.disabled' }}>
+                            Filtros
+                        </Typography>
+                        {filters.length > 0 && (
+                            <Typography variant="caption"
+                                sx={{ bgcolor: alpha(palette.success.main, 0.12), color: 'success.dark', borderRadius: 1, px: 0.75, fontWeight: 600 }}>
+                                {filters.length} activo{filters.length !== 1 ? 's' : ''}
+                            </Typography>
+                        )}
+                    </Stack>
+                    <Box sx={{ px: 1.5 }}>
+                        {campaignId ? (
+                            <LeadFilters
+                                applyFilters={applyFilters}
+                                filters={{ filters, headers }}
+                                campaignId={Number(campaignId)}
+                                onClose={() => { }}
+                                showCancelButton={false}
+                                showTitle={false}
+                            />
+                        ) : (
+                            <Typography variant="caption" color="text.disabled">
+                                Seleccioná una campaña para configurar los filtros.
+                            </Typography>
+                        )}
+                    </Box>
+                </Box>
+            </Box>
+
+            {/* ── Footer: Guardar Vista ── */}
+            <Box ref={saveViewRef} sx={{ p: 1.5, borderTop: `1px solid ${palette.divider}`, flexShrink: 0 }}>
+                <CommonButton
+                    actionType="CREATE"
+                    variant="contained"
+                    color="primary"
+                    size="small"
+                    fullWidth
+                    startIcon={<SaveIcon sx={{ fontSize: '16px !important' }} />}
+                    onClick={() => setViewFormAnchor(saveViewRef.current)}
+                >
+                    Guardar Vista Actual
+                </CommonButton>
+            </Box>
+
+            {/* ViewForm popover */}
+            <ViewForm
+                existingView={editView}
+                visibilities={visibilities}
+                formAnchor={viewFormAnchor}
+                handleClose={handleCloseForm}
+                handleCreate={handleSaveView}
+            />
+        </Stack>
+    )
+})
