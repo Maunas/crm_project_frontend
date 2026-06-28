@@ -30,6 +30,6 @@ export const disableOrganization = async (id: number): Promise<DeleteResponse> =
 }
 
 export const enableOrganization = async (id: number): Promise<EnableResponse> => {
-    const org = await axiosCRM.put(`/organizations/active/${id}`)
+    const org = await axiosCRM.put(`/organizations/activate/${id}`)
     return org.data
 }

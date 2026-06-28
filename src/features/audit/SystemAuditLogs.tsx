@@ -246,7 +246,6 @@ export const SystemAuditList = () => {
                     </TableBody>
                 </Table>
             </TableContainer>
-
             <PaginationComponent {...pageComponentProps} />
         </Stack>
     )

@@ -152,7 +152,7 @@ export function InviteDialog({ open, onClose }: Props) {
                 )}
                 {invitation && (
                     <Button onClick={() => { setInvitation(null); setEmail("") }} variant="outlined">
-                        Invitar a otra persona
+                        Nueva invitacion
                     </Button>
                 )}
             </DialogActions>

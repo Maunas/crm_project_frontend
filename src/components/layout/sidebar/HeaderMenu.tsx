@@ -9,6 +9,7 @@ import MoreIcon from '@mui/icons-material/More';
 import LoadingScreenWrapper from 'src/components/feedback/LoadingScreen';
 import type { UserContextItems } from 'src/stores/UserContext';
 import { InviteDialog } from 'src/features/organizations/InviteDialog';
+import type { Organization } from 'src/types/users';
 
 function useRoleLabel(user: UserContextItems["user"], activeOrg: UserContextItems["activeOrg"]) {
     if (!user) return ""
@@ -29,7 +30,7 @@ const HeaderMenu = memo(() => {
     const fullName = user ? [user.name, user.last_name].filter(Boolean).join(" ") : ""
     const roleLabel = useRoleLabel(user, activeOrg)
 
-    // Solo owners y superusers pueden invitar
+    // Solo owners y superusers pueden invitar (no aplica a Panel Global id=1)
     const canInvite = user?.is_superuser || (
         activeOrg && user?.organizations_access.some(
             a => a.organization_id === activeOrg.id && a.is_owner
@@ -39,6 +40,12 @@ const HeaderMenu = memo(() => {
     const handleLogout = async () => {
         await logout()
         nav("/login")
+    }
+
+    const handleOrgSwitch = (org: Organization) => {
+        setActiveOrg(org)
+        nav("/dashboard")
+        handleMenuClose()
     }
 
     const { setMode } = useColorScheme();
@@ -88,7 +95,7 @@ const HeaderMenu = memo(() => {
             <LoadingScreenWrapper loading={loadingOrgs} sx={{ minWidth: "15rem", height: "10rem" }}>
                 {
                     activeOrganizations?.map(org => (
-                        <MenuItem dense key={org.id} onClick={() => setActiveOrg(org)}>
+                        <MenuItem dense key={org.id} onClick={() => handleOrgSwitch(org)}>
                             {org.id === activeOrg?.id &&
                                 <ListItemIcon><Check /></ListItemIcon>
                             }
@@ -109,7 +116,7 @@ const HeaderMenu = memo(() => {
                 <ListItemIcon><PersonOutlined fontSize="small" /></ListItemIcon>
                 <ListItemText>Mi perfil</ListItemText>
             </MenuItem>
-            {canInvite && activeOrg && activeOrg.id !== 0 && (
+            {canInvite && activeOrg && activeOrg.id !== 1 && (
                 <MenuItem dense onClick={() => { handleMenuClose(); setInviteOpen(true) }}>
                     <ListItemIcon><PersonAddOutlined fontSize="small" /></ListItemIcon>
                     <ListItemText>Invitar a la organizacion</ListItemText>
@@ -184,16 +191,18 @@ const HeaderMenu = memo(() => {
         </>
     )
 
-    return (<>
-        <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-            <Button sx={{ color: 'white', borderColor: "white" }} variant='outlined' size='large' component={Link} to="/login" startIcon={<AccountCircle />}>Iniciar Sesion</Button>
-        </Box>
-        <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
-            <IconButton size="large" aria-label="login" onClick={handleMobileMenuOpen} color="inherit" component={Link} to="/login">
-                <AccountCircle />
-            </IconButton>
-        </Box>
-    </>)
+    return (
+        <>
+            <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
+                <Button sx={{ color: 'white', borderColor: "white" }} variant='outlined' size='large' component={Link} to="/login" startIcon={<AccountCircle />}>Iniciar Sesion</Button>
+            </Box>
+            <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
+                <IconButton size="large" aria-label="login" color="inherit" component={Link} to="/login">
+                    <AccountCircle />
+                </IconButton>
+            </Box>
+        </>
+    )
 })
 
 export default HeaderMenu

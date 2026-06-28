@@ -16,7 +16,7 @@ axiosCRM.interceptors.request.use(config => {
     if (storageOrg) {
         try {
             const org: Organization = JSON.parse(storageOrg)
-            if (org) config.headers["X-Organization-Id"] = org.id === 0 ? 1 : org.id
+            if (org) config.headers["X-Organization-Id"] = org.id
         } catch {
             localStorage.removeItem("selected_org")
         }

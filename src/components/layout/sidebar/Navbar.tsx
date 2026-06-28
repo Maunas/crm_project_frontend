@@ -10,8 +10,12 @@ import LabelIcon from '@mui/icons-material/Label';
 import WorkIcon from '@mui/icons-material/Work';
 import TuneIcon from '@mui/icons-material/Tune';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import GroupIcon from '@mui/icons-material/Group';
+import { useUserContext } from 'src/stores/UserContext';
 
-const options = [
+const regularOptions = [
+  { name: "Dashboard", icon: <DashboardIcon />, link: "/dashboard" },
   { name: "Leads", icon: <PersonIcon />, link: "/leads" },
   { name: "Campañas", icon: <WorkIcon />, link: "/campaigns" },
   { name: "Organizaciones", icon: <StoreIcon />, link: "/organizations" },
@@ -21,20 +25,29 @@ const options = [
   { name: "Auditoría de Sistema", icon: <VerifiedUserIcon />, link: "/audit-logs" }
 ]
 
+const globalOptions = [
+  { name: "Dashboard", icon: <DashboardIcon />, link: "/dashboard" },
+  { name: "Organizaciones", icon: <StoreIcon />, link: "/organizations" },
+  { name: "Usuarios", icon: <GroupIcon />, link: "/users" },
+  { name: "Auditoría de Sistema", icon: <VerifiedUserIcon />, link: "/audit-logs" }
+]
+
 interface NavbarProps {
   open: boolean
 }
 
 const Navbar = memo(({ open }: NavbarProps) => {
-
   const { palette } = useTheme()
   const { pathname } = useLocation()
+  const { activeOrg } = useUserContext()
+
+  const options = activeOrg?.id === 1 ? globalOptions : regularOptions
 
   const activeIdx = useMemo(() =>
     options.findIndex(op =>
-      pathname.split("/")[1] === op.link.slice(1)
+      pathname === op.link || pathname.split("/")[1] === op.link.slice(1)
     )
-    , [pathname])
+  , [pathname, options])
 
   const LIST_ITEM_STYLES = useMemo(() =>
     options.map((_, idx) => [
@@ -43,7 +56,7 @@ const Navbar = memo(({ open }: NavbarProps) => {
         "&:hover": { backgroundColor: palette.contrast.light }
       },
       activeIdx === idx ? { backgroundColor: alpha(palette.primary.main, .4) } : {}
-    ]), [palette, activeIdx])
+    ]), [palette, activeIdx, options])
 
   const ITEM_STYLES = useMemo(() => [
     { minHeight: 48, px: 2.5, },

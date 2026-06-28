@@ -16,9 +16,19 @@ import MainLayout from "./app/mainLayout";
 import { NotFound } from "./pages/NotFound";
 import { ProfilePage } from "./pages/ProfilePage";
 import { OnboardingPage } from "./pages/OnboardingPage";
-import { createBrowserRouter, Outlet } from "react-router-dom";
+import { OrgDashboardPage } from "./features/dashboard/OrgDashboardPage";
+import { GlobalDashboardPage } from "./features/dashboard/GlobalDashboardPage";
+import { useUserContext } from "src/stores/UserContext";
+import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import { ImportLeadsPage } from "./features/lead/ImportLeadsPage";
 import { SystemAuditList } from "./features/audit/SystemAuditLogs";
+
+// Muestra GlobalDashboard para Panel Global (id=1), OrgDashboard para el resto
+function DashboardRouter() {
+    const { activeOrg } = useUserContext()
+    if (activeOrg?.id === 1) return <GlobalDashboardPage />
+    return <OrgDashboardPage />
+}
 
 export const router = createBrowserRouter([
     {
@@ -34,13 +44,16 @@ export const router = createBrowserRouter([
         Component: OnboardingPage,
     },
     {
-        // Layout principal
         path: "/",
         Component: MainLayout,
         children: [
             {
-                path: "/",
-                element: <div>Home Test</div>
+                index: true,
+                element: <Navigate to="/dashboard" replace />,
+            },
+            {
+                path: "/dashboard",
+                Component: DashboardRouter,
             },
             {
                 path: "/leads",
@@ -66,5 +79,5 @@ export const router = createBrowserRouter([
             { path: "/profile", element: <ProfilePage /> },
             { path: "*", Component: NotFound },
         ]
-    }
-]);
+    },
+])
