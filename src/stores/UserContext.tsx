@@ -1,11 +1,19 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { getOrganizations } from 'src/features/organizations/organizationServices';
-import { loginUser, signupUser } from 'src/features/auth/userServices';
-import type { Organization, OrganizationDetailed } from 'src/types/campaigns';
-import type { UserData, UserLogin, UserSignup } from 'src/types/users';
-import { SUPERUSER } from 'src/utils/constants';
-import { showCommonErrorToast, showToast } from 'src/utils/feedback';
-import { useLoading } from 'src/hooks/useLoading';
+import React, { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { getOrganizations } from 'src/features/organizations/organizationServices'
+import {
+    loginUser,
+    registerUser,
+    getCurrentUser,
+    logout as logoutAPI,
+    updateCurrentUser,
+    type UserProfileUpdate,
+} from 'src/features/auth/userServices'
+import { tokenStore } from 'src/lib/tokenStore'
+import axios from 'axios'
+import { API_BASE_URL } from 'src/lib/axios'
+import type { Organization, OrganizationDetailed } from 'src/types/campaigns'
+import type { UserData, UserLogin, UserSignup } from 'src/types/users'
+import { SUPERUSER } from 'src/utils/constants'
 
 export interface UserContextItems {
     userOrganizations: OrganizationDetailed[],
@@ -13,110 +21,174 @@ export interface UserContextItems {
     activeOrg: Organization | null,
     setActiveOrg: (org: Organization) => void,
     setOrganizations: React.Dispatch<React.SetStateAction<OrganizationDetailed[]>>,
-    fetchOrganizations: () => Promise<unknown>,
+    fetchOrganizations: () => void,
     user: UserData | null,
-    login: (data: UserLogin) => Promise<void>,
+    isRestoring: boolean,
+    login: (data: UserLogin, rememberMe?: boolean) => Promise<void>,
+    updateUser: (data: UserProfileUpdate) => Promise<void>,
     signup: (data: UserSignup) => Promise<void>,
-    logout: () => void,
-    loadingOrgs: boolean
+    logout: () => Promise<void>,
+    loadingOrgs: boolean,
 }
 
-const UserContext = createContext<UserContextItems | undefined>({} as UserContextItems)
+const UserContext = createContext<UserContextItems | undefined>(undefined)
 
 export const UserProvider = ({ children }: { children?: ReactNode }) => {
 
     const [user, setUser] = useState<UserData | null>(() => {
-        const localUser = window.localStorage.getItem("user")
-        return localUser ? JSON.parse(localUser) : null
+        if (!tokenStore.hasSession()) return null
+        try {
+            const stored = window.localStorage.getItem("user")
+            return stored ? JSON.parse(stored) : null
+        } catch {
+            localStorage.removeItem("user")
+            return null
+        }
     })
 
-    const [organizations, setOrganizations] = React.useState<OrganizationDetailed[]>([]);
+    const [organizations, setOrganizations] = React.useState<OrganizationDetailed[]>([])
+    const [loadingOrgs, setLoadingOrgs] = useState(false)
 
-    const fetchOrganizations = useCallback(() => {
-        return getOrganizations({ only_active: false, detailed: true, page_size: 0 })
-            .then(orgs => setOrganizations(orgs.items))
-            .catch(e => showCommonErrorToast(e))
+    const [isRestoring, setIsRestoring] = useState(
+        tokenStore.hasSession() && !tokenStore.getAccessToken()
+    )
+
+    const fetchOrganizations = () => {
+        setLoadingOrgs(true)
+        getOrganizations({ only_active: true, detailed: true, page_size: 0 })
+            .then(orgs => {
+                const filtered = orgs.items.filter(o => o.id !== 1)
+                setOrganizations(filtered)
+                // Bug fix: si el activeOrg guardado ya no está disponible, limpiarlo
+                setActiveOrgState(prev => {
+                    if (prev?.id === 0) return prev // SUPERUSER virtual, mantener
+                    if (!prev) return filtered[0] ?? null // sin org → auto-seleccionar la primera
+                    const stillValid = filtered.some(o => o.id === prev.id)
+                    return stillValid ? prev : (filtered[0] ?? null) // si ya no existe, primera disponible
+                })
+            })
+            .catch(() => {})
+            .finally(() => setLoadingOrgs(false))
+    }
+
+    // Restaurar sesión al recargar la página
+    useEffect(() => {
+        if (!tokenStore.hasSession() || tokenStore.getAccessToken()) {
+            if (!tokenStore.hasSession() && user) {
+                localStorage.removeItem("user")
+                setUser(null)
+            }
+            return
+        }
+        axios
+            .post(`${API_BASE_URL}/auth/refresh`, { refresh_token: tokenStore.getRefreshToken()! })
+            .then(({ data }) => {
+                tokenStore.setTokens(data.access_token, data.refresh_token, tokenStore.isRemembered())
+                return getCurrentUser()
+            })
+            .then(userData => {
+                setUser(userData)
+                if (userData.is_superuser) setActiveOrgState(prev => prev ?? SUPERUSER)
+                fetchOrganizations()
+            })
+            .catch(() => {
+                tokenStore.clear()
+                localStorage.removeItem("user")
+                setUser(null)
+            })
+            .finally(() => setIsRestoring(false))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
-
-    const { loading: loadingOrgs, fnWithLoading: fetchOrgLoad } = useLoading(fetchOrganizations)
-
-    React.useEffect(() => {
-        fetchOrgLoad()
-    }, [fetchOrgLoad])
-
-    /*
-    const userOrganizations = useMemo(() => {
-        if (!organizations || !user) return []
-        const userOrganizationAccessIds = user.organizations_access.map(org => org.organization_id)
-        return organizations.filter(org => userOrganizationAccessIds.includes(org.id))
-    }, [user, organizations])
-    */
-
-    const activeOrganizations = useMemo(() => {
-        const active = organizations.filter(org => org.active) as Organization[]
-        active.push(SUPERUSER)
-        return active
-    }, [organizations])
 
     useEffect(() => {
         if (user) window.localStorage.setItem("user", JSON.stringify(user))
         else window.localStorage.removeItem("user")
     }, [user])
 
-    const [activeOrg, setActiveOrg] = React.useState<Organization | null>(() => {
-        const localUser = window.localStorage.getItem("selected_org")
-        return localUser ? JSON.parse(localUser) : null
-    });
+    const activeOrganizations = useMemo(() => {
+        const active = organizations.filter(org => org.active) as Organization[]
+        if (user?.is_superuser) active.push(SUPERUSER)
+        return active
+    }, [organizations, user])
 
-    const changeActiveOrg = (org: Organization) => {
-        setActiveOrg(org)
-        showToast(`Se ha cambiado de organización activa a "${org.name}"`, "info")
-    }
+    const [activeOrg, setActiveOrgState] = React.useState<Organization | null>(() => {
+        try {
+            const stored = window.localStorage.getItem("selected_org")
+            return stored ? JSON.parse(stored) : null
+        } catch {
+            localStorage.removeItem("selected_org")
+            return null
+        }
+    })
+
+    const setActiveOrg = (org: Organization) => setActiveOrgState(org)
 
     React.useEffect(() => {
         if (activeOrg) window.localStorage.setItem("selected_org", JSON.stringify(activeOrg))
         else window.localStorage.removeItem("selected_org")
     }, [activeOrg])
 
-    const login = (data: UserLogin) => {
-        return loginUser(data).then(user => {
-            setUser(user)
-            setActiveOrg(activeOrganizations[0])
-            showToast("Sesión iniciada con éxito", "success")
-        })
+    const login = async (data: UserLogin, rememberMe = true) => {
+        const tokens = await loginUser(data)
+        tokenStore.setTokens(tokens.access_token, tokens.refresh_token, rememberMe)
+        const userData = await getCurrentUser()
+        setUser(userData)
+        if (userData.is_superuser) setActiveOrgState(prev => prev ?? SUPERUSER)
+        fetchOrganizations()
     }
 
-    const signup = (data: UserSignup) => {
-        return signupUser(data).then(user => {
-            setUser(user)
-            setActiveOrg(activeOrganizations[0])
-            showToast("Cuenta creada con éxito", "success")
-        })
+    const updateUser = async (data: UserProfileUpdate) => {
+        await updateCurrentUser(data)
+        const updated = await getCurrentUser()
+        setUser(updated)
     }
 
-    const logout = () => {
-        showToast("Sesión cerrada con éxito", "success")
+    const signup = async (data: UserSignup) => {
+        if (data.password !== data.repeat_password) throw new Error("Las contraseñas no coinciden.")
+        const tokens = await registerUser(data)
+        tokenStore.setTokens(tokens.access_token, tokens.refresh_token, false)
+        const userData = await getCurrentUser()
+        setUser(userData)
+        if (userData.is_superuser) setActiveOrgState(prev => prev ?? SUPERUSER)
+        fetchOrganizations()
+    }
+
+    const logout = async () => {
+        const refreshToken = tokenStore.getRefreshToken()
+        if (refreshToken) {
+            try { await logoutAPI(refreshToken) } catch { /* ignorar */ }
+        }
+        tokenStore.clear()
+        localStorage.removeItem("user")
+        localStorage.removeItem("selected_org")
         setUser(null)
-        setActiveOrg(null)
+        setOrganizations([])
+        setActiveOrgState(null)
     }
 
     return (
         <UserContext.Provider value={{
-            user, login, logout, signup,
-            //To Do: Cuando se realice la seguridad en backend, quitar organizations.
-            userOrganizations: organizations, activeOrganizations,
-            activeOrg, setActiveOrg: changeActiveOrg,
-            setOrganizations, fetchOrganizations: fetchOrgLoad, loadingOrgs
-        }} >
+            userOrganizations: organizations,
+            activeOrganizations,
+            activeOrg,
+            setActiveOrg,
+            setOrganizations,
+            fetchOrganizations,
+            user,
+            isRestoring,
+            login,
+            updateUser,
+            signup,
+            logout,
+            loadingOrgs,
+        }}>
             {children}
         </UserContext.Provider>
     )
 }
 
 export const useUserContext = () => {
-    const context = useContext(UserContext);
-    if (context === undefined) {
-        throw new Error('useContext debe usarse dentro de un UserContextProvider');
-    }
-    return context;
-};
+    const context = useContext(UserContext)
+    if (context === undefined) throw new Error('useUserContext debe usarse dentro de UserProvider')
+    return context
+}

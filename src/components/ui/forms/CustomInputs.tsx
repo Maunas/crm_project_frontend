@@ -322,9 +322,12 @@ const DATE_INPUT_TYPE = {
 type RegisteredDateInputProps<T extends FieldValues> =
   Omit<RegisteredTextProps<T>, "type"> & { dateType?: keyof typeof DATE_INPUT_TYPE }
 
-export const RegisteredDateInput = <T extends FieldValues>({ dateType = "DATE", ...props }: RegisteredDateInputProps<T>) => {
+export const RegisteredDateInput = <T extends FieldValues>({ dateType = "DATE", slotProps, ...props }: RegisteredDateInputProps<T>) => {
 
-  return <RegisteredTextInput setValueAs={(value) => formatDate(value, "custom", DATE_INPUT_TYPE[dateType].format)}
-    type={DATE_INPUT_TYPE[dateType].inputType} {...props}
+  return <RegisteredTextInput
+    setValueAs={(value) => formatDate(value, "custom", DATE_INPUT_TYPE[dateType].format)}
+    type={DATE_INPUT_TYPE[dateType].inputType}
+    slotProps={{ inputLabel: { shrink: true }, ...slotProps }}
+    {...props}
   />
 }
