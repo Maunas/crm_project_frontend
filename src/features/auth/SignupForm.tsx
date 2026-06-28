@@ -15,7 +15,7 @@ export const SignupFormPage = () => {
 
     const submit = async (data: UserSignup) => {
         await signup(data)
-        nav("/")
+        nav("/onboarding")
     }
 
     return (
@@ -71,13 +71,14 @@ const SignupForm = ({ submit }: SignupFormProps) => {
                     <RegisteredTextInput name="last_name" register={register} label="Apellido" required
                         errorMessage={errors.last_name?.message} autoComplete="family-name" />
                 </Stack>
-                <RegisteredTextInput name="email" register={register} label="Email" required
-                    errorMessage={errors.email?.message} autoComplete="email" />
+                <RegisteredTextInput name="email" register={register} label="Correo electrónico" required
+                    errorMessage={errors.email?.message} autoComplete="email" type="email" />
                 <PasswordField name="password" register={register} label="Contraseña" required
                     errorMessage={errors.password?.message} autoComplete="new-password" />
                 <PasswordField name="repeat_password" register={register} label="Repetir contraseña" required
                     errorMessage={errors.repeat_password?.message} autoComplete="new-password" />
-                <RegisteredDateInput name="date_of_birth" register={register} label="Fecha de nacimiento" errorMessage={errors.date_of_birth?.message} autoComplete="bday" />
+                <RegisteredDateInput name="date_of_birth" register={register} label="Fecha de nacimiento"
+                    errorMessage={errors.date_of_birth?.message} autoComplete="bday" />
                 <RegisteredTextInput name="phone" register={register} label="Teléfono (opcional)"
                     errorMessage={errors.phone?.message} autoComplete="tel" />
                 {errors?.root && <FormErrorMessage>{errors.root.message}</FormErrorMessage>}

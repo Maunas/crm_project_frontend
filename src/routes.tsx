@@ -15,6 +15,7 @@ import { SignupFormPage } from "features/auth/SignupForm";
 import MainLayout from "./app/mainLayout";
 import { NotFound } from "./pages/NotFound";
 import { ProfilePage } from "./pages/ProfilePage";
+import { OnboardingPage } from "./pages/OnboardingPage";
 import { createBrowserRouter, Outlet } from "react-router-dom";
 import { ImportLeadsPage } from "./features/lead/ImportLeadsPage";
 import { SystemAuditList } from "./features/audit/SystemAuditLogs";
@@ -29,91 +30,41 @@ export const router = createBrowserRouter([
         Component: SignupFormPage,
     },
     {
+        path: "/onboarding",
+        Component: OnboardingPage,
+    },
+    {
         // Layout principal
         path: "/",
         Component: MainLayout,
         children: [
-            // Rutas dentro del layout
             {
                 path: "/",
                 element: <div>Home Test</div>
             },
-
             {
                 path: "/leads",
                 Component: Outlet,
                 children: [
-                    {
-                        path: "/leads/",
-                        Component: LeadListPage
-                    },
-                    {
-                        path: "/leads/new",
-                        Component: CreateLeadFormPage
-                    },
-                    {
-                        path: "/leads/modify/:id",
-                        Component: UpdateLeadFormPage
-                    },
-                    {
-                        path: "/leads/:id",
-                        Component: LeadDetailsLayout
-                    },
+                    { path: "/leads/", Component: LeadListPage },
+                    { path: "/leads/new", Component: CreateLeadFormPage },
+                    { path: "/leads/modify/:id", Component: UpdateLeadFormPage },
+                    { path: "/leads/:id", Component: LeadDetailsLayout },
                 ]
             },
-
-            {
-                path: "/leads/import",
-                Component: ImportLeadsPage
-            },
-            {
-                path: "/campaigns/",
-                Component: WorkspaceList
-            },
-            {
-                path: "/nomenclators/",
-                Component: NomenclatorList
-            },
-            {
-                path: "/audit-logs/",
-                Component: SystemAuditList
-            },
-            {
-                path: "/organizations/",
-                Component: OrganizationList
-            },
-            {
-                path: "/automations/",
-                Component: AutomationList
-            },
-            {
-                path: "/automations/:id",
-                Component: AutomationPage
-            },
-            {
-                path: "/campaigns/:id",
-                Component: CampaignDetails
-            },
-            {
-                path: "/search",
-                Component: SearchResultsList,
-            },
-            {
-                path: "/org-properties/",
-                Component: OrgProperties,
-            },
-            {
-                path: "/lead-flow-editor/:id?",
-                Component: LeadFlowEditor,
-            },
-            {
-                path: "/profile",
-                element: <ProfilePage />,
-            },
-            {
-                path: "*", // Si no coincide con nada más.
-                Component: NotFound
-            },
+            { path: "/leads/import", Component: ImportLeadsPage },
+            { path: "/campaigns/", Component: WorkspaceList },
+            { path: "/nomenclators/", Component: NomenclatorList },
+            { path: "/audit-logs/", Component: SystemAuditList },
+            { path: "/organizations/", Component: OrganizationList },
+            { path: "/automations/", Component: AutomationList },
+            { path: "/automations/:id", Component: AutomationPage },
+            { path: "/campaigns/:id", Component: CampaignDetails },
+            { path: "/search", Component: SearchResultsList },
+            { path: "/org-properties/", Component: OrgProperties },
+            { path: "/lead-flow-editor/:id?", Component: LeadFlowEditor },
+            { path: "/profile", element: <ProfilePage /> },
+            { path: "*", Component: NotFound },
         ]
     }
 ]);

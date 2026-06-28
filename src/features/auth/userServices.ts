@@ -1,5 +1,5 @@
 import type { Paginable } from "src/types/shared"
-import type { TokenResponse, UserData, UserLogin, UserSignup } from "src/types/users"
+import type { TokenResponse, UserData, UserLogin, UserSignup, InviteRequest, InviteResponse } from "src/types/users"
 import axiosCRM from "src/lib/axios"
 
 export const getUsers = async (): Promise<Paginable<UserData>> => {
@@ -58,6 +58,18 @@ export interface UserProfileUpdate {
 
 export const updateCurrentUser = async (data: UserProfileUpdate): Promise<void> => {
     await axiosCRM.put("/auth/me", data)
+}
+
+export const inviteUser = async (data: InviteRequest): Promise<InviteResponse> => {
+    const res = await axiosCRM.post("/auth/invite", data)
+    return res.data
+}
+
+export const acceptInvite = async (invite_token: string, name: string, password: string): Promise<TokenResponse> => {
+    const res = await axiosCRM.post("/auth/accept-invite", null, {
+        params: { invite_token, name, password }
+    })
+    return res.data
 }
 
 // aliases

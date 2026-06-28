@@ -26,6 +26,7 @@ export interface UserContextItems {
     isRestoring: boolean,
     login: (data: UserLogin, rememberMe?: boolean) => Promise<void>,
     updateUser: (data: UserProfileUpdate) => Promise<void>,
+    refreshUser: () => Promise<void>,
     signup: (data: UserSignup) => Promise<void>,
     logout: () => Promise<void>,
     loadingOrgs: boolean,
@@ -143,6 +144,11 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
         setUser(updated)
     }
 
+    const refreshUser = async () => {
+        const updated = await getCurrentUser()
+        setUser(updated)
+    }
+
     const signup = async (data: UserSignup) => {
         if (data.password !== data.repeat_password) throw new Error("Las contraseñas no coinciden.")
         const tokens = await registerUser(data)
@@ -180,6 +186,7 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
             updateUser,
             signup,
             logout,
+            refreshUser,
             loadingOrgs,
         }}>
             {children}
@@ -188,7 +195,7 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
 }
 
 export const useUserContext = () => {
-    const context = useContext(UserContext)
-    if (context === undefined) throw new Error('useUserContext debe usarse dentro de UserProvider')
-    return context
+    const ctx = useContext(UserContext)
+    if (!ctx) throw new Error("useUserContext must be used within a UserProvider")
+    return ctx
 }
