@@ -16,7 +16,7 @@ export const LoginFormPage = () => {
 
     const submit = async (data: UserLogin, rememberMe: boolean) => {
         await login(data, rememberMe)
-        nav("/")
+        nav("/dashboard")
     }
 
     return (

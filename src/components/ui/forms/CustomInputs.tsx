@@ -322,12 +322,38 @@ const DATE_INPUT_TYPE = {
 type RegisteredDateInputProps<T extends FieldValues> =
   Omit<RegisteredTextProps<T>, "type"> & { dateType?: keyof typeof DATE_INPUT_TYPE }
 
-export const RegisteredDateInput = <T extends FieldValues>({ dateType = "DATE", slotProps, ...props }: RegisteredDateInputProps<T>) => {
 
-  return <RegisteredTextInput
-    setValueAs={(value) => formatDate(value, "custom", DATE_INPUT_TYPE[dateType].format)}
-    type={DATE_INPUT_TYPE[dateType].inputType}
-    slotProps={{ inputLabel: { shrink: true }, ...slotProps }}
-    {...props}
-  />
-}
+export const RegisteredDateInput = <T extends FieldValues>({ dateType = "DATE", register, name, label, required = false, errorMessage, autoComplete = "bday", size = "medium", ...props }: RegisteredDateInputProps<T>) => {
+  const { inputType } = DATE_INPUT_TYPE[dateType]
+  const { mode } = useColorScheme();
+
+  return (
+    <>
+      <TextField
+        {...register(name)}
+        label={label ?? name}
+        id={name}
+        type={inputType}
+        required={required}
+        error={!!errorMessage}
+        autoComplete={autoComplete}
+        fullWidth
+        size={size}
+        slotProps={{
+          inputLabel: { shrink: true },
+          htmlInput: {
+            sx: {
+              '&::-webkit-calendar-picker-indicator': {
+                filter: mode === "dark" ? 'invert(1)' : "none",
+              },
+            },
+          },
+        }}
+        {...props}
+      />
+      {errorMessage && typeof errorMessage === "string" && (
+        <FormErrorMessage>{errorMessage}</FormErrorMessage>
+      )}
+    </>
+  );
+};

@@ -169,9 +169,7 @@ export function OnboardingPage() {
 
                 <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems="stretch">
                     <CreateOrgCard onSuccess={handleSuccess} />
-                    <Divider orientation="vertical" flexItem sx={{ display: { xs: "none", sm: "block" } }}>
-                        o
-                    </Divider>
+                    <Divider orientation="vertical" flexItem sx={{ display: { xs: "none", sm: "block" } }} />
                     <JoinOrgCard onSuccess={handleSuccess} />
                 </Stack>
             </Stack>

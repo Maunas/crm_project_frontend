@@ -60,12 +60,11 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
             .then(orgs => {
                 const filtered = orgs.items.filter(o => o.id !== 1)
                 setOrganizations(filtered)
-                // Bug fix: si el activeOrg guardado ya no está disponible, limpiarlo
                 setActiveOrgState(prev => {
-                    if (prev?.id === 0) return prev // SUPERUSER virtual, mantener
-                    if (!prev) return filtered[0] ?? null // sin org → auto-seleccionar la primera
+                    if (prev?.id === 1) return prev // Panel Global, mantener
+                    if (!prev) return filtered[0] ?? null
                     const stillValid = filtered.some(o => o.id === prev.id)
-                    return stillValid ? prev : (filtered[0] ?? null) // si ya no existe, primera disponible
+                    return stillValid ? prev : (filtered[0] ?? null)
                 })
             })
             .catch(() => {})
@@ -194,8 +193,8 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
     )
 }
 
-export const useUserContext = () => {
+export function useUserContext() {
     const ctx = useContext(UserContext)
-    if (!ctx) throw new Error("useUserContext must be used within a UserProvider")
+    if (!ctx) throw new Error("useUserContext must be used within UserProvider")
     return ctx
 }

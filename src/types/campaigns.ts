@@ -37,4 +37,6 @@ export interface OrganizationPost {
 export interface Organization extends OrganizationPost {
   id: number;
 }
-export interface OrganizationDetailed extends Organization, Metadata { }
+export interface OrganizationDetailed extends Organization, Metadata {
+  active: boolean;
+}

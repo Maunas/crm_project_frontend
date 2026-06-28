@@ -29,7 +29,8 @@ export const disableCampaign = async (id: number): Promise<DeleteResponse> => {
     const cmp = await axiosCRM.delete(`/campaigns/${id}`)
     return cmp.data
 }
+
 export const enableCampaign = async (id: number): Promise<EnableResponse> => {
-    const cmp = await axiosCRM.put(`/campaigns/active/${id}`)
+    const cmp = await axiosCRM.put(`/campaigns/activate/${id}`)
     return cmp.data
 }
