@@ -41,6 +41,16 @@ export interface OrganizationAccess extends Metadata {
 export interface Role extends Metadata {
     id: number,
     name: string,
-    code: string,
-    organization_id: number | null
+    code: st
+// Invitaciones (/auth/invite, /auth/accept-invite)
+export interface InviteRequest {
+    email: string
+    organization_id: number
+    role_code?: string
+}
+
+export interface InviteResponse {
+    invite_token: string
+    expires_in_hours: number
+    message: string
 }
