@@ -4,13 +4,29 @@ export interface UserLogin {
     email: string,
     password: string
 }
+
 export interface UserSignup extends UserLogin {
-    repeat_password: string
+    name: string,
+    last_name: string,
+    repeat_password: string,
+    phone?: string,
+    date_of_birth?: string,
 }
+
+export interface TokenResponse {
+    access_token: string,
+    refresh_token: string,
+    token_type: string,
+    expires_in: number
+}
+
 export interface UserData extends Metadata {
     id: number,
     name: string,
+    last_name: string | null,
     email: string,
+    phone: string | null,
+    date_of_birth: string | null,
     is_superuser: boolean,
     organizations_access: OrganizationAccess[]
 }
@@ -18,6 +34,7 @@ export interface UserData extends Metadata {
 export interface OrganizationAccess extends Metadata {
     id: number,
     organization_id: number,
+    is_owner: boolean,
     roles: Role[]
 }
 

@@ -14,6 +14,7 @@ import { LoginFormPage } from "./features/auth/LoginForm";
 import { SignupFormPage } from "features/auth/SignupForm";
 import MainLayout from "./app/mainLayout";
 import { NotFound } from "./pages/NotFound";
+import { ProfilePage } from "./pages/ProfilePage";
 import { createBrowserRouter, Outlet } from "react-router-dom";
 import { ImportLeadsPage } from "./features/lead/ImportLeadsPage";
 import { SystemAuditList } from "./features/audit/SystemAuditLogs";
@@ -104,6 +105,10 @@ export const router = createBrowserRouter([
             {
                 path: "/lead-flow-editor/:id?",
                 Component: LeadFlowEditor,
+            },
+            {
+                path: "/profile",
+                element: <ProfilePage />,
             },
             {
                 path: "*", // Si no coincide con nada más.

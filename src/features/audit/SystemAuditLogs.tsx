@@ -223,8 +223,8 @@ export const SystemAuditList = () => {
                             </TableCell>
                             <TableCell>
                                 <Stack direction="row" spacing={1}>
-                                    <TextField {...register("start_date")} type="date" size="small" variant="standard" InputLabelProps={{ shrink: true }} />
-                                    <TextField {...register("end_date")} type="date" size="small" variant="standard" InputLabelProps={{ shrink: true }} />
+                                    <TextField {...register("start_date")} type="date" size="small" variant="standard" slotProps={{ inputLabel: { shrink: true } }} />
+                                    <TextField {...register("end_date")} type="date" size="small" variant="standard" slotProps={{ inputLabel: { shrink: true } }} />
                                 </Stack>
                             </TableCell>
                             <TableCell />

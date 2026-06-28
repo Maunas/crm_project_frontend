@@ -4,17 +4,31 @@ import { useUserContext } from 'src/stores/UserContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { Avatar, Box, Button, Divider, FormControlLabel, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Stack, Typography } from '@mui/material'
 import { useColorScheme, useTheme } from '@mui/material/styles';
-import { AccountCircle, Check } from '@mui/icons-material';
+import { AccountCircle, Check, PersonOutlined } from '@mui/icons-material';
 import MoreIcon from '@mui/icons-material/More';
 import LoadingScreenWrapper from 'src/components/feedback/LoadingScreen';
+import type { UserContextItems } from 'src/stores/UserContext';
+
+function useRoleLabel(user: UserContextItems["user"], activeOrg: UserContextItems["activeOrg"]) {
+    if (!user) return ""
+    if (user.is_superuser) return "Administrador"
+    if (activeOrg) {
+        const membership = user.organizations_access.find(a => a.organization_id === activeOrg.id)
+        if (membership?.is_owner) return "Propietario"
+    }
+    return "Usuario"
+}
 
 const HeaderMenu = memo(() => {
     const nav = useNavigate()
 
     const { user, logout, activeOrganizations, activeOrg, setActiveOrg, loadingOrgs } = useUserContext()
 
-    const handleLogout = () => {
-        logout()
+    const fullName = user ? [user.name, user.last_name].filter(Boolean).join(" ") : ""
+    const roleLabel = useRoleLabel(user, activeOrg)
+
+    const handleLogout = async () => {
+        await logout()
         nav("/login")
     }
 
@@ -91,6 +105,10 @@ const HeaderMenu = memo(() => {
                     label={palette.mode === "dark" ? "Modo Oscuro" : "Modo Claro"}
                 />
             </MenuItem>
+            <MenuItem dense component={Link} to="/profile" onClick={handleMenuClose}>
+                <ListItemIcon><PersonOutlined fontSize="small" /></ListItemIcon>
+                <ListItemText>Mi perfil</ListItemText>
+            </MenuItem>
             <MenuItem dense onClick={() => handleLogout()} sx={{ "&:hover": { color: palette.error.main } }}>
                 <ListItemText>
                     Cerrar Sesión
@@ -116,7 +134,6 @@ const HeaderMenu = memo(() => {
             open={isMobileMenuOpen}
             onClose={handleMobileMenuClose}
         >
-
             <MenuItem onClick={handleProfileMenuOpen}>
                 <IconButton
                     aria-label="account of current user"
@@ -127,8 +144,8 @@ const HeaderMenu = memo(() => {
                     <Avatar sx={{ color: palette.secondary.dark, backgroundColor: palette.secondary.light }} />
                 </IconButton>
                 <Stack>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{user?.email}</Typography>
-                    <Typography variant="body2">{activeOrg?.name}</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{fullName || user?.email}</Typography>
+                    <Typography variant="body2" color="text.secondary">{roleLabel}</Typography>
                 </Stack>
             </MenuItem>
         </Menu>
@@ -138,8 +155,8 @@ const HeaderMenu = memo(() => {
         <>
             <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: "center" }}>
                 <Stack>
-                    <Typography variant="body2" sx={{ textAlign: "end", fontWeight: 600 }}>{user.email}</Typography>
-                    <Typography variant="body2" sx={{ textAlign: "end" }}>{activeOrg?.name}</Typography>
+                    <Typography variant="body2" sx={{ textAlign: "end", fontWeight: 600 }}>{fullName || user.email}</Typography>
+                    <Typography variant="body2" sx={{ textAlign: "end" }} color="text.secondary">{roleLabel}</Typography>
                 </Stack>
                 <IconButton
                     size="large"
@@ -170,16 +187,10 @@ const HeaderMenu = memo(() => {
     )
     return (<>
         <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-            < Button sx={{ color: 'white', borderColor: "white" }} variant='outlined' size='large' component={Link} to="/login" startIcon={<AccountCircle />}> Iniciar Sesión</Button >
+            <Button sx={{ color: 'white', borderColor: "white" }} variant='outlined' size='large' component={Link} to="/login" startIcon={<AccountCircle />}>Iniciar Sesión</Button>
         </Box>
         <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
-            <IconButton
-                size="large"
-                aria-label="login"
-                onClick={handleMobileMenuOpen}
-                color="inherit"
-                component={Link} to="/login"
-            >
+            <IconButton size="large" aria-label="login" onClick={handleMobileMenuOpen} color="inherit" component={Link} to="/login">
                 <AccountCircle />
             </IconButton>
         </Box>
