@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { DEFAULT_LEAD_PAGE_SIZE } from 'src/utils/constants'
 import { LeadListContent } from './LeadListContent'
 import { LeadSidebar } from './LeadSidebar'
 import LeadColumnSelector from '../leadListOptions/LeadColumnSelector'
+import { NATIVE_LEAD_FIELDS } from '../nativeLeadFields'
 import { LeadCampaignSelector } from '../leadListOptions/LeadListOptions'
 import { DisableBulkConfirmDialog } from 'shared/feedback/ConfirmationDialog'
 import PaginationComponent from 'shared/ui/lists/PaginationComponent'
@@ -24,6 +26,7 @@ import {
     Box, Button, Collapse, Divider, IconButton, InputAdornment,
     Stack, TextField, Tooltip, Typography, useMediaQuery, useTheme
 } from '@mui/material'
+import CloseIcon from '@mui/icons-material/Close'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import MenuIcon from '@mui/icons-material/Menu'
 import SearchIcon from '@mui/icons-material/Search'
@@ -34,8 +37,8 @@ import AddIcon from '@mui/icons-material/Add'
 import ViewListIcon from '@mui/icons-material/ViewList'
 
 const DEFAULT_N_OF_FIELDS = 6
-// MUI AppBar toolbar height (desktop) = 64px; parent Box has p: 3 (24px × 2 = 48px)
-const LAYOUT_OFFSET = '112px'
+// MUI AppBar toolbar height (desktop) = 64px; m: -3 cancels parent p: 3 entirely
+const LAYOUT_OFFSET = '64px'
 
 export const LeadListPage = () => {
 
@@ -51,10 +54,16 @@ export const LeadListPage = () => {
 
     // Leads state
     const [leads, setLeads] = useState<Paginable<Lead> | null>(null)
-    const [fetchParams, setFetchParams] = useState<LeadListParams>({ only_active: true, page_size: 15 })
+    const [fetchParams, setFetchParams] = useState<LeadListParams>({ only_active: true, page_size: DEFAULT_LEAD_PAGE_SIZE })
     const [orderParams, setOrderParams] = useState<OrderParams>({})
     const [filters, setFilters] = useState<LeadFilter[]>([])
     const headerParams = useMemo(() => ({ ...fetchParams, ...orderParams }), [fetchParams, orderParams])
+    // Incrementa cada vez que el usuario carga una vista guardada → dispara reset visual del formulario
+    const [viewLoadKey, setViewLoadKey] = useState(0)
+
+    // Búsqueda de texto libre (mutuamente exclusiva con filtros)
+    const [searchText, setSearchText] = useState('')
+    const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
     const fetchLeads = useCallback((page: number, filters: LeadFilter[], headers: LeadListParams, campaignId: string | number) => {
         if (filters.length > 0) {
@@ -113,9 +122,10 @@ export const LeadListPage = () => {
     }, [campaignId, filters, fetchParams, leads?.page, fetchLeadLoad])
     const { orderProps, setOrderList } = useOrderList(orderListFn)
 
-    // Filters
+    // Filters (limpian la búsqueda de texto al activarse)
     const setFiltersAndHeaders = useCallback(async (filters: LeadFilter[], newParams: LeadListParams) => {
         if (!campaignId) return null
+        if (filters.length > 0) setSearchText('')
         return fetchLeadLoad(1, filters, { ...newParams, ...orderParams }, campaignId).then(() => {
             setFetchParams(newParams); setFilters(filters)
         })
@@ -123,12 +133,31 @@ export const LeadListPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => { setFiltersAndHeaders([], fetchParams) }, [campaignId])
 
-    // Lead fields
+    // Búsqueda de texto con debounce de 400ms
+    const handleSearchChange = useCallback((value: string) => {
+        setSearchText(value)
+        if (debounceRef.current) clearTimeout(debounceRef.current)
+        debounceRef.current = setTimeout(() => {
+            if (!campaignId) return
+            const query = value.trim() || undefined
+            // Limpiar filtros activos al buscar
+            if (value.trim()) { setFilters([]) }
+            fetchLeadLoad(1, [], { ...fetchParams, ...orderParams, query }, campaignId)
+        }, 400)
+    }, [campaignId, fetchLeadLoad, fetchParams, orderParams])
+
+    const handleSearchClear = useCallback(() => {
+        setSearchText('')
+        if (!campaignId) return
+        fetchLeadLoad(1, filters, { ...fetchParams, ...orderParams, query: undefined }, campaignId)
+    }, [campaignId, fetchLeadLoad, fetchParams, orderParams, filters])
+
+    // Lead fields (custom + nativos del sistema)
     const [leadFields, setLeadFields] = useState<LeadField[]>([])
     useEffect(() => {
         if (!campaignId) return
         getLeadFields({ detailed: false, campaign_id: Number(campaignId), only_active: true, page_size: 0 })
-            .then(r => setLeadFields(r.items))
+            .then(r => setLeadFields([...r.items, ...NATIVE_LEAD_FIELDS]))
     }, [campaignId])
 
     const [selectedFieldIds, setSelectedFieldIds] = useState<number[]>([])
@@ -198,6 +227,7 @@ export const LeadListPage = () => {
         if (view?.ui_config?.selected_ids) setSelectedFieldIds(view.ui_config.selected_ids)
         if (view?.view_type) setPresentationMode(view.view_type)
         fetchLeadLoad(fetchPage, newFilters, { ...newFetchParams, ...newOrderParams }, campaignId)
+        setViewLoadKey(k => k + 1)
     }, [campaignId, fetchLeadLoad, fetchPage, setOrderList])
 
     const viewUpdateProps = useMemo(() => ({ saveView, loadView, currentView }), [saveView, loadView, currentView])
@@ -240,7 +270,7 @@ export const LeadListPage = () => {
         <Box sx={{
             display: 'flex',
             height: `calc(100vh - ${LAYOUT_OFFSET})`,
-            mx: -3,  // cancel parent Box p: 3
+            m: -3,   // cancel parent Box p: 3 (all sides)
             overflow: 'hidden',
         }}>
             {/* ── Sidebar ── */}
@@ -261,6 +291,7 @@ export const LeadListPage = () => {
                         presentationProps={presentationProps}
                         viewUpdateProps={viewUpdateProps}
                         onToggle={() => setSidebarOpen(false)}
+                        formResetKey={viewLoadKey}
                     />
                 </Box>
             </Collapse>
@@ -296,14 +327,24 @@ export const LeadListPage = () => {
                     {/* Búsqueda centrada */}
                     <TextField
                         size="small"
-                        placeholder="Buscar lead, empresa, email..."
+                        placeholder="Buscar por nombre, email, teléfono..."
+                        value={searchText}
+                        onChange={e => handleSearchChange(e.target.value)}
                         slotProps={{
                             input: {
                                 startAdornment: (
                                     <InputAdornment position="start">
                                         <SearchIcon sx={{ fontSize: 16, color: 'text.disabled' }} />
                                     </InputAdornment>
-                                )
+                                ),
+                                endAdornment: searchText ? (
+                                    <InputAdornment position="end">
+                                        <IconButton size="small" onClick={handleSearchClear} edge="end"
+                                            sx={{ p: 0.25 }}>
+                                            <CloseIcon sx={{ fontSize: 14 }} />
+                                        </IconButton>
+                                    </InputAdornment>
+                                ) : null
                             }
                         }}
                         sx={{ flex: 1, maxWidth: 380 }}
@@ -338,6 +379,14 @@ export const LeadListPage = () => {
                                         <FileUploadIcon fontSize="small" />
                                     </IconButton>
                                 </Tooltip>
+                                {areThereLeads && (
+                                    <Tooltip title="Exportar Leads">
+                                        <IconButton size="small" onClick={exportLoad} disabled={exporting}
+                                            sx={{ color: 'text.secondary' }}>
+                                            <FileDownloadIcon fontSize="small" />
+                                        </IconButton>
+                                    </Tooltip>
+                                )}
                                 {areThereLeads && !!campaignId && (
                                     <Tooltip title="Campos a Mostrar">
                                         <IconButton size="small"
@@ -361,7 +410,15 @@ export const LeadListPage = () => {
                 </Box>
 
                 {/* Contenido de leads */}
-                <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
+                <Box sx={{
+                    flex: 1, overflow: 'auto', pt: 2, pb: 2, pl: 2, pr: 0,
+                    scrollbarWidth: 'thin',
+                    scrollbarColor: 'rgba(128,128,128,0.5) rgba(0,0,0,0.06)',
+                    '&::-webkit-scrollbar':             { width: '10px' },
+                    '&::-webkit-scrollbar-track':       { background: 'rgba(0,0,0,0.06)', borderRadius: '99px' },
+                    '&::-webkit-scrollbar-thumb':       { background: 'rgba(128,128,128,0.5)', borderRadius: '99px' },
+                    '&::-webkit-scrollbar-thumb:hover': { background: 'rgba(128,128,128,0.8)' },
+                }}>
                     <LoadingScreenWrapper loading={loading}>
                         {(leads && campaignId !== null && workspaceId !== null) ? (
                             <>
@@ -378,6 +435,7 @@ export const LeadListPage = () => {
                                     workspaceId={workspaceId ? Number(workspaceId) : undefined}
                                     campaignId={campaignId}
                                     filters={filters}
+                                    onClearFilters={() => setFiltersAndHeaders([], fetchParams)}
                                 />
                                 {presentationMode === 'TABLE' && (
                                     <Box sx={{ mt: 1 }}>

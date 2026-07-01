@@ -1,4 +1,4 @@
-import type { LeadFlowParams, DeleteResponse, Paginable, FlowStateParams, EnableResponse } from "src/types/shared"
+import type { LeadFlowParams, DeleteResponse, Paginable, FlowStateParams, EnableResponse, ListParams } from "src/types/shared"
 import type { LeadFlowDetailed, LeadFlow, LeadFlowPost, LeadState, LeadStateDetailed, LeadStateTransition, LeadStateTransitionDetailed, LeadStatePost, LeadTransitionBulkPost, FlowEditorTransition } from 'src/types/leadFlow'
 import { axiosCRM } from "src/lib/axios"
 
@@ -37,6 +37,12 @@ export const enableLeadFlow = async (id: number): Promise<EnableResponse> => {
 
 export const getLeadFlowStates = async <T extends FlowStateParams>(params?: T):
     Promise<Paginable<T["detailed"] extends true ? LeadStateDetailed : LeadState>> => {
+    const response = await axiosCRM.get(`/lead_states`, { params })
+    return response.data
+}
+
+/** Obtiene todos los estados de flujo de la organización sin filtrar por flujo */
+export const getLeadStates = async (params?: ListParams): Promise<Paginable<LeadState>> => {
     const response = await axiosCRM.get(`/lead_states`, { params })
     return response.data
 }

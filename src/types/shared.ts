@@ -70,6 +70,7 @@ export interface CampaignParams extends ListParams {
 }
 export interface LeadListParams extends ListParams {
   campaign_id?: number
+  query?: string
 }
 export interface LeadFlowParams extends ListParams {
   organization_id?: number
@@ -150,9 +151,9 @@ export interface SearchResults {
 }
 
 export interface LeadFilter {
-  "field_id"?: number,
+  "field_id"?: number | string,
   "operator"?: string,
-  "value"?: string | number | boolean
+  "value"?: string | number | boolean | number[]
 }
 
 export interface Dictionary {

@@ -67,6 +67,8 @@ export interface LeadField extends Omit<LeadFieldPost, "lead_field_section_id"> 
   field_type: LeadFieldType,
   field_subtype: LeadFieldType | null,
   field_template_name: string | null,
+  /** Clave nativa en el modelo Lead (solo para campos del sistema, ej: "contact_state_id") */
+  nativeKey?: string;
 }
 
 export interface LeadFieldDetailed extends LeadField, Metadata {

@@ -1,7 +1,6 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { LeadFilters } from '../leadListOptions/LeadFilters'
 import { ViewForm } from '../leadListOptions/LeadViewMenu'
-import CommonButton from 'shared/ui/buttons/CommonButton'
 import PaginationComponent from 'shared/ui/lists/PaginationComponent'
 import { useListPagination } from 'src/hooks/useListPagination'
 import { deleteView, getLeadViews } from '../leadService'
@@ -10,7 +9,7 @@ import { showToast } from 'src/utils/feedback'
 import type { LeadView, LeadViewParams } from 'src/types/leads'
 import type { LeadFilter, LeadListParams, Paginable, DictionaryItem } from 'src/types/shared'
 import {
-    alpha, Box, Button, Collapse, Divider, IconButton,
+    alpha, Box, Button, Collapse, IconButton,
     List, ListItem, ListItemButton, ListItemText, Stack,
     ToggleButton, ToggleButtonGroup, Tooltip, Typography, useTheme
 } from '@mui/material'
@@ -43,6 +42,7 @@ interface LeadSidebarProps {
         currentView: LeadViewParams | undefined
     }
     onToggle: () => void
+    formResetKey?: number
 }
 
 // ── Grupos de visibilidad ─────────────────────────────────────────────────
@@ -147,7 +147,7 @@ const ViewGroup = memo(({ group, views, onLoad, onEdit, onDelete }: ViewGroupPro
 // ── Sidebar principal ─────────────────────────────────────────────────────
 export const LeadSidebar = memo(({
     campaignId, filters, headers, setFiltersAndHeaders,
-    presentationProps, viewUpdateProps, onToggle
+    presentationProps, viewUpdateProps, onToggle, formResetKey
 }: LeadSidebarProps) => {
 
     const { palette } = useTheme()
@@ -261,12 +261,18 @@ export const LeadSidebar = memo(({
 
                 {/* Vistas Guardadas */}
                 <Box sx={{ borderBottom: `1px solid ${palette.divider}`, py: 1 }}>
-                    <Stack direction="row" justifyContent="space-between" alignItems="center"
+                    <Stack ref={saveViewRef} direction="row" justifyContent="space-between" alignItems="center"
                         sx={{ px: 2, pb: 0.75 }}>
                         <Typography variant="caption" fontWeight={600}
                             sx={{ textTransform: 'uppercase', letterSpacing: 0.7, color: 'text.disabled' }}>
                             Vistas Guardadas
                         </Typography>
+                        <Tooltip title="Guardar vista actual">
+                            <IconButton size="small" onClick={() => setViewFormAnchor(saveViewRef.current)}
+                                sx={{ color: 'text.disabled', '&:hover': { color: 'primary.main' } }}>
+                                <SaveIcon sx={{ fontSize: 15 }} />
+                            </IconButton>
+                        </Tooltip>
                     </Stack>
 
                     {hasAnyViews ? (
@@ -302,56 +308,36 @@ export const LeadSidebar = memo(({
                     </Box>
                 </Box>
 
-                {/* Filtros */}
-                <Box sx={{ py: 1.5 }}>
-                    <Stack direction="row" justifyContent="space-between" alignItems="center"
-                        sx={{ px: 2, mb: 1 }}>
-                        <Typography variant="caption" fontWeight={600}
-                            sx={{ textTransform: 'uppercase', letterSpacing: 0.7, color: 'text.disabled' }}>
-                            Filtros
-                        </Typography>
-                        {filters.length > 0 && (
-                            <Typography variant="caption"
-                                sx={{ bgcolor: alpha(palette.success.main, 0.12), color: 'success.dark', borderRadius: 1, px: 0.75, fontWeight: 600 }}>
-                                {filters.length} activo{filters.length !== 1 ? 's' : ''}
+                {/* Filtros — el header lo renderiza LeadFilters (showSectionHeader) */}
+                <Box sx={{ px: 1.5, py: 1.5 }}>
+                    {campaignId ? (
+                        <LeadFilters
+                            applyFilters={applyFilters}
+                            filters={{ filters, headers }}
+                            campaignId={Number(campaignId)}
+                            onClose={() => { }}
+                            showCancelButton={false}
+                            showTitle={false}
+                            showHeaders={false}
+                            showSectionHeader
+                            activeFilterCount={filters.length}
+                            formResetKey={formResetKey}
+                        />
+                    ) : (
+                        <Stack spacing={0.75}>
+                            <Typography variant="caption" fontWeight={600}
+                                sx={{ textTransform: 'uppercase', letterSpacing: 0.7, color: 'text.disabled' }}>
+                                Filtros
                             </Typography>
-                        )}
-                    </Stack>
-                    <Box sx={{ px: 1.5 }}>
-                        {campaignId ? (
-                            <LeadFilters
-                                applyFilters={applyFilters}
-                                filters={{ filters, headers }}
-                                campaignId={Number(campaignId)}
-                                onClose={() => { }}
-                                showCancelButton={false}
-                                showTitle={false}
-                            />
-                        ) : (
                             <Typography variant="caption" color="text.disabled">
                                 Seleccioná una campaña para configurar los filtros.
                             </Typography>
-                        )}
-                    </Box>
+                        </Stack>
+                    )}
                 </Box>
             </Box>
 
-            {/* ── Footer: Guardar Vista ── */}
-            <Box ref={saveViewRef} sx={{ p: 1.5, borderTop: `1px solid ${palette.divider}`, flexShrink: 0 }}>
-                <CommonButton
-                    actionType="CREATE"
-                    variant="contained"
-                    color="primary"
-                    size="small"
-                    fullWidth
-                    startIcon={<SaveIcon sx={{ fontSize: '16px !important' }} />}
-                    onClick={() => setViewFormAnchor(saveViewRef.current)}
-                >
-                    Guardar Vista Actual
-                </CommonButton>
-            </Box>
-
-            {/* ViewForm popover */}
+            {/* ViewForm popover — ref en el header de Vistas Guardadas */}
             <ViewForm
                 existingView={editView}
                 visibilities={visibilities}
