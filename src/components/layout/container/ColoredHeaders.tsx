@@ -5,12 +5,24 @@ import { getColorShades } from 'src/utils/formatters'
 const getGradient = (theme: Theme, colorShades: ColorShades) => ({
     light: `linear-gradient(
         145deg,
-        ${theme.alpha(colorShades.MAIN, .25)} 40%, 
-        ${theme.alpha(colorShades.LIGHTER, .15)} 100%)`,
+        ${theme.alpha(colorShades.LIGHT, .2)} 0%, 
+        ${theme.alpha(colorShades.LIGHTER, .1)} 50%,
+        transparent 100%)`,
     dark: `linear-gradient(
         145deg,
-        ${theme.alpha(colorShades.DARK, .2)} 0%,
-        ${theme.alpha(colorShades.DARKER, .1)} 80%)`
+        ${theme.alpha(colorShades.MAIN, .1)} 0%,
+        ${theme.alpha(colorShades.DARKER, .05)} 50%,
+        transparent 100%)`,
+    lightRev: `linear-gradient(
+        300deg,
+        ${theme.alpha(colorShades.LIGHT, .2)} 0%, 
+        ${theme.alpha(colorShades.LIGHTER, .1)} 50%,
+        transparent 100%)`,
+    darkRev: `linear-gradient(
+        300deg,
+        ${theme.alpha(colorShades.MAIN, .1)} 0%,
+        ${theme.alpha(colorShades.DARKER, .05)} 50%,
+        transparent 100%)`
 })
 
 export const GenericSidebarHeader = styled(Box)(
@@ -70,7 +82,7 @@ export const ColoredAccordionSummary = styled(AccordionSummary, {
         return ([
             {
                 overflow: "hidden",
-                backgroundImage: gradient.light,
+                backgroundImage: gradient.lightRev,
                 ...(isFirst ? {
                     borderTopLeftRadius: radius,
                     borderTopRightRadius: radius,
@@ -83,7 +95,7 @@ export const ColoredAccordionSummary = styled(AccordionSummary, {
                 } : {}),
             },
             theme.applyStyles("dark", {
-                backgroundImage: gradient.dark
+                backgroundImage: gradient.darkRev
             })
         ])
     }
@@ -124,7 +136,9 @@ export const GenericPaperColoredSection = styled(Box, {
                 },
                 overflow: "hidden",
                 padding: `${pTop} ${pLeft} ${pBottom} ${pRight}`,
-                backgroundImage: gradient.light
+                backgroundImage: gradient.light,
+                borderTop: !isFirst ? `1px solid ${theme.palette.divider}` : undefined,
+                borderBottom: !isLast ? `1px solid ${theme.palette.divider}` : undefined,
             },
             theme.applyStyles("dark", {
                 backgroundImage: gradient.dark
