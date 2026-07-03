@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { LeadFormBool, LeadFormDate, LeadFormFile, LeadFormNumber, LeadFormText } from "../shared/LeadFormFields"
 import { LeadFormRelatedLead, LeadFormSelector } from "../shared/LeadFormMultipleFields"
-import LoadingScreenWrapper from "shared/feedback/LoadingScreen"
+import LoadingScreenWrapper from "src/components/ui/feedback/LoadingScreen"
 import { FormErrorMessage } from "shared/ui/forms/FormFeedback"
 import CommonButton from "shared/ui/buttons/CommonButton"
 import { useLoading } from "src/hooks/useLoading"
@@ -14,7 +14,8 @@ import { getLeadFields } from "features/leadFields/leadFieldServices"
 import { createFormDataFromLead, setLeadFormErrors, updateSelectorOptions } from "../leadUtils"
 import { getListField } from "src/utils/lists"
 import { useFieldArray, useForm, type Control, type Path, type UseFormRegister } from "react-hook-form"
-import { Grid, ButtonGroup, Stack, Typography, Divider } from "@mui/material"
+import { Accordion, AccordionDetails, AccordionSummary, Grid, ButtonGroup, Stack, Typography } from "@mui/material"
+import { ExpandMore } from "@mui/icons-material"
 import { getLeadFormFieldsBySections, orderFieldsBySections } from "src/features/leadFields/leadFieldUtils"
 
 export interface LeadPostFormValues extends LeadPostValue {
@@ -78,12 +79,23 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
     const [relatedLeads, setRelatedLeads] = useState<Map<number, Lead[]>>(new Map())
     const [selectors, setSelectors] = useState<Map<number, NomenclatorItem[]>>(new Map())
 
+    const isFieldActive = (field: LeadField) => {
+        const f = field as unknown as { active?: boolean }
+        return f.active === undefined || f.active !== false
+    }
+
+    const visibleFieldFilter = (field: LeadField) =>
+        field.field_type_code !== "CALCULATED" && field.is_visible && isFieldActive(field)
+
+    const visibleValueFilter = (value: LeadFieldValue) =>
+        visibleFieldFilter(value.field)
+
     //Cuando se cargan los leadFields, se formatean y ubican en fieldArray
     const loadFieldValues = useCallback((newLeadFields: LeadField[], existingValues?: LeadFieldValue[]) => {
         //Si ya hay valores, formatea los values para asignarlos al fieldArray. Asigna listas de ids a value.
         if (existingValues) {
             replace(
-                orderFieldsBySections(existingValues.filter(value => value.field.field_type_code !== "CALCULATED" && value.field.is_visible))
+                orderFieldsBySections(existingValues.filter(visibleValueFilter))
                     .map(fieldValue => {
                         let value: unknown = fieldValue.value
                         //Si no hay valor, es selector o related_leads. Trae el id, o arreglo de ids
@@ -104,7 +116,7 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
             //Si no hay valores, solo trae los datos de los leadFields.
         } else {
             replace(
-                orderFieldsBySections(newLeadFields.filter(field => field.field_type_code !== "CALCULATED" && field.is_visible))
+                orderFieldsBySections(newLeadFields.filter(visibleFieldFilter))
                     .map(field => ({
                         field_id: field.id,
                         fieldData: field
@@ -153,22 +165,25 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
                 <input type="text" {...register("campaign_id", { setValueAs: value => (value === "" || !value) ? null : Number(value) })} hidden />
                 <Stack spacing={3}>
                     {campaignId &&
-                        fieldsBySection.map((section) => {
-                            return <Stack spacing={1} key={`section-lead-${section.id}`}>
-                                <Typography variant="h3">{section.name}</Typography>
-                                <Divider />
-                                <Grid container sx={{ gap: ".25rem .5rem " }}>
-                                    {section.fields.map(sectField =>
-                                        <Grid size="grow" sx={{ alignItems: "center", minWidth: "20rem" }} key={sectField.field.id}>
-                                            <LeadFormFieldType register={register} control={control} name={`values.${sectField.globalIdx}.value`}
-                                                leadField={sectField.field.fieldData}
-                                                relatedLeads={relatedLeads.get(sectField.field?.fieldData?.related_campaign_id ?? -1)}
-                                                selectors={selectors.get(sectField.field?.fieldData?.nomenclator_id ?? -1)}
-                                                errorMessage={errors?.values?.[sectField.globalIdx]?.value?.message} />
-                                        </Grid>
-                                    )}
-                                </Grid>
-                            </Stack>
+                        fieldsBySection.map((section, idx) => {
+                            return <Accordion key={`section-lead-${section.id}`} defaultExpanded={idx === 0}>
+                                <AccordionSummary expandIcon={<ExpandMore />}>
+                                    <Typography variant="h3">{section.name}</Typography>
+                                </AccordionSummary>
+                                <AccordionDetails>
+                                    <Grid container sx={{ gap: ".25rem .5rem " }}>
+                                        {section.fields.map(sectField =>
+                                            <Grid size="grow" sx={{ alignItems: "center", minWidth: "20rem" }} key={sectField.field.id}>
+                                                <LeadFormFieldType register={register} control={control} name={`values.${sectField.globalIdx}.value`}
+                                                    leadField={sectField.field.fieldData}
+                                                    relatedLeads={relatedLeads.get(sectField.field?.fieldData?.related_campaign_id ?? -1)}
+                                                    selectors={selectors.get(sectField.field?.fieldData?.nomenclator_id ?? -1)}
+                                                    errorMessage={errors?.values?.[sectField.globalIdx]?.value?.message} />
+                                            </Grid>
+                                        )}
+                                    </Grid>
+                                </AccordionDetails>
+                            </Accordion>
                         })
 
                     }
@@ -209,8 +224,8 @@ const LeadFormFieldType = ({ register, control, name, leadField, relatedLeads, s
             return (<LeadFormRelatedLead control={control} name={name} options={relatedLeads}
                 label={label} required={required} errorMessage={errorMessage} showAdornment />)
         case "FILE":
-            return (<LeadFormFile register={register} name={name} label={label} required={required}
-                errorMessage={errorMessage} showAdornment />)
+            return (<LeadFormFile control={control} name={name} label={label} required={required}
+                errorMessage={errorMessage} showAdornment subtype={subtypeCode} />)
         case "SELECTOR":
             return (<LeadFormSelector control={control} name={name} options={selectors}
                 label={label} subtype={subtypeCode} required={required} errorMessage={errorMessage} showAdornment />)
