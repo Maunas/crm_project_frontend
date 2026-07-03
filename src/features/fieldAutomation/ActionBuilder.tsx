@@ -9,7 +9,7 @@ import CommonButton from 'src/components/ui/buttons/CommonButton';
 import GenericPaper from 'src/components/layout/container/GenericPaper';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CustomChip from 'src/components/ui/details/CustomChip';
-import { CustomAlert } from 'src/components/feedback/CustomAlert';
+import { CustomAlert } from 'src/components/ui/feedback/CustomAlert';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 
 interface ActionBuilderProps {

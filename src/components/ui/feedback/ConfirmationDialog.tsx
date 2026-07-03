@@ -1,7 +1,7 @@
 import { memo, useCallback, useRef, useState, type ReactNode } from "react"
 import CommonButton from "shared/ui/buttons/CommonButton"
 import { type DialogProps, ButtonGroup, Stack, LinearProgress, Typography } from "@mui/material"
-import GenericModal from "../layout/container/GenericModal"
+import GenericModal from "../../layout/container/GenericModal"
 import type { DisableableEntity } from "src/types/shared"
 import { useLoading } from "src/hooks/useLoading"
 import type { Path } from "react-hook-form"

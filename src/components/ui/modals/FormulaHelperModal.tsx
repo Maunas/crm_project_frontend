@@ -44,34 +44,36 @@ export const FormulaHelperPanel = ({ open, formulas, onInsert }: FormulaHelperPa
                     placeholder="Buscar fórmula..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    InputProps={{
-                        startAdornment: (
-                            <InputAdornment position="start">
-                                <SearchIcon fontSize="small" />
-                            </InputAdornment>
-                        ),
+                    slotProps={{
+                        input: {
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <SearchIcon fontSize="small" />
+                                </InputAdornment>
+                            ),
+                        }
                     }}
                 />
 
                 <Box sx={{ overflowY: "auto", flexGrow: 1, pr: 1 }}>
                     {Object.keys(groupedFormulas).length === 0 ? (
-                        <Typography color="text.secondary" textAlign="center" mt={4}>
+                        <Typography color="text.secondary" sx={{ textAlign: 'center', mt: 4 }}>
                             No se encontraron fórmulas.
                         </Typography>
                     ) : (
                         Object.entries(groupedFormulas).map(([category, catFormulas]) => (
                             <Accordion key={category} defaultExpanded={search.length > 0} disableGutters variant="outlined" sx={{ mb: 1 }}>
                                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                                    <Typography fontWeight="bold">{category}</Typography>
+                                    <Typography sx={{ fontWeight: 'bold' }}>{category}</Typography>
                                 </AccordionSummary>
                                 <AccordionDetails>
                                     <Stack spacing={2}>
                                         {catFormulas.map((f) => (
                                             <Box key={f.name_english} sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1, bgcolor: 'background.paper' }}>
-                                                <Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={2}>
+                                                <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'flex-start', gap: 2 }}>
                                                     <Stack spacing={0.5}>
-                                                        <Stack direction="row" spacing={1} alignItems="center">
-                                                            <Typography variant="subtitle1" fontWeight="bold">
+                                                        <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                                                            <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
                                                                 {f.name_english}
                                                             </Typography>
                                                             <Chip label={f.name_spanish} size="small" variant="outlined" color="primary" />

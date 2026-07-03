@@ -4,10 +4,9 @@ import { ValidationFormSidebar } from "../validations/ValidationForm"
 import { LeadFieldTableSections } from "./LeadFieldTable"
 import { LeadFieldFormSidebar } from "./LeadFieldForm"
 import { LeadFieldDetail } from "./LeadFieldDetail"
-import { DisableBulkConfirmDialog } from "shared/feedback/ConfirmationDialog"
+import { DisableBulkConfirmDialog } from "src/components/ui/feedback/ConfirmationDialog"
 import { GenericSidebar } from "shared/layout/container/GenericContainer"
-import LoadingScreenWrapper from "shared/feedback/LoadingScreen"
-import GenericModal from "shared/layout/container/GenericModal"
+import LoadingScreenWrapper from "src/components/ui/feedback/LoadingScreen"
 import CommonButton from "shared/ui/buttons/CommonButton"
 import { useSelectCheckbox } from "src/hooks/useSelectCheckbox"
 import { useLoading } from "src/hooks/useLoading"
@@ -195,12 +194,9 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
                 <Typography variant="h2">Lista de Campos de Lead</Typography>
                 {leadFields && leadFields.length > 0 &&
                     <ButtonGroup sx={{ marginLeft: "auto" }}>
-                        {!isReordering && <GenericModal {...modalProps} idModal="simulateLead" buttonText='Vista previa' maxWidth="xl" fullWidth
-                            btnProps={{ actionType: "DETAILS", variant: "outlined", color: "secondary", onlyTooltip: true }} sx={{ minWidth: "80vw" }} >
-                            {campaign &&
-                                <SimulateLeadFormModal campaign={campaign} leadFields={leadFields} onCancel={modalProps.handleClose} />
-                            }
-                        </GenericModal>}
+                        {!isReordering && campaign &&
+                            <SimulateLeadFormModal campaign={campaign} leadFields={leadFields} onCancel={modalProps.handleClose} modalProps={modalProps} />
+                        }
                         {isReordering && <CommonButton onClick={cancelReorder}
                             color="error" variant="outlined" actionType="CLOSE" onlyTooltip>
                             Cancelar
@@ -236,10 +232,10 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
                     </Stack>
                 }
             </LoadingScreenWrapper >
-            <GenericSidebar isSidebarOpen={Boolean(sidebarMode)} closeSidebar={closeSidebar} sidebarComponent={
+            <GenericSidebar isSidebarOpen={Boolean(sidebarMode)} closeSidebar={closeSidebar} >
                 <LeadFieldSidebar mode={sidebarMode} entity={selectedEntity} updateEntity={updateEntity} campaign={campaign}
                     closeSidebar={closeSidebar} handleSidebar={handleSidebarWrapper} leadFields={leadFields} />
-            } />
+            </GenericSidebar>
             <DisableBulkConfirmDialog idModal="dis-field-bulk" isDisabling={bulkDisabling === "disable"} open={Boolean(bulkDisabling)}
                 onClose={() => setBulkDisabling(null)}
                 onConfirm={() => handleActiveBulk(bulkDisabling === "disable")} entityTypeName="los campos seleccionados" />

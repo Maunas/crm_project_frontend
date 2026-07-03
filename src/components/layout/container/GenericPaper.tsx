@@ -17,10 +17,11 @@ const GenericPaper = styled(
                 width: "100%"
             },
             theme.applyStyles("light", {
-                boxShadow: `
-            ${elevation >= 1 ? `${originalShadow},` : ""}
-            0px 4px 8px ${theme.alpha(theme.palette.contrast[900], .13)}
-        `
+                boxShadow: elevation === -1
+                    ? "none"
+                    : elevation === 0
+                        ? `0px 4px 8px ${theme.alpha(theme.palette.contrast[900], .13)}`
+                        : `${originalShadow}, 0px 4px 12px ${theme.alpha(theme.palette.contrast[900], .18)}`,
             }),
             theme.applyStyles("dark", {
                 "&&": {

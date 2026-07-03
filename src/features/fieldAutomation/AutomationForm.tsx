@@ -16,7 +16,7 @@ import { useForm, useWatch, type Control } from 'react-hook-form';
 import { ControlledNumber, RegisteredTextInput } from 'src/components/ui/forms/CustomInputs';
 import { ControlledAutocomplete } from 'src/components/ui/forms/CustomMultipleInputs';
 import { ChipTooltip } from 'src/components/ui/details/ChipTooltip';
-import { CustomAlert } from 'src/components/feedback/CustomAlert';
+import { CustomAlert } from 'src/components/ui/feedback/CustomAlert';
 
 // ==========================================
 // FUNCIONES DE INICIALIZACIÓN Y REHIDRATACIÓN

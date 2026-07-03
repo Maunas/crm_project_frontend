@@ -68,7 +68,7 @@ export function InviteDialog({ open, onClose }: Props) {
             </DialogTitle>
 
             <DialogContent>
-                <Stack spacing={2} pt={1}>
+                <Stack spacing={2} sx={{ pt: 1 }}>
                     {!invitation && (
                         <>
                             <Typography variant="body2" color="text.secondary">

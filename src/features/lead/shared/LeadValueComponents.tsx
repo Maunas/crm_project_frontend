@@ -121,7 +121,7 @@ export const ModalValue = ({ modalProps, idModal, type, subtype, value, size = "
     if (!modalProps) return
 
     return (
-        <GenericModal idModal={idModal} {...modalProps} btnProps={{ size: size, actionType: 'DETAILS' }}
+        <GenericModal idModal={idModal} {...modalProps} btnProps={{ size: size, sx: { width: "max-content" }, actionType: 'DETAILS' }}
             buttonText={getBtnText()} sx={{ minWidth: "80vw" }} >
             <ModalValueContent subtype={subtype} value={value} />
             <CommonButton actionType='CLOSE' variant="outlined"

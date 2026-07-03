@@ -1,9 +1,9 @@
 import { memo, useCallback, useEffect, useState } from 'react'
 import { NomenclatorItemFormSidebar } from './NomenclatorItemForm'
 import { GenericSidebar } from 'shared/layout/container/GenericContainer'
-import { DisableConfirmDialog } from 'shared/feedback/ConfirmationDialog'
+import { DisableConfirmDialog } from 'src/components/ui/feedback/ConfirmationDialog'
 import PaginationComponent from 'shared/ui/lists/PaginationComponent'
-import LoadingScreenWrapper from 'shared/feedback/LoadingScreen'
+import LoadingScreenWrapper from 'src/components/ui/feedback/LoadingScreen'
 import { ResponsiveListItem } from 'shared/ui/lists/CustomListItem'
 import CommonButton from 'shared/ui/buttons/CommonButton'
 import { EnabledIcon } from 'shared/ui/lists/Icons'
@@ -167,12 +167,11 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
                 <DisableConfirmDialog entity={deletingItem} clearEntity={() => setDeletingItem(null)} idModal='dis-nom-list' nameField='value'
                     onConfirm={() => handleActive(deletingItem)} entityTypeName='la opción' />
             </Stack >
-            <GenericSidebar isSidebarOpen={Boolean(sidebarMode)} closeSidebar={closeSidebar}
-                sidebarComponent={
-                    <NomenclatorItemSidebar mode={sidebarMode} entity={selectedEntity} handleSidebar={handleSidebar}
-                        closeSidebar={closeSidebar} updateEntityOnList={updateEntityOnList} nomenclator={nomenclator}
-                        handleActive={handleDeletingItem} />
-                } />
+            <GenericSidebar isSidebarOpen={Boolean(sidebarMode)} closeSidebar={closeSidebar}>
+                <NomenclatorItemSidebar mode={sidebarMode} entity={selectedEntity} handleSidebar={handleSidebar}
+                    closeSidebar={closeSidebar} updateEntityOnList={updateEntityOnList} nomenclator={nomenclator}
+                    handleActive={handleDeletingItem} />
+            </GenericSidebar>
         </ >
     )
 }

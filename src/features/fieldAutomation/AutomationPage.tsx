@@ -9,7 +9,7 @@ import type { LeadField } from '../../types/leadFields';
 import { showCommonErrorToast } from 'src/utils/feedback';
 import { useLoading } from 'src/hooks/useLoading';
 import GenericPaper from 'src/components/layout/container/GenericPaper';
-import LoadingScreenWrapper from 'src/components/feedback/LoadingScreen';
+import LoadingScreenWrapper from 'src/components/ui/feedback/LoadingScreen';
 import CustomChip from 'src/components/ui/details/CustomChip';
 import { GenericContainer } from 'src/components/layout/container/GenericContainer';
 import CommonButton from 'src/components/ui/buttons/CommonButton';

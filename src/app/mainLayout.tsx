@@ -3,7 +3,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import LayoutSidebar from 'shared/layout/sidebar/Sidebar';
 import { LeadNavigationProvider } from 'src/features/lead/stores/LeadNavigationContext';
 import { useUserContext } from 'src/stores/UserContext';
-import LoadingScreenWrapper from 'src/components/feedback/LoadingScreen';
+import LoadingScreenWrapper from 'src/components/ui/feedback/LoadingScreen';
 
 export default function MainLayout() {
     const { user, isRestoring, userOrganizations, loadingOrgs } = useUserContext()

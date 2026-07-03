@@ -14,10 +14,10 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Autocomplete, List, ListItemText, Stack, TextField, Typography } from '@mui/material';
 import { showCommonErrorToast } from 'src/utils/feedback';
 import { useLoading } from 'src/hooks/useLoading';
-import LoadingScreenWrapper from 'src/components/feedback/LoadingScreen';
+import LoadingScreenWrapper from 'src/components/ui/feedback/LoadingScreen';
 import CustomChip from 'src/components/ui/details/CustomChip';
 import { ChipTooltip } from 'src/components/ui/details/ChipTooltip';
-import { DisableConfirmDialog } from 'src/components/feedback/ConfirmationDialog';
+import { DisableConfirmDialog } from 'src/components/ui/feedback/ConfirmationDialog';
 
 const NONE_OPTION: Campaign = {
   id: -1,

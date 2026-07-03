@@ -1,10 +1,11 @@
 import type { ReactNode } from "react";
-import { ControlledNumber, ControlledSlider, ControlledSwitch, PasswordField, RegisteredTextInput, SingleFileField } from "shared/ui/forms/CustomInputs";
+import { ControlledNumber, ControlledSlider, ControlledSwitch, PasswordField, RegisteredTextInput } from "shared/ui/forms/CustomInputs";
 import { FormErrorMessage } from "shared/ui/forms/FormFeedback";
 import { formatDate } from "src/utils/formatters";
 import { type Control, type FieldValues, type Path, type UseFormRegister } from "react-hook-form";
 import { Stack, TextField, useColorScheme } from "@mui/material"
 import { LeadFieldInputIcon } from "src/features/leadFields/LeadFieldTypeIcon";
+import { FileInput } from "src/components/ui/forms/FileInput";
 
 interface BasicFormInput<T extends FieldValues> {
     name: Path<T>,
@@ -16,6 +17,9 @@ interface BasicFormInput<T extends FieldValues> {
 }
 interface RegisterFormInput<T extends FieldValues> extends BasicFormInput<T> {
     register: UseFormRegister<T>
+}
+interface LeadFormFileInput<T extends FieldValues> extends ControlFormInput<T> {
+    subtype?: string
 }
 interface ControlFormInput<T extends FieldValues> extends BasicFormInput<T> {
     control: Control<T>,
@@ -69,12 +73,19 @@ export const LeadFormPassword = <T extends FieldValues>
             startAdornment={showAdornment && <LeadFieldInputIcon typeCode="STRING" subtypeCode="PASSWORD" position="start" />} />)
 }
 
+const FILE_SUBTYPE_ACCEPT: Record<string, string> = {
+    FILE_IMAGE: "image/png,image/jpeg,image/gif,image/webp,image/svg+xml",
+    FILE_DOCUMENT: ".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt",
+}
+
 export const LeadFormFile = <T extends FieldValues>
-    ({ register, name, label, required = false, size = "medium", errorMessage, showAdornment = false }: RegisterFormInput<T>) => {
+    ({ control, name, label, required = false, size = "medium", errorMessage, subtype }: LeadFormFileInput<T>) => {
+    const accept = subtype ? FILE_SUBTYPE_ACCEPT[subtype] : "*"
     return (
-        <SingleFileField register={register} name={name} label={label} id={name} size={size}
-            required={required} errorMessage={errorMessage} autoComplete="one-time-code"
-            startAdornment={showAdornment && <LeadFieldInputIcon typeCode="FILE" subtypeCode="FILE_DOCUMENT" position="start" />} />
+        <FileInput control={control} name={name} label={label} size={size}
+            required={required} errorMessage={errorMessage}
+            accept={accept} multiple={false}
+            showPreview={subtype === "FILE_IMAGE"} />
     )
 }
 

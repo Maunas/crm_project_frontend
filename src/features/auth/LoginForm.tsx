@@ -26,7 +26,7 @@ export const LoginFormPage = () => {
                     <Box sx={{ width: 48, height: 48, bgcolor: "primary.contrastText", color: "primary.main", borderRadius: "50%", display: "inline-flex", alignItems: "center", justifyContent: "center", mb: 1.5 }}>
                         <LockOutlinedIcon />
                     </Box>
-                    <Typography variant="h2" fontWeight={700} mb={0.5}>Iniciar sesión</Typography>
+                    <Typography variant="h2" sx={{ fontWeight: 700, mb: 0.5 }}>Iniciar sesión</Typography>
                     <Typography variant="body2" sx={{ opacity: 0.85 }}>Ingresá tus credenciales para continuar</Typography>
                 </Box>
                 <Box sx={{ p: 4 }}>

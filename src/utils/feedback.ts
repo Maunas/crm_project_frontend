@@ -1,5 +1,5 @@
 import { toast } from "react-toastify"
-import Toast from "shared/feedback/Toast"
+import Toast from "src/components/ui/feedback/Toast"
 
 type ToastMode = "success" | "error" | "warning" | "default" | "info"
 

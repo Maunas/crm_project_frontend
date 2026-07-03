@@ -25,7 +25,7 @@ export const SignupFormPage = () => {
                     <Box sx={{ width: 48, height: 48, bgcolor: "primary.contrastText", color: "primary.main", borderRadius: "50%", display: "inline-flex", alignItems: "center", justifyContent: "center", mb: 1.5 }}>
                         <PersonAddOutlinedIcon />
                     </Box>
-                    <Typography variant="h2" fontWeight={700} mb={0.5}>Crear cuenta</Typography>
+                    <Typography variant="h2" sx={{ fontWeight: 700, mb: 0.5 }}>Crear cuenta</Typography>
                     <Typography variant="body2" sx={{ opacity: 0.85 }}>Completá los datos para registrarte</Typography>
                 </Box>
                 <Box sx={{ p: 4 }}>

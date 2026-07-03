@@ -112,7 +112,7 @@ export const ImportLeadsPage = () => {
         }
     };
 
-    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    const handleDragOver = (e: React.DragEvent<HTMLElement>) => {
         e.preventDefault();
         setIsDragging(true);
     };
@@ -121,7 +121,7 @@ export const ImportLeadsPage = () => {
         setIsDragging(false);
     };
 
-    const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    const handleDrop = (e: React.DragEvent<HTMLElement>) => {
         e.preventDefault();
         setIsDragging(false);
         const droppedFile = e.dataTransfer.files?.[0];

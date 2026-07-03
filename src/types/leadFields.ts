@@ -136,5 +136,6 @@ export interface LeadFieldsReorderBody {
 export interface LeadFieldsBySection<T = LeadFieldValueDetailed | LeadFieldDetailed | FieldArrayWithId<LeadPostForm, "values", "id">> {
   id: number,
   name: string,
+  sectionData?: LeadFieldSection,
   fields: T[]
 }

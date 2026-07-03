@@ -1,5 +1,5 @@
 import { type ReactNode } from "react"
-import { GenericSidebarContent, GenericSidebarHeader } from "./GenericSidebarHeader"
+import { GenericSidebarContent, GenericSidebarHeader } from "./ColoredHeaders"
 import GenericPaper from "./GenericPaper"
 import { CommonIconButton } from "shared/ui/buttons/CommonIconButton"
 import { Container, Divider, Drawer, Stack, useMediaQuery, useTheme, type Breakpoint, type ContainerProps, type DrawerProps, type PaperProps, Typography, Box, type ContainerOwnProps } from "@mui/material"
@@ -41,8 +41,10 @@ const ContainerWithSidebar = ({ isSidebarOpen = false, closeSidebar, sidebarComp
             <GenericContainer containerSize={containerSize} noPaper={noPaper}  {...containerProps} >
                 {children}
             </GenericContainer>
-            <GenericSidebar isSidebarOpen={isSidebarOpen} closeSidebar={closeSidebar} sidebarComponent={sidebarComponent}
-                sidebarWidth={sidebarWidth} {...sidebarProps} />
+            <GenericSidebar isSidebarOpen={isSidebarOpen} closeSidebar={closeSidebar}
+                sidebarWidth={sidebarWidth} {...sidebarProps} >
+                {sidebarComponent}
+            </GenericSidebar>
         </>
     )
 }
@@ -52,10 +54,10 @@ export default ContainerWithSidebar
 interface GenericSidebarProps extends DrawerProps {
     isSidebarOpen?: boolean,
     closeSidebar: () => void,
-    sidebarComponent: ReactNode,
+    children: ReactNode,
     sidebarWidth?: string
 }
-export const GenericSidebar = ({ isSidebarOpen = false, closeSidebar, sidebarComponent, sidebarWidth, ...props }: GenericSidebarProps) => {
+export const GenericSidebar = ({ isSidebarOpen = false, closeSidebar, children, sidebarWidth, ...props }: GenericSidebarProps) => {
 
     const theme = useTheme()
 
@@ -70,7 +72,7 @@ export const GenericSidebar = ({ isSidebarOpen = false, closeSidebar, sidebarCom
                 paper: {
                     component: GenericPaper,
                     "data-noborder": true,
-                    elevation: 1,
+                    elevation: 0,
                     sx: [{
                         minHeight: '100vh',
                         width: sidebarWidth ?? '40rem',
@@ -93,7 +95,7 @@ export const GenericSidebar = ({ isSidebarOpen = false, closeSidebar, sidebarCom
         >
             <CommonIconButton actionType="CLOSE" title="Cerrar" onClick={closeSidebar}
                 sx={{ position: "absolute", top: "3rem", right: "2rem", transform: "translateY(-50%)" }} />
-            {sidebarComponent}
+            {children}
         </Drawer >
     )
 }

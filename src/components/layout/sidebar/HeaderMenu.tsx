@@ -6,7 +6,7 @@ import { Avatar, Box, Button, Divider, FormControlLabel, IconButton, ListItemIco
 import { useColorScheme, useTheme } from '@mui/material/styles';
 import { AccountCircle, Check, PersonOutlined, PersonAddOutlined } from '@mui/icons-material';
 import MoreIcon from '@mui/icons-material/More';
-import LoadingScreenWrapper from 'src/components/feedback/LoadingScreen';
+import LoadingScreenWrapper from 'src/components/ui/feedback/LoadingScreen';
 import type { UserContextItems } from 'src/stores/UserContext';
 import { InviteDialog } from 'src/features/organizations/InviteDialog';
 import type { Organization } from 'src/types/users';

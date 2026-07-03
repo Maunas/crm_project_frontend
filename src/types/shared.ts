@@ -181,3 +181,11 @@ export interface AutomationCompatibility {
     "actions": string[],
   }
 }
+
+export interface ColorShades {
+  LIGHTER: string,
+  LIGHT: string,
+  MAIN: string,
+  DARK: string,
+  DARKER: string,
+}

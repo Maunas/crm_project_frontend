@@ -2,7 +2,7 @@ import type { Theme } from '@mui/material'
 import dayjs from 'dayjs'
 import 'dayjs/locale/es'
 import { colorTypesArray, type ColorTypes } from 'src/types/mui-theme.d'
-import type { DateFormat } from 'src/types/shared'
+import type { ColorShades, DateFormat } from 'src/types/shared'
 dayjs.locale('es')
 
 /**
@@ -101,7 +101,7 @@ export function hslStringToHex(hsl: string): string {
     return `#${toHex(r)}${toHex(g)}${toHex(b)}`
 }
 
-export const getColorShades = (color: string, theme: Theme) => {
+export const getColorShades = (color: string, theme: Theme): ColorShades => {
     const isColorHex = isHex(color)
     if (isColorHex) return {
         LIGHTER: theme.lighten(color, .6),
@@ -119,5 +119,14 @@ export const getColorShades = (color: string, theme: Theme) => {
         MAIN: hslStringToHex(theme.palette[themeColor].main),
         DARK: hslStringToHex(theme.palette[themeColor].dark),
         DARKER: hslStringToHex(theme.palette[themeColor].darker)
+    }
+}
+
+export const decodeUrlFilename = (url: string) => {
+    const raw = url.split("/").pop() ?? url
+    try {
+        return decodeURIComponent(raw)
+    } catch {
+        return raw
     }
 }
