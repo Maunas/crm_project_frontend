@@ -11,8 +11,13 @@ import { getWorkspaces } from "src/features/workspaces/workspaceServices"
 import { getCampaigns } from "src/features/campaigns/campaignServices"
 import { showToast } from "src/utils/feedback"
 import { useUserContext } from "src/stores/UserContext"
-import { useNavigate, useParams, useSearchParams } from "react-router-dom"
-import { Autocomplete, Paper, Divider, Grid, Stack, TextField, Typography } from "@mui/material"
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom"
+import { Autocomplete, ButtonGroup, Grid, Stack, TextField, Typography } from "@mui/material"
+import GenericPaper from "src/components/layout/container/GenericPaper"
+import { CustomAvatar } from "src/components/ui/details/CustomAvatar"
+import ACTION_ICONS from "src/components/ui/buttons/ActionIcons"
+import CommonButton from "src/components/ui/buttons/CommonButton"
+import { GenericPaperColoredSection } from "src/components/layout/container/ColoredHeaders"
 
 /** Wrapper para presentar LeadForm de creación en una página. */
 export const CreateLeadFormPage = () => {
@@ -28,6 +33,8 @@ export const CreateLeadFormPage = () => {
     const [workspaces, setWorkspaces] = useState<Workspace[]>([])
     const [selectedWorkspace, setSelectedWorkspace] = useState<Workspace | null>(null)
     const nav = useNavigate()
+
+    const [btnLoading, setBtnLoading] = useState(false)
 
     useEffect(() => {
         getWorkspaces({ page_size: 0, only_active: true }).then(res => {
@@ -64,34 +71,54 @@ export const CreateLeadFormPage = () => {
 
     return (
         <GenericContainer containerSize="lg" noPaper>
-            <LeadForm campaignId={selectedCampaign?.id} action="CREATE"
-                onSubmit={onSubmit} onCancel={() => nav(`/leads?workspace=${selectedWorkspace?.id}&campaign=${selectedCampaign?.id}`)}
-                setCampaignError={setCampaignError}
-                cmpSelector={
-                    <Grid container spacing={1}>
-                        <Grid size="grow" sx={{ minWidth: "20rem" }}>
-                            <Autocomplete options={workspaces} loading={workspaces.length === 0} disabled={workspaces.length === 0}
-                                onChange={(_, value) => setSelectedWorkspace(value)} value={selectedWorkspace}
-                                getOptionLabel={o => o.name!} renderInput={(props) =>
-                                    <TextField label="Workspace" {...props} />
-                                } />
-                        </Grid>
-                        <Grid size="grow" sx={{ minWidth: "20rem" }}>
-                            <Autocomplete options={campaigns.filter(c => c.workspace_id === selectedWorkspace?.id)}
-                                loading={campaigns.length === 0} disabled={campaigns.length === 0 && !selectedWorkspace}
-                                onChange={(_, value) => setSelectedCampaign(value)} value={selectedCampaign}
-                                getOptionLabel={o => o.name!}
-                                renderInput={(props) =>
-                                    <TextField error={!!campaignError} label="Campaña" {...props} />
-                                } />
-                        </Grid>
-                        {campaignError &&
-                            <Grid size={12}>
-                                <FormErrorMessage>{campaignError}</FormErrorMessage>
+            <Stack spacing={3}>
+                <GenericPaper>
+                    <Stack spacing={2}>
+                        <GenericPaperColoredSection color="primary" isFirst>
+                            <Stack direction="row" spacing={2} useFlexGap
+                                sx={{ alignItems: "center", justifyContent: "space-between" }}>
+                                <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
+                                    <CustomAvatar color="primary">{ACTION_ICONS.CREATE}</CustomAvatar>
+                                    <Typography variant="h1">Nuevo Lead</Typography>
+                                </Stack>
+                                <ButtonGroup sx={{ alignSelf: "end" }}>
+                                    <CommonButton actionType="CLOSE" variant="outlined" color="error" loading={btnLoading}
+                                        component={Link} to={`/leads?workspace=${selectedWorkspace?.id}&campaign=${selectedCampaign?.id}`}>
+                                        Cancelar
+                                    </CommonButton>
+                                    <CommonButton actionType="MODIFY" variant="contained" loading={btnLoading}
+                                        type="submit" form={`create-lead`}>Guardar</CommonButton>
+                                </ButtonGroup>
+                            </Stack>
+                        </GenericPaperColoredSection>
+                        <Grid container spacing={1}>
+                            <Grid size="grow" sx={{ minWidth: "20rem" }}>
+                                <Autocomplete options={workspaces} loading={workspaces.length === 0} disabled={workspaces.length === 0}
+                                    onChange={(_, value) => setSelectedWorkspace(value)} value={selectedWorkspace}
+                                    getOptionLabel={o => o.name!} renderInput={(props) =>
+                                        <TextField label="Workspace" {...props} />
+                                    } />
                             </Grid>
-                        }
-                    </Grid>
-                } />
+                            <Grid size="grow" sx={{ minWidth: "20rem" }}>
+                                <Autocomplete options={campaigns.filter(c => c.workspace_id === selectedWorkspace?.id)}
+                                    loading={campaigns.length === 0} disabled={campaigns.length === 0 && !selectedWorkspace}
+                                    onChange={(_, value) => setSelectedCampaign(value)} value={selectedCampaign}
+                                    getOptionLabel={o => o.name!}
+                                    renderInput={(props) =>
+                                        <TextField error={!!campaignError} label="Campaña" {...props} />
+                                    } />
+                            </Grid>
+                            {campaignError &&
+                                <Grid size={12}>
+                                    <FormErrorMessage>{campaignError}</FormErrorMessage>
+                                </Grid>
+                            }
+                        </Grid>
+                    </Stack>
+                </GenericPaper>
+                <LeadForm campaignId={selectedCampaign?.id} formId="create-lead" setExternalLoading={setBtnLoading} hideButtons
+                    onSubmit={onSubmit} setCampaignError={setCampaignError} />
+            </Stack>
         </GenericContainer>
     )
 }
@@ -147,6 +174,8 @@ export const UpdateLeadFormPage = () => {
     const [lead, setLead] = useState<LeadDetailed | null>(null)
     const nav = useNavigate()
 
+    const [btnLoading, setBtnLoading] = useState(false)
+
     useEffect(() => {
         getLead(Number(id)).then(setLead)
     }, [id])
@@ -186,10 +215,28 @@ export const UpdateLeadFormPage = () => {
     if (lead && lead.campaign_id) return (
         <GenericContainer containerSize="lg" noPaper>
             <Stack spacing={3}>
-                <Typography variant="h1">{`Modificar Lead: ${leadTitle}`}</Typography>
-                <LeadForm existingValues={formattedLeadValues} existingLeadFields={formattedLeadFields}
-                    campaignId={lead.campaign_id} onSubmit={onSubmit} onCancel={() => nav(`/leads/${lead.id}`)} />
+                <GenericPaper>
+                    <GenericPaperColoredSection color="primary" isFirst isLast>
+                        <Stack direction="row" spacing={2} useFlexGap
+                            sx={{ alignItems: "center", justifyContent: "space-between" }}>
+                            <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
+                                <CustomAvatar color="primary">{ACTION_ICONS.MODIFY}</CustomAvatar>
+                                <Typography variant="h1">{`Modificar Lead: ${leadTitle}`}</Typography>
+                            </Stack>
+                            <ButtonGroup sx={{ alignSelf: "end" }}>
+                                <CommonButton actionType="CLOSE" variant="outlined" color="error" loading={btnLoading}
+                                    component={Link} to={`/leads/${lead.id}`}>Cancelar</CommonButton>
+                                {lead.campaign_id &&
+                                    <CommonButton actionType="MODIFY" variant="contained" loading={btnLoading}
+                                        type="submit" form={`update-lead-${lead.id}`}>Guardar</CommonButton>
+                                }
+                            </ButtonGroup>
+                        </Stack>
+                    </GenericPaperColoredSection>
+                </GenericPaper>
+                <LeadForm existingValues={formattedLeadValues} existingLeadFields={formattedLeadFields} setExternalLoading={setBtnLoading}
+                    campaignId={lead.campaign_id} onSubmit={onSubmit} formId={`update-lead-${lead.id}`} hideButtons />
             </Stack>
-        </GenericContainer>
+        </GenericContainer >
     )
 }

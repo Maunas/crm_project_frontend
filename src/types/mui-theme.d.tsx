@@ -96,3 +96,13 @@ declare module '@mui/material/Avatar' {
     "size"?: "small" | "medium";
   }
 }
+declare module '@mui/material/Box' {
+  interface BoxOwnProps {
+    isFirst?: boolean
+    isLast?: boolean
+    pLeft?: string
+    pRight?: string
+    pTop?: string
+    pBottom?: string
+  }
+}

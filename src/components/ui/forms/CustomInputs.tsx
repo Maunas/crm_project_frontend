@@ -6,7 +6,6 @@ import { Controller, type Control, type FieldValues, type Path, type PathValue, 
 import { Box, Checkbox, FormControl, FormControlLabel, FormLabel, Grid, IconButton, InputAdornment, InputLabel, OutlinedInput, Rating, Slider, Stack, Switch, TextField, Typography, useColorScheme, type InputProps, type TextFieldProps, } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import { formatDate } from "src/utils/formatters";
 
 interface BasicFormInput<T extends FieldValues> {
   label?: string;
@@ -320,7 +319,7 @@ const DATE_INPUT_TYPE = {
 }
 
 type RegisteredDateInputProps<T extends FieldValues> =
-  Omit<RegisteredTextProps<T>, "type"> & { dateType?: keyof typeof DATE_INPUT_TYPE }
+  Omit<RegisteredTextProps<T>, "type" | "id"> & { dateType?: keyof typeof DATE_INPUT_TYPE }
 
 
 export const RegisteredDateInput = <T extends FieldValues>({ dateType = "DATE", register, name, label, required = false, errorMessage, autoComplete = "bday", size = "medium", ...props }: RegisteredDateInputProps<T>) => {
@@ -332,7 +331,7 @@ export const RegisteredDateInput = <T extends FieldValues>({ dateType = "DATE", 
       <TextField
         {...register(name)}
         label={label ?? name}
-        id={name}
+        id={name ?? undefined}
         type={inputType}
         required={required}
         error={!!errorMessage}

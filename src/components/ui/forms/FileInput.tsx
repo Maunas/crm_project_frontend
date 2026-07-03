@@ -331,7 +331,7 @@ const FileInputInner = ({
     return (
         <FormControl error={!!errorMessage} fullWidth size={size ?? "medium"} disabled={disabled}>
             {label && (
-                <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.75 }}>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>
                     {label} {required && "*"}
                 </Typography>
             )}
@@ -355,6 +355,7 @@ const FileInputInner = ({
                     sx={{
                         border: `2px dashed ${dropZoneBorderColor}`,
                         borderRadius: 3,
+                        m: .5,
                         p: size === "medium" ? 3 : 1,
                         textAlign: "center",
                         bgcolor: isDragOver ? "action.hover" : "transparent",

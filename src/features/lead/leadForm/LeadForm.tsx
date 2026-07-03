@@ -14,9 +14,11 @@ import { getLeadFields } from "features/leadFields/leadFieldServices"
 import { createFormDataFromLead, setLeadFormErrors, updateSelectorOptions } from "../leadUtils"
 import { getListField } from "src/utils/lists"
 import { useFieldArray, useForm, type Control, type Path, type UseFormRegister } from "react-hook-form"
-import { Accordion, AccordionDetails, AccordionSummary, Grid, ButtonGroup, Stack, Typography } from "@mui/material"
+import { Accordion, AccordionDetails, AccordionSummary, Grid, ButtonGroup, Stack, Typography, Box } from "@mui/material"
 import { ExpandMore } from "@mui/icons-material"
 import { getLeadFormFieldsBySections, orderFieldsBySections } from "src/features/leadFields/leadFieldUtils"
+import GenericPaper from "src/components/layout/container/GenericPaper"
+import { ColoredAccordionSummary } from "src/components/layout/container/ColoredHeaders"
 
 export interface LeadPostFormValues extends LeadPostValue {
     fieldData: LeadField
@@ -32,10 +34,14 @@ interface LeadFormProps {
     onSubmit: (data: FormData) => Promise<void>,
     submitBtnLabel?: string,
     onCancel?: () => void,
-    setCampaignError?: React.Dispatch<React.SetStateAction<string | undefined>>
+    setCampaignError?: (error?: string) => void,
+    formId?: string,
+    hideButtons?: boolean,
+    setExternalLoading?: (loading: boolean) => void
 }
 
-export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSubmit, submitBtnLabel = "Guardar", onCancel, setCampaignError }: LeadFormProps) => {
+export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSubmit, submitBtnLabel = "Guardar",
+    onCancel, formId = "lead-form", hideButtons = false, setExternalLoading, setCampaignError }: LeadFormProps) => {
 
     const defaultValues = useMemo(() => ({
         campaign_id: campaignId,
@@ -50,25 +56,12 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
 
     const { fields, replace } = useFieldArray({ name: "values", control })
 
-    /*
-    // Agrupamiento por sección
-    const groupedFields = useMemo(() => {
-        const groups: Record<string, typeof fields> = {};
-        fields.forEach((field) => {
-            // Usamos el ID de la sección como clave, o "Sin categoría" si no tiene
-            const sectionName = field.fieldData.lead_field_section.id?.toString() || "Información General";
-            if (!groups[sectionName]) groups[sectionName] = [];
-            groups[sectionName].push(field);
-        });
-        return groups;
-    }, [fields]);
-*/
-    const submit = (data: LeadPostForm) => {
+    const submit = useCallback((data: LeadPostForm) => {
         return onSubmit(createFormDataFromLead(data))
             .catch(e => setLeadFormErrors(fields, e, setError))
-    }
+    }, [fields, onSubmit, setError])
 
-    const { loading: submitLoading, fnWithLoading: submitLoad } = useLoading(submit)
+    const { loading: submitLoading, fnWithLoading: submitLoad } = useLoading(submit, setExternalLoading)
 
     //Setea el mensaje de error al selector, en el caso de createLead
     useEffect(() => {
@@ -122,6 +115,7 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
                         fieldData: field
                     }) as LeadPostFormValues))
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [replace])
 
     //Actualiza los leadFields respecto al campaignId seleccionado. Si ya hay existingLeadFields, no busca.
@@ -161,43 +155,48 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
 
     return (
         <LoadingScreenWrapper loading={fieldsLoading}>
-            <form onSubmit={handleSubmit(submitLoad)}>
+            <form onSubmit={handleSubmit(submitLoad)} id={formId}>
                 <input type="text" {...register("campaign_id", { setValueAs: value => (value === "" || !value) ? null : Number(value) })} hidden />
                 <Stack spacing={3}>
-                    {campaignId &&
-                        fieldsBySection.map((section, idx) => {
-                            return <Accordion key={`section-lead-${section.id}`} defaultExpanded={idx === 0}>
-                                <AccordionSummary expandIcon={<ExpandMore />}>
-                                    <Typography variant="h3">{section.name}</Typography>
-                                </AccordionSummary>
-                                <AccordionDetails>
-                                    <Grid container sx={{ gap: ".25rem .5rem " }}>
-                                        {section.fields.map(sectField =>
-                                            <Grid size="grow" sx={{ alignItems: "center", minWidth: "20rem" }} key={sectField.field.id}>
-                                                <LeadFormFieldType register={register} control={control} name={`values.${sectField.globalIdx}.value`}
-                                                    leadField={sectField.field.fieldData}
-                                                    relatedLeads={relatedLeads.get(sectField.field?.fieldData?.related_campaign_id ?? -1)}
-                                                    selectors={selectors.get(sectField.field?.fieldData?.nomenclator_id ?? -1)}
-                                                    errorMessage={errors?.values?.[sectField.globalIdx]?.value?.message} />
-                                            </Grid>
-                                        )}
-                                    </Grid>
-                                </AccordionDetails>
-                            </Accordion>
-                        })
-
-                    }
+                    <Box>
+                        {campaignId &&
+                            fieldsBySection.map((section, idx) => {
+                                return <Accordion key={`section-lead-${section.id}`} defaultExpanded={idx === 0}
+                                    component={GenericPaper} elevation={0} sx={{ p: 0 }}>
+                                    <ColoredAccordionSummary expandIcon={<ExpandMore />} color={section.sectionData?.color}>
+                                        <Typography variant="h3">{section.name}</Typography>
+                                    </ColoredAccordionSummary>
+                                    <AccordionDetails sx={{ mt: 2 }}>
+                                        <Grid container sx={{ gap: ".25rem .5rem " }}>
+                                            {section.fields.map(sectField =>
+                                                <Grid size="grow" sx={{ alignItems: "center", minWidth: "20rem" }} key={sectField.field.id}>
+                                                    <LeadFormFieldType register={register} control={control} name={`values.${sectField.globalIdx}.value`}
+                                                        leadField={sectField.field.fieldData}
+                                                        relatedLeads={relatedLeads.get(sectField.field?.fieldData?.related_campaign_id ?? -1)}
+                                                        selectors={selectors.get(sectField.field?.fieldData?.nomenclator_id ?? -1)}
+                                                        errorMessage={errors?.values?.[sectField.globalIdx]?.value?.message} />
+                                                </Grid>
+                                            )}
+                                        </Grid>
+                                    </AccordionDetails>
+                                </Accordion>
+                            })
+                        }
+                    </Box>
                     {errors.root &&
                         <FormErrorMessage>{errors.root.message}</FormErrorMessage>}
-                    <ButtonGroup sx={{ alignSelf: "end" }}>
-                        {onCancel && <CommonButton actionType="CLOSE" variant="text" color="error" onClick={onCancel} disabled={submitLoading}>Cancelar</CommonButton>}
-                        {campaignId &&
-                            <CommonButton actionType={existingValues ? "MODIFY" : "CREATE"} loading={submitLoading}
-                                type="submit" variant="contained">{submitBtnLabel}</CommonButton>}
-                    </ButtonGroup>
+                    {!hideButtons &&
+                        <ButtonGroup sx={{ alignSelf: "end" }}>
+                            {onCancel && <CommonButton actionType="CLOSE" variant="outlined" color="error"
+                                onClick={onCancel} disabled={submitLoading}>Cancelar</CommonButton>}
+                            {campaignId &&
+                                <CommonButton actionType={existingValues ? "MODIFY" : "CREATE"} loading={submitLoading}
+                                    type="submit" variant="contained">{submitBtnLabel}</CommonButton>}
+                        </ButtonGroup>}
                 </Stack>
             </form>
-        </LoadingScreenWrapper>
+
+        </LoadingScreenWrapper >
     )
 }
 

@@ -1,5 +1,5 @@
 import { type ReactNode } from "react"
-import { GenericSidebarContent, GenericSidebarHeader } from "./GenericSidebarHeader"
+import { GenericSidebarContent, GenericSidebarHeader } from "./ColoredHeaders"
 import GenericPaper from "./GenericPaper"
 import { CommonIconButton } from "shared/ui/buttons/CommonIconButton"
 import { Container, Divider, Drawer, Stack, useMediaQuery, useTheme, type Breakpoint, type ContainerProps, type DrawerProps, type PaperProps, Typography, Box, type ContainerOwnProps } from "@mui/material"

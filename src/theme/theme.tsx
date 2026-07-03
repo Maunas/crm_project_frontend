@@ -11,7 +11,9 @@ const theme = createTheme({
       palette: darkTheme.palette
     }
   },
-
+  shape: {
+    borderRadius: ".5em",
+  },
   // Tipografía
   typography: {
     fontFamily: [
@@ -95,13 +97,14 @@ const theme = createTheme({
     },
     MuiPaper: {
       styleOverrides: {
-        root: ({ theme }) => (theme.applyStyles("dark", {
-          '&:not([data-noborder])': {
-            border: `1px solid ${theme.palette.divider}`,
-            borderTop: `1px solid ${theme.alpha(theme.palette.divider, .3)}`,
-            borderBottom: `1px solid ${theme.alpha(theme.palette.divider, .05)}`,
-          }
-        })
+        root: ({ theme }) => (
+          theme.applyStyles("dark", {
+            '&:not([data-noborder])': {
+              border: `1px solid ${theme.palette.divider}`,
+              borderTop: `1px solid ${theme.alpha(theme.palette.divider, .3)}`,
+              borderBottom: `1px solid ${theme.alpha(theme.palette.divider, .05)}`,
+            }
+          })
         )
       }
     }
