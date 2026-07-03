@@ -1,19 +1,33 @@
-import { AccordionSummary, Box, styled } from '@mui/material'
+import { AccordionSummary, Box, styled, type Theme } from '@mui/material'
+import type { ColorShades } from 'src/types/shared'
 import { getColorShades } from 'src/utils/formatters'
+
+const getGradient = (theme: Theme, colorShades: ColorShades) => ({
+    light: `linear-gradient(
+        145deg,
+        ${theme.alpha(colorShades.MAIN, .25)} 40%, 
+        ${theme.alpha(colorShades.LIGHTER, .15)} 100%)`,
+    dark: `linear-gradient(
+        145deg,
+        ${theme.alpha(colorShades.DARK, .2)} 0%,
+        ${theme.alpha(colorShades.DARKER, .1)} 80%)`
+})
 
 export const GenericSidebarHeader = styled(Box)(
     ({ theme, color = "primary" }) => {
         const colorShades = getColorShades(color, theme)
+        const gradient = getGradient(theme, colorShades)
 
         return ([
             {
+                overflow: "hidden",
                 margin: "-1.5rem -2rem 0",
                 backgroundColor: theme.alpha(theme.palette.background.default, .5),
-                backgroundImage: `linear-gradient(145deg,${theme.alpha(colorShades.LIGHT, .2)} 40%, rgba(47, 72, 146, 0) 100%)`
+                backgroundImage: gradient.light
             },
             theme.applyStyles("dark", {
                 backgroundColor: theme.alpha(theme.palette.background.paper, .5),
-                backgroundImage: `linear-gradient(145deg,${theme.alpha(colorShades.DARK, .15)} 0%, rgba(47, 72, 146, 0) 80%)`
+                backgroundImage: gradient.dark
             })
         ])
     }
@@ -38,31 +52,60 @@ export const GenericSidebarContent = styled(Box)(
         },
         theme.applyStyles("dark", {
             "& .sidebar-footer": {
-                backgroundColor: theme.alpha(theme.palette.background.paper, .5),
+                backgroundColor: theme.palette.background.paper,
             }
         })
     ])
 )
 
-export const ColoredAccordionSummary = styled(AccordionSummary)(
-    ({ theme, color = "primary" }) => {
+export const ColoredAccordionSummary = styled(AccordionSummary, {
+    shouldForwardProp: (prop) =>
+        !["isFirst", "isLast"].includes(prop as string),
+})<{ isFirst?: boolean, isLast?: boolean }>(
+    ({ theme, color = "primary", isFirst = false, isLast = false }) => {
         const colorShades = getColorShades(color, theme)
+        const gradient = getGradient(theme, colorShades)
+        const radius = theme.shape.borderRadius
 
         return ([
             {
-                backgroundImage: `linear-gradient(145deg,${theme.alpha(colorShades.LIGHT, .2)} 40%, rgba(47, 72, 146, 0) 100%)`
+                overflow: "hidden",
+                backgroundImage: gradient.light,
+                ...(isFirst ? {
+                    borderTopLeftRadius: radius,
+                    borderTopRightRadius: radius,
+                } : {}),
+                ...(isLast ? {
+                    "&:not(.Mui-expanded)": {
+                        borderBottomLeftRadius: radius,
+                        borderBottomRightRadius: radius,
+                    },
+                } : {}),
             },
             theme.applyStyles("dark", {
-                backgroundImage: `linear-gradient(145deg,${theme.alpha(colorShades.DARK, .15)} 0%, rgba(47, 72, 146, 0) 80%)`
+                backgroundImage: gradient.dark
             })
         ])
     }
 )
 
 
-export const GenericPaperColoredSection = styled(Box)(
+export const GenericPaperColoredSection = styled(Box, {
+    shouldForwardProp: (prop) =>
+        !["color", "isFirst", "isLast", "pLeft", "pRight", "pTop", "pBottom"].includes(prop as string),
+})<{
+    color?: string,
+    isFirst?: boolean,
+    isLast?: boolean,
+    pLeft?: string,
+    pRight?: string,
+    pTop?: string,
+    pBottom?: string,
+}>(
     ({ theme, color = "primary", isFirst = false, isLast = false, pLeft = "2rem", pRight = "2rem", pBottom = "1.5rem", pTop = "1.5rem" }) => {
         const colorShades = getColorShades(color, theme)
+        const gradient = getGradient(theme, colorShades)
+        const radius = theme.shape.borderRadius
 
         return ([
             {
@@ -70,12 +113,21 @@ export const GenericPaperColoredSection = styled(Box)(
                     marginInline: `-${pLeft} -${pRight}`,
                     marginTop: isFirst ? `-${pTop}` : 0,
                     marginBottom: isLast ? `-${pBottom}` : 0,
+                    ...(isFirst || isLast ? {
+                        borderRadius: [
+                            isFirst ? radius : "0",
+                            isFirst ? radius : "0",
+                            isLast ? radius : "0",
+                            isLast ? radius : "0",
+                        ].join(" ")
+                    } : {}),
                 },
+                overflow: "hidden",
                 padding: `${pTop} ${pLeft} ${pBottom} ${pRight}`,
-                backgroundImage: `linear-gradient(145deg,${theme.alpha(colorShades.LIGHT, .2)} 40%, transparent 100%)`
+                backgroundImage: gradient.light
             },
             theme.applyStyles("dark", {
-                backgroundImage: `linear-gradient(145deg,${theme.alpha(colorShades.DARK, .15)} 0%, transparent 80%)`
+                backgroundImage: gradient.dark
             })
         ])
     }

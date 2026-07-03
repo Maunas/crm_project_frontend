@@ -14,7 +14,7 @@ import { getLeadFields } from "features/leadFields/leadFieldServices"
 import { createFormDataFromLead, setLeadFormErrors, updateSelectorOptions } from "../leadUtils"
 import { getListField } from "src/utils/lists"
 import { useFieldArray, useForm, type Control, type Path, type UseFormRegister } from "react-hook-form"
-import { Accordion, AccordionDetails, AccordionSummary, Grid, ButtonGroup, Stack, Typography, Box } from "@mui/material"
+import { Accordion, AccordionDetails, Grid, ButtonGroup, Stack, Typography, Box } from "@mui/material"
 import { ExpandMore } from "@mui/icons-material"
 import { getLeadFormFieldsBySections, orderFieldsBySections } from "src/features/leadFields/leadFieldUtils"
 import GenericPaper from "src/components/layout/container/GenericPaper"
@@ -162,8 +162,9 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
                         {campaignId &&
                             fieldsBySection.map((section, idx) => {
                                 return <Accordion key={`section-lead-${section.id}`} defaultExpanded={idx === 0}
-                                    component={GenericPaper} elevation={0} sx={{ p: 0 }}>
-                                    <ColoredAccordionSummary expandIcon={<ExpandMore />} color={section.sectionData?.color}>
+                                    component={GenericPaper} elevation={1} sx={{ p: 0, overflow: "hidden" }}>
+                                    <ColoredAccordionSummary isFirst={idx === 0} isLast={idx === fieldsBySection.length - 1}
+                                        expandIcon={<ExpandMore />} color={section.sectionData?.color}>
                                         <Typography variant="h3">{section.name}</Typography>
                                     </ColoredAccordionSummary>
                                     <AccordionDetails sx={{ mt: 2 }}>
@@ -192,7 +193,8 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
                             {campaignId &&
                                 <CommonButton actionType={existingValues ? "MODIFY" : "CREATE"} loading={submitLoading}
                                     type="submit" variant="contained">{submitBtnLabel}</CommonButton>}
-                        </ButtonGroup>}
+                        </ButtonGroup>
+                    }
                 </Stack>
             </form>
 

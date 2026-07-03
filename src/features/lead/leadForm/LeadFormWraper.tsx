@@ -18,6 +18,7 @@ import { CustomAvatar } from "src/components/ui/details/CustomAvatar"
 import ACTION_ICONS from "src/components/ui/buttons/ActionIcons"
 import CommonButton from "src/components/ui/buttons/CommonButton"
 import { GenericPaperColoredSection } from "src/components/layout/container/ColoredHeaders"
+import GenericModal, { ModalContentWrapper } from "src/components/layout/container/GenericModal"
 
 /** Wrapper para presentar LeadForm de creación en una página. */
 export const CreateLeadFormPage = () => {
@@ -142,9 +143,16 @@ const detailedToNormalLeadField = (leadField: LeadFieldDetailed) => {
 interface SimulateProps {
     campaign: Campaign,
     leadFields: LeadFieldDetailed[],
-    onCancel: () => void
+    onCancel: () => void,
+    modalProps: {
+        openModalId: string | undefined;
+        handleOpen: (idModal: string) => void;
+        handleClose: () => void;
+    }
 }
-export const SimulateLeadFormModal = ({ campaign, leadFields, onCancel }: SimulateProps) => {
+export const SimulateLeadFormModal = ({ campaign, leadFields, onCancel, modalProps }: SimulateProps) => {
+
+    const [btnLoading, setBtnLoading] = useState(false)
 
     const onSubmit = useCallback((data: FormData) => {
         return simulateCreateLead(data)
@@ -160,11 +168,25 @@ export const SimulateLeadFormModal = ({ campaign, leadFields, onCancel }: Simula
     }, [leadFields])
 
     return (
-        <Stack spacing={3}>
-            <Typography variant="h1">Simulación de Nuevo Lead: Campaña {campaign.name}</Typography>
-            <LeadForm campaignId={campaign.id} existingLeadFields={formattedLeadFields}
-                onSubmit={onSubmit} onCancel={onCancel} submitBtnLabel="Validar" />
-        </Stack>
+        <GenericModal {...modalProps} idModal="simulateLead" buttonText='Vista previa' maxWidth="xl" fullWidth
+            btnProps={{ actionType: "DETAILS", variant: "outlined", color: "secondary", onlyTooltip: true }} sx={{ minWidth: "80vw" }} >
+            <ModalContentWrapper icon={ACTION_ICONS.DETAILS} iconColor="primary"
+                title="Simulación de Nuevo Lead"
+                subtitle={`Campaña "${campaign.name}"`}
+                actions={
+                    <ButtonGroup sx={{ alignSelf: "end" }}>
+                        {onCancel && <CommonButton actionType="CLOSE" variant="outlined" color="error"
+                            onClick={onCancel} disabled={btnLoading}>Cancelar</CommonButton>}
+                        {campaign.id &&
+                            <CommonButton actionType="DETAILS" loading={btnLoading} form={`simulate-lead-${campaign.id}`}
+                                type="submit" variant="contained">Validar Formulario</CommonButton>}
+                    </ButtonGroup>
+                }>
+                <LeadForm campaignId={campaign.id} existingLeadFields={formattedLeadFields} setExternalLoading={setBtnLoading}
+                    onSubmit={onSubmit} submitBtnLabel="Validar" formId={`simulate-lead-${campaign.id}`} hideButtons />
+            </ModalContentWrapper>
+        </GenericModal>
+
     )
 }
 

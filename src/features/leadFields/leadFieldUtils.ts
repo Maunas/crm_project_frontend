@@ -75,7 +75,7 @@ export const getFieldsBySections = <T extends LeadFieldValue | LeadField>(fields
         if (sections.has(section.id)) {
             sections.get(section.id)!.fields.push(field)
         } else {
-            sections.set(section.id, { id: section.id, name: section.name, fields: [field] })
+            sections.set(section.id, { id: section.id, name: section.name, sectionData: section, fields: [field] })
         }
     })
     return Array.from(sections.values())

@@ -1,6 +1,7 @@
 import { createTheme } from '@mui/material/styles';
 import { darkTheme, lightTheme } from './themePalette';
 import { textTheme } from './typographyTheme';
+import { getBorderAlpha } from './paperUtils';
 
 const theme = createTheme({
   colorSchemes: {
@@ -97,15 +98,24 @@ const theme = createTheme({
     },
     MuiPaper: {
       styleOverrides: {
-        root: ({ theme }) => (
-          theme.applyStyles("dark", {
-            '&:not([data-noborder])': {
-              border: `1px solid ${theme.palette.divider}`,
-              borderTop: `1px solid ${theme.alpha(theme.palette.divider, .3)}`,
-              borderBottom: `1px solid ${theme.alpha(theme.palette.divider, .05)}`,
-            }
-          })
-        )
+        root: ({ theme, ownerState }) => {
+          const elevation = ownerState.elevation ?? 0
+          const borderAlpha = getBorderAlpha(elevation)
+          return {
+            ...theme.applyStyles("light", {
+              '&:not([data-noborder])': {
+                border: `1px solid ${theme.alpha(theme.palette.divider, borderAlpha)}`,
+              }
+            }),
+            ...theme.applyStyles("dark", {
+              '&:not([data-noborder])': {
+                border: `1px solid ${theme.palette.divider}`,
+                borderTop: `1px solid ${theme.alpha(theme.palette.divider, .3)}`,
+                borderBottom: `1px solid ${theme.alpha(theme.palette.divider, .05)}`,
+              }
+            })
+          }
+        }
       }
     }
   },

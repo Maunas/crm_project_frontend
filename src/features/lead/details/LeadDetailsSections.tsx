@@ -8,9 +8,10 @@ import type { LeadFieldValueDetailed } from "src/types/leadFields"
 import type { LeadDetailed } from "src/types/leads"
 import { useModal } from "src/hooks/useModal"
 import { getFieldsBySections, getTypeOrSpecialTemplates } from "features/leadFields/leadFieldUtils"
-import { Accordion, AccordionDetails, AccordionSummary, Divider, Typography, Stack, List, ListItemText, Box } from "@mui/material"
+import { Accordion, AccordionDetails, Typography, Stack, List, ListItemText, Box } from "@mui/material"
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import GenericPaper from "src/components/layout/container/GenericPaper"
+import { ColoredAccordionSummary } from "src/components/layout/container/ColoredHeaders"
 
 
 interface LeadFieldSectionsProps {
@@ -54,12 +55,12 @@ export const LeadFieldSections = ({ lead, updateLeadInfo }: LeadFieldSectionsPro
             {fieldValuesBySection.map((section, idx) =>
                 <Accordion expanded={expanded === idx} onChange={onExpand(idx)} key={`section-${idx}`}
                     component={GenericPaper} elevation={0} sx={{ p: 0 }}>
-                    <AccordionSummary expandIcon={<ArrowDropDownIcon />}
+                    <ColoredAccordionSummary expandIcon={<ArrowDropDownIcon />}
+                        color={section?.sectionData?.color} isFirst={idx === 0}
                         aria-controls={`panel${idx + 1}-content`} id={`panel${idx + 1}-header`}>
                         <Typography variant="h2">{section.name}</Typography>
-                    </AccordionSummary>
+                    </ColoredAccordionSummary>
                     <AccordionDetails sx={{ paddingTop: 0 }}>
-                        <Divider sx={{ marginBottom: 1 }} />
                         <List>
                             {section?.fields.map((fieldValue, idx) =>
                                 updatingFieldId !== fieldValue.field.id ?
@@ -74,12 +75,12 @@ export const LeadFieldSections = ({ lead, updateLeadInfo }: LeadFieldSectionsPro
             )}
             <Accordion expanded={expanded === -1} onChange={onExpand(-1)}
                 component={GenericPaper} elevation={0} sx={{ p: 0 }}>
-                <AccordionSummary sx={{ height: "4rem" }} expandIcon={<ArrowDropDownIcon />}
+                <ColoredAccordionSummary color="info" isLast
+                    expandIcon={<ArrowDropDownIcon />}
                     aria-controls="panel0-content" id="panel0-header">
                     <Typography variant="h2">Creación de Lead</Typography>
-                </AccordionSummary>
+                </ColoredAccordionSummary>
                 <AccordionDetails sx={{ paddingTop: 0 }}>
-                    <Divider sx={{ marginBottom: 2 }} />
                     <List>
                         <LeadFieldContent value={lead?.created_at} fieldName="Fecha de Creación" type="DATE_TIME" />
                         {lead?.updated_at &&

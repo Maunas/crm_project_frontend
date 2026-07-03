@@ -15,7 +15,8 @@ import type { CampaignDetailed } from 'src/types/campaigns'
 import { disableCampaign, enableCampaign, getCampaign } from './campaignServices'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom'
-import { Typography, ButtonGroup, Link, Breadcrumbs, Stack, Divider } from '@mui/material'
+import { Typography, ButtonGroup, Link, Breadcrumbs, Stack } from '@mui/material'
+import { GenericPaperColoredSection } from 'src/components/layout/container/ColoredHeaders'
 
 export const CampaignDetails = () => {
     const { id } = useParams()
@@ -91,30 +92,31 @@ export const CampaignDetails = () => {
                 </Breadcrumbs>
                 <Stack spacing={3}>
                     <GenericPaper>
-                        <Stack spacing={3}>
+                        <Stack spacing={2}>
                             {campaign &&
-                                <Stack direction="row" spacing={2} useFlexGap sx={{ justifyContent: "space-between", flexWrap: "wrap" }}>
-                                    <TitleAndActive active={campaign.active} >
-                                        <Stack>
-                                            <Typography variant="h1">{campaign.name}</Typography>
-                                            {campaign.description &&
-                                                <Typography variant="body1" color="textSecondary">{campaign.description}</Typography>}
+                                <GenericPaperColoredSection isFirst color={campaign.active ? "success" : "error"}>
+                                    <Stack direction="row" spacing={2} useFlexGap sx={{ justifyContent: "space-between", flexWrap: "wrap" }}>
+                                        <TitleAndActive active={campaign.active} >
+                                            <Stack>
+                                                <Typography variant="h1">{campaign.name}</Typography>
+                                                {campaign.description &&
+                                                    <Typography variant="body1" color="textSecondary">{campaign.description}</Typography>}
+                                            </Stack>
+                                        </TitleAndActive>
+                                        <Stack spacing={2} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", ml: "auto" }}>
+                                            <ButtonGroup sx={{ marginLeft: "auto" }}>
+                                                <CommonButton component={RouterLink} variant='outlined' to={`/leads?workspace=${campaign.workspace_id}&campaign=${campaign.id}`}
+                                                    actionType="LIST" onlyTooltip color="secondary">Ver Leads</CommonButton>
+                                                <CommonButton component={RouterLink} variant='outlined' color="secondary" to={`/automations/?campaign=${campaign.id}`}
+                                                    actionType="AUTOMATE" onlyTooltip>Automatizaciones</CommonButton>
+                                                <HandleActiveButton active={campaign.active} handleActive={() => setDeletingCmp(campaign)} onlyTooltip />
+                                                <CommonButton onClick={() => handleSidebar("UPDATE_CMP", null)} actionType="MODIFY" onlyTooltip>Modificar</CommonButton>
+                                            </ButtonGroup>
                                         </Stack>
-                                    </TitleAndActive>
-                                    <Stack spacing={2} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", ml: "auto" }}>
-                                        <ButtonGroup sx={{ marginLeft: "auto" }}>
-                                            <CommonButton component={RouterLink} variant='outlined' to={`/leads?workspace=${campaign.workspace_id}&campaign=${campaign.id}`}
-                                                actionType="LIST" onlyTooltip color="secondary">Ver Leads</CommonButton>
-                                            <CommonButton component={RouterLink} variant='outlined' color="secondary" to={`/automations/?campaign=${campaign.id}`}
-                                                actionType="AUTOMATE" onlyTooltip>Automatizaciones</CommonButton>
-                                            <HandleActiveButton active={campaign.active} handleActive={() => setDeletingCmp(campaign)} onlyTooltip />
-                                            <CommonButton onClick={() => handleSidebar("UPDATE_CMP", null)} actionType="MODIFY" onlyTooltip>Modificar</CommonButton>
-                                        </ButtonGroup>
                                     </Stack>
-                                </Stack>
+                                </GenericPaperColoredSection>
                             }
                             {campaign && <>
-                                <Divider />
                                 <DetailsMetadata entity={campaign} />
                             </>}
                         </Stack>

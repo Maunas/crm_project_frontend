@@ -167,12 +167,11 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
                 <DisableConfirmDialog entity={deletingItem} clearEntity={() => setDeletingItem(null)} idModal='dis-nom-list' nameField='value'
                     onConfirm={() => handleActive(deletingItem)} entityTypeName='la opción' />
             </Stack >
-            <GenericSidebar isSidebarOpen={Boolean(sidebarMode)} closeSidebar={closeSidebar}
-                sidebarComponent={
-                    <NomenclatorItemSidebar mode={sidebarMode} entity={selectedEntity} handleSidebar={handleSidebar}
-                        closeSidebar={closeSidebar} updateEntityOnList={updateEntityOnList} nomenclator={nomenclator}
-                        handleActive={handleDeletingItem} />
-                } />
+            <GenericSidebar isSidebarOpen={Boolean(sidebarMode)} closeSidebar={closeSidebar}>
+                <NomenclatorItemSidebar mode={sidebarMode} entity={selectedEntity} handleSidebar={handleSidebar}
+                    closeSidebar={closeSidebar} updateEntityOnList={updateEntityOnList} nomenclator={nomenclator}
+                    handleActive={handleDeletingItem} />
+            </GenericSidebar>
         </ >
     )
 }

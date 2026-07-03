@@ -3,7 +3,7 @@ import { CommonIconButton } from "shared/ui/buttons/CommonIconButton"
 import { SelectableTableRow } from "shared/ui/lists/CustomTableRow"
 import { EnabledIcon } from "shared/ui/lists/Icons"
 import type { LeadFieldDetailed } from "src/types/leadFields"
-import { Accordion, AccordionDetails, AccordionSummary, Box, Checkbox, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, useTheme, type Palette } from "@mui/material"
+import { Accordion, AccordionDetails, Box, Checkbox, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, useTheme, type Palette } from "@mui/material"
 import React from 'react'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import type { ReorderFieldsIds } from "./LeadFieldList"
@@ -13,6 +13,8 @@ import { stopPropagationEvent } from "src/utils/lists"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import { DisableConfirmDialog } from "src/components/ui/feedback/ConfirmationDialog"
 import { getFieldsBySections } from "./leadFieldUtils"
+import { ColoredAccordionSummary } from "src/components/layout/container/ColoredHeaders"
+import GenericPaper from "src/components/layout/container/GenericPaper"
 
 const MIN_FIELDS = 10
 
@@ -67,7 +69,7 @@ export const LeadFieldTableSections = ({ leadFields, newFieldsBySectionIds, setN
                 const sectionCheckedItems = checkedBySectionId.get(section.sectId) ?? 0
                 if (!leadFieldsData) return
                 return (
-                    <Accordion expanded={openTableId === section.sectId} component={Paper} elevation={3} key={`${section.sectId}-acc`}
+                    <Accordion expanded={openTableId === section.sectId} component={GenericPaper} elevation={1} key={`${section.sectId}-acc`}
                         onChange={(_, expanded) => expanded ? setOpenTableId(section.sectId) : setOpenTableId(null)}
                         sx={[{ p: 0 }, isReordering ? dragStyles(idx, palette, "column", true) : {}]}
                         {...(isReordering ? {
@@ -75,7 +77,9 @@ export const LeadFieldTableSections = ({ leadFields, newFieldsBySectionIds, setN
                             onDragOver: handleDragOver,
                             onDrop: () => handleDrop(idx)
                         } : {})}>
-                        <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls={`${section.sectId}-content`} id={`${section.sectId}-header`}>
+                        <ColoredAccordionSummary isFirst={idx === 0} isLast={idx === newFieldsBySectionIds.length - 1}
+                            color={leadFieldsData.sectionData.color} expandIcon={<ExpandMoreIcon />}
+                            aria-controls={`${section.sectId}-content`} id={`${section.sectId}-header`}>
                             <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
                                 {!isReordering ?
                                     <Checkbox
@@ -94,9 +98,9 @@ export const LeadFieldTableSections = ({ leadFields, newFieldsBySectionIds, setN
                                     </Typography>
                                 }
                             </Stack>
-                        </AccordionSummary>
+                        </ColoredAccordionSummary>
                         <AccordionDetails>
-                            <TableContainer component={Paper} elevation={6} key={`section-${section.sectId}`}>
+                            <TableContainer component={Paper} elevation={4} key={`section-${section.sectId}`}>
                                 <LeadFieldTable sectLeadFields={leadFieldsData.fields} orderFieldsIds={sectFields}
                                     setOrderFieldsIds={setNewFieldsBySectionIds} sectIdx={idx} palette={palette} isReordering={isReordering}
                                     handleSidebar={handleSidebarWrapper} setDeletingField={handleDeletingField} checkedItems={checkedItems}
