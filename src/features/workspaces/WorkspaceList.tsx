@@ -3,10 +3,10 @@ import { WorkspaceFormSidebar } from './WorkspaceForms';
 import { WorkspaceDetails } from './WorkspaceDetails'
 import { CreateCampaignFormSidebar } from 'features/campaigns/CampaignForms';
 import ContainerWithSidebar from 'shared/layout/container/GenericContainer';
-import { DisableConfirmDialog } from 'shared/feedback/ConfirmationDialog';
+import { DisableConfirmDialog } from 'src/components/ui/feedback/ConfirmationDialog';
 import { CommonIconButton } from 'shared/ui/buttons/CommonIconButton';
 import PaginationComponent from 'shared/ui/lists/PaginationComponent'
-import LoadingScreenWrapper from 'shared/feedback/LoadingScreen';
+import LoadingScreenWrapper from 'src/components/ui/feedback/LoadingScreen';
 import { CustomListItem } from 'shared/ui/lists/CustomListItem';
 import CommonButton from 'shared/ui/buttons/CommonButton';
 import { EnabledIcon } from 'shared/ui/lists/Icons';

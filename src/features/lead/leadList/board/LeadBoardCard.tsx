@@ -5,7 +5,7 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import type { Lead } from 'src/types/leads';
 import { getLeadTitleArray } from '../../leadUtils';
 import CustomChip from 'src/components/ui/details/CustomChip';
-import { UserAvatar } from 'src/components/ui/UserAvatar';
+import { UserAvatar } from 'src/components/ui/details/UserAvatar';
 
 interface LeadBoardCardProps {
     lead: Lead;

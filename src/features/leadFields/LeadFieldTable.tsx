@@ -11,7 +11,7 @@ import { useDragAndDrop } from "src/hooks/useDragAndDrop"
 import CommonButton from "src/components/ui/buttons/CommonButton"
 import { stopPropagationEvent } from "src/utils/lists"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
-import { DisableConfirmDialog } from "src/components/feedback/ConfirmationDialog"
+import { DisableConfirmDialog } from "src/components/ui/feedback/ConfirmationDialog"
 import { getFieldsBySections } from "./leadFieldUtils"
 
 const MIN_FIELDS = 10

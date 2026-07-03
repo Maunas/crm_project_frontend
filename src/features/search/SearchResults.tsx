@@ -9,7 +9,7 @@ import type { SearchResults } from 'src/types/shared';
 import { generalSearch } from './searchServices';
 import { GenericContainer } from 'shared/layout/container/GenericContainer';
 import { useLoading } from 'src/hooks/useLoading';
-import LoadingScreenWrapper from 'src/components/feedback/LoadingScreen';
+import LoadingScreenWrapper from 'src/components/ui/feedback/LoadingScreen';
 
 interface TabPanelProps {
     children?: React.ReactNode;

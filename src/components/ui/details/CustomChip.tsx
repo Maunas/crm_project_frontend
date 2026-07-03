@@ -7,7 +7,7 @@ import { getColorShades } from "src/utils/formatters";
 
 const CHIP_OPACITY = .3
 const CHIP_SIZES = {
-    "small": { padding: "1px 0px", gap: "2px", fontSize: ".813rem" },
+    "small": { padding: "1px 0px", gap: "2px", fontSize: ".7rem" },
     "medium": { padding: "5px", gap: ".25rem", fontSize: ".875rem" },
     "large": { padding: "6px", gap: ".25rem", fontSize: "1rem", fontWeight: 600 },
     "xlarge": { padding: "8px", gap: ".5rem", fontSize: "1.125rem", fontWeight: 600 }

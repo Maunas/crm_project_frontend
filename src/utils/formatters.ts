@@ -121,3 +121,12 @@ export const getColorShades = (color: string, theme: Theme) => {
         DARKER: hslStringToHex(theme.palette[themeColor].darker)
     }
 }
+
+export const decodeUrlFilename = (url: string) => {
+    const raw = url.split("/").pop() ?? url
+    try {
+        return decodeURIComponent(raw)
+    } catch {
+        return raw
+    }
+}

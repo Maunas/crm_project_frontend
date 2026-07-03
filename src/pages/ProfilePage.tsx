@@ -65,7 +65,7 @@ const ProfileDataSection = () => {
         <Paper elevation={1} sx={{ borderRadius: 2, overflow: "hidden" }}>
             <Box sx={{ px: 3, py: 2, bgcolor: "primary.main", color: "primary.contrastText", display: "flex", alignItems: "center", gap: 1.5 }}>
                 <PersonOutlineIcon fontSize="small" />
-                <Typography variant="subtitle1" fontWeight={600}>Datos personales</Typography>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Datos personales</Typography>
             </Box>
             <Box sx={{ p: 3 }}>
                 <form onSubmit={handleSubmit(onSubmit)} noValidate>
@@ -126,7 +126,7 @@ const ChangePasswordSection = () => {
         <Paper elevation={1} sx={{ borderRadius: 2, overflow: "hidden" }}>
             <Box sx={{ px: 3, py: 2, bgcolor: "primary.main", color: "primary.contrastText", display: "flex", alignItems: "center", gap: 1.5 }}>
                 <LockOutlinedIcon fontSize="small" />
-                <Typography variant="subtitle1" fontWeight={600}>Cambiar contraseña</Typography>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Cambiar contraseña</Typography>
             </Box>
             <Box sx={{ p: 3 }}>
                 <form onSubmit={handleSubmit(onSubmit)} noValidate>
@@ -154,7 +154,7 @@ const ChangePasswordSection = () => {
 export const ProfilePage = () => {
     return (
         <Box sx={{ maxWidth: 640, mx: "auto", py: 4, px: 2 }}>
-            <Typography variant="h5" fontWeight={700} mb={3}>Mi perfil</Typography>
+            <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>Mi perfil</Typography>
             <Stack spacing={3}>
                 <ProfileDataSection />
                 <ChangePasswordSection />

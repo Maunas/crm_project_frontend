@@ -56,12 +56,13 @@ export const createFormDataFromLead = (data: LeadPostForm) => {
     const dataValues: LeadPostValue[] = []
 
     for (const fieldValue of data.values) {
-        if (fieldValue.fieldData.field_type_code !== "FILE") {
+        if (fieldValue.fieldData.field_type_code !== "FILE" || typeof fieldValue?.value === "number") {
             dataValues.push({ field_id: fieldValue.field_id, value: fieldValue.value })
             continue
         }
+        console.log(fieldValue.value)
         //Si es un string, no se ha modificado el file, se envia solo en el cuerpo principal
-        if (typeof fieldValue?.value === "string" || typeof fieldValue?.value === "number") {
+        if (!fieldValue.value || typeof fieldValue?.value === "string") {
             dataValues.push({ field_id: fieldValue.field_id, value: fieldValue.value })
             continue
         }

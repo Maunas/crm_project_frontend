@@ -151,7 +151,7 @@ export const LeadFieldContent = (props: LeadFieldProps) => {
                 return <ListValues value={Array.isArray(leads) ? leads : []} idFieldValue={fieldValue?.id}
                     type="Lead" isNav />
 
-            case "FILE": return <ModalValue value={`${value}`} idModal={`file-${fieldValue?.id}`}
+            case "FILE": return <ModalValue value={`${value}`} idModal={`file-${fieldValue?.id}`} size="small"
                 modalProps={modalProps} type={code} subtype={subtypeCode!} />
 
             default: return `${value}`

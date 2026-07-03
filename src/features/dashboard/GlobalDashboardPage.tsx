@@ -7,7 +7,7 @@ import {
 import { BusinessOutlined, GroupOutlined, LeaderboardOutlined, SearchOutlined } from "@mui/icons-material"
 import { getAdminDashboard, type AdminDashboard } from "src/features/dashboard/dashboardServices"
 import { showCommonErrorToast } from "src/utils/feedback"
-import { UserAvatar } from "src/components/ui/UserAvatar"
+import { UserAvatar } from "src/components/ui/details/UserAvatar"
 
 // ── Header card ───────────────────────────────────────────────────────────────
 function DashboardHeader() {
@@ -23,12 +23,12 @@ function DashboardHeader() {
                 p: 3,
             }}
         >
-            <Stack direction="row" alignItems="center" spacing={2}>
+            <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
                 <Box sx={{ bgcolor: "rgba(255,255,255,0.15)", borderRadius: 2, p: 1.2, display: "flex" }}>
                     <BusinessOutlined sx={{ fontSize: 32 }} />
                 </Box>
                 <Box>
-                    <Typography variant="h5" fontWeight={800} lineHeight={1}>Panel Global</Typography>
+                    <Typography variant="h5" sx={{ fontWeight: 800, lineHeight: 1 }}>Panel Global</Typography>
                     <Typography variant="body2" sx={{ opacity: 0.8, mt: 0.3 }}>
                         Vista de administración del sistema
                     </Typography>
@@ -42,10 +42,10 @@ function DashboardHeader() {
 function StatCard({ label, value, icon, color }: { label: string; value: number; icon: React.ReactNode; color: string }) {
     return (
         <Paper variant="outlined" sx={{ flex: 1, p: 2.5, borderRadius: 2, borderLeft: `4px solid ${color}` }}>
-            <Stack direction="row" alignItems="center" spacing={1.5}>
+            <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
                 <Box sx={{ color, bgcolor: `${color}18`, borderRadius: 1.5, p: 1, display: "flex" }}>{icon}</Box>
                 <Box>
-                    <Typography variant="h4" fontWeight={800} lineHeight={1}>{value}</Typography>
+                    <Typography variant="h4" sx={{ fontWeight: 800, lineHeight: 1 }}>{value}</Typography>
                     <Typography variant="caption" color="text.secondary">{label}</Typography>
                 </Box>
             </Stack>
@@ -95,7 +95,7 @@ export function GlobalDashboardPage() {
     const maxLeads = Math.max(...data.orgs.map(o => o.total_leads), 1)
 
     return (
-        <Stack spacing={3} p={3}>
+        <Stack spacing={3} sx={{ p: 3 }}>
             {/* Header card */}
             <DashboardHeader />
 
@@ -109,13 +109,13 @@ export function GlobalDashboardPage() {
             {/* Tabla de organizaciones */}
             <Paper variant="outlined" sx={{ borderRadius: 2, overflow: "hidden" }}>
                 {/* Header */}
-                <Box px={4} pt={4} pb={3} sx={{ borderBottom: `1px solid ${palette.divider}` }}>
-                    <Stack direction="row" alignItems="center" justifyContent="space-between" flexWrap="wrap" gap={3}>
+                <Box sx={{ px: 4, pt: 4, pb: 3, borderBottom: `1px solid ${palette.divider}` }}>
+                    <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 3 }}>
                         <Box>
-                            <Typography variant="h4" fontWeight={800} lineHeight={1.1}>
+                            <Typography variant="h4" sx={{ fontWeight: 800, lineHeight: 1.1 }}>
                                 Organizaciones
                             </Typography>
-                            <Typography variant="body2" color="text.secondary" mt={0.8}>
+                            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.8 }}>
                                 {filtered.length} de {data.orgs.length} registradas
                             </Typography>
                         </Box>
@@ -155,24 +155,24 @@ export function GlobalDashboardPage() {
                                 <TableRow key={org.org_id} hover>
                                     {/* Organización */}
                                     <TableCell>
-                                        <Stack direction="row" alignItems="center" spacing={1.2}>
+                                        <Stack direction="row" spacing={1.2} sx={{ alignItems: "center" }}>
                                             <Box sx={{
                                                 width: 32, height: 32, borderRadius: 1.5, flexShrink: 0,
                                                 bgcolor: `${palette.primary.main}18`,
                                                 display: "flex", alignItems: "center", justifyContent: "center",
                                             }}>
-                                                <Typography variant="caption" fontWeight={700} sx={{ color: palette.primary.main }}>
+                                                <Typography variant="caption" sx={{ fontWeight: 700, color: palette.primary.main }}>
                                                     {org.org_name.charAt(0).toUpperCase()}
                                                 </Typography>
                                             </Box>
-                                            <Typography variant="body2" fontWeight={500}>{org.org_name}</Typography>
+                                            <Typography variant="body2" sx={{ fontWeight: 500 }}>{org.org_name}</Typography>
                                         </Stack>
                                     </TableCell>
 
                                     {/* Propietario */}
                                     <TableCell>
                                         {org.owner_name ? (
-                                            <Stack direction="row" alignItems="center" spacing={1}>
+                                            <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
                                                 <UserAvatar name={org.owner_name} size={26} tooltip />
                                                 <Typography variant="body2" color="text.secondary">{org.owner_name}</Typography>
                                             </Stack>
@@ -188,8 +188,8 @@ export function GlobalDashboardPage() {
 
                                     {/* Leads con barra */}
                                     <TableCell align="right">
-                                        <Stack alignItems="flex-end" spacing={0.4}>
-                                            <Typography variant="body2" fontWeight={600}>{org.total_leads}</Typography>
+                                        <Stack spacing={0.4} sx={{ alignItems: "flex-end" }}>
+                                            <Typography variant="body2" sx={{ fontWeight: 600 }}>{org.total_leads}</Typography>
                                             <Box sx={{ width: 64, height: 5, bgcolor: "action.hover", borderRadius: 3, overflow: "hidden" }}>
                                                 <Box sx={{
                                                     height: "100%",
@@ -212,7 +212,7 @@ export function GlobalDashboardPage() {
                         {filtered.length === 0 && (
                             <TableRow>
                                 <TableCell colSpan={5} align="center">
-                                    <Typography variant="body2" color="text.secondary" py={3}>
+                                    <Typography variant="body2" color="text.secondary" sx={{ py: 3 }}>
                                         {search ? "Sin resultados para la búsqueda" : "Sin organizaciones"}
                                     </Typography>
                                 </TableCell>

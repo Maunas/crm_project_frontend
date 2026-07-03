@@ -32,7 +32,7 @@ function CreateOrgCard({ onSuccess }: { onSuccess: () => void }) {
         <Card variant="outlined" sx={{ flex: 1 }}>
             <CardContent>
                 <Stack spacing={2}>
-                    <Stack direction="row" spacing={1} alignItems="center">
+                    <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
                         <AddBusinessOutlined color="primary" />
                         <Typography variant="h6">Crear organizacion</Typography>
                     </Stack>
@@ -93,7 +93,7 @@ function JoinOrgCard({ onSuccess }: { onSuccess: () => void }) {
         <Card variant="outlined" sx={{ flex: 1 }}>
             <CardContent>
                 <Stack spacing={2}>
-                    <Stack direction="row" spacing={1} alignItems="center">
+                    <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
                         <GroupAddOutlined color="primary" />
                         <Typography variant="h6">Unirse con token</Typography>
                     </Stack>
@@ -158,16 +158,16 @@ export function OnboardingPage() {
             p: 3, bgcolor: "background.default",
         }}>
             <Stack spacing={3} sx={{ width: "100%", maxWidth: 700 }}>
-                <Stack spacing={0.5} alignItems="center">
-                    <Typography variant="h4" fontWeight={700}>
+                <Stack spacing={0.5} sx={{ alignItems: "center" }}>
+                    <Typography variant="h4" sx={{ fontWeight: 700 }}>
                         Bienvenido, {user.name}!
                     </Typography>
-                    <Typography variant="body1" color="text.secondary" textAlign="center">
+                    <Typography variant="body1" color="text.secondary" sx={{ textAlign: "center" }}>
                         Para continuar, crea tu organizacion o unite a una existente con un token de invitacion.
                     </Typography>
                 </Stack>
 
-                <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems="stretch">
+                <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ alignItems: "stretch" }}>
                     <CreateOrgCard onSuccess={handleSuccess} />
                     <Divider orientation="vertical" flexItem sx={{ display: { xs: "none", sm: "block" } }} />
                     <JoinOrgCard onSuccess={handleSuccess} />

@@ -1,7 +1,7 @@
 # CRM Project Frontend - Agent Instructions
 
 ## Project Overview
-CRM project frontend, with React 19 + TypeScript + Vite, MUI v9, React Router v7, and React Hook Form. Pure Vite SPA — do not use Next.js patterns.
+CRM project frontend, with React 19 + TypeScript + Vite, MUI v9.1.0, React Router v7, and React Hook Form. Pure Vite SPA — do not use Next.js patterns.
 
 ## Commands
 ```bash
@@ -55,6 +55,19 @@ src/features/
   search/         - Global search
 ```
 
+### UI Components Structure
+```
+src/components/
+  layout/container  - Common Containers, Modals, Papers and Sidebars
+  ui/
+    buttons/        - Common Buttons, IconButtons, Common Icons
+    details/        - Components for showing information
+    feedback/       - Toasts, Confirmation Dialogs, Loading Screens
+    forms/          - Custom Inputs, FormFeedback
+    lists/          - Custom icons, pagination and list/table items
+    modals/         - Excel Formula Helper, other common modals
+```
+
 ### Common Patterns
 - **Custom hooks** in `src/hooks/` for reusable logic (pagination, modal, loading, debounce, drag-drop)
 - **Service files** per feature (`*Service.ts`, `*Services.ts`) for API calls
@@ -84,11 +97,12 @@ No test framework configured yet.
 
 ## Tasks
 - After finishing the entire prompt, use the lint and typecheck command, and fix only the alerts corresponding to the modified files, don't touch any other file
-- Before creating a new component, check if a similar one aleready exists inside `src/components`
+- Before creating a new component, or using a Mui component, check if a similar one already exists inside `src/components`. If you need to update them, ask first
 - If a task's scope is ambiguous or requires touching more than ~3-4 files, stop and confirm before proceeding
 - Always use pnpm, never modify pnpm-lock.yaml manually
 - If the change affects UI, mentally verify it against web-design-guidelines before marking the task complete
 - User-facing text (labels, buttons, toasts, validation messages), and comments must be in Spanish. Code in English.
+- Use the updated MUI 9.1.0 docs before using one of its components, or by using context7 MCP
 
 ## Conventions
 - Use existing controlled wrappers (ControlledAutocomplete, etc.) instead of wiring raw MUI inputs with register/Controller directly
@@ -103,7 +117,7 @@ No test framework configured yet.
 
 ## Docs
 - When you need to search docs, use Context7 if available
-- Save a short summary of each change inside a document in the `src/logs` folder, one file per date
+- Save a short summary of each change inside a document in the `src/logs` folder, one file per date. If there is already a file for the current date, append it to the end of the document, in UTF-8
 
 ## Skills
 - **frontend-design**: apply by default when creating or redesigning UI, not only when explicitly requested.
