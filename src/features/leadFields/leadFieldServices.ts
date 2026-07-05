@@ -80,3 +80,8 @@ export const enableBulkLeadField = async (ids: number[]): Promise<BulkEnableResp
     const leadField = await axiosCRM.post(`/lead_fields/bulk-active`, { ids });
     return leadField.data;
 };
+
+export const updateLeadFieldTitle = async (titleOrder: number | null, id: number): Promise<LeadFieldDetailed> => {
+    const leadField = await axiosCRM.put(`lead_fields/${id}`, { "title_order": titleOrder });
+    return leadField.data;
+};

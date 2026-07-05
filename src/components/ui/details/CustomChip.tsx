@@ -5,9 +5,9 @@ import type { OverridableComponent } from "@mui/material/OverridableComponent";
 import { styled } from "@mui/material/styles";
 import { getColorShades } from "src/utils/formatters";
 
-const CHIP_OPACITY = .3
+const CHIP_OPACITY = .25
 const CHIP_SIZES = {
-    "small": { padding: "1px 0px", gap: "2px", fontSize: ".7rem" },
+    "small": { padding: "1px 0px", gap: "2px", fontSize: ".75rem" },
     "medium": { padding: "5px", gap: ".25rem", fontSize: ".875rem" },
     "large": { padding: "6px", gap: ".25rem", fontSize: "1rem", fontWeight: 600 },
     "xlarge": { padding: "8px", gap: ".5rem", fontSize: "1.125rem", fontWeight: 600 }
@@ -31,7 +31,7 @@ const CustomChip = memo(styled(Chip, {
             border: "1px solid",
             borderRadius: ".75rem",
             backgroundColor: theme.alpha(paletteColors.LIGHT, CHIP_OPACITY),
-            borderColor: paletteColors.MAIN,
+            borderColor: theme.alpha(paletteColors.MAIN, .5),
             color: theme.palette.contrast[900],
             ...sizeObject,
         }, {
@@ -41,7 +41,7 @@ const CustomChip = memo(styled(Chip, {
         //Invierte los tonos en darkmode
         theme.applyStyles('dark', {
             backgroundColor: theme.alpha(paletteColors.DARKER, CHIP_OPACITY),
-            color: theme.palette.contrast[50],
+            color: theme.palette.common.white,
         }),
         ]
         //Se castea a OverridableComponent para permitir el uso de los props component y to para RouterLink

@@ -12,16 +12,6 @@ const getGradient = (theme: Theme, colorShades: ColorShades) => ({
         145deg,
         ${theme.alpha(colorShades.MAIN, .1)} 0%,
         ${theme.alpha(colorShades.DARKER, .05)} 50%,
-        transparent 100%)`,
-    lightRev: `linear-gradient(
-        300deg,
-        ${theme.alpha(colorShades.LIGHT, .2)} 0%, 
-        ${theme.alpha(colorShades.LIGHTER, .1)} 50%,
-        transparent 100%)`,
-    darkRev: `linear-gradient(
-        300deg,
-        ${theme.alpha(colorShades.MAIN, .1)} 0%,
-        ${theme.alpha(colorShades.DARKER, .05)} 50%,
         transparent 100%)`
 })
 
@@ -82,7 +72,10 @@ export const ColoredAccordionSummary = styled(AccordionSummary, {
         return ([
             {
                 overflow: "hidden",
-                backgroundImage: gradient.lightRev,
+                backgroundImage: gradient.light,
+                "&.Mui-expanded": {
+                    borderBottom: `1px solid ${theme.palette.divider}`,
+                },
                 ...(isFirst ? {
                     borderTopLeftRadius: radius,
                     borderTopRightRadius: radius,
@@ -95,7 +88,7 @@ export const ColoredAccordionSummary = styled(AccordionSummary, {
                 } : {}),
             },
             theme.applyStyles("dark", {
-                backgroundImage: gradient.darkRev
+                backgroundImage: gradient.dark
             })
         ])
     }

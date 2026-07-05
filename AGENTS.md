@@ -108,6 +108,7 @@ No test framework configured yet.
 - Use existing controlled wrappers (ControlledAutocomplete, etc.) instead of wiring raw MUI inputs with register/Controller directly
 - API errors surface via the toast helpers in src/utils/feedback.ts — don't add ad-hoc alert() or inline error states unless the pattern doesn't fit.
 - Use theme color tokens (`theme.palette`) instead of hardcoded color values. If the color comes from the backend, use the `getColorShades` util
+- If there is a line or block of code a JR Developer wouldn't understand easily, leave a short, concise comment in Spanish explaining it, with no emojis
 
 ## Dont's
 - Don't install new dependencies unless said otherwise. If there is no choice, ask first
