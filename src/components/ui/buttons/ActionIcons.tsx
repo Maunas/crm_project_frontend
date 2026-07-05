@@ -49,12 +49,13 @@ const ACTION_ICONS = {
     OPEN_LIST: <KeyboardArrowDownIcon sx={{ display: "block" }} />,
     CLOSE_LIST: <KeyboardArrowUpIcon sx={{ display: "block" }} />,
     DRAG: <DragIndicatorIcon sx={{ display: "block" }} />,
-    EDIT_TEXT: <DriveFileRenameOutlineIcon sx={{ display: "block" }} />,
+    RENAME: <DriveFileRenameOutlineIcon sx={{ display: "block" }} />,
     DUPLICATE: <ContentCopyIcon sx={{ display: "block" }} />,
     AUTOMATE: <AutoFixHighIcon sx={{ display: "block" }} />,
     DOWNLOAD: <DownloadIcon sx={{ display: "block" }} />,
     IMPORT: <UploadIcon sx={{ display: "block" }} />,
-    PARAMETERS: <TuneIcon sx={{ display: "block" }} />
+    PARAMETERS: <TuneIcon sx={{ display: "block" }} />,
+
 }
 
 export type ActionType = keyof typeof ACTION_ICONS

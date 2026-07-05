@@ -6,10 +6,11 @@ import { setFormErrors } from "src/utils/forms"
 import { OPERATORS as OP } from "src/mocks/operators"
 import type { FieldArrayWithId, UseFormSetError } from "react-hook-form"
 
-
-const NOT_TITLE_TYPES = ["LEAD", "FILE", "BOOL", "HTML", "MARKDOWN",
-    "SELECTOR_MULTIPLE", "CHECKBOX_MULTIPLE",
-    "PASSWORD", "CREDIT_CARD_SIMPLE"]
+const NOT_TITLE_TYPES = [
+    "FILE", "BOOL", "HTML", "MARKDOWN",
+    "SELECTOR_MULTIPLE", "CHECKBOX_MULTIPLE", "LEAD",
+    "PASSWORD", "CREDIT_CARD_SIMPLE"
+]
 
 /**Revisa que el valor no sea parte de los tipos bloqueados, y que tenga un valor o nomenclador.*/
 const isTitleValid = (fieldValue: LeadFieldValue) => {
@@ -27,8 +28,8 @@ const isTitleValid = (fieldValue: LeadFieldValue) => {
 export const getLeadTitleArray = (lead: Lead | LeadDetailed, short: boolean = false) => {
 
     const titleArray = lead.field_values
-        .filter(fv => fv.field.title_order != null && isTitleValid(fv))
-        .sort((a, b) => a.field.title_order - b.field.title_order)
+        .filter(fv => fv.field.title_order !== null && isTitleValid(fv) && fv.field.active && fv.active)
+        .sort((a, b) => a.field.title_order! - b.field.title_order!)
         .map(fv => fv.value ?? fv.nomenclator_items[0].value!) //Si es selector, será único gracias a isTitleValid
 
     if (titleArray.length === 0) return ["Sin título"]

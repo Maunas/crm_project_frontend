@@ -17,6 +17,7 @@ import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom'
 import { Typography, ButtonGroup, Link, Breadcrumbs, Stack } from '@mui/material'
 import { GenericPaperColoredSection } from 'src/components/layout/container/ColoredHeaders'
+import { LeadTitleConfigSidebar } from 'src/features/lead/leadTitleConfig/LeadTitleConfigSidebar'
 
 export const CampaignDetails = () => {
     const { id } = useParams()
@@ -76,6 +77,8 @@ export const CampaignDetails = () => {
 
     const [deletingCmp, setDeletingCmp] = useState<CampaignDetailed | null>(null)
 
+    const [titleConfigOpen, setTitleConfigOpen] = useState(false)
+
     return (
         <LoadingScreenWrapper loading={loading}>
             <ContainerWithSidebar isSidebarOpen={Boolean(sidebarMode)} closeSidebar={closeSidebar}
@@ -107,6 +110,9 @@ export const CampaignDetails = () => {
                                             <ButtonGroup sx={{ marginLeft: "auto" }}>
                                                 <CommonButton component={RouterLink} variant='outlined' to={`/leads?workspace=${campaign.workspace_id}&campaign=${campaign.id}`}
                                                     actionType="LIST" onlyTooltip color="secondary">Ver Leads</CommonButton>
+                                                <CommonButton onClick={() => setTitleConfigOpen(true)} variant='outlined' color="secondary" actionType="RENAME" onlyTooltip>
+                                                    Configurar título
+                                                </CommonButton>
                                                 <CommonButton component={RouterLink} variant='outlined' color="secondary" to={`/automations/?campaign=${campaign.id}`}
                                                     actionType="AUTOMATE" onlyTooltip>Automatizaciones</CommonButton>
                                                 <HandleActiveButton active={campaign.active} handleActive={() => setDeletingCmp(campaign)} onlyTooltip />
@@ -128,6 +134,7 @@ export const CampaignDetails = () => {
                 </Stack>
                 <DisableConfirmDialog idModal='conf-delete-cmp-det' entity={deletingCmp} clearEntity={() => setDeletingCmp(null)} entityTypeName="la campaña"
                     onConfirm={() => handleActiveCampaign(deletingCmp!)} />
+                <LeadTitleConfigSidebar open={titleConfigOpen} onClose={() => setTitleConfigOpen(false)} campaignId={campaign?.id} />
             </ContainerWithSidebar >
         </LoadingScreenWrapper >
     )

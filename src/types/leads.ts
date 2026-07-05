@@ -15,6 +15,7 @@ export interface LeadPost {
 
 export interface Lead {
   id: number;
+  active: boolean;
   campaign_id?: number;
   field_values: LeadFieldValue[];
   organization_id?: number,

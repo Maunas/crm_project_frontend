@@ -18,6 +18,7 @@ export interface ExcelFormulaTemplate {
 
 export interface LeadFieldValue {
   id: number;
+  active: boolean;
   field_id: number;
   value?: string | null;
   lead_id: number;
@@ -57,12 +58,13 @@ export interface LeadFieldPost {
 
 export interface LeadField extends Omit<LeadFieldPost, "lead_field_section_id"> {
   id: number;
+  active: boolean;
   name: string;
   configuration?: string;
   lead_field_section: LeadFieldSection;
   organization_id: number;
   order: number;
-  title_order: number;
+  title_order: number | null;
   field_type_code: string;
   field_type: LeadFieldType,
   field_subtype: LeadFieldType | null,
