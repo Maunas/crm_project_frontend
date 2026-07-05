@@ -2,9 +2,8 @@ import { useCallback, useEffect, useState } from 'react'
 import { useListPagination } from 'src/hooks/useListPagination'
 import type { LeadFlowDetailed } from 'src/types/leadFlow'
 import type { Paginable } from 'src/types/shared'
-import { Avatar, Grid, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
-import { CustomListItem, CustomListItemAvatar } from 'shared/ui/lists/CustomListItem'
-import type { LeadPropertiesItem } from '../leadProperties/leadPropertiesList'
+import { Grid, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
+import { CustomListItem } from 'shared/ui/lists/CustomListItem'
 import { Link, useNavigate } from 'react-router-dom'
 import CommonButton from 'shared/ui/buttons/CommonButton'
 import PaginationComponent from 'shared/ui/lists/PaginationComponent'
@@ -12,16 +11,12 @@ import { CommonIconButton } from 'shared/ui/buttons/CommonIconButton'
 import { EnabledIcon } from 'shared/ui/lists/Icons'
 import { deleteLeadFlow, enableLeadFlow, getLeadFlows } from './leadFlowServices/FlowService'
 import { useLoading } from 'src/hooks/useLoading'
-import LoadingScreenWrapper from 'shared/feedback/LoadingScreen'
-import { DisableConfirmDialog } from 'shared/feedback/ConfirmationDialog'
+import LoadingScreenWrapper from 'src/components/ui/feedback/LoadingScreen'
+import { DisableConfirmDialog } from 'src/components/ui/feedback/ConfirmationDialog'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { useUserContext } from 'src/stores/UserContext'
 
-interface FlowListProps {
-    closeSidebar: () => void,
-    property: LeadPropertiesItem | null
-}
-export const LeadFlowList = ({ closeSidebar, property }: FlowListProps) => {
+export const LeadFlowList = () => {
 
     const { activeOrg } = useUserContext()
 
@@ -43,13 +38,8 @@ export const LeadFlowList = ({ closeSidebar, property }: FlowListProps) => {
     return (
         <Stack spacing={2}>
             <Stack spacing={1} direction="row" useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
-                {property &&
-                    <CustomListItemAvatar color={property.color}><Avatar variant="rounded" >
-                        {property.icon}
-                    </Avatar></CustomListItemAvatar>}
-                <Typography variant="h3">Lista de Flujos de Estado</Typography>
                 {(flows?.items && flows.items.length > 0) &&
-                    <CommonButton actionType="CREATE" onClick={() => nav("/lead-flow-editor")} sx={{ marginLeft: "auto" }} size="small" onlyTooltip>
+                    <CommonButton actionType="CREATE" component={Link} to="/lead-flow-editor" >
                         Abrir Editor
                     </CommonButton>}
             </Stack>
@@ -58,18 +48,15 @@ export const LeadFlowList = ({ closeSidebar, property }: FlowListProps) => {
                     <Stack spacing={2}>
                         <LeadFlowListData flows={flows.items} updateList={() => fetchFlows(fetchPage, pageSize)} />
                         <PaginationComponent {...pageComponentProps} />
-                        <CommonButton actionType="CLOSE" onClick={closeSidebar} sx={{ alignSelf: "end" }}>Cerrar</CommonButton>
                     </Stack>
                     :
                     <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center", height: "30rem" }}>
                         <Typography variant="h4">No se han encontrado flujos de estado...</Typography>
                         <CommonButton actionType="CREATE" onClick={() => nav("/lead-flow-editor")} variant="contained">Abrir Editor</CommonButton>
-                        <CommonButton actionType="CLOSE" variant="outlined" onClick={closeSidebar} sx={{ alignSelf: "end" }}>Cerrar</CommonButton>
                     </Stack>
                 }
             </LoadingScreenWrapper>
         </Stack>
-
     )
 }
 

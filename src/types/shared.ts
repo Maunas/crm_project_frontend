@@ -2,6 +2,7 @@ import type { Path } from "react-hook-form";
 import type { Lead } from "./leads";
 import type { Campaign, Workspace } from "./campaigns";
 import type { Nomenclator, NomenclatorItem } from "./nomenclators";
+import type { UserData } from "./users";
 
 export interface DisableableEntity {
   active?: boolean,
@@ -27,11 +28,27 @@ export interface Metadata {
   active: boolean;
   created_by: number;
   updated_by?: number;
+  creator?: UserData;
+  updater?: UserData | null;
+}
+
+export interface Creator {
+  id: number;
+  name: string | null;
+  email: string | null;
+}
+
+export interface Updater {
+  id: number;
+  name: string | null;
+  email: string | null;
 }
 
 /**
  * Contienen los parámetros permitidos de cada request.
  */
+
+
 export interface OrderParams {
   order_by?: number | string | null,
   ascending?: boolean
@@ -59,6 +76,16 @@ export interface LeadFlowParams extends ListParams {
 }
 export interface FlowStateParams extends LeadFlowParams {
   lead_flow_id: number
+}
+
+export interface FieldAutomationParams extends ListParams {
+  campaign_id?: number
+}
+
+export interface SystemAuditParams extends ListParams {
+  start_date?: string,
+  end_date?: string,
+  date_field?: string,
 }
 
 /**
@@ -133,7 +160,10 @@ export interface Dictionary {
   "routing_condition_types"?: DictionaryItem[]
   "team_roles"?: DictionaryItem[]
   "lead_states_categories"?: DictionaryItem[],
-  lead_view_visibilities?: DictionaryItem[]
+  "lead_view_visibilities"?: DictionaryItem[],
+  "automation_compatibility_matrix"?: AutomationCompatibility[],
+  "entities"?: DictionaryItem[],
+  "system_audit_log_actions"?: DictionaryItem[],
 }
 
 export interface DictionaryItem {
@@ -144,3 +174,18 @@ export interface DictionaryItem {
 export type DateFormat = "dateTime" | "dateTimeLong" | "date" | "dateLong" | "time" | "custom"
 
 export type OptionWithAction<T> = ((T & { isAction: boolean }) | { id: string, name: string, isAction: boolean })
+
+export interface AutomationCompatibility {
+  "field_type": {
+    "operators": string[],
+    "actions": string[],
+  }
+}
+
+export interface ColorShades {
+  LIGHTER: string,
+  LIGHT: string,
+  MAIN: string,
+  DARK: string,
+  DARKER: string,
+}

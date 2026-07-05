@@ -23,8 +23,10 @@ const deleteParam = (setParam: SetURLSearchParams) => {
     }, { replace: true })
 }
 
+
+
 //Se recibe el setParams para que el padre pueda manejar parámetros no relacionados a sidebar.
-export const useSidebar = <T>(entityIdField: keyof T, params?: URLSearchParams, setParams?: SetURLSearchParams,
+export const useSidebar = <T>(entityIdField?: keyof T, params?: URLSearchParams, setParams?: SetURLSearchParams,
     callback?: (id: number) => Promise<T>, detailsModeName?: string
 ) => {
     //setParams, al ser recibido como prop, es inestable y causa re-renders innecesarios.
@@ -35,7 +37,7 @@ export const useSidebar = <T>(entityIdField: keyof T, params?: URLSearchParams, 
     }, [setParams])
 
     const updateParams = useCallback((mode: string | null, entity: T | null) => {
-        if (!setParamsRef.current || !detailsModeName) return
+        if (!setParamsRef.current || !detailsModeName || !entityIdField) return
 
         if (entity && mode === detailsModeName) addParam(entity, entityIdField, setParamsRef.current)
         else deleteParam(setParamsRef.current)

@@ -1,15 +1,16 @@
 import type { LeadPostForm } from "./leadForm/LeadForm"
-import type { ErrorBody, ErrorMessage } from "src/types/shared"
 import type { Lead, LeadDetailed, LeadPostValue } from "src/types/leads"
 import type { LeadField, LeadFieldValue } from "src/types/leadFields"
+import type { ErrorBody, ErrorMessage } from "src/types/shared"
 import { setFormErrors } from "src/utils/forms"
-import type { FieldArrayWithId, UseFormSetError } from "react-hook-form"
 import { OPERATORS as OP } from "src/mocks/operators"
+import type { FieldArrayWithId, UseFormSetError } from "react-hook-form"
 
-
-const NOT_TITLE_TYPES = ["LEAD", "FILE", "BOOL", "HTML", "MARKDOWN",
-    "SELECTOR_MULTIPLE", "CHECKBOX_MULTIPLE",
-    "PASSWORD", "CREDIT_CARD_SIMPLE"]
+const NOT_TITLE_TYPES = [
+    "FILE", "BOOL", "HTML", "MARKDOWN",
+    "SELECTOR_MULTIPLE", "CHECKBOX_MULTIPLE", "LEAD",
+    "PASSWORD", "CREDIT_CARD_SIMPLE"
+]
 
 /**Revisa que el valor no sea parte de los tipos bloqueados, y que tenga un valor o nomenclador.*/
 const isTitleValid = (fieldValue: LeadFieldValue) => {
@@ -27,8 +28,8 @@ const isTitleValid = (fieldValue: LeadFieldValue) => {
 export const getLeadTitleArray = (lead: Lead | LeadDetailed, short: boolean = false) => {
 
     const titleArray = lead.field_values
-        .filter(fv => fv.field.title_order != null && isTitleValid(fv))
-        .sort((a, b) => a.field.title_order - b.field.title_order)
+        .filter(fv => fv.field.title_order !== null && isTitleValid(fv) && fv.field.active && fv.active)
+        .sort((a, b) => a.field.title_order! - b.field.title_order!)
         .map(fv => fv.value ?? fv.nomenclator_items[0].value!) //Si es selector, será único gracias a isTitleValid
 
     if (titleArray.length === 0) return ["Sin título"]
@@ -56,12 +57,13 @@ export const createFormDataFromLead = (data: LeadPostForm) => {
     const dataValues: LeadPostValue[] = []
 
     for (const fieldValue of data.values) {
-        if (fieldValue.fieldData.field_type_code !== "FILE") {
+        if (fieldValue.fieldData.field_type_code !== "FILE" || typeof fieldValue?.value === "number") {
             dataValues.push({ field_id: fieldValue.field_id, value: fieldValue.value })
             continue
         }
+        console.log(fieldValue.value)
         //Si es un string, no se ha modificado el file, se envia solo en el cuerpo principal
-        if (typeof fieldValue?.value === "string" || typeof fieldValue?.value === "number") {
+        if (!fieldValue.value || typeof fieldValue?.value === "string") {
             dataValues.push({ field_id: fieldValue.field_id, value: fieldValue.value })
             continue
         }

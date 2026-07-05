@@ -2,9 +2,10 @@ import { useCallback, useEffect, useState } from 'react'
 import { UpdateCampaignFormSidebar } from './CampaignForms'
 import { LeadFieldList } from '../leadFields/LeadFieldList'
 import ContainerWithSidebar from 'shared/layout/container/GenericContainer'
-import { DisableConfirmDialog } from 'shared/feedback/ConfirmationDialog'
+import { DisableConfirmDialog } from 'src/components/ui/feedback/ConfirmationDialog'
 import HandleActiveButton from 'shared/ui/buttons/HandleActiveButton'
-import LoadingScreenWrapper from 'shared/feedback/LoadingScreen'
+import LoadingScreenWrapper from 'src/components/ui/feedback/LoadingScreen'
+import GenericPaper from 'shared/layout/container/GenericPaper'
 import DetailsMetadata from 'shared/ui/details/DetailsMetadata'
 import TitleAndActive from 'shared/ui/details/TitleAndActive'
 import CommonButton from 'shared/ui/buttons/CommonButton'
@@ -14,7 +15,9 @@ import type { CampaignDetailed } from 'src/types/campaigns'
 import { disableCampaign, enableCampaign, getCampaign } from './campaignServices'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom'
-import { Typography, ButtonGroup, Link, Breadcrumbs, Stack, Divider } from '@mui/material'
+import { Typography, ButtonGroup, Link, Breadcrumbs, Stack } from '@mui/material'
+import { GenericPaperColoredSection } from 'src/components/layout/container/ColoredHeaders'
+import { LeadTitleConfigSidebar } from 'src/features/lead/leadTitleConfig/LeadTitleConfigSidebar'
 
 export const CampaignDetails = () => {
     const { id } = useParams()
@@ -74,51 +77,65 @@ export const CampaignDetails = () => {
 
     const [deletingCmp, setDeletingCmp] = useState<CampaignDetailed | null>(null)
 
+    const [titleConfigOpen, setTitleConfigOpen] = useState(false)
+
     return (
         <LoadingScreenWrapper loading={loading}>
-            <ContainerWithSidebar isSidebarOpen={Boolean(sidebarMode)} closeSidebar={closeSidebar} containerSize="xl" sidebarWidth='45rem'
+            <ContainerWithSidebar isSidebarOpen={Boolean(sidebarMode)} closeSidebar={closeSidebar}
+                containerSize="xl" sidebarWidth='45rem' noPaper
                 sidebarComponent={campaign &&
                     <UpdateCampaignFormSidebar existingCmp={campaign} closeSidebar={closeSidebar} updateCampaignData={updateCampaignData} />}
             >
-                <Stack spacing={3}>
-                    <Stack spacing={2}>
-                        <Breadcrumbs aria-label="breadcrumb">
-                            <Link component={RouterLink} to="/campaigns" underline="hover" color="inherit">
-                                Espacios de Trabajo
-                            </Link>
-                            {campaign &&
-                                <Typography sx={{ color: 'text.primary' }}>{campaign.name}</Typography>}
-                        </Breadcrumbs>
-                        {campaign &&
-                            <TitleAndActive active={campaign.active} >
-                                <Typography variant="h1">{campaign.name}</Typography>
-                            </TitleAndActive>
-                        }
-                    </Stack>
+                <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
+                    <Link component={RouterLink} to="/campaigns" underline="hover" color="inherit">
+                        Espacios de Trabajo
+                    </Link>
                     {campaign &&
-                        <Stack spacing={2} >
-                            {campaign.description &&
-                                <Typography variant="body1">{campaign.description}</Typography>
+                        <Typography sx={{ color: 'text.primary' }}>{campaign.name}</Typography>}
+                </Breadcrumbs>
+                <Stack spacing={3}>
+                    <GenericPaper>
+                        <Stack spacing={2}>
+                            {campaign &&
+                                <GenericPaperColoredSection isFirst color={campaign.active ? "success" : "error"}>
+                                    <Stack direction="row" spacing={2} useFlexGap sx={{ justifyContent: "space-between", flexWrap: "wrap" }}>
+                                        <TitleAndActive active={campaign.active} >
+                                            <Stack>
+                                                <Typography variant="h1">{campaign.name}</Typography>
+                                                {campaign.description &&
+                                                    <Typography variant="body1" color="textSecondary">{campaign.description}</Typography>}
+                                            </Stack>
+                                        </TitleAndActive>
+                                        <Stack spacing={2} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", ml: "auto" }}>
+                                            <ButtonGroup sx={{ marginLeft: "auto" }}>
+                                                <CommonButton component={RouterLink} variant='outlined' to={`/leads?workspace=${campaign.workspace_id}&campaign=${campaign.id}`}
+                                                    actionType="LIST" onlyTooltip color="secondary">Ver Leads</CommonButton>
+                                                <CommonButton onClick={() => setTitleConfigOpen(true)} variant='outlined' color="secondary" actionType="RENAME" onlyTooltip>
+                                                    Configurar título
+                                                </CommonButton>
+                                                <CommonButton component={RouterLink} variant='outlined' color="secondary" to={`/automations/?campaign=${campaign.id}`}
+                                                    actionType="AUTOMATE" onlyTooltip>Automatizaciones</CommonButton>
+                                                <HandleActiveButton active={campaign.active} handleActive={() => setDeletingCmp(campaign)} onlyTooltip />
+                                                <CommonButton onClick={() => handleSidebar("UPDATE_CMP", null)} actionType="MODIFY" onlyTooltip>Modificar</CommonButton>
+                                            </ButtonGroup>
+                                        </Stack>
+                                    </Stack>
+                                </GenericPaperColoredSection>
                             }
-                            <DetailsMetadata entity={campaign} />
-                            <Divider />
-                            <Stack spacing={2} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
-                                <Typography variant="h2">Acciones</Typography>
-                                <ButtonGroup sx={{ marginLeft: "auto" }}>
-                                    <HandleActiveButton active={campaign.active} handleActive={() => setDeletingCmp(campaign)} />
-                                    <CommonButton onClick={() => handleSidebar("UPDATE_CMP", null)} actionType="MODIFY">Modificar</CommonButton>
-                                    <CommonButton component={RouterLink} variant='outlined' to={`/leads?workspace=${campaign.workspace_id}&campaign=${campaign.id}`}
-                                        actionType="LIST">Ver Lista de Leads</CommonButton>
-                                </ButtonGroup>
-                            </Stack>
-                            <Divider />
-                            <LeadFieldList campaign={campaign} cmpSidebarMode={sidebarMode} closeCmpSidebar={closeSidebar} />
+                            {campaign && <>
+                                <DetailsMetadata entity={campaign} />
+                            </>}
                         </Stack>
-                    }
+                    </GenericPaper>
+                    {campaign &&
+                        <GenericPaper>
+                            <LeadFieldList campaign={campaign} cmpSidebarMode={sidebarMode} closeCmpSidebar={closeSidebar} />
+                        </GenericPaper>}
                 </Stack>
                 <DisableConfirmDialog idModal='conf-delete-cmp-det' entity={deletingCmp} clearEntity={() => setDeletingCmp(null)} entityTypeName="la campaña"
                     onConfirm={() => handleActiveCampaign(deletingCmp!)} />
+                <LeadTitleConfigSidebar open={titleConfigOpen} onClose={() => setTitleConfigOpen(false)} campaignId={campaign?.id} />
             </ContainerWithSidebar >
-        </LoadingScreenWrapper>
+        </LoadingScreenWrapper >
     )
 }

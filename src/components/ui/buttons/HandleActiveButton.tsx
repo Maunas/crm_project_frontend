@@ -1,7 +1,7 @@
-import CommonButton from './CommonButton';
+import CommonButton, { type CommonBtnProps } from './CommonButton';
 import type { ColorTypes } from 'src/types/mui-theme.d';
 
-interface DisableBtnProps {
+interface DisableBtnProps extends CommonBtnProps {
     active: boolean,
     handleActive: () => void,
     disableColor?: ColorTypes,

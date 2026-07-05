@@ -3,10 +3,10 @@ import { WorkspaceFormSidebar } from './WorkspaceForms';
 import { WorkspaceDetails } from './WorkspaceDetails'
 import { CreateCampaignFormSidebar } from 'features/campaigns/CampaignForms';
 import ContainerWithSidebar from 'shared/layout/container/GenericContainer';
-import { DisableConfirmDialog } from 'shared/feedback/ConfirmationDialog';
+import { DisableConfirmDialog } from 'src/components/ui/feedback/ConfirmationDialog';
 import { CommonIconButton } from 'shared/ui/buttons/CommonIconButton';
 import PaginationComponent from 'shared/ui/lists/PaginationComponent'
-import LoadingScreenWrapper from 'shared/feedback/LoadingScreen';
+import LoadingScreenWrapper from 'src/components/ui/feedback/LoadingScreen';
 import { CustomListItem } from 'shared/ui/lists/CustomListItem';
 import CommonButton from 'shared/ui/buttons/CommonButton';
 import { EnabledIcon } from 'shared/ui/lists/Icons';
@@ -136,7 +136,7 @@ export const WorkspaceList = () => {
                         {workspaces?.items && workspaces?.items?.length > 0 ?
                             <List>
                                 {workspaces?.items.map(wsp =>
-                                    <CustomListItem key={`wsp-${wsp.id}`} selected={wsp.id === selectedEntity?.id} disablePadding secondaryAction={
+                                    <CustomListItem key={`wsp-${wsp.id}`} isSelected={wsp.id === selectedEntity?.id} disablePadding secondaryAction={
                                         <Stack direction="row" sx={{ alignItems: "center" }}>
                                             <CommonIconButton actionType='DETAILS' title="Detalles" tooltipSize="small" size="small"
                                                 onClick={() => { handleSidebar("DETAILS_WSP", wsp) }} />

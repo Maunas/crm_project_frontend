@@ -1,0 +1,207 @@
+import { memo, useCallback, useRef, useState, type ReactNode } from "react"
+import CommonButton from "shared/ui/buttons/CommonButton"
+import { type DialogProps, ButtonGroup, Stack, LinearProgress, Typography } from "@mui/material"
+import GenericModal from "../../layout/container/GenericModal"
+import type { DisableableEntity } from "src/types/shared"
+import { useLoading } from "src/hooks/useLoading"
+import type { Path } from "react-hook-form"
+
+interface GenericConfirmDialogProps extends Omit<DialogProps, "open"> {
+    idModal: string,
+    openModalId?: string,
+    handleOpen?: (idModal: string) => void,
+    handleClose: () => void
+    open?: boolean,
+    onCancel?: () => void,
+    onConfirm: () => Promise<unknown>,
+    confirmTimeoutSec?: number,
+    noTimeout?: boolean,
+    confirmText?: string,
+    closeText?: string,
+    children?: ReactNode,
+}
+
+/**
+ * Componente de Dialog para confirmación, de uso genérico.
+ * @param onCancel Función a ejecutar al presionar el botón "Cerrar". Siempre cierra el modal al final.
+ * @param onConfirm Función a ejecutar al confirmar la acción. Se aplica por defecto tras un timeout, y cierra el modal.
+ * @param confirmTimeoutSec Tiempo de espera antes de ejecutar la confirmación. Se puede cancelar.
+ * @param noTimeout De ser true, se realiza la confirmación instantaneamente.
+ */
+export const GenericConfirmDialog = memo(({ idModal, open = false, openModalId, handleOpen, handleClose,
+    confirmTimeoutSec = 3, noTimeout = false, onCancel = () => { }, onConfirm, confirmText, closeText,
+    children, ...props
+}: GenericConfirmDialogProps) => {
+
+
+    const [count, setCount] = useState<number>(confirmTimeoutSec)
+    const [activeTimeout, setActiveTimeout] = useState<boolean>(false)
+    const currentTimeout = useRef<number | undefined>(undefined)
+    const currentInterval = useRef<number | undefined>(undefined)
+
+    const { fnWithLoading: confirmLoad, loading } = useLoading(onConfirm)
+
+    const handleDialogClose = useCallback(() => {
+        if (onCancel) onCancel()
+        handleClose()
+    }, [handleClose, onCancel])
+
+    const handleDialogConfirm = () => {
+        const finishTimeout = () => {
+            if (!confirmLoad) return
+            return confirmLoad()
+                .then(handleDialogClose)
+                .finally(cancelTimeout)
+        }
+
+        if (noTimeout) return finishTimeout()
+        setActiveTimeout(true)
+        currentTimeout.current = setTimeout(finishTimeout, confirmTimeoutSec * 1000)
+        currentInterval.current = setInterval(() => setCount(i => Math.max(0, i - .25)), 250)
+    }
+
+    const cancelTimeout = useCallback(() => {
+        clearTimeout(currentTimeout.current)
+        clearInterval(currentInterval.current)
+        currentTimeout.current = undefined
+        currentInterval.current = undefined
+        setCount(confirmTimeoutSec)
+        setActiveTimeout(false)
+    }, [confirmTimeoutSec])
+
+    const normalizedProgress = Math.min(((confirmTimeoutSec - count + .25) * 100 / confirmTimeoutSec), 100)
+
+    return (
+        <GenericModal idModal={idModal}
+            open={open}
+            openModalId={openModalId}
+            handleOpen={handleOpen}
+            handleClose={handleDialogClose}
+            showButton={false}
+            maxWidth="sm"
+            fullWidth
+            {...props}>
+            <Stack spacing={2}>
+                {children}
+                <ButtonGroup sx={{ alignSelf: "end" }}>
+                    <CommonButton variant="outlined" onClick={handleDialogClose} disabled={activeTimeout}>
+                        {closeText ?? "Cerrar"}
+                    </CommonButton>
+                    {(!activeTimeout || noTimeout) &&
+                        <CommonButton actionType="CHECK" onClick={handleDialogConfirm} loading={loading}>
+                            {confirmText ?? "Confirmar"}
+                        </CommonButton>
+                    }
+                    {(activeTimeout && !noTimeout) &&
+                        <CommonButton actionType="CLOSE" color="error" variant="outlined" onClick={cancelTimeout}
+                            sx={{ position: "relative", overflow: "hidden" }}>
+                            Cancelar ({Math.round(count)} s.)
+                            <LinearProgress
+                                variant="determinate"
+                                aria-busy color="error"
+                                value={normalizedProgress}
+                                sx={{ position: "absolute", bottom: 0, left: 0, width: "100%" }}
+                            />
+                        </CommonButton>
+                    }
+                </ButtonGroup>
+            </Stack>
+        </GenericModal>
+    )
+})
+
+
+interface DisableConfirmDialog<T extends DisableableEntity> extends Omit<DialogProps, "open"> {
+    entity: T | null,
+    nameField?: Path<T>,
+    clearEntity: () => void,
+    idModal: string,
+    onCancel?: () => void,
+    onConfirm: () => Promise<void>,
+    entityTypeName?: string,
+    onlyDelete?: boolean,
+}
+
+const DISABLE_TIMEOUT_SEC = 3
+
+/**
+ * Componente de Dialog de Confirmación, específicamente para habilitar/deshabilitar una entidad.
+ * @param onCancel Función a ejecutar al presionar el botón "Cerrar". Siempre cierra el modal al final.
+ * @param onConfirm Función a ejecutar al confirmar la acción. Se aplica por defecto tras un timeout, y cierra el modal.
+ * @param entityTypeName tipo de entidad, con su artículo. Ej: "la campaña"
+ * @param onlyDelete flag, modifica el contenido para solo mencionar la eliminación.
+ * 
+ * @example <DisableConfirmDialog idModal='conf-id' entity={deletingCmp} 
+ * clearEntity={() => setDeletingCmp(null)} entityTypeName="la campaña" 
+ * onConfirm={() => handleActiveCampaign(deletingCmp!)} />
+ */
+export const DisableConfirmDialog = <T extends DisableableEntity,>({ entity, clearEntity, idModal, onCancel, onConfirm, nameField = "name" as Path<T>,
+    entityTypeName = "la entidad", onlyDelete = false }: DisableConfirmDialog<T>) => {
+
+    const titleAction = `${onlyDelete ? "eliminar"
+        : (entity?.active ? "deshabilitar" : "habilitar")}`
+
+    const dialogTitle = `¿Desea ${titleAction} ${entityTypeName}${entity?.[nameField] ? ` "${entity[nameField]}"` : ""}?`
+
+    const dialogSubtitle = onlyDelete
+        ? <>El elemento se <span style={{ fontWeight: "bold", textDecoration: "underline" }}>eliminará</span> definitivamente del sistema.</>
+        : entity?.active ?
+            <>Si no tiene leads asignados, se <span style={{ fontWeight: "bold", textDecoration: "underline" }}>eliminará</span> definitivamente del sistema.</>
+            : <>Si lo habilita, será accesible a todo usuario autorizado.</>
+
+    return (
+        <GenericConfirmDialog idModal={idModal} open={Boolean(entity)} handleClose={clearEntity}
+            onCancel={onCancel} onConfirm={onConfirm} confirmTimeoutSec={DISABLE_TIMEOUT_SEC}>
+            {entity && <>
+                <Typography variant="h3">{dialogTitle}</Typography>
+                <Typography variant="body1">{dialogSubtitle}</Typography>
+            </>}
+        </GenericConfirmDialog>
+    )
+}
+
+interface DisableBulkConfirmDialog extends Omit<DialogProps, "open"> {
+    open: boolean,
+    onClose: () => void,
+    idModal: string,
+    isDisabling: boolean,
+    onCancel?: () => void,
+    onConfirm: () => Promise<unknown>,
+    entityTypeName?: string,
+    onlyDelete?: boolean,
+}
+/**
+ * Componente de Dialog de Confirmación, específicamente para habilitar/deshabilitar múltiples entidades.
+ * @param onCancel Función a ejecutar al presionar el botón "Cerrar". Siempre cierra el modal al final.
+ * @param onConfirm Función a ejecutar al confirmar la acción. Se aplica por defecto tras un timeout, y cierra el modal.
+ * @param entityTypeName tipo de entidad, con su artículo. Ej: "las campañas seleccionadas"
+ * @param onlyDelete flag, modifica el contenido para solo mencionar la eliminación.
+ * @param isDisabling flag, modifica el contenido si está deshabilitando o habilitando.
+ * 
+ * 
+ * @example <DisableBulkConfirmDialog idModal='conf-id' open={open} 
+ * onClose={() => setOpen(false)} entityTypeName="las campañas seleccionadas" 
+ * onConfirm={() => handleBulkActiveCampaign()} />
+ */
+export const DisableBulkConfirmDialog = ({ open, onClose, isDisabling, idModal, onCancel, onConfirm,
+    entityTypeName = "las entidades seleccionadas", onlyDelete = false }: DisableBulkConfirmDialog) => {
+
+    const titleAction = `${onlyDelete ? "eliminar"
+        : (isDisabling ? "deshabilitar" : "habilitar")}`
+
+    const dialogTitle = `¿Desea ${titleAction} ${entityTypeName}?`
+
+    const dialogSubtitle = onlyDelete
+        ? <>Los elementos se <span style={{ fontWeight: "bold", textDecoration: "underline" }}>eliminarán</span> definitivamente del sistema.</>
+        : isDisabling ?
+            <>Si no tienen leads asignados, se <span style={{ fontWeight: "bold", textDecoration: "underline" }}>eliminarán</span> definitivamente del sistema.</>
+            : <>Si los habilita, serán accesibles a todo usuario autorizado.</>
+
+    return (
+        <GenericConfirmDialog idModal={idModal} open={open} handleClose={onClose}
+            onCancel={onCancel} onConfirm={onConfirm} confirmTimeoutSec={DISABLE_TIMEOUT_SEC}>
+            <Typography variant="h3">{dialogTitle}</Typography>
+            <Typography variant="body1">{dialogSubtitle}</Typography>
+        </GenericConfirmDialog>
+    )
+}

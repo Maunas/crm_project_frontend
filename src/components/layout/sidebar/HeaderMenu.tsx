@@ -1,21 +1,51 @@
-import React, { memo } from 'react'
+import React, { memo, useState } from 'react'
 import MaterialUISwitch from './ThemeSlider';
 import { useUserContext } from 'src/stores/UserContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { Avatar, Box, Button, Divider, FormControlLabel, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Stack, Typography } from '@mui/material'
 import { useColorScheme, useTheme } from '@mui/material/styles';
-import { AccountCircle, Check } from '@mui/icons-material';
+import { AccountCircle, Check, PersonOutlined, PersonAddOutlined } from '@mui/icons-material';
 import MoreIcon from '@mui/icons-material/More';
-import LoadingScreenWrapper from 'src/components/feedback/LoadingScreen';
+import LoadingScreenWrapper from 'src/components/ui/feedback/LoadingScreen';
+import type { UserContextItems } from 'src/stores/UserContext';
+import { InviteDialog } from 'src/features/organizations/InviteDialog';
+import type { Organization } from 'src/types/users';
+
+function useRoleLabel(user: UserContextItems["user"], activeOrg: UserContextItems["activeOrg"]) {
+    if (!user) return ""
+    if (user.is_superuser) return "Administrador"
+    if (activeOrg) {
+        const membership = user.organizations_access.find(a => a.organization_id === activeOrg.id)
+        if (membership?.is_owner) return "Propietario"
+    }
+    return "Usuario"
+}
 
 const HeaderMenu = memo(() => {
     const nav = useNavigate()
+    const [inviteOpen, setInviteOpen] = useState(false)
 
     const { user, logout, activeOrganizations, activeOrg, setActiveOrg, loadingOrgs } = useUserContext()
 
-    const handleLogout = () => {
-        logout()
+    const fullName = user ? [user.name, user.last_name].filter(Boolean).join(" ") : ""
+    const roleLabel = useRoleLabel(user, activeOrg)
+
+    // Solo owners y superusers pueden invitar (no aplica a Panel Global id=1)
+    const canInvite = user?.is_superuser || (
+        activeOrg && user?.organizations_access.some(
+            a => a.organization_id === activeOrg.id && a.is_owner
+        )
+    )
+
+    const handleLogout = async () => {
+        await logout()
         nav("/login")
+    }
+
+    const handleOrgSwitch = (org: Organization) => {
+        setActiveOrg(org)
+        nav("/dashboard")
+        handleMenuClose()
     }
 
     const { setMode } = useColorScheme();
@@ -52,49 +82,48 @@ const HeaderMenu = memo(() => {
     const menuId = 'primary-search-account-menu';
     const renderProfileMenu = (
         <Menu anchorEl={anchorEl}
-            anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'right',
-            }}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
             id={menuId} keepMounted
-            transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-            }}
+            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
             open={isMenuOpen}
             onClose={handleMenuClose}
         >
-            <MenuItem >
+            <MenuItem>
                 <ListItemText>Organizaciones</ListItemText>
                 <Divider />
             </MenuItem>
             <LoadingScreenWrapper loading={loadingOrgs} sx={{ minWidth: "15rem", height: "10rem" }}>
                 {
-                    activeOrganizations?.map(org => {
-                        return <MenuItem dense key={org.id} onClick={() => setActiveOrg(org)}>
+                    activeOrganizations?.map(org => (
+                        <MenuItem dense key={org.id} onClick={() => handleOrgSwitch(org)}>
                             {org.id === activeOrg?.id &&
-                                <ListItemIcon>
-                                    <Check />
-                                </ListItemIcon>
+                                <ListItemIcon><Check /></ListItemIcon>
                             }
-                            <ListItemText inset={org.id !== activeOrg?.id} primary={org.name}>
-                            </ListItemText>
+                            <ListItemText inset={org.id !== activeOrg?.id} primary={org.name} />
                         </MenuItem>
-                    })
+                    ))
                 }
             </LoadingScreenWrapper>
             <Divider />
-            <MenuItem >
+            <MenuItem>
                 <FormControlLabel sx={{ width: "9rem" }}
                     control={<MaterialUISwitch checked={palette.mode === "dark"}
                         onChange={(_, checked) => handleMode(checked)} />}
                     label={palette.mode === "dark" ? "Modo Oscuro" : "Modo Claro"}
                 />
             </MenuItem>
+            <MenuItem dense component={Link} to="/profile" onClick={handleMenuClose}>
+                <ListItemIcon><PersonOutlined fontSize="small" /></ListItemIcon>
+                <ListItemText>Mi perfil</ListItemText>
+            </MenuItem>
+            {canInvite && activeOrg && activeOrg.id !== 1 && (
+                <MenuItem dense onClick={() => { handleMenuClose(); setInviteOpen(true) }}>
+                    <ListItemIcon><PersonAddOutlined fontSize="small" /></ListItemIcon>
+                    <ListItemText>Invitar a la organizacion</ListItemText>
+                </MenuItem>
+            )}
             <MenuItem dense onClick={() => handleLogout()} sx={{ "&:hover": { color: palette.error.main } }}>
-                <ListItemText>
-                    Cerrar Sesión
-                </ListItemText>
+                <ListItemText>Cerrar Sesion</ListItemText>
             </MenuItem>
         </Menu>
     );
@@ -103,20 +132,12 @@ const HeaderMenu = memo(() => {
     const renderMobileMenu = (
         <Menu
             anchorEl={mobileMoreAnchorEl}
-            anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-            }}
-            id={mobileMenuId}
-            keepMounted
-            transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-            }}
+            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+            id={mobileMenuId} keepMounted
+            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
             open={isMobileMenuOpen}
             onClose={handleMobileMenuClose}
         >
-
             <MenuItem onClick={handleProfileMenuOpen}>
                 <IconButton
                     aria-label="account of current user"
@@ -127,8 +148,8 @@ const HeaderMenu = memo(() => {
                     <Avatar sx={{ color: palette.secondary.dark, backgroundColor: palette.secondary.light }} />
                 </IconButton>
                 <Stack>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{user?.email}</Typography>
-                    <Typography variant="body2">{activeOrg?.name}</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{fullName || user?.email}</Typography>
+                    <Typography variant="body2" color="text.secondary">{roleLabel}</Typography>
                 </Stack>
             </MenuItem>
         </Menu>
@@ -138,8 +159,8 @@ const HeaderMenu = memo(() => {
         <>
             <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: "center" }}>
                 <Stack>
-                    <Typography variant="body2" sx={{ textAlign: "end", fontWeight: 600 }}>{user.email}</Typography>
-                    <Typography variant="body2" sx={{ textAlign: "end" }}>{activeOrg?.name}</Typography>
+                    <Typography variant="body2" sx={{ textAlign: "end", fontWeight: 600 }}>{fullName || user.email}</Typography>
+                    <Typography variant="body2" sx={{ textAlign: "end" }} color="text.secondary">{roleLabel}</Typography>
                 </Stack>
                 <IconButton
                     size="large"
@@ -166,24 +187,22 @@ const HeaderMenu = memo(() => {
             </Box>
             {renderMobileMenu}
             {renderProfileMenu}
+            <InviteDialog open={inviteOpen} onClose={() => setInviteOpen(false)} />
         </>
     )
-    return (<>
-        <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-            < Button sx={{ color: 'white', borderColor: "white" }} variant='outlined' size='large' component={Link} to="/login" startIcon={<AccountCircle />}> Iniciar Sesión</Button >
-        </Box>
-        <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
-            <IconButton
-                size="large"
-                aria-label="login"
-                onClick={handleMobileMenuOpen}
-                color="inherit"
-                component={Link} to="/login"
-            >
-                <AccountCircle />
-            </IconButton>
-        </Box>
-    </>)
+
+    return (
+        <>
+            <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
+                <Button sx={{ color: 'white', borderColor: "white" }} variant='outlined' size='large' component={Link} to="/login" startIcon={<AccountCircle />}>Iniciar Sesion</Button>
+            </Box>
+            <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
+                <IconButton size="large" aria-label="login" color="inherit" component={Link} to="/login">
+                    <AccountCircle />
+                </IconButton>
+            </Box>
+        </>
+    )
 })
 
 export default HeaderMenu

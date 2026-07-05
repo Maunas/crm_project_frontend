@@ -2,9 +2,9 @@ import { useCallback, useState } from 'react'
 import { OrganizationFormSidebar } from './OrganizationForm'
 import OrganizationDetails from './OrganizationDetail'
 import ContainerWithSidebar from 'shared/layout/container/GenericContainer'
-import { DisableConfirmDialog } from 'shared/feedback/ConfirmationDialog'
+import { DisableConfirmDialog } from 'src/components/ui/feedback/ConfirmationDialog'
 import { CommonIconButton } from 'shared/ui/buttons/CommonIconButton'
-import LoadingScreenWrapper from 'shared/feedback/LoadingScreen'
+import LoadingScreenWrapper from 'src/components/ui/feedback/LoadingScreen'
 import { CustomListItem } from 'shared/ui/lists/CustomListItem'
 import CommonButton from 'shared/ui/buttons/CommonButton'
 import { EnabledIcon } from 'shared/ui/lists/Icons'
@@ -116,7 +116,7 @@ export const OrganizationList = () => {
                         {userOrganizations && userOrganizations?.length > 0 ?
                             <List>
                                 {userOrganizations.map(org =>
-                                    <CustomListItem key={org.id} selected={org.id === selectedEntity?.id} disablePadding secondaryAction={
+                                    <CustomListItem key={org.id} isSelected={org.id === selectedEntity?.id} disablePadding secondaryAction={
                                         <Stack direction="row" sx={{ alignItems: "center" }}>
                                             <CommonIconButton actionType='DETAILS' title='Detalle' onClick={() => handleSidebar("DETAILS_ORG", org)} tooltipSize="small" size="small" />
                                             <CommonIconButton actionType='MODIFY' title='Modificar' onClick={() => handleSidebar("UPDATE_ORG", org)} tooltipSize="small" size="small" />

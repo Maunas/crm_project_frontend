@@ -1,73 +1,152 @@
 import { type ReactNode } from "react"
+import { GenericSidebarContent, GenericSidebarHeader } from "./ColoredHeaders"
 import GenericPaper from "./GenericPaper"
-import { Container, Drawer, useMediaQuery, useTheme, type Breakpoint, type ContainerProps, type DrawerProps, type PaperProps } from "@mui/material"
+import { CommonIconButton } from "shared/ui/buttons/CommonIconButton"
+import { Container, Divider, Drawer, Stack, useMediaQuery, useTheme, type Breakpoint, type ContainerProps, type DrawerProps, type PaperProps, Typography, Box, type ContainerOwnProps } from "@mui/material"
+import { CustomAvatar } from "src/components/ui/details/CustomAvatar"
 
 export interface GenericContainerProps extends ContainerProps {
     children?: ReactNode,
     paperProps?: PaperProps
+    noPaper?: boolean,
+    containerSize?: ContainerOwnProps["maxWidth"]
 }
 
-export const GenericContainer = ({ children, paperProps = {}, ...props }: GenericContainerProps) => {
+export const GenericContainer = ({ children, containerSize, noPaper = false, paperProps = {}, ...props }: GenericContainerProps) => {
     return (
-        <Container {...props}>
-            <GenericPaper {...paperProps} >
-                {children}
-            </GenericPaper>
+        <Container maxWidth={containerSize === undefined ? "lg" : containerSize}
+            {...(noPaper ? {} : { component: GenericPaper, ...paperProps })}
+            {...props}>
+            {children}
         </Container>
     )
 }
-
 
 interface ContainerWithSidebarProps {
     isSidebarOpen?: boolean,
     closeSidebar: () => void,
     sidebarComponent: ReactNode,
-    containerSize?: false | Breakpoint,
     sidebarWidth?: string,
     sidebarProps?: DrawerProps,
+    containerSize?: false | Breakpoint,
+    containerProps?: ContainerProps,
+    noPaper?: boolean,
     children?: ReactNode,
 }
 
-export const GenericSidebar = ({ isSidebarOpen = false, closeSidebar, sidebarProps, sidebarComponent, sidebarWidth }: ContainerWithSidebarProps) => {
-
-    const { breakpoints } = useTheme()
-
-    const mdScreen = useMediaQuery(breakpoints.down('md'));
-
-    return (
-        <Drawer open={isSidebarOpen} onClose={closeSidebar} anchor={mdScreen ? "bottom" : "right"}
-            sx={{
-                zIndex: 1202,
-                '& .MuiDrawer-paper': {
-                    minHeight: '100vh',
-                    width: sidebarWidth ?? '45rem',
-                    [breakpoints.down('md')]: {
-                        width: '100vw',
-                    },
-                },
-            }}  {...sidebarProps}
-            ModalProps={{ keepMounted: true }}>
-            <GenericPaper sx={{
-                height: "100%", minHeight: "100vh", width: "100%", overflowY: "auto", borderRadius: 0,
-            }}>
-                {isSidebarOpen && sidebarComponent}
-            </GenericPaper>
-        </Drawer >
-    )
-}
-
-
-const ContainerWithSidebar = ({ isSidebarOpen = false, closeSidebar, sidebarProps, sidebarComponent, containerSize, sidebarWidth, children }: ContainerWithSidebarProps) => {
-
+const ContainerWithSidebar = ({ isSidebarOpen = false, closeSidebar, sidebarComponent, sidebarProps, sidebarWidth,
+    containerSize, containerProps, noPaper = false, children }: ContainerWithSidebarProps) => {
     return (
         <>
-            <Container maxWidth={containerSize ?? "lg"} component={GenericPaper}>
+            <GenericContainer containerSize={containerSize} noPaper={noPaper}  {...containerProps} >
                 {children}
-            </Container>
-            <GenericSidebar isSidebarOpen={isSidebarOpen} closeSidebar={closeSidebar} sidebarProps={sidebarProps}
-                sidebarComponent={sidebarComponent} sidebarWidth={sidebarWidth} />
+            </GenericContainer>
+            <GenericSidebar isSidebarOpen={isSidebarOpen} closeSidebar={closeSidebar}
+                sidebarWidth={sidebarWidth} {...sidebarProps} >
+                {sidebarComponent}
+            </GenericSidebar>
         </>
     )
 }
 
 export default ContainerWithSidebar
+
+interface GenericSidebarProps extends DrawerProps {
+    isSidebarOpen?: boolean,
+    closeSidebar: () => void,
+    children: ReactNode,
+    sidebarWidth?: string
+}
+export const GenericSidebar = ({ isSidebarOpen = false, closeSidebar, children, sidebarWidth, ...props }: GenericSidebarProps) => {
+
+    const theme = useTheme()
+
+    const mdScreen = useMediaQuery(theme.breakpoints.down('md'));
+
+    return (
+        <Drawer
+            open={isSidebarOpen}
+            onClose={closeSidebar}
+            anchor={mdScreen ? "bottom" : "right"}
+            slotProps={{
+                paper: {
+                    component: GenericPaper,
+                    "data-noborder": true,
+                    elevation: 0,
+                    sx: [{
+                        minHeight: '100vh',
+                        width: sidebarWidth ?? '40rem',
+                        height: "100%",
+                        position: "fixed",
+                        borderLeft: `1px solid ${theme.palette.divider}`,
+                        borderRadius: 0,
+                        [theme.breakpoints.down('md')]: {
+                            width: '100vw',
+                            borderLeft: "none",
+                        },
+                    },
+                    theme.applyStyles("light", {
+                        backgroundColor: theme.palette.contrast[50]
+                    })]
+                }
+            }}
+            sx={{ zIndex: 1202 }}
+            {...props}
+        >
+            <CommonIconButton actionType="CLOSE" title="Cerrar" onClick={closeSidebar}
+                sx={{ position: "absolute", top: "3rem", right: "2rem", transform: "translateY(-50%)" }} />
+            {children}
+        </Drawer >
+    )
+}
+
+interface SidebarContentWrapperProps {
+    title?: ReactNode,
+    subtitle?: ReactNode,
+    icon?: ReactNode,
+    actions?: ReactNode,
+    children?: ReactNode,
+    iconColor?: string
+}
+/**Wrapper que le agrega al contenido de un sidebar un header formateado.
+ * Si se asigna actions, se muestran en un footer, si no, se deja solo el contenido.
+ */
+export const SidebarContentWrapper = ({ title, subtitle, icon, actions, iconColor, children }: SidebarContentWrapperProps) => {
+
+    return (
+        <Stack spacing={2} sx={{ height: "100%" }} useFlexGap>
+            <GenericSidebarHeader color={iconColor} >
+                <Stack direction="row" spacing={2} sx={{ p: "1rem 4rem 1rem 1.5rem", height: "6rem", alignItems: "center" }}>
+                    <CustomAvatar color={iconColor}>{icon}</CustomAvatar>
+                    <Stack>
+                        <Typography variant="subtitle2" color="textSecondary"
+                            sx={{ textTransform: "uppercase", fontWeight: "bold" }} >{subtitle}</Typography>
+                        <Typography variant="h2" >{title}</Typography>
+                    </Stack>
+                </Stack>
+                <Divider />
+            </GenericSidebarHeader >
+            <GenericSidebarContent >
+                {actions ?
+                    <SidebarContentActionsWrapper actions={actions}>
+                        {children}
+                    </SidebarContentActionsWrapper>
+                    : children}
+            </GenericSidebarContent >
+        </Stack >
+    )
+}
+/**Contenedor que permite formatear el contenido solo de un Sidebar, sin el header.
+ * Sirve como un contenedor utilizable incluso fuera de un sidebar, ya que no afecta el contenido.
+ */
+export const SidebarContentActionsWrapper = ({ actions, children }: { actions?: ReactNode, children: ReactNode }) => {
+    return (
+        <Stack sx={{ height: "100%" }}>
+            <Box className="sidebar-content">
+                {children}
+            </Box>
+            {actions &&
+                <Box className="sidebar-footer">{actions}</Box>}
+        </Stack>
+    )
+}

@@ -147,8 +147,8 @@ const LeadFormFieldType = ({ register, control, leadField, errorMessage, size = 
             return (<LeadFormRelatedLead control={control} name={name} options={relatedLeads} size={size}
                 label={label} required={required} errorMessage={errorMessage} />)
         case "FILE":
-            return (<LeadFormFile register={register} name={name} required={required} size={size}
-                errorMessage={errorMessage} />)
+            return (<LeadFormFile control={control} name={name} required={required} size={size}
+                errorMessage={errorMessage} subtype={subtypeCode} />)
         case "SELECTOR":
             return (<LeadFormSelector control={control} name={name} options={selectors} size={size}
                 label={label} subtype={subtypeCode} required={required} errorMessage={errorMessage} />)

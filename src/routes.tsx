@@ -1,109 +1,83 @@
-import { NotFound } from "./pages/NotFound";
+import { CreateLeadFormPage, UpdateLeadFormPage } from "features/lead/leadForm/LeadFormWraper";
+import { OrganizationList } from "features/organizations/OrganizationList";
+import OrgProperties from "./features/orgProperties/orgPropertiesList";
+import { AutomationList } from "features/fieldAutomation/AutomationList";
+import { AutomationPage } from "features/fieldAutomation/AutomationPage";
+import { NomenclatorList } from "features/nomenclators/NomenclatorList";
+import { LeadFlowEditor } from "src/features/leadFlows/FlowEditorPage";
 import { LeadDetailsLayout } from "features/lead/details/LeadDetails";
 import { CampaignDetails } from "features/campaigns/CampaignDetails";
-import { WorkspaceList } from "features/workspaces/WorkspaceList";
-import { CreateLeadFormPage, UpdateLeadFormPage } from "features/lead/leadForm/LeadFormWraper";
 import { LeadListPage } from "features/lead/leadList/LeadListPage";
-import { OrganizationList } from "features/organizations/OrganizationList";
-import { NomenclatorList } from "features/nomenclators/NomenclatorList";
-import { NomenclatorItemList } from "features/nomenclators/NomenclatorItemList";
+import { SearchResultsList } from "features/search/SearchResults";
+import { WorkspaceList } from "features/workspaces/WorkspaceList";
 import { LoginFormPage } from "./features/auth/LoginForm";
 import { SignupFormPage } from "features/auth/SignupForm";
-import { SearchResultsList } from "features/search/SearchResults";
-import { GenericContainer } from "shared/layout/container/GenericContainer";
 import MainLayout from "./app/mainLayout";
-import { createBrowserRouter, Outlet } from "react-router-dom";
-import { LeadFlowEditor } from "src/features/leadFlows/FlowEditorPage";
-import { LeadNavigationProvider } from 'features/lead/stores/LeadNavigationContext';
-import LeadProperties from "./features/leadProperties/leadPropertiesList";
+import { NotFound } from "./pages/NotFound";
+import { ProfilePage } from "./pages/ProfilePage";
+import { OnboardingPage } from "./pages/OnboardingPage";
+import { OrgDashboardPage } from "./features/dashboard/OrgDashboardPage";
+import { GlobalDashboardPage } from "./features/dashboard/GlobalDashboardPage";
+import { useUserContext } from "src/stores/UserContext";
+import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
+import { ImportLeadsPage } from "./features/lead/ImportLeadsPage";
+import { SystemAuditList } from "./features/audit/SystemAuditLogs";
+
+// Muestra GlobalDashboard para Panel Global (id=1), OrgDashboard para el resto
+function DashboardRouter() {
+    const { activeOrg } = useUserContext()
+    if (activeOrg?.id === 1) return <GlobalDashboardPage />
+    return <OrgDashboardPage />
+}
 
 export const router = createBrowserRouter([
     {
         path: "/login",
-        element: (
-            <LoginFormPage />
-        ),
+        Component: LoginFormPage,
     },
     {
         path: "/signup",
-        element: (
-            <SignupFormPage />
-        ),
+        Component: SignupFormPage,
     },
     {
-        // Layout principal
+        path: "/onboarding",
+        Component: OnboardingPage,
+    },
+    {
         path: "/",
         Component: MainLayout,
         children: [
-            // Rutas dentro del layout
             {
-                path: "/",
-                element: <div>Home Test</div>
+                index: true,
+                element: <Navigate to="/dashboard" replace />,
             },
-
+            {
+                path: "/dashboard",
+                Component: DashboardRouter,
+            },
             {
                 path: "/leads",
-                element: (
-                    <LeadNavigationProvider>
-                        <Outlet />
-                    </LeadNavigationProvider>
-                ),
+                Component: Outlet,
                 children: [
-                    {
-                        path: "/leads/",
-                        element: <GenericContainer sx={{ minWidth: "85%" }}><LeadListPage /></GenericContainer>
-                    },
-                    {
-                        path: "/leads/new",
-                        element: <GenericContainer sx={{ minWidth: "85%" }}><CreateLeadFormPage /></GenericContainer>
-                    },
-                    {
-                        path: "/leads/modify/:id",
-                        element: <GenericContainer sx={{ minWidth: "85%" }}><UpdateLeadFormPage /></GenericContainer>
-                    },
-                    {
-                        path: "/leads/:id",
-                        Component: LeadDetailsLayout
-                    },
+                    { path: "/leads/", Component: LeadListPage },
+                    { path: "/leads/new", Component: CreateLeadFormPage },
+                    { path: "/leads/modify/:id", Component: UpdateLeadFormPage },
+                    { path: "/leads/:id", Component: LeadDetailsLayout },
                 ]
             },
-
-            {
-                path: "/campaigns/",
-                Component: WorkspaceList
-            },
-            {
-                path: "/nomenclators/",
-                Component: NomenclatorList
-            },
-            {
-                path: "/nomenclators/:nomenclatorId",
-                Component: NomenclatorItemList
-            },
-            {
-                path: "/organizations/",
-                Component: OrganizationList
-            },
-            {
-                path: "/campaigns/:id",
-                Component: CampaignDetails
-            },
-            {
-                path: "/search",
-                Component: SearchResultsList,
-            },
-            {
-                path: "/lead-properties/",
-                Component: LeadProperties,
-            },
-            {
-                path: "/lead-flow-editor/:id?",
-                Component: LeadFlowEditor,
-            },
-            {
-                path: "*", // Si no coincide con nada más.
-                Component: NotFound
-            },
+            { path: "/leads/import", Component: ImportLeadsPage },
+            { path: "/campaigns/", Component: WorkspaceList },
+            { path: "/nomenclators/", Component: NomenclatorList },
+            { path: "/audit-logs/", Component: SystemAuditList },
+            { path: "/organizations/", Component: OrganizationList },
+            { path: "/automations/", Component: AutomationList },
+            { path: "/automations/:id", Component: AutomationPage },
+            { path: "/campaigns/:id", Component: CampaignDetails },
+            { path: "/search", Component: SearchResultsList },
+            { path: "/org-properties/", Component: OrgProperties },
+            { path: "/lead-flow-editor/:id?", Component: LeadFlowEditor },
+            { path: "/profile", element: <ProfilePage /> },
+            { path: "*", Component: NotFound },
         ]
-    }
-]);
+    },
+])

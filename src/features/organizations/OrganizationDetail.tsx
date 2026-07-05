@@ -23,10 +23,10 @@ const OrganizationDetails = ({ entity, closeSidebar, handleSidebar, handleActive
             <Stack direction="row" useFlexGap spacing={2} sx={{ flexWrap: "wrap", justifyContent: "space-between", alignItems: "center" }}>
                 <Typography variant="h2">{entity.name}</Typography>
                 <Stack direction="row" spacing={1} sx={{ marginLeft: "auto" }} >
-                    {entity.active ? <CustomChip color='success' label="Habilitado" /> :
-                        <CustomChip color='error' label="Deshabilitado" />}
+                    {entity.active ? <CustomChip chipColor='success' label="Habilitado" /> :
+                        <CustomChip chipColor='error' label="Deshabilitado" />}
                     {activeOrg?.id === entity.id &&
-                        <CustomChip color='info' label="Activo" />}
+                        <CustomChip chipColor='info' label="Activo" />}
                 </Stack>
             </Stack>
             <Stack spacing={2} sx={{ alignItems: "start" }} >
@@ -34,12 +34,14 @@ const OrganizationDetails = ({ entity, closeSidebar, handleSidebar, handleActive
                     <Typography variant="body1">{entity.description}</Typography>
                 }
                 <Divider />
-                <ButtonGroup fullWidth>
-                    {activeOrg?.id !== entity.id ?
-                        <CommonButton actionType="CHECK" color="info" variant='outlined' onClick={() => setActiveOrg(entity)} >Seleccionar como Activo</CommonButton>
-                        : <CommonButton actionType="LIST" component={Link} to={`/campaigns`} >Ver Espacios de Trabajo</CommonButton>
-                    }
-                </ButtonGroup>
+                {activeOrg?.id !== entity.id ?
+                    <CommonButton actionType="CHECK" color="info" variant='outlined' onClick={() => setActiveOrg(entity)} >Seleccionar como Activo</CommonButton>
+                    :
+                    <ButtonGroup fullWidth>
+                        <CommonButton actionType="PARAMETERS" variant="outlined" component={Link} to={`/campaigns`} >Propiedades</CommonButton>
+                        <CommonButton actionType="LIST" variant="outlined" component={Link} to={`/campaigns`} >Espacios de Trabajo</CommonButton>
+                    </ButtonGroup>
+                }
                 <Divider />
                 <DetailsMetadata entity={entity} />
                 <Divider />

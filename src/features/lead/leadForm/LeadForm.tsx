@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { LeadFormBool, LeadFormDate, LeadFormFile, LeadFormNumber, LeadFormText } from "../shared/LeadFormFields"
 import { LeadFormRelatedLead, LeadFormSelector } from "../shared/LeadFormMultipleFields"
-import LoadingScreenWrapper from "shared/feedback/LoadingScreen"
+import LoadingScreenWrapper from "src/components/ui/feedback/LoadingScreen"
 import { FormErrorMessage } from "shared/ui/forms/FormFeedback"
 import CommonButton from "shared/ui/buttons/CommonButton"
 import { useLoading } from "src/hooks/useLoading"
@@ -14,10 +14,12 @@ import { getLeadFields } from "features/leadFields/leadFieldServices"
 import { createFormDataFromLead, setLeadFormErrors, updateSelectorOptions } from "../leadUtils"
 import { getListField } from "src/utils/lists"
 import { useFieldArray, useForm, type Control, type Path, type UseFormRegister } from "react-hook-form"
-import { Grid, ButtonGroup, Stack, Typography, Divider } from "@mui/material"
+import { Accordion, AccordionDetails, Grid, ButtonGroup, Stack, Typography, Box } from "@mui/material"
+import { ExpandMore } from "@mui/icons-material"
 import { getLeadFormFieldsBySections, orderFieldsBySections } from "src/features/leadFields/leadFieldUtils"
+import GenericPaper from "src/components/layout/container/GenericPaper"
+import { ColoredAccordionSummary } from "src/components/layout/container/ColoredHeaders"
 
-//Para permitir mantener los datos de cada campo
 export interface LeadPostFormValues extends LeadPostValue {
     fieldData: LeadField
 }
@@ -32,10 +34,14 @@ interface LeadFormProps {
     onSubmit: (data: FormData) => Promise<void>,
     submitBtnLabel?: string,
     onCancel?: () => void,
-    setCampaignError?: React.Dispatch<React.SetStateAction<string | undefined>>
+    setCampaignError?: (error?: string) => void,
+    formId?: string,
+    hideButtons?: boolean,
+    setExternalLoading?: (loading: boolean) => void
 }
 
-export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSubmit, submitBtnLabel = "Guardar", onCancel, setCampaignError }: LeadFormProps) => {
+export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSubmit, submitBtnLabel = "Guardar",
+    onCancel, formId = "lead-form", hideButtons = false, setExternalLoading, setCampaignError }: LeadFormProps) => {
 
     const defaultValues = useMemo(() => ({
         campaign_id: campaignId,
@@ -50,12 +56,12 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
 
     const { fields, replace } = useFieldArray({ name: "values", control })
 
-    const submit = (data: LeadPostForm) => {
+    const submit = useCallback((data: LeadPostForm) => {
         return onSubmit(createFormDataFromLead(data))
             .catch(e => setLeadFormErrors(fields, e, setError))
-    }
+    }, [fields, onSubmit, setError])
 
-    const { loading: submitLoading, fnWithLoading: submitLoad } = useLoading(submit)
+    const { loading: submitLoading, fnWithLoading: submitLoad } = useLoading(submit, setExternalLoading)
 
     //Setea el mensaje de error al selector, en el caso de createLead
     useEffect(() => {
@@ -63,13 +69,26 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
     }, [errors.campaign_id, setCampaignError])
 
     const [leadFields, setLeadFields] = useState<LeadField[]>(existingLeadFields ?? [])
+    const [relatedLeads, setRelatedLeads] = useState<Map<number, Lead[]>>(new Map())
+    const [selectors, setSelectors] = useState<Map<number, NomenclatorItem[]>>(new Map())
+
+    const isFieldActive = (field: LeadField) => {
+        const f = field as unknown as { active?: boolean }
+        return f.active === undefined || f.active !== false
+    }
+
+    const visibleFieldFilter = (field: LeadField) =>
+        field.field_type_code !== "CALCULATED" && field.is_visible && isFieldActive(field)
+
+    const visibleValueFilter = (value: LeadFieldValue) =>
+        visibleFieldFilter(value.field)
 
     //Cuando se cargan los leadFields, se formatean y ubican en fieldArray
     const loadFieldValues = useCallback((newLeadFields: LeadField[], existingValues?: LeadFieldValue[]) => {
         //Si ya hay valores, formatea los values para asignarlos al fieldArray. Asigna listas de ids a value.
         if (existingValues) {
             replace(
-                orderFieldsBySections(existingValues.filter(value => value.field.field_type_code !== "CALCULATED" && value.field.is_visible))
+                orderFieldsBySections(existingValues.filter(visibleValueFilter))
                     .map(fieldValue => {
                         let value: unknown = fieldValue.value
                         //Si no hay valor, es selector o related_leads. Trae el id, o arreglo de ids
@@ -90,12 +109,13 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
             //Si no hay valores, solo trae los datos de los leadFields.
         } else {
             replace(
-                orderFieldsBySections(newLeadFields.filter(field => field.field_type_code !== "CALCULATED" && field.is_visible))
+                orderFieldsBySections(newLeadFields.filter(visibleFieldFilter))
                     .map(field => ({
                         field_id: field.id,
                         fieldData: field
                     }) as LeadPostFormValues))
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [replace])
 
     //Actualiza los leadFields respecto al campaignId seleccionado. Si ya hay existingLeadFields, no busca.
@@ -119,11 +139,6 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
         fetchFieldsLoad(campaignId, existingLeadFields, existingValues)
     }, [fetchFieldsLoad, campaignId, existingLeadFields, existingValues])
 
-    // Objetos que contienen todos los leads de campañas relacionadas, y todos los nomencladores necesarios para el formulario.
-    // Se identifican en un Map or sus ids.
-    const [relatedLeads, setRelatedLeads] = useState<Map<number, Lead[]>>(new Map())
-    const [selectors, setSelectors] = useState<Map<number, NomenclatorItem[]>>(new Map())
-
     useEffect(() => {
         updateSelectorOptions(leadFields, "related_campaign_id", relatedLeads, ["LEAD"],
             (related_campaign_id: number) => getLeads({ only_active: true, campaign_id: related_campaign_id, page_size: 0 }).then((res) => res.items))
@@ -140,40 +155,50 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
 
     return (
         <LoadingScreenWrapper loading={fieldsLoading}>
-            <form onSubmit={handleSubmit(submitLoad)}>
+            <form onSubmit={handleSubmit(submitLoad)} id={formId}>
                 <input type="text" {...register("campaign_id", { setValueAs: value => (value === "" || !value) ? null : Number(value) })} hidden />
                 <Stack spacing={3}>
-                    {campaignId &&
-                        fieldsBySection.map((section) => {
-                            return <Stack spacing={1} key={`section-lead-${section.id}`}>
-                                <Typography variant="h3">{section.name}</Typography>
-                                <Divider />
-                                <Grid container sx={{ gap: ".25rem .5rem " }}>
-                                    {section.fields.map(sectField =>
-                                        <Grid size="grow" sx={{ alignItems: "center", minWidth: "20rem" }} key={sectField.field.id}>
-                                            <LeadFormFieldType register={register} control={control} name={`values.${sectField.globalIdx}.value`}
-                                                leadField={sectField.field.fieldData}
-                                                relatedLeads={relatedLeads.get(sectField.field?.fieldData?.related_campaign_id ?? -1)}
-                                                selectors={selectors.get(sectField.field?.fieldData?.nomenclator_id ?? -1)}
-                                                errorMessage={errors?.values?.[sectField.globalIdx]?.value?.message} />
+                    <Box>
+                        {campaignId &&
+                            fieldsBySection.map((section, idx) => {
+                                return <Accordion key={`section-lead-${section.id}`} defaultExpanded={idx === 0}
+                                    component={GenericPaper} elevation={1} sx={{ p: 0, overflow: "hidden" }}>
+                                    <ColoredAccordionSummary isFirst={idx === 0} isLast={idx === fieldsBySection.length - 1}
+                                        expandIcon={<ExpandMore />} color={section.sectionData?.color}>
+                                        <Typography variant="h3">{section.name}</Typography>
+                                    </ColoredAccordionSummary>
+                                    <AccordionDetails sx={{ mt: 2 }}>
+                                        <Grid container sx={{ gap: ".25rem .5rem " }}>
+                                            {section.fields.map(sectField =>
+                                                <Grid size="grow" sx={{ alignItems: "center", minWidth: "20rem" }} key={sectField.field.id}>
+                                                    <LeadFormFieldType register={register} control={control} name={`values.${sectField.globalIdx}.value`}
+                                                        leadField={sectField.field.fieldData}
+                                                        relatedLeads={relatedLeads.get(sectField.field?.fieldData?.related_campaign_id ?? -1)}
+                                                        selectors={selectors.get(sectField.field?.fieldData?.nomenclator_id ?? -1)}
+                                                        errorMessage={errors?.values?.[sectField.globalIdx]?.value?.message} />
+                                                </Grid>
+                                            )}
                                         </Grid>
-                                    )}
-                                </Grid>
-                            </Stack>
-                        })
-
-                    }
+                                    </AccordionDetails>
+                                </Accordion>
+                            })
+                        }
+                    </Box>
                     {errors.root &&
                         <FormErrorMessage>{errors.root.message}</FormErrorMessage>}
-                    <ButtonGroup sx={{ alignSelf: "end" }}>
-                        {onCancel && <CommonButton actionType="CLOSE" variant="text" color="error" onClick={onCancel} disabled={submitLoading}>Cancelar</CommonButton>}
-                        {campaignId &&
-                            <CommonButton actionType={existingValues ? "MODIFY" : "CREATE"} loading={submitLoading}
-                                type="submit" variant="contained">{submitBtnLabel}</CommonButton>}
-                    </ButtonGroup>
+                    {!hideButtons &&
+                        <ButtonGroup sx={{ alignSelf: "end" }}>
+                            {onCancel && <CommonButton actionType="CLOSE" variant="outlined" color="error"
+                                onClick={onCancel} disabled={submitLoading}>Cancelar</CommonButton>}
+                            {campaignId &&
+                                <CommonButton actionType={existingValues ? "MODIFY" : "CREATE"} loading={submitLoading}
+                                    type="submit" variant="contained">{submitBtnLabel}</CommonButton>}
+                        </ButtonGroup>
+                    }
                 </Stack>
             </form>
-        </LoadingScreenWrapper>
+
+        </LoadingScreenWrapper >
     )
 }
 
@@ -200,8 +225,8 @@ const LeadFormFieldType = ({ register, control, name, leadField, relatedLeads, s
             return (<LeadFormRelatedLead control={control} name={name} options={relatedLeads}
                 label={label} required={required} errorMessage={errorMessage} showAdornment />)
         case "FILE":
-            return (<LeadFormFile register={register} name={name} required={required}
-                errorMessage={errorMessage} showAdornment />)
+            return (<LeadFormFile control={control} name={name} label={label} required={required}
+                errorMessage={errorMessage} showAdornment subtype={subtypeCode} />)
         case "SELECTOR":
             return (<LeadFormSelector control={control} name={name} options={selectors}
                 label={label} subtype={subtypeCode} required={required} errorMessage={errorMessage} showAdornment />)

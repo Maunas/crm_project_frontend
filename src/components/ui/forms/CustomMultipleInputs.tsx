@@ -1,8 +1,9 @@
-import { Autocomplete, Checkbox, CircularProgress, FormControl, FormControlLabel, FormGroup, FormHelperText, FormLabel, Radio, RadioGroup, Stack, TextField, type InputProps } from '@mui/material'
+import { Autocomplete, Checkbox, CircularProgress, FormControl, FormControlLabel, FormGroup, FormHelperText, FormLabel, Radio, RadioGroup, Stack, TextField, type AutocompleteRenderValueGetItemProps, type InputProps } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { Controller, type Control, type ControllerRenderProps, type FieldValues, type Path } from 'react-hook-form'
 import { FormErrorMessage } from './FormFeedback'
 import type { ReactNode } from 'react';
+import CustomChip from '../details/CustomChip';
 
 interface BasicMultipleInputProps<Option> {
     label?: string,
@@ -19,7 +20,8 @@ interface BasicControlFormInput<T extends FieldValues, Option> extends BasicMult
     returnField?: keyof Option | null,
 }
 
-interface ControlledACProps<T extends FieldValues, Option> extends BasicControlFormInput<T, Option> {
+interface ControlledACProps<T extends FieldValues, Option>
+    extends BasicControlFormInput<T, Option> {
     getOptionLabel?: (option: Option) => string,
     getOptionKey: (option: Option) => string,
     disabled?: boolean,
@@ -28,14 +30,19 @@ interface ControlledACProps<T extends FieldValues, Option> extends BasicControlF
     disableClearable?: boolean,
     autocomplete?: string,
     helper?: string,
-    placeholder?: string
-    renderOption?: (props: React.HTMLAttributes<HTMLLIElement>, option: Option) => ReactNode;
+    placeholder?: string,
+    onChangeBefore?: (value?: Option | Option[] | null) => void
+    renderOption?: (props: React.HTMLAttributes<HTMLLIElement> & { key: React.Key }, option: Option) => ReactNode;
+    renderValue?: (
+        value: Option | Option[],
+        getItemProps: AutocompleteRenderValueGetItemProps<boolean>
+    ) => ReactNode
 }
 
 export const ControlledAutocomplete = <T extends FieldValues, Option>
     ({ control, name, label, options, getOptionLabel, getOptionKey, returnField = null, renderOption,
         required = false, multiple = false, disabled = false, hidden = false, disableClearable = false,
-        errorMessage = null, autocomplete = "one-time-code", helper, placeholder, size = "medium", ...props }: ControlledACProps<T, Option>) => {
+        errorMessage = null, autocomplete = "one-time-code", helper, placeholder, size = "medium", renderValue, onChangeBefore, ...props }: ControlledACProps<T, Option>) => {
 
     const handleChange = (field: ControllerRenderProps<T, Path<T>>, values: Option | Option[] | null) => {
         //Por defecto, si no hay valores devuelve null o []
@@ -78,11 +85,34 @@ export const ControlledAutocomplete = <T extends FieldValues, Option>
             render={({ field }) => (
                 <Autocomplete {...field} multiple={multiple} hidden={hidden} disableClearable={disableClearable}
                     options={options ?? []} size={size}
-                    onChange={(_, value) => handleChange(field, value)}
+                    onChange={(_, value) => {
+                        if (onChangeBefore) onChangeBefore(value)
+                        handleChange(field, value)
+                    }}
                     value={handleValue(field)}
                     getOptionLabel={getOptionLabel} getOptionKey={getOptionKey} renderOption={renderOption}
                     isOptionEqualToValue={(option, value) => getOptionKey(option) === getOptionKey(value)}
                     fullWidth
+                    // Solo realiza renderValue para estilizar los chips. 
+                    // RenderValue tiene comportamiento inesperado con valores simples.
+                    renderValue={
+                        multiple
+                            ? (renderValue ?? ((values, getItemProps) => {
+                                const getMultipleItemProps = getItemProps as AutocompleteRenderValueGetItemProps<true>
+                                return (values as Option[]).map((option, index) => {
+                                    const { key, ...itemProps } = getMultipleItemProps({ index });
+                                    return (
+                                        <CustomChip
+                                            key={key}
+                                            label={getOptionLabel?.(option) ?? `${option}`}
+                                            size="small"
+                                            {...itemProps}
+                                        />
+                                    );
+                                })
+                            }))
+                            : undefined
+                    }
                     renderInput={(params) =>
                         <>
                             <TextField {...params} label={label} required={required}
@@ -109,7 +139,8 @@ export const ControlledAutocomplete = <T extends FieldValues, Option>
                         </>
                     }
                 />
-            )}
+            )
+            }
         />
     )
 }

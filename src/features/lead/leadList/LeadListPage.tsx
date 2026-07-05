@@ -2,9 +2,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { LeadListContent } from './LeadListContent'
 import LeadColumnSelector from '../leadListOptions/LeadColumnSelector'
 import { LeadListOptions } from '../leadListOptions/LeadListOptions'
-import { DisableBulkConfirmDialog } from 'shared/feedback/ConfirmationDialog'
+import { DisableBulkConfirmDialog } from 'src/components/ui/feedback/ConfirmationDialog'
+import { GenericContainer } from 'shared/layout/container/GenericContainer'
 import PaginationComponent from 'shared/ui/lists/PaginationComponent'
-import LoadingScreenWrapper from 'shared/feedback/LoadingScreen'
+import LoadingScreenWrapper from 'src/components/ui/feedback/LoadingScreen'
 import GenericModal from 'shared/layout/container/GenericModal'
 import CommonButton from 'shared/ui/buttons/CommonButton'
 import { useListPagination } from 'src/hooks/useListPagination'
@@ -15,12 +16,12 @@ import { useModal } from 'src/hooks/useModal'
 import type { LeadFilter, LeadListParams, ListParams, OrderParams, Paginable } from 'src/types/shared'
 import type { Lead, LeadView, LeadViewParams } from 'src/types/leads'
 import type { LeadField } from 'src/types/leadFields'
-import { bulkDeleteLead, createView, getFilteredLeads, getLeads, updateView } from '../leadService'
+import { bulkDeleteLead, createView, getFilteredLeads, getLeads, updateView, exportLeads } from '../leadService'
 import { getLeadFields } from 'src/features/leadFields/leadFieldServices'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { useLeadNavigation } from '../stores/LeadNavigationContext'
-import { Link as RouterLink, useSearchParams } from 'react-router-dom'
-import { Typography, Stack } from '@mui/material'
+import { Link as RouterLink, useNavigate, useSearchParams } from 'react-router-dom'
+import { Typography, Stack, ButtonGroup } from '@mui/material'
 
 const DEFAULT_N_OF_FIELDS = 6
 
@@ -28,6 +29,8 @@ export const LeadListPage = () => {
 
     const [params, setParams] = useSearchParams()
     const { modalProps } = useModal()
+
+    const navigate = useNavigate()
 
     const [leads, setLeads] = useState<Paginable<Lead> | null>(null)
 
@@ -285,42 +288,82 @@ export const LeadListPage = () => {
 
     const [bulkDeleteOpen, setBulkDeleteOpen] = useState<boolean>(false)
 
+
+    //Exportar Leads
+    const handleExport = useCallback(async () => {
+        if (!campaignId) return;
+        try {
+            await exportLeads(Number(campaignId));
+        } catch (error) {
+            console.error("Error al exportar los leads", error);
+        }
+    }, [campaignId]);
+
+    const { fnWithLoading: exportLoad, loading: exporting } = useLoading(handleExport)
+
+    //Importar Leads
+    const handleImport = useCallback(() => {
+        if (!campaignId) return;
+        navigate(`/leads/import?campaign=${campaignId}`);
+    }, [campaignId, navigate]);
+
     return (
-        <Stack spacing={3} sx={{ minWidth: 0 }}>
-            <Stack useFlexGap direction="row" sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }} spacing={2}>
-                <Typography variant="h1">Lista de Leads</Typography>
-                {areThereLeads &&
-                    <CommonButton actionType='CREATE' variant="contained" color="primary"
-                        component={RouterLink} to={`/leads/new?workspace=${workspaceId}&campaign=${campaignId}`} onlyTooltip>
-                        Agregar
-                    </CommonButton>
-                }
-            </Stack>
-            <Stack spacing={2} sx={{ minWidth: 0 }}>
-                <LeadListOptions areThereLeads={areThereLeads} campaignId={campaignId} modalProps={modalProps} campaignSelectorProps={campaignSelectorProps} presentationProps={presentationProps}
-                    filters={filters} headers={{ ...fetchParams, ...orderParams }} setFiltersAndHeaders={setFiltersAndHeaders} viewUpdateProps={viewUpdateProps} selectCheckboxProps={selectCheckboxProps}
-                    bulkDelete={async () => setBulkDeleteOpen(true)} />
-                <LoadingScreenWrapper loading={loading}>
-                    {(leads && campaignId !== null && workspaceId !== null) ?
-                        <>
-                            <LeadListContent leads={leads.items} leadFields={leadFields} selectedFieldIds={selectedFieldIds} modalProps={modalProps} presentationMode={presentationMode}
-                                activeFilters={filters.length} orderProps={orderProps} handleSelectedFieldIds={handleSelectedFieldIds} selectCheckboxProps={selectCheckboxProps}
-                                workspaceId={workspaceId ? parseInt(`${workspaceId}`) : undefined} campaignId={campaignId ? parseInt(`${campaignId}`) : undefined} />
-                            <PaginationComponent {...pageComponentProps} />
-                        </>
-                        :
-                        <Stack spacing={3} sx={{ alignItems: "center", py: 6 }}>
-                            <Typography variant="h3">No hay leads para presentar</Typography>
-                            <Typography variant="h4">Revisa que haya una campaña seleccionada</Typography>
-                        </Stack>
-                    }
-                </LoadingScreenWrapper>
+        <GenericContainer containerSize="xl">
+            <Stack spacing={3} sx={{ minWidth: 0 }}>
+                <Stack useFlexGap direction="row" sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }} spacing={2}>
+                    <Typography variant="h1">Lista de Leads</Typography>
+                    <ButtonGroup>
+                        <CommonButton
+                            actionType='IMPORT'
+                            variant="outlined"
+                            color="secondary"
+                            onClick={handleImport}
+                            onlyTooltip
+                        >Importar Leads</CommonButton>
+                        {areThereLeads &&
+                            <CommonButton
+                                actionType='DOWNLOAD'
+                                loading={exporting}
+                                variant="outlined"
+                                color="secondary"
+                                onClick={exportLoad}
+                                onlyTooltip
+                            >Exportar Leads</CommonButton>
+                        }
+                        {areThereLeads &&
+                            <CommonButton actionType='CREATE' variant="contained" color="primary"
+                                component={RouterLink} to={`/leads/new?workspace=${workspaceId}&campaign=${campaignId}`} onlyTooltip>
+                                Agregar
+                            </CommonButton>
+                        }
+                    </ButtonGroup>
+                </Stack>
+                <Stack spacing={2} sx={{ minWidth: 0 }}>
+                    <LeadListOptions areThereLeads={areThereLeads} campaignId={campaignId} modalProps={modalProps} campaignSelectorProps={campaignSelectorProps} presentationProps={presentationProps}
+                        filters={filters} headers={{ ...fetchParams, ...orderParams }} setFiltersAndHeaders={setFiltersAndHeaders} viewUpdateProps={viewUpdateProps} selectCheckboxProps={selectCheckboxProps}
+                        bulkDelete={async () => setBulkDeleteOpen(true)} />
+                    <LoadingScreenWrapper loading={loading}>
+                        {(leads && campaignId !== null && workspaceId !== null) ?
+                            <>
+                                <LeadListContent leads={leads.items} leadFields={leadFields} selectedFieldIds={selectedFieldIds} modalProps={modalProps} presentationMode={presentationMode}
+                                    activeFilters={filters.length} orderProps={orderProps} handleSelectedFieldIds={handleSelectedFieldIds} selectCheckboxProps={selectCheckboxProps} campaignId={campaignId} filters={filters} />
+                                {presentationMode === "TABLE" && <PaginationComponent {...pageComponentProps} />}
+
+                            </>
+                            :
+                            <Stack spacing={3} sx={{ alignItems: "center", py: 6 }}>
+                                <Typography variant="h3">No hay leads para presentar</Typography>
+                                <Typography variant="h4">Revisa que haya una campaña seleccionada</Typography>
+                            </Stack>
+                        }
+                    </LoadingScreenWrapper>
+                </Stack >
+                <DisableBulkConfirmDialog open={bulkDeleteOpen} onClose={() => setBulkDeleteOpen(false)} idModal="bulk-del-leads"
+                    onlyDelete entityTypeName="los leads seleccionados" onConfirm={bulkDelete} isDisabling />
+                <GenericModal idModal="columns_selector" {...modalProps} buttonText="Modificar Columnas" maxWidth="md" fullWidth showButton={false}>
+                    <LeadColumnSelector originalList={leadFields} selectedFieldIds={selectedFieldIds!} handleSelectedFieldIds={handleSelectedFieldIds} handleClose={modalProps.handleClose} showField="name" />
+                </GenericModal>
             </Stack >
-            <DisableBulkConfirmDialog open={bulkDeleteOpen} onClose={() => setBulkDeleteOpen(false)} idModal="bulk-del-leads"
-                onlyDelete entityTypeName="los leads seleccionados" onConfirm={bulkDelete} isDisabling />
-            <GenericModal idModal="columns_selector" {...modalProps} buttonText="Modificar Columnas" maxWidth="md" fullWidth showButton={false}>
-                <LeadColumnSelector originalList={leadFields} selectedFieldIds={selectedFieldIds!} handleSelectedFieldIds={handleSelectedFieldIds} handleClose={modalProps.handleClose} showField="name" />
-            </GenericModal>
-        </Stack>
+        </GenericContainer >
     )
 }

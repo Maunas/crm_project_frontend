@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { LeadForm } from "./LeadForm"
+import { GenericContainer } from "shared/layout/container/GenericContainer"
 import { FormErrorMessage } from "shared/ui/forms/FormFeedback"
 import type { LeadField, LeadFieldDetailed, LeadFieldValue } from "src/types/leadFields"
 import type { Campaign, Workspace } from "src/types/campaigns"
@@ -10,8 +11,14 @@ import { getWorkspaces } from "src/features/workspaces/workspaceServices"
 import { getCampaigns } from "src/features/campaigns/campaignServices"
 import { showToast } from "src/utils/feedback"
 import { useUserContext } from "src/stores/UserContext"
-import { useNavigate, useParams, useSearchParams } from "react-router-dom"
-import { Autocomplete, Divider, Grid, Stack, TextField, Typography } from "@mui/material"
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom"
+import { Autocomplete, ButtonGroup, Grid, Stack, TextField, Typography } from "@mui/material"
+import GenericPaper from "src/components/layout/container/GenericPaper"
+import { CustomAvatar } from "src/components/ui/details/CustomAvatar"
+import ACTION_ICONS from "src/components/ui/buttons/ActionIcons"
+import CommonButton from "src/components/ui/buttons/CommonButton"
+import { GenericPaperColoredSection } from "src/components/layout/container/ColoredHeaders"
+import GenericModal, { ModalContentWrapper } from "src/components/layout/container/GenericModal"
 
 /** Wrapper para presentar LeadForm de creación en una página. */
 export const CreateLeadFormPage = () => {
@@ -27,6 +34,8 @@ export const CreateLeadFormPage = () => {
     const [workspaces, setWorkspaces] = useState<Workspace[]>([])
     const [selectedWorkspace, setSelectedWorkspace] = useState<Workspace | null>(null)
     const nav = useNavigate()
+
+    const [btnLoading, setBtnLoading] = useState(false)
 
     useEffect(() => {
         getWorkspaces({ page_size: 0, only_active: true }).then(res => {
@@ -62,40 +71,63 @@ export const CreateLeadFormPage = () => {
     }, [nav])
 
     return (
-        <Stack spacing={3}>
-            <Typography variant="h1">Nuevo Lead</Typography>
-            <Stack spacing={2}>
-                <Grid container spacing={1}>
-                    <Grid size="grow" sx={{ minWidth: "20rem" }}>
-                        <Autocomplete options={workspaces} loading={workspaces.length === 0} disabled={workspaces.length === 0}
-                            onChange={(_, value) => setSelectedWorkspace(value)} value={selectedWorkspace}
-                            getOptionLabel={o => o.name!} renderInput={(props) =>
-                                <TextField label="Workspace" {...props} />
-                            } />
-                    </Grid>
-                    <Grid size="grow" sx={{ minWidth: "20rem" }}>
-                        <Autocomplete options={campaigns.filter(c => c.workspace_id === selectedWorkspace?.id)}
-                            loading={campaigns.length === 0} disabled={campaigns.length === 0 && !selectedWorkspace}
-                            onChange={(_, value) => setSelectedCampaign(value)} value={selectedCampaign}
-                            getOptionLabel={o => o.name!}
-                            renderInput={(props) =>
-                                <TextField error={!!campaignError} label="Campaña" {...props} />
-                            } />
-                    </Grid>
-                </Grid>
-                {campaignError && <FormErrorMessage>{campaignError}</FormErrorMessage>}
-                {selectedCampaign && <Divider />}
-                <LeadForm campaignId={selectedCampaign?.id} onSubmit={onSubmit} onCancel={() => nav(`/leads?workspace=${selectedWorkspace?.id}&campaign=${selectedCampaign?.id}`)} setCampaignError={setCampaignError} />
+        <GenericContainer containerSize="lg" noPaper>
+            <Stack spacing={3}>
+                <GenericPaper>
+                    <Stack spacing={2}>
+                        <GenericPaperColoredSection color="primary" isFirst>
+                            <Stack direction="row" spacing={2} useFlexGap
+                                sx={{ alignItems: "center", justifyContent: "space-between" }}>
+                                <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
+                                    <CustomAvatar color="primary">{ACTION_ICONS.CREATE}</CustomAvatar>
+                                    <Typography variant="h1">Nuevo Lead</Typography>
+                                </Stack>
+                                <ButtonGroup sx={{ alignSelf: "end" }}>
+                                    <CommonButton actionType="CLOSE" variant="outlined" color="error" loading={btnLoading}
+                                        component={Link} to={`/leads?workspace=${selectedWorkspace?.id}&campaign=${selectedCampaign?.id}`}>
+                                        Cancelar
+                                    </CommonButton>
+                                    <CommonButton actionType="MODIFY" variant="contained" loading={btnLoading}
+                                        type="submit" form={`create-lead`}>Guardar</CommonButton>
+                                </ButtonGroup>
+                            </Stack>
+                        </GenericPaperColoredSection>
+                        <Grid container spacing={1}>
+                            <Grid size="grow" sx={{ minWidth: "20rem" }}>
+                                <Autocomplete options={workspaces} loading={workspaces.length === 0} disabled={workspaces.length === 0}
+                                    onChange={(_, value) => setSelectedWorkspace(value)} value={selectedWorkspace}
+                                    getOptionLabel={o => o.name!} renderInput={(props) =>
+                                        <TextField label="Workspace" {...props} />
+                                    } />
+                            </Grid>
+                            <Grid size="grow" sx={{ minWidth: "20rem" }}>
+                                <Autocomplete options={campaigns.filter(c => c.workspace_id === selectedWorkspace?.id)}
+                                    loading={campaigns.length === 0} disabled={campaigns.length === 0 && !selectedWorkspace}
+                                    onChange={(_, value) => setSelectedCampaign(value)} value={selectedCampaign}
+                                    getOptionLabel={o => o.name!}
+                                    renderInput={(props) =>
+                                        <TextField error={!!campaignError} label="Campaña" {...props} />
+                                    } />
+                            </Grid>
+                            {campaignError &&
+                                <Grid size={12}>
+                                    <FormErrorMessage>{campaignError}</FormErrorMessage>
+                                </Grid>
+                            }
+                        </Grid>
+                    </Stack>
+                </GenericPaper>
+                <LeadForm campaignId={selectedCampaign?.id} formId="create-lead" setExternalLoading={setBtnLoading} hideButtons
+                    onSubmit={onSubmit} setCampaignError={setCampaignError} />
             </Stack>
-        </Stack>
+        </GenericContainer>
     )
 }
 
 //Convierte LeadFieldDetailed a LeadField
 const detailedToNormalLeadField = (leadField: LeadFieldDetailed) => {
     let newFieldData: LeadField = {
-        ...leadField,
-        lead_field_section_id: leadField.lead_field_section.id
+        ...leadField
     }
     if (leadField.nomenclator) newFieldData = {
         ...newFieldData,
@@ -111,9 +143,16 @@ const detailedToNormalLeadField = (leadField: LeadFieldDetailed) => {
 interface SimulateProps {
     campaign: Campaign,
     leadFields: LeadFieldDetailed[],
-    onCancel: () => void
+    onCancel: () => void,
+    modalProps: {
+        openModalId: string | undefined;
+        handleOpen: (idModal: string) => void;
+        handleClose: () => void;
+    }
 }
-export const SimulateLeadFormModal = ({ campaign, leadFields, onCancel }: SimulateProps) => {
+export const SimulateLeadFormModal = ({ campaign, leadFields, onCancel, modalProps }: SimulateProps) => {
+
+    const [btnLoading, setBtnLoading] = useState(false)
 
     const onSubmit = useCallback((data: FormData) => {
         return simulateCreateLead(data)
@@ -129,11 +168,25 @@ export const SimulateLeadFormModal = ({ campaign, leadFields, onCancel }: Simula
     }, [leadFields])
 
     return (
-        <Stack spacing={3}>
-            <Typography variant="h1">Simulación de Nuevo Lead: Campaña {campaign.name}</Typography>
-            <LeadForm campaignId={campaign.id} existingLeadFields={formattedLeadFields}
-                onSubmit={onSubmit} onCancel={onCancel} submitBtnLabel="Validar" />
-        </Stack>
+        <GenericModal {...modalProps} idModal="simulateLead" buttonText='Vista previa' maxWidth="xl" fullWidth
+            btnProps={{ actionType: "DETAILS", variant: "outlined", color: "secondary", onlyTooltip: true }} sx={{ minWidth: "80vw" }} >
+            <ModalContentWrapper icon={ACTION_ICONS.DETAILS} iconColor="primary"
+                title="Simulación de Nuevo Lead"
+                subtitle={`Campaña "${campaign.name}"`}
+                actions={
+                    <ButtonGroup sx={{ alignSelf: "end" }}>
+                        {onCancel && <CommonButton actionType="CLOSE" variant="outlined" color="error"
+                            onClick={onCancel} disabled={btnLoading}>Cancelar</CommonButton>}
+                        {campaign.id &&
+                            <CommonButton actionType="DETAILS" loading={btnLoading} form={`simulate-lead-${campaign.id}`}
+                                type="submit" variant="contained">Validar Formulario</CommonButton>}
+                    </ButtonGroup>
+                }>
+                <LeadForm campaignId={campaign.id} existingLeadFields={formattedLeadFields} setExternalLoading={setBtnLoading}
+                    onSubmit={onSubmit} submitBtnLabel="Validar" formId={`simulate-lead-${campaign.id}`} hideButtons />
+            </ModalContentWrapper>
+        </GenericModal>
+
     )
 }
 
@@ -142,6 +195,8 @@ export const UpdateLeadFormPage = () => {
     const { id } = useParams()
     const [lead, setLead] = useState<LeadDetailed | null>(null)
     const nav = useNavigate()
+
+    const [btnLoading, setBtnLoading] = useState(false)
 
     useEffect(() => {
         getLead(Number(id)).then(setLead)
@@ -180,10 +235,30 @@ export const UpdateLeadFormPage = () => {
     }, [lead])
 
     if (lead && lead.campaign_id) return (
-        <Stack spacing={3}>
-            <Typography variant="h1">{`Modificar Lead: ${leadTitle}`}</Typography>
-            <LeadForm existingValues={formattedLeadValues} existingLeadFields={formattedLeadFields}
-                campaignId={lead.campaign_id} onSubmit={onSubmit} onCancel={() => nav(`/leads/${lead.id}`)} />
-        </Stack>
+        <GenericContainer containerSize="lg" noPaper>
+            <Stack spacing={3}>
+                <GenericPaper>
+                    <GenericPaperColoredSection color="primary" isFirst isLast>
+                        <Stack direction="row" spacing={2} useFlexGap
+                            sx={{ alignItems: "center", justifyContent: "space-between" }}>
+                            <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
+                                <CustomAvatar color="primary">{ACTION_ICONS.MODIFY}</CustomAvatar>
+                                <Typography variant="h1">{`Modificar Lead: ${leadTitle}`}</Typography>
+                            </Stack>
+                            <ButtonGroup sx={{ alignSelf: "end" }}>
+                                <CommonButton actionType="CLOSE" variant="outlined" color="error" loading={btnLoading}
+                                    component={Link} to={`/leads/${lead.id}`}>Cancelar</CommonButton>
+                                {lead.campaign_id &&
+                                    <CommonButton actionType="MODIFY" variant="contained" loading={btnLoading}
+                                        type="submit" form={`update-lead-${lead.id}`}>Guardar</CommonButton>
+                                }
+                            </ButtonGroup>
+                        </Stack>
+                    </GenericPaperColoredSection>
+                </GenericPaper>
+                <LeadForm existingValues={formattedLeadValues} existingLeadFields={formattedLeadFields} setExternalLoading={setBtnLoading}
+                    campaignId={lead.campaign_id} onSubmit={onSubmit} formId={`update-lead-${lead.id}`} hideButtons />
+            </Stack>
+        </GenericContainer >
     )
 }

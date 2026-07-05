@@ -4,9 +4,21 @@ import type { Lead } from "./leads";
 import type { Nomenclator, NomenclatorItem } from "./nomenclators";
 import type { FieldArrayWithId } from "react-hook-form";
 import type { LeadPostForm } from "src/features/lead/leadForm/LeadForm";
+import type { LeadFieldSection, LeadFieldSectionDetailed } from "./orgProperties";
+
+export interface ExcelFormulaTemplate {
+  name_spanish: string;
+  name_english: string;
+  description: string;
+  syntax: string;
+  example: string;
+  category: string;
+  note: string;
+}
 
 export interface LeadFieldValue {
   id: number;
+  active: boolean;
   field_id: number;
   value?: string | null;
   lead_id: number;
@@ -46,12 +58,13 @@ export interface LeadFieldPost {
 
 export interface LeadField extends Omit<LeadFieldPost, "lead_field_section_id"> {
   id: number;
+  active: boolean;
   name: string;
   configuration?: string;
   lead_field_section: LeadFieldSection;
   organization_id: number;
   order: number;
-  title_order: number;
+  title_order: number | null;
   field_type_code: string;
   field_type: LeadFieldType,
   field_subtype: LeadFieldType | null,
@@ -114,18 +127,6 @@ export interface FieldValidationRuleTemplate {
   required_params: string[];
 }
 
-export interface LeadFieldSectionPost {
-  name: string;
-  organization_id: number;
-}
-
-export interface LeadFieldSection extends LeadFieldSectionPost {
-  id: number;
-}
-
-export interface LeadFieldSectionDetailed extends LeadFieldSection, Metadata { }
-
-
 export interface LeadFieldsReorderBody {
   campaign_id: number,
   orders: {
@@ -137,5 +138,6 @@ export interface LeadFieldsReorderBody {
 export interface LeadFieldsBySection<T = LeadFieldValueDetailed | LeadFieldDetailed | FieldArrayWithId<LeadPostForm, "values", "id">> {
   id: number,
   name: string,
+  sectionData?: LeadFieldSection,
   fields: T[]
 }

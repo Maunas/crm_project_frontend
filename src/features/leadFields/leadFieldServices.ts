@@ -1,15 +1,19 @@
 import type {
-    LeadField, LeadFieldDetailed, LeadFieldPost, LeadFieldType, LeadFieldTypeDetailed, LeadFieldTemplate, LeadFieldSection, LeadFieldSectionDetailed,
-    InputMaskTemplate,
-    LeadFieldsReorderBody
-} from "../../types/leadFields";
-import type { BulkDeleteResponse, BulkEnableResponse, DeleteResponse, EnableResponse, ListParams, Paginable } from "../../types/shared";
+    LeadField, LeadFieldDetailed, LeadFieldPost, LeadFieldType, LeadFieldTypeDetailed, LeadFieldTemplate,
+    InputMaskTemplate, LeadFieldsReorderBody, ExcelFormulaTemplate
+} from "src/types/leadFields";
+import type { BulkDeleteResponse, BulkEnableResponse, DeleteResponse, EnableResponse, ListParams, Paginable } from "src/types/shared";
 import { orderListByField } from "src/utils/lists";
 import axiosCRM from "src/lib/axios";
 
 interface LeadFieldParams extends ListParams {
     campaign_id?: number;
 }
+
+export const getExcelFormulaTemplates = async (): Promise<ExcelFormulaTemplate[]> => {
+    const tmp = await axiosCRM.get(`templates/excel_formulas`);
+    return tmp.data;
+};
 
 export const getLeadFields = async <T extends LeadFieldParams>(
     params?: T,
@@ -61,13 +65,6 @@ export const getFieldTypes = async <T extends ListParams>(params?: T): Promise<P
     return { ...tmp.data, items: orderListByField(tmp.data.items, "id") };
 };
 
-export const getFieldSections = async <T extends ListParams>(params?: T): Promise<Paginable<
-    T["detailed"] extends true ? LeadFieldSectionDetailed : LeadFieldSection
->> => {
-    const sections = await axiosCRM.get(`lead_field_sections`, { params });
-    return { ...sections.data, items: orderListByField(sections.data.items, "id") };
-};
-
 export const reorderLeadFields = async (data: LeadFieldsReorderBody): Promise<{ message: string, campaign_id: number }> => {
     const response = await axiosCRM.patch("lead_fields/reorder/bulk", data)
     return response.data
@@ -81,5 +78,10 @@ export const disableBulkLeadField = async (ids: number[]): Promise<BulkDeleteRes
 
 export const enableBulkLeadField = async (ids: number[]): Promise<BulkEnableResponse> => {
     const leadField = await axiosCRM.post(`/lead_fields/bulk-active`, { ids });
+    return leadField.data;
+};
+
+export const updateLeadFieldTitle = async (titleOrder: number | null, id: number): Promise<LeadFieldDetailed> => {
+    const leadField = await axiosCRM.put(`lead_fields/${id}`, { "title_order": titleOrder });
     return leadField.data;
 };

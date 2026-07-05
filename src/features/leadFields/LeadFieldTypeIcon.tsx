@@ -80,7 +80,7 @@ const TYPE_ICONS: Record<string, TypeIconItem> = {
 
 type TypeIcon = keyof typeof TYPE_ICONS
 
-const getTypeIcon = (typeCode?: string | null, subtypeCode?: string | null) => {
+export const getTypeIconAndColor = (typeCode?: string | null, subtypeCode?: string | null) => {
     switch (typeCode) {
         case "LEAD": case "USER": return TYPE_ICONS.LEAD
         case "CALCULATED": return TYPE_ICONS.CALCULATED
@@ -126,7 +126,7 @@ const getTypeIcon = (typeCode?: string | null, subtypeCode?: string | null) => {
 export const LeadFieldTypeAvatar = ({ typeCode, subtypeCode }: { typeCode?: string | null, subtypeCode?: string | null }) => {
 
     const icon = useMemo<TypeIconItem>(() =>
-        getTypeIcon(typeCode, subtypeCode)
+        getTypeIconAndColor(typeCode, subtypeCode)
         , [typeCode, subtypeCode])
 
     return <CustomListItemAvatar color={icon.color}>
@@ -145,7 +145,7 @@ interface LeadFieldInputIconProps extends InputAdornmentProps {
 export const LeadFieldInputIcon = ({ typeCode, subtypeCode, size = "medium", ...props }: LeadFieldInputIconProps) => {
 
     const icon = useMemo<TypeIconItem>(() =>
-        getTypeIcon(typeCode, subtypeCode)
+        getTypeIconAndColor(typeCode, subtypeCode)
         , [typeCode, subtypeCode])
 
     return (

@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react"
 import { CreateCommentWrapper, UpdateCommentFromNote } from "./LeadCommentForm"
-import { DisableConfirmDialog } from "shared/feedback/ConfirmationDialog"
+import { DisableConfirmDialog } from "src/components/ui/feedback/ConfirmationDialog"
 import PaginationComponent from "shared/ui/lists/PaginationComponent"
 import { MetadataShort } from "shared/ui/details/DetailsMetadata"
-import LoadingScreenWrapper from "shared/feedback/LoadingScreen"
+import LoadingScreenWrapper from "src/components/ui/feedback/LoadingScreen"
 import GenericPaper from "shared/layout/container/GenericPaper"
 import { useListPagination } from "src/hooks/useListPagination"
 import { useLoading } from "src/hooks/useLoading"
-import type { ColorTypes } from "src/types/mui-theme.d"
 import type { LeadComment } from "src/types/leads"
 import type { Paginable } from "src/types/shared"
 import { deleteComment, getComments } from "./leadActivitiesService"
@@ -16,6 +15,7 @@ import { Box, Divider, Grid, IconButton, Paper, Stack, Typography } from "@mui/m
 import { alpha, styled } from "@mui/material/styles"
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
+import { getColorShades } from "src/utils/formatters"
 
 export const LeadComments = ({ leadId }: { leadId: number }) => {
 
@@ -61,15 +61,15 @@ export const LeadComments = ({ leadId }: { leadId: number }) => {
     return (
         <LoadingScreenWrapper loading={loading}>
             <Stack spacing={2} sx={{ height: "100%" }}>
-                <Stack spacing={2} component={GenericPaper} elevation={0} sx={{
+                <Stack spacing={2} component={GenericPaper} elevation={1} sx={{
                     flexGrow: 1, justifyContent: "space-between", alignItems: "end"
                 }}>
                     <Grid container spacing={2} sx={{
                         justifyContent: "end", alignItems: "start", alignContent: "start",
-                        width: "100%", minWidth: "20rem"
+                        width: "100%", minWidth: "15rem"
                     }}>
                         {comments?.items.map(com =>
-                            <Grid key={com.id} size="grow" sx={{ minWidth: "20rem" }}>
+                            <Grid key={com.id} size="grow" sx={{ minWidth: "15rem" }}>
                                 {com.id !== selectedCommentId ? (
                                     <CommentInstance comment={com} onEdit={() => setSelectedCommentId(com.id)}
                                         onDelete={() => setDeletingCom(com)} title={<MetadataShort metadata={com} onlyUser />}
@@ -94,15 +94,12 @@ export const LeadComments = ({ leadId }: { leadId: number }) => {
 }
 
 const CommentNote = styled(Paper)(({ theme, ...props }) => {
-    const isHex = props.color?.substring(0, 1) === "#"
-    const paletteColor = (props.color ?? "primary") as ColorTypes
 
-    const themeColor = theme.palette[paletteColor]
-    const primaryColor = theme.palette.primary
+    const colorShades = getColorShades(props.color ?? "secondary", theme)
 
     return ([{
         borderRadius: "1rem 1rem 0 1rem",
-        border: `1px solid ${isHex ? props.color : themeColor.main}`,
+        border: `1px solid ${colorShades.DARK}`,
         overflow: "hidden",
         color: theme.palette.text.primary,
         "& .comment-footer, .comment-header": {
@@ -112,12 +109,12 @@ const CommentNote = styled(Paper)(({ theme, ...props }) => {
             flexWrap: "wrap",
         },
         "& .comment-header": {
-            backgroundColor: alpha(isHex ? props.color ?? primaryColor.light : themeColor.light, .5),
-            borderBottom: `1px solid ${isHex ? props.color : themeColor.main}`,
+            backgroundColor: alpha(colorShades.LIGHT, .5),
+            borderBottom: `1px solid ${colorShades.MAIN}`,
         },
         "& .comment-footer": {
-            backgroundColor: alpha(isHex ? props.color ?? primaryColor.light : themeColor.light, .5),
-            borderTop: `1px solid ${isHex ? props.color : themeColor.main}`,
+            backgroundColor: alpha(colorShades.LIGHT, .5),
+            borderTop: `1px solid ${colorShades.MAIN}`,
         },
         "& .comment-main": {
             minHeight: "3rem",
@@ -125,12 +122,12 @@ const CommentNote = styled(Paper)(({ theme, ...props }) => {
     },
     theme.applyStyles('dark', {
         "& .comment-header": {
-            backgroundColor: alpha(isHex ? props.color ?? primaryColor.dark : themeColor.dark, .2),
-            borderBottom: `1px solid ${isHex ? props.color : themeColor.main}`,
+            backgroundColor: alpha(colorShades.DARK, .15),
+            borderBottom: `1px solid ${colorShades.DARK}`,
         },
         "& .comment-footer": {
-            backgroundColor: alpha(isHex ? props.color ?? primaryColor.dark : themeColor.dark, .2),
-            borderTop: `1px solid ${isHex ? props.color : themeColor.main}`,
+            backgroundColor: alpha(colorShades.DARK, .15),
+            borderTop: `1px solid ${colorShades.DARK}`,
         },
     })
     ])

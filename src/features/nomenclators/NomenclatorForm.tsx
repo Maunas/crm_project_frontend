@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { SidebarContentActionsWrapper, SidebarContentWrapper } from "shared/layout/container/GenericContainer"
 import { ControlledAutocomplete } from "shared/ui/forms/CustomMultipleInputs"
 import { ControlledTextInput } from "shared/ui/forms/CustomInputs"
 import { FormErrorMessage } from "shared/ui/forms/FormFeedback"
@@ -9,7 +10,8 @@ import { createNomenclator, getNomenclators, updateNomenclator } from "./nomencl
 import { setFormErrors } from "src/utils/forms"
 import { showToast } from "src/utils/feedback"
 import { useForm } from "react-hook-form"
-import { Typography, Grid, ButtonGroup, Stack } from "@mui/material"
+import { Grid, ButtonGroup, Stack } from "@mui/material"
+import ACTION_ICONS from "src/components/ui/buttons/ActionIcons"
 
 interface NomenclatorSidebarProps {
     existingNom?: NomenclatorDetailed,
@@ -46,7 +48,11 @@ export const NomenclatorFormSidebar = ({ existingNom, handleSidebar, closeSideba
         }
     }, [existingNom, handleSidebar, updateEntityOnList])
 
-    return <NomenclatorForm existingNom={existingNom} submit={submit} onCancel={handleClose} />
+    return <SidebarContentWrapper title={existingNom ? `Modificar "${existingNom.name}"` : "Agregar Nomenclador"}
+        subtitle="Nomencladores"
+        icon={existingNom ? ACTION_ICONS.MODIFY : ACTION_ICONS.CREATE}>
+        <NomenclatorForm existingNom={existingNom} submit={submit} onCancel={handleClose} />
+    </SidebarContentWrapper>
 }
 
 interface NomenclatorProps {
@@ -80,12 +86,19 @@ export const NomenclatorForm = ({ existingNom, submit, onCancel }: NomenclatorPr
     const { loading, fnWithLoading: submitNomLoad } = useLoading(onSubmit)
 
     return (
-        <form onSubmit={handleSubmit(submitNomLoad)}>
-            <Stack spacing={3}>
-                <Typography variant="h2">
-                    {!existingNom ? "Crear Nomenclador"
-                        : `Modificar Nomenclador: ${existingNom.name}`}
-                </Typography>
+        <form onSubmit={handleSubmit(submitNomLoad)} style={{ height: "100%" }}>
+            <SidebarContentActionsWrapper
+                actions={
+                    <ButtonGroup sx={{ alignSelf: "end" }}>
+                        <CommonButton actionType="CLOSE" color="error" variant="outlined" onClick={onCancel} disabled={loading}>
+                            Cancelar
+                        </CommonButton>
+                        <CommonButton actionType={existingNom ? "MODIFY" : "CREATE"} variant="contained"
+                            type="submit" loading={loading}>
+                            Guardar
+                        </CommonButton>
+                    </ButtonGroup>
+                }>
                 <Stack spacing={2}>
                     <Grid container spacing={1} sx={{
                         justifyContent: "center",
@@ -107,17 +120,8 @@ export const NomenclatorForm = ({ existingNom, submit, onCancel }: NomenclatorPr
                     {errors?.root &&
                         <FormErrorMessage >{errors?.root?.message}</FormErrorMessage>
                     }
-                    <ButtonGroup sx={{ alignSelf: "end" }}>
-                        <CommonButton actionType="CLOSE" color="error" variant="text" onClick={onCancel} disabled={loading}>
-                            Cancelar
-                        </CommonButton>
-                        <CommonButton actionType={existingNom ? "MODIFY" : "CREATE"} variant="contained"
-                            type="submit" loading={loading}>
-                            Guardar
-                        </CommonButton>
-                    </ButtonGroup>
                 </Stack>
-            </Stack>
+            </SidebarContentActionsWrapper>
         </form>
     )
 }

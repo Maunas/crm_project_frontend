@@ -1,24 +1,28 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { LeadFieldSections } from "./LeadDetailsSections"
-import { LeadTags } from "./LeadTags"
+import { LeadTags } from "src/features/orgProperties/tags/LeadTagsMenu.tsx"
 import { LeadActivities } from "../activities/LeadActivities"
-import { DisableConfirmDialog } from "shared/feedback/ConfirmationDialog.tsx"
-import LoadingScreenWrapper from "shared/feedback/LoadingScreen.tsx"
+import { DisableConfirmDialog } from "src/components/ui/feedback/ConfirmationDialog.tsx"
+import LoadingScreenWrapper from "src/components/ui/feedback/LoadingScreen.tsx"
 import GenericPaper from "shared/layout/container/GenericPaper"
 import TitleAndActive from "shared/ui/details/TitleAndActive"
 import CommonButton from "shared/ui/buttons/CommonButton"
+import { CommonIconButton } from "shared/ui/buttons/CommonIconButton"
 import { useLoading } from "src/hooks/useLoading.ts"
 import type { LeadDetailed } from "src/types/leads.ts"
 import type { Campaign } from "src/types/campaigns.ts"
 import { disableLead, enableLead, getLead } from "../leadService.ts"
 import { getCampaign } from "src/features/campaigns/campaignServices.ts"
 import { getLeadTitleArray } from "../leadUtils.ts"
+import { LeadTitleConfigSidebar } from "src/features/lead/leadTitleConfig/LeadTitleConfigSidebar"
 import { showCommonErrorToast, showToast } from "src/utils/feedback.ts"
 import { useLeadNavigation } from "../stores/LeadNavigationContext.tsx"
 import { Link as RouterLink, useNavigate, useParams } from "react-router-dom"
 import { Grid, Typography, ButtonGroup, Stack, Breadcrumbs, Link, Box, CircularProgress, Fab, Slide } from "@mui/material"
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import { LeadDetailsState } from "./LeadDetailsState.tsx"
+import type { LeadFieldDetailed } from "src/types/leadFields.ts"
 
 export const LeadDetailsLayout = () => {
 
@@ -130,11 +134,26 @@ export const LeadDetailsLayout = () => {
 
     const [isDeleting, setIsDeleting] = useState<LeadDetailed | null>(null)
 
+    //Configuración de título
+    const [titleConfigOpen, setTitleConfigOpen] = useState(false)
+
+    const saveNewTitleValues = (newFields: Record<number, LeadFieldDetailed>) => {
+        setLead(prevLead => {
+            if (!prevLead) return prevLead
+            const newFieldValues = prevLead.field_values.map(fv => {
+                const updatedField = newFields[fv.field_id]
+                if (!updatedField) return fv
+                return { ...fv, field: updatedField }
+            })
+            return { ...prevLead, field_values: newFieldValues }
+        })
+    }
+
     //TO DO: Error de id no disponible
     if (numId === undefined) return <p>Id inválido</p>
     return (
         <LoadingScreenWrapper loading={loading && !lastMove}>
-            <Stack direction="row" spacing={2} sx={{ alignItems: 'stretch', px: 2 }}>
+            <Stack direction="row" spacing={2} sx={{ alignItems: 'stretch', pb: 3 }}>
                 {isNavigationValid(numId) &&
                     <Box sx={{ flexShrink: 0, width: "2.5rem", position: "relative" }}>
                         <Box sx={{ position: 'sticky', top: '50vh', transform: 'translateY(-50%)', zIndex: 10 }}>
@@ -152,7 +171,7 @@ export const LeadDetailsLayout = () => {
                 <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                     <Slide in={!loading && !isLoadingNavigation} appear={false} unmountOnExit
                         direction={setSlideDirection}>
-                        <Stack spacing={3}>
+                        <Stack spacing={2}>
                             {campaign &&
                                 <Breadcrumbs aria-label="breadcrumb">
                                     <Link component={RouterLink} to={`/leads?workspace=${campaign?.workspace_id}&campaign=${campaign?.id}`}
@@ -162,12 +181,13 @@ export const LeadDetailsLayout = () => {
                                     <Typography sx={{ color: 'text.primary' }}>{leadTitle?.join(" ")}</Typography>
                                 </Breadcrumbs>}
                             {lead &&
-                                <Grid container spacing={3}>
-                                    <Grid size={{ xs: 12, md: 4, lg: 4 }} sx={{ minWidth: "20rem" }} >
-                                        <LeadInfo lead={lead} handleActive={() => setIsDeleting(lead)} leadTitle={leadTitle} updateLeadInfo={updateLeadInfo} />
+                                <Grid container spacing={2}>
+                                    <Grid size="grow" sx={{ minWidth: "20rem", flexGrow: 2 }} >
+                                        <LeadInfo lead={lead} handleActive={() => setIsDeleting(lead)} leadTitle={leadTitle}
+                                            updateLeadInfo={updateLeadInfo} onOpenTitleConfig={() => setTitleConfigOpen(true)} />
                                     </Grid>
-                                    <Grid size="grow" sx={{ minWidth: "20rem" }} component={GenericPaper} >
-                                        <LeadActivities leadId={lead.id} reloadAudit={reloadAudit} />
+                                    <Grid size="grow" sx={{ minWidth: "22rem", flexGrow: 3 }} component={GenericPaper} >
+                                        <LeadActivities lead={lead} reloadAudit={reloadAudit} />
                                     </Grid>
                                 </Grid >
                             }
@@ -191,6 +211,8 @@ export const LeadDetailsLayout = () => {
             </Stack >
             <DisableConfirmDialog entity={isDeleting} clearEntity={() => setIsDeleting(null)}
                 idModal="del-lead-det" onConfirm={() => handleActive(lead!)} entityTypeName="el lead" onlyDelete />
+            <LeadTitleConfigSidebar open={titleConfigOpen} onClose={() => setTitleConfigOpen(false)} onSave={saveNewTitleValues}
+                campaignId={campaign?.id} fieldValues={lead?.field_values} />
         </LoadingScreenWrapper>
     )
 }
@@ -199,22 +221,27 @@ interface LeadInfoProps {
     lead: LeadDetailed,
     handleActive: (lead: LeadDetailed) => void,
     leadTitle: (string | undefined)[] | null,
-    updateLeadInfo: (lead: LeadDetailed) => void
+    updateLeadInfo: (lead: LeadDetailed, reloadAudits?: boolean) => void
+    onOpenTitleConfig?: () => void
 }
 
-export const LeadInfo = ({ lead, leadTitle, handleActive, updateLeadInfo }: LeadInfoProps) => {
-
+export const LeadInfo = ({ lead, leadTitle, handleActive, updateLeadInfo, onOpenTitleConfig }: LeadInfoProps) => {
     return (
         <Stack spacing={2}>
-            <GenericPaper>
-                <Stack spacing={3} sx={{ alignItems: "center" }}>
+            <GenericPaper elevation={0}>
+                <Stack spacing={3} sx={{ alignItems: "start" }}>
                     <Stack spacing={1} sx={{ width: "100%" }}>
-                        <LeadTags lead={lead} updateLeadInfo={updateLeadInfo} />
-                        <TitleAndActive active={lead?.active} >
-                            <Typography sx={{ textOverflow: "ellipsis" }} variant="h1">
-                                {(leadTitle && leadTitle?.length > 0) ? leadTitle?.join(" ") : "Título no encontrado"}
-                            </Typography>
-                        </TitleAndActive>
+                        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                            <TitleAndActive active={lead?.active} sx={{ flexGrow: 1 }}>
+                                <Typography sx={{ textOverflow: "ellipsis" }} variant="h1">
+                                    {(leadTitle && leadTitle?.length > 0) ? leadTitle?.join(" ") : "Título no encontrado"}
+                                </Typography>
+                            </TitleAndActive>
+                            {onOpenTitleConfig &&
+                                <CommonIconButton actionType="RENAME" title="Configurar título"
+                                    onClick={onOpenTitleConfig} size="small" />
+                            }
+                        </Stack>
                     </Stack>
                     <ButtonGroup fullWidth>
                         <CommonButton actionType={lead.active ? "DISABLE" : "ENABLE"} variant="outlined"
@@ -226,6 +253,8 @@ export const LeadInfo = ({ lead, leadTitle, handleActive, updateLeadInfo }: Lead
                             Modificar
                         </CommonButton>
                     </ButtonGroup>
+                    <LeadTags lead={lead} updateLeadInfo={updateLeadInfo} />
+                    <LeadDetailsState lead={lead} updateLeadInfo={updateLeadInfo} contactState={lead.contact_state} flowState={lead.current_state} />
                 </Stack>
             </GenericPaper>
             <LeadFieldSections lead={lead} updateLeadInfo={updateLeadInfo} />

@@ -121,7 +121,7 @@ export const ModalValue = ({ modalProps, idModal, type, subtype, value, size = "
     if (!modalProps) return
 
     return (
-        <GenericModal idModal={idModal} {...modalProps} btnProps={{ size: size, actionType: 'DETAILS' }}
+        <GenericModal idModal={idModal} {...modalProps} btnProps={{ size: size, sx: { width: "max-content" }, actionType: 'DETAILS' }}
             buttonText={getBtnText()} sx={{ minWidth: "80vw" }} >
             <ModalValueContent subtype={subtype} value={value} />
             <CommonButton actionType='CLOSE' variant="outlined"
@@ -208,7 +208,7 @@ export const RatingValue = memo(({ value, subtype, counter = false, tooltip = fa
                     <CustomBar value={Number(value)} variant="determinate" />
                 }
                 {counter &&
-                    <CustomChip label={value} color="secondary" />
+                    <CustomChip label={value} chipColor="secondary" />
                 }
             </Stack >
         </ChipTooltip>
@@ -223,7 +223,7 @@ interface BoolValueProps {
 export const BoolValue = memo(({ value, size = "medium" }: BoolValueProps) => {
     const boolValue = useMemo(() => getFieldTypeValue("BOOL", value), [value])
     return (
-        <CustomChip color={boolValue ? "success" : "error"} size={size} sx={{ fontWeight: "bold" }}
+        <CustomChip chipColor={boolValue ? "success" : "error"} size={size} sx={{ fontWeight: "bold" }}
             label={boolValue ?
                 <><CheckIcon fontSize={size} /> Si </>
                 : <><CloseIcon fontSize={size} /> No</>
@@ -292,7 +292,7 @@ export const ListValues = memo(({ value, idFieldValue, type, maxItems = false, i
                 <CustomChip
                     key={`${idFieldValue}-${val.id}`}
                     label={getLabel(val)} title={getLabel(val)}
-                    color="secondary" size="small"
+                    chipColor="secondary" size="small"
                     {...(isNav && {
                         component: RouterLink, to: getLink(val),
                         onClick: STOP_PROPAGATION
@@ -300,7 +300,7 @@ export const ListValues = memo(({ value, idFieldValue, type, maxItems = false, i
                 />
             )}
             {overflowCount > 0 &&
-                <CustomChip color="secondary" size="small"
+                <CustomChip chipColor="secondary" size="small"
                     label={`${overflowCount} más`} />
             }
         </Stack>

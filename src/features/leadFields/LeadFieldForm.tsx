@@ -1,20 +1,31 @@
 import { useEffect, useMemo, useState } from "react";
+import { SidebarContentWrapper, SidebarContentActionsWrapper } from "shared/layout/container/GenericContainer";
 import { ControlledAutocomplete, ControlledRadio } from "shared/ui/forms/CustomMultipleInputs";
 import { ControlledCheckbox, ControlledTextInput } from "shared/ui/forms/CustomInputs";
 import { FormErrorMessage } from "shared/ui/forms/FormFeedback";
 import CommonButton from "shared/ui/buttons/CommonButton";
+import ACTION_ICONS from "shared/ui/buttons/ActionIcons";
 import { useLoading } from "src/hooks/useLoading";
-import type { InputMaskTemplate, LeadFieldDetailed, LeadFieldPost, LeadFieldSection, LeadFieldTemplate, LeadFieldTypeDetailed } from "src/types/leadFields";
+import type { InputMaskTemplate, LeadFieldDetailed, LeadFieldPost, LeadFieldTemplate, LeadFieldTypeDetailed } from "src/types/leadFields";
 import type { Campaign, CampaignDetailed } from "src/types/campaigns";
 import type { Nomenclator } from "src/types/nomenclators";
-import { createLeadField, getFieldSections, getFieldTemplates, getFieldTypes, getInputMaskTemplates, updateLeadField } from "./leadFieldServices";
+import { createLeadField, getFieldTemplates, getFieldTypes, getInputMaskTemplates, updateLeadField } from "./leadFieldServices";
 import { getNomenclators } from "../nomenclators/nomenclatorService";
 import { getCampaigns } from "../campaigns/campaignServices";
 import { getFieldDataByType } from "./leadFieldUtils";
 import { setFormErrors } from "src/utils/forms";
 import { showToast } from "src/utils/feedback";
-import { useForm, useWatch, type Control, type FieldErrors, type UseFormRegister } from "react-hook-form";
-import { Grid, FormGroup, Typography, ButtonGroup, Stack } from "@mui/material";
+import { Grid, FormGroup, Stack, Divider, ButtonGroup } from "@mui/material";
+import { Controller, useForm, useWatch, type Control, type FieldErrors, type UseFormGetValues, type UseFormSetValue } from "react-hook-form";
+import { InputAdornment, IconButton } from "@mui/material";
+import { getExcelFormulaTemplates } from "./leadFieldServices";
+import type { ExcelFormulaTemplate } from "src/types/leadFields";
+import { FormulaHelperPanel } from "src/components/ui/modals/FormulaHelperModal";
+import FunctionsIcon from '@mui/icons-material/Functions';
+import { FormControl, InputLabel, OutlinedInput, FormHelperText, } from "@mui/material";
+import { getFieldSections } from "../orgProperties/fieldSections/fieldSectionsServices";
+import type { LeadFieldSection } from "src/types/orgProperties";
+
 
 interface LeadFieldSidebarProps {
   existingLF?: LeadFieldDetailed,
@@ -42,12 +53,16 @@ export const LeadFieldFormSidebar = ({ existingLF, campaign, updateEntityOnList,
       })
     } else {
       return updateLeadField(data, existingLF.id).then(res => {
-        showToast(`El campo "${res.name}" se ha actuializado con éxito`)
+        showToast(`El campo "${res.name}" se ha actualizado con éxito`)
         updateInfo(res)
       })
     }
   }
-  return <LeadFieldForm existingLF={existingLF} campaign={campaign} submit={submit} onCancel={closeSidebar} />
+  return <SidebarContentWrapper subtitle={campaign.name}
+    title={existingLF ? `Modificar "${existingLF.name}"` : "Crear Campo"}
+    icon={ACTION_ICONS.CREATE}>
+    <LeadFieldForm existingLF={existingLF} campaign={campaign} submit={submit} onCancel={closeSidebar} />
+  </SidebarContentWrapper>
 }
 
 export interface LeadFieldPostCreation extends LeadFieldPost {
@@ -69,7 +84,7 @@ export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFi
   const [fieldTypes, setFieldTypes] = useState<LeadFieldTypeDetailed[]>([]);
   const [nomenclators, setNomenclators] = useState<Nomenclator[]>([]);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-
+  const [excelFormulas, setExcelFormulas] = useState<ExcelFormulaTemplate[]>([]);
 
   useEffect(() => {
     getFieldTemplates().then(setFieldTemplates);
@@ -77,7 +92,10 @@ export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFi
     getFieldSections({ only_active: true, page_size: 0 }).then(res => setFieldSections(res.items));
     getFieldTypes({ detailed: true, page_size: 0 }).then(res => setFieldTypes(res.items));
     getCampaigns({ only_active: true, page_size: 0 }).then(res => setCampaigns(res.items));
+    getExcelFormulaTemplates().then(setExcelFormulas).catch(console.error);
   }, []);
+
+
 
   useEffect(() => {
     if (!campaign.id) return;
@@ -91,8 +109,8 @@ export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFi
       campaign_id: campaign.id,
       name: existingLF?.name ?? null,
       lead_field_section_id: existingLF?.lead_field_section?.id ?? 1,
-      field_type_code: existingLF?.field_type_code ?? null,
-      field_subtype_code: existingLF?.field_subtype_code ?? null,
+      field_type_code: existingLF?.field_type_code ?? "STRING",
+      field_subtype_code: existingLF?.field_subtype_code ?? "NULL",
       calculation_expression: existingLF?.calculation_expression ?? null,
       default_value: existingLF?.default_value ?? null,
       input_mask: existingLF?.input_mask ?? null,
@@ -102,13 +120,14 @@ export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFi
       is_primary: existingLF?.is_primary ?? false,
       is_visible: existingLF?.is_visible ?? true,
       field_template_code: "FIRST_NAME",
-      creation_method: "manual",
-      input_mask_method: existingLF ? "template" : "manual"
+      creation_method: existingLF?.field_template_code ? "template" : "manual",
+      input_mask_method: existingLF?.mask_template_code ? "template" : "manual",
+      mask_template_code: existingLF?.mask_template_code ?? "NULL"
     })
     , [existingLF, campaign])
 
 
-  const { register, control, handleSubmit, reset, formState: { errors }, setError } = useForm<LeadFieldPostCreation>({ defaultValues });
+  const { register, control, handleSubmit, reset, formState: { errors }, setError, setValue, getValues } = useForm<LeadFieldPostCreation>({ defaultValues });
 
   //Activa cuando cambian el LeadField seleccionado o la campaña.
   useEffect(() => { reset(defaultValues) }, [reset, defaultValues])
@@ -135,42 +154,37 @@ export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFi
   };
 
   return (
-    <form onSubmit={handleSubmit(data => saveFieldLoad(data, false))}>
-      <Stack spacing={3}>
-        {!existingLF ? (
-          <Typography variant="h1">
-            Crear Campo para: "{campaign?.name}"
-          </Typography>
-        ) : (
-          <Typography variant="h1">
-            Modificar el Campo {existingLF?.name} para: {campaign?.name}
-          </Typography>
-        )}
-        <Stack spacing={2}>
-          <LeadFieldFormFields templates={fieldTemplates} sections={fieldSections}
-            nomenclators={nomenclators} campaigns={campaigns} types={fieldTypes}
-            errors={errors} register={register} control={control} maskTemplates={maskTemplates}
-            campaignId={campaign.id} existingLFId={existingLF?.id}
-          />
-
-          <Stack spacing={.5}>
-            <ButtonGroup fullWidth={!existingLF} sx={{ alignSelf: "end" }}>
-              <CommonButton actionType="CLOSE" variant="text" onClick={onCancel} disabled={loading} color="error">
-                Cancelar
-              </CommonButton>
-              <CommonButton actionType={existingLF ? "MODIFY" : "CREATE"} variant="contained" type="submit" loading={loading}>
-                Guardar
-              </CommonButton>
-            </ButtonGroup>
+    <form id="lead-field-form"
+      onSubmit={handleSubmit(data => saveFieldLoad(data, false))} style={{ height: "100%" }}>
+      <input
+        type="hidden"
+        {...register("campaign_id", { value: campaign.id })}
+      />
+      <SidebarContentActionsWrapper
+        actions={
+          <ButtonGroup>
+            <CommonButton actionType="CLOSE" variant="outlined"
+              onClick={onCancel} disabled={loading} color="error">
+              Cancelar
+            </CommonButton>
             {!existingLF && (
-              <CommonButton actionType="CREATE" variant="contained" onClick={handleSubmit(onSubmitAndReset)} loading={loading} >
+              <CommonButton actionType="CREATE" variant="outlined" onClick={handleSubmit(onSubmitAndReset)} loading={loading} >
                 Guardar y crear otro
               </CommonButton>
             )}
-          </Stack>
-        </Stack>
-      </Stack>
-    </form>
+            <CommonButton actionType={existingLF ? "MODIFY" : "CREATE"}
+              variant="contained" type="submit" loading={loading}>
+              Guardar
+            </CommonButton>
+          </ButtonGroup>
+        }>
+        <LeadFieldFormFields templates={fieldTemplates} sections={fieldSections}
+          nomenclators={nomenclators} campaigns={campaigns} types={fieldTypes}
+          errors={errors} control={control} maskTemplates={maskTemplates}
+          existingLFId={existingLF?.id} formulas={excelFormulas} setValue={setValue} getValues={getValues}
+        />
+      </SidebarContentActionsWrapper>
+    </form >
   );
 };
 
@@ -181,22 +195,29 @@ interface LeadFieldFormFieldsProps {
   types: LeadFieldTypeDetailed[];
   nomenclators: Nomenclator[];
   campaigns: Campaign[];
-  register: UseFormRegister<LeadFieldPostCreation>;
   control: Control<LeadFieldPostCreation>;
-  campaignId: number;
   errors: FieldErrors<LeadFieldPostCreation>;
-  existingLFId?: number
+  existingLFId?: number;
+  formulas: ExcelFormulaTemplate[];
+  setValue: UseFormSetValue<LeadFieldPostCreation>;
+  getValues: UseFormGetValues<LeadFieldPostCreation>;
 }
 
 const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenclators, campaigns,
-  register, control, campaignId, existingLFId, errors }: LeadFieldFormFieldsProps) => {
+  control, existingLFId, errors, formulas, setValue, getValues }: LeadFieldFormFieldsProps) => {
 
+  const [openFormulaModal, setOpenFormulaModal] = useState(false);
   const creationMethod = useWatch({ name: "creation_method", control });
   const inputMaskMethod = useWatch({ name: "input_mask_method", control });
   const creationMethodRadioOptions = [
     { label: "Por Plantilla", value: "template" },
     { label: "Manual", value: "manual" },
   ];
+
+  const required = useWatch({ name: "required", control });
+  const primary = useWatch({ name: "is_primary", control });
+  const visible = useWatch({ name: "is_visible", control });
+
 
   const fieldTypeCode = useWatch({ name: "field_type_code", control });
   //Busca el objeto del Tipo seleccionado a partir de su código
@@ -206,12 +227,8 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
   );
 
   return (
-    <Stack spacing={1} sx={{ justifyContent: "center" }}>
-      <input
-        type="hidden"
-        {...register("campaign_id", { value: campaignId })}
-      />
-      <Grid size={12} spacing={.5} container sx={{ minWidth: "20rem" }}>
+    <Stack spacing={2} sx={{ justifyContent: "center" }}>
+      <Grid spacing={1} container sx={{ minWidth: "20rem" }}>
         <Grid size="grow" sx={{ minWidth: "20rem" }}>
           <ControlledTextInput
             control={control}
@@ -235,55 +252,56 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
           />
         </Grid>
         <Grid size="grow" sx={{ minWidth: "20rem", justifyContent: "center" }} >
-          <FormGroup row sx={{ my: .5, mx: 1 }}>
+          <FormGroup row sx={{ my: .5, mx: 1, justifyContent: "space-evenly" }}>
             <ControlledCheckbox
               control={control}
               name="required"
               label="Obligatorio"
               errorMessage={errors?.required?.message}
+              tooltip={`El campo ${required ? "no" : ""} podrá estar vacio.`}
             />
             <ControlledCheckbox
               control={control}
               name="is_primary"
               label="Único"
               errorMessage={errors?.is_primary?.message}
+              tooltip={`El valor ${primary ? "no" : ""}  podrá repetirse entre leads.`}
             />
             <ControlledCheckbox
               control={control}
               name="is_visible"
               label="Visible"
               errorMessage={errors?.is_visible?.message}
+              tooltip={`El campo ${!visible ? "no" : ""}  se verá en formularios.`}
             />
           </FormGroup>
         </Grid>
       </Grid>
-
-      <Grid size={12} spacing={.5} container sx={{ minWidth: "20rem" }}>
-        {!existingLFId &&
-          <Grid size="grow" sx={{ minWidth: "20rem", justifyContent: "center" }} >
-            <ControlledRadio control={control} name="creation_method" label="Método de Creación" options={creationMethodRadioOptions}
-              getRadioLabel={option => option.label} keyField="value" returnField="value" row />
-          </Grid>}
-
-        {creationMethod === "template" && !existingLFId ? (
-          <Grid size="grow" sx={{ minWidth: "20rem", justifyContent: "center" }} >
-            <ControlledAutocomplete
-              name="field_template_code"
-              label="Plantillas"
-              control={control}
-              options={templates}
-              returnField="code"
-              errorMessage={errors?.field_template_code?.message}
-              getOptionKey={(option) => option.code}
-              getOptionLabel={(option) => option.name}
-              required
-            />
-          </Grid>
-        ) : (
-          <>
-            {!existingLFId &&
+      {!existingLFId &&
+        <>
+          <Divider />
+          <Grid spacing={1} container sx={{ minWidth: "20rem" }}>
+            <Grid size="auto" sx={{ justifyContent: "center" }} >
+              <ControlledRadio control={control} name="creation_method" label="Método de Creación" options={creationMethodRadioOptions}
+                getRadioLabel={option => option.label} keyField="value" returnField="value" row />
+            </Grid>
+            {creationMethod === "template" ? (
+              <Grid size="grow" sx={{ minWidth: "17rem", justifyContent: "center" }} >
+                <ControlledAutocomplete
+                  name="field_template_code"
+                  label="Plantillas"
+                  control={control}
+                  options={templates}
+                  returnField="code"
+                  errorMessage={errors?.field_template_code?.message}
+                  getOptionKey={(option) => option.code}
+                  getOptionLabel={(option) => option.name}
+                  required
+                />
+              </Grid>
+            ) : (
               <>
-                <Grid size="grow" sx={{ minWidth: "20rem", justifyContent: "center" }} >
+                <Grid size="grow" sx={{ minWidth: "17rem", justifyContent: "center" }} >
                   <ControlledAutocomplete
                     name="field_type_code"
                     label="Tipo de Dato"
@@ -303,9 +321,8 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
                         name="field_subtype_code"
                         label="Subtipo de Campo"
                         errorMessage={errors?.field_subtype_code?.message}
-                        required
                         control={control}
-                        options={fieldTypeObject?.subtypes}
+                        options={[{ description: "Sin subtipo", code: "NULL" }, ...fieldTypeObject.subtypes]}
                         returnField="code"
                         getOptionLabel={option => option.description}
                         getOptionKey={option => option.code}
@@ -342,66 +359,118 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
                     />
                   </Grid>
                 )}
-              </>}
-            {fieldTypeCode === "CALCULATED" && (
-              <Grid size="grow" sx={{ minWidth: "20rem", justifyContent: "center" }} >
-                <ControlledTextInput
-                  name="calculation_expression"
-                  label="Fórmula"
-                  control={control}
-                  errorMessage={errors?.calculation_expression?.message}
-                  required
-                />
-              </Grid>
-            )}
-            {fieldTypeCode === "STRING" && !existingLFId && (
-              <Grid size={12} container sx={{ minWidth: "20rem", justifyContent: "center" }} spacing={1}>
-                <Grid size="grow" sx={{ minWidth: "20rem", justifyContent: "center" }} >
-                  <ControlledRadio control={control} name="input_mask_method" label="Método de Carga de Máscara" options={creationMethodRadioOptions}
-                    getRadioLabel={option => option.label} keyField="value" returnField="value" row />
-                </Grid>
-                {inputMaskMethod === "template" ?
-                  <Grid size="grow" sx={{ minWidth: "20rem", justifyContent: "center" }} >
-                    <ControlledAutocomplete
-                      name="mask_template_code"
-                      label="Máscara de Campo"
+                {fieldTypeCode === "CALCULATED" && (
+                  <Grid size="grow" sx={{ minWidth: "20rem", display: "flex", flexDirection: "column" }}>
+                    <Controller
+                      name="calculation_expression"
                       control={control}
-                      options={maskTemplates}
-                      returnField="code"
-                      errorMessage={errors?.mask_template_code?.message}
-                      getOptionKey={(option) => option.code}
-                      getOptionLabel={(option) => option.name}
+                      rules={{ required: "La fórmula es obligatoria" }}
+                      render={({ field: { ref, value, ...fieldParams }, fieldState }) => (
+                        <FormControl fullWidth error={!!fieldState.error} required variant="outlined">
+                          <InputLabel
+                            htmlFor="formula-input"
+                            shrink={value ? true : undefined}
+                          >
+                            Fórmula
+                          </InputLabel>
+                          <OutlinedInput
+                            {...fieldParams}
+                            value={value || ""}
+                            inputRef={ref}
+                            id="formula-input"
+                            label="Fórmula"
+                            notched={value ? true : undefined}
+                            endAdornment={
+                              <InputAdornment position="end">
+                                <IconButton
+                                  onClick={() => setOpenFormulaModal(!openFormulaModal)} // <-- Ahora hace Toggle (Abre/Cierra)
+                                  edge="end"
+                                  color={openFormulaModal ? "secondary" : "primary"} // <-- Cambia de color si está abierto
+                                  title="Asistente de Fórmulas"
+                                >
+                                  <FunctionsIcon />
+                                </IconButton>
+                              </InputAdornment>
+                            }
+                          />
+                          {fieldState.error && (
+                            <FormHelperText>{fieldState.error.message}</FormHelperText>
+                          )}
+                        </FormControl>
+                      )}
                     />
-                  </Grid> :
-                  <Grid size="grow" sx={{ minWidth: "20rem", justifyContent: "center" }} >
-                    < ControlledTextInput
-                      name="input_mask"
-                      label="Máscara de Campo"
-                      control={control}
-                      errorMessage={errors?.input_mask?.message}
-                    />
+
+                    {/* El Panel Colapsable del Asistente */}
+                    <FormulaHelperPanel
+                      open={openFormulaModal}
+                      formulas={formulas}
+                      onInsert={(formulaName) => {
+                        const currentVal = getValues("calculation_expression") || "";
+                        setValue("calculation_expression", `${currentVal}${formulaName}()`, {
+                          shouldValidate: true,
+                          shouldDirty: true
+                        });
+                      }} />
                   </Grid>
+                )
                 }
+                {
+                  (creationMethod === "template" ||
+                    (fieldTypeCode &&
+                      ["NUMBER", "INT", "STRING", "BOOL", "RATING"].includes(fieldTypeCode))) && (
+                    <Grid size="grow" sx={{ minWidth: "20rem" }}>
+                      <ControlledTextInput
+                        control={control}
+                        label="Valor por Defecto"
+                        name="default_value"
+                        errorMessage={errors?.default_value?.message}
+                      />
+                    </Grid>
+                  )
+                }
+              </>)
+            }
+          </Grid >
+        </>}
+      {
+        fieldTypeCode === "STRING" && !existingLFId && (
+          <>
+            <Divider />
+            <Grid spacing={1} container sx={{ minWidth: "20rem" }}>
+              <Grid size="auto" sx={{ justifyContent: "center" }} >
+                <ControlledRadio control={control} name="input_mask_method" label="Método de Carga de Máscara" options={creationMethodRadioOptions}
+                  getRadioLabel={option => option.label} keyField="value" returnField="value" row />
               </Grid>
-            )}
-          </>
-        )}
-        {(creationMethod === "template" ||
-          (fieldTypeCode &&
-            ["NUMBER", "INT", "STRING", "BOOL", "RATING"].includes(fieldTypeCode))) && (
-            <Grid size="grow" sx={{ minWidth: "20rem" }}>
-              <ControlledTextInput
-                control={control}
-                label="Valor por Defecto"
-                name="default_value"
-                errorMessage={errors?.default_value?.message}
-              />
+              {inputMaskMethod === "template" ?
+                <Grid size="grow" sx={{ minWidth: "17rem", justifyContent: "center" }} >
+                  <ControlledAutocomplete
+                    name="mask_template_code"
+                    label="Máscara de Campo"
+                    control={control}
+                    options={[{ code: "NULL", name: "Sin máscara" }, ...maskTemplates]}
+                    returnField="code"
+                    errorMessage={errors?.mask_template_code?.message}
+                    getOptionKey={(option) => option.code}
+                    getOptionLabel={(option) => option.name}
+                  />
+                </Grid> :
+                <Grid size="grow" sx={{ minWidth: "17rem", justifyContent: "center" }} >
+                  <ControlledTextInput
+                    name="input_mask"
+                    label="Máscara de Campo"
+                    control={control}
+                    errorMessage={errors?.input_mask?.message} />
+                </Grid>
+              }
             </Grid>
-          )}
-      </Grid>
-      {errors.root && (
-        <FormErrorMessage>{errors?.root?.message}</FormErrorMessage>
-      )}
-    </Stack>
+          </>)
+      }
+
+      {
+        errors.root && (
+          <FormErrorMessage>{errors?.root?.message}</FormErrorMessage>
+        )
+      }
+    </Stack >
   );
 };

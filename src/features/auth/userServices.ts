@@ -1,23 +1,77 @@
 import type { Paginable } from "src/types/shared"
-import type { UserData, UserLogin, UserSignup } from "src/types/users"
+import type { TokenResponse, UserData, UserLogin, UserSignup, InviteRequest, InviteResponse } from "src/types/users"
 import axiosCRM from "src/lib/axios"
 
-export const getUsers = async ():
-    Promise<Paginable<UserData>> => {
-    const org = await axiosCRM.get(`users`)
-    return org.data
+export const getUsers = async (): Promise<Paginable<UserData>> => {
+    const res = await axiosCRM.get("users")
+    return res.data
 }
-export const loginUser = async (data: UserLogin): Promise<UserData> => {
-    console.info(data)
-    const users = await getUsers()
-    return users.items[0]
-    //if (data.password !== "PASSWORD") throw new Error("Contraseña incorrecta.")
-    //const foundUser = users.items.find(user => user.email === data.email)
-    //if (foundUser) return foundUser
-    //throw new Error("Usuario o contraseña incorrecta.")
+
+export const loginUser = async (data: UserLogin): Promise<TokenResponse> => {
+    const res = await axiosCRM.post("/auth/login", {
+        email: data.email,
+        password: data.password,
+    })
+    return res.data
 }
-export const signupUser = async (data: UserSignup): Promise<UserData> => {
-    if (data.password !== data.repeat_password) throw new Error("Las contraseñas no coinciden.")
-    const users = await getUsers()
-    return users.items[0]
+
+export const registerUser = async (data: UserSignup): Promise<TokenResponse> => {
+    const res = await axiosCRM.post("/auth/register", {
+        name: data.name,
+        last_name: data.last_name,
+        email: data.email,
+        password: data.password,
+        phone: data.phone || undefined,
+        date_of_birth: data.date_of_birth || undefined,
+    })
+    return res.data
 }
+
+export const getCurrentUser = async (): Promise<UserData> => {
+    const res = await axiosCRM.get("/auth/me")
+    return res.data
+}
+
+export const refreshTokens = async (refreshToken: string): Promise<TokenResponse> => {
+    const res = await axiosCRM.post("/auth/refresh", { refresh_token: refreshToken })
+    return res.data
+}
+
+export const logout = async (refreshToken: string): Promise<void> => {
+    await axiosCRM.post("/auth/logout", { refresh_token: refreshToken })
+}
+
+export const changePassword = async (currentPassword: string, newPassword: string): Promise<void> => {
+    await axiosCRM.post("/auth/change-password", {
+        current_password: currentPassword,
+        new_password: newPassword,
+    })
+}
+
+export interface UserProfileUpdate {
+    name?: string
+    last_name?: string
+    email?: string
+    phone?: string
+    date_of_birth?: string
+}
+
+export const updateCurrentUser = async (data: UserProfileUpdate): Promise<void> => {
+    await axiosCRM.put("/auth/me", data)
+}
+
+export const inviteUser = async (data: InviteRequest): Promise<InviteResponse> => {
+    const res = await axiosCRM.post("/auth/invite", data)
+    return res.data
+}
+
+export const acceptInvite = async (invite_token: string, name: string, password: string): Promise<TokenResponse> => {
+    const res = await axiosCRM.post("/auth/accept-invite", null, {
+        params: { invite_token, name, password }
+    })
+    return res.data
+}
+
+// aliases
+export const signupUser = registerUser
+export const logoutUser = logout

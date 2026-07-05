@@ -72,3 +72,8 @@ export const saveLeadFlowGraph = async (payload: unknown): Promise<{ message: st
     const response = await axiosCRM.post(`/lead_flows/graph`, payload);
     return response.data;
 };
+
+export const getNextFlowState = async (stateId: number): Promise<{ data: LeadState[] }> => {
+    const leadFlows = await axiosCRM.get(`/lead_states/${stateId}/next-states`)
+    return leadFlows.data
+}

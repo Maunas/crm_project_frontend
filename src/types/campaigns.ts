@@ -6,10 +6,12 @@ export interface CampaignPost {
   description?: string;
   workspace_id: number;
   lead_flow_id?: number;
+  target_audience?: string | null;
 }
-export interface Campaign extends CampaignPost {
+export interface Campaign extends Omit<CampaignPost, "workspace_id"> {
   id: number;
   organization_id: number | null;
+  workspace_id: number | null;
 }
 
 export interface CampaignDetailed extends Campaign, Metadata { }
@@ -35,4 +37,6 @@ export interface OrganizationPost {
 export interface Organization extends OrganizationPost {
   id: number;
 }
-export interface OrganizationDetailed extends Organization, Metadata { }
+export interface OrganizationDetailed extends Organization, Metadata {
+  active: boolean;
+}

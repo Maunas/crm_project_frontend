@@ -8,6 +8,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import { HeaderSearchBar } from 'features/search/GeneralSearchBar';
 import { drawerWidth } from './Sidebar';
 import UserInfo from './HeaderMenu';
+import { Divider } from '@mui/material';
 
 interface AppBarProps extends MuiAppBarProps {
   open?: boolean;
@@ -46,8 +47,8 @@ interface HeaderProps extends MuiAppBarProps {
 export default function Header({ handleDrawerOpen, open }: HeaderProps) {
 
   return (
-    <HeaderBar position="sticky" open={open}  >
-      <Toolbar>
+    <HeaderBar position="sticky" elevation={4} data-noborder open={open}  >
+      <Toolbar >
         <IconButton size="large" edge="start" aria-label="open drawer"
           sx={[
             {
@@ -66,6 +67,7 @@ export default function Header({ handleDrawerOpen, open }: HeaderProps) {
         <Box sx={{ flexGrow: 1 }} />
         <UserInfo />
       </Toolbar>
+      <Divider />
     </HeaderBar>
   );
 }

@@ -2,6 +2,7 @@ import '@mui/material/styles';
 
 export type ColorTypes = "primary" | "secondary" | "contrast" | "info" | "success" | "warning" | "error"
 
+export const colorTypesArray = ["primary", "secondary", "contrast", "info", "success", "warning", "error"]
 
 declare module '@mui/material/styles' {
   interface Palette {
@@ -49,6 +50,7 @@ declare module '@mui/material/Chip' {
   }
   interface ChipOwnProps {
     defaultColor?: ColorTypes;
+    chipColor?: string,
   }
 }
 declare module '@mui/material/Chip' {
@@ -66,8 +68,9 @@ declare module '@mui/material/LinearProgress' {
 }
 declare module '@mui/material/ListItem' {
   interface ListItemOwnProps {
-    selected?: boolean;
+    isSelected?: boolean;
     alwaysShowSecondary?: boolean;
+    color?: ColorTypes;
   }
 }
 declare module '@mui/material/ListItemAvatar' {
@@ -79,5 +82,17 @@ declare module '@mui/material/ListItemAvatar' {
 declare module '@mui/material/Button' {
   interface ButtonPropsColorOverrides {
     contrast: true;
+  }
+}
+
+declare module '@mui/material/Paper' {
+  interface PaperOwnProps {
+    "data-noborder"?: true;
+  }
+}
+
+declare module '@mui/material/Avatar' {
+  interface AvatarOwnProps {
+    "size"?: "small" | "medium";
   }
 }

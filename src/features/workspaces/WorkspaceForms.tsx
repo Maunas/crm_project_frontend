@@ -21,7 +21,7 @@ interface WorkspaceSidebarProps {
 export const WorkspaceFormSidebar = ({ existingWsp, closeSidebar, handleSidebar, updateEntityOnList }: WorkspaceSidebarProps) => {
 
     const handleClose = useCallback(() => {
-        if (existingWsp) handleSidebar("DETAILS_ORG", existingWsp)
+        if (existingWsp) handleSidebar("DETAILS_WSP", existingWsp)
         else closeSidebar()
     }, [existingWsp, closeSidebar, handleSidebar])
 

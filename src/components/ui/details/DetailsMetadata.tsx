@@ -9,27 +9,28 @@ interface DetailsMetadataProps<T extends Metadata> {
 }
 
 export default function DetailsMetadata<T extends Metadata>({ entity }: DetailsMetadataProps<T>) {
-    return (<Grid container spacing={1} size="grow"
-        sx={{ minWidth: "20rem" }}>
-        <Grid size="grow" sx={{ minWidth: "18rem" }}>
-            <Typography variant="body1" sx={{ fontWeight: "bold" }}>
-                Fecha de creación:
-            </Typography>
-            <Typography variant="body1" sx={{ textTransform: "capitalize", pl: 2 }}>
-                {formatDate(entity?.created_at, "dateTimeLong")}
-            </Typography>
-        </Grid>
-        {entity?.updated_at &&
-            <Grid size="grow" sx={{ minWidth: "18rem" }}>
-                <Typography variant="body1" sx={{ fontWeight: "bold" }}>
-                    Fecha de última modificación:
+    return (
+        <Grid container spacing={1} sx={{ minWidth: "20rem" }}>
+            <Grid size="grow" sx={{ minWidth: "12rem" }}>
+                <Typography variant="subtitle2" color="textSecondary">
+                    Fecha de creación:
                 </Typography>
-                <Typography variant="body1" sx={{ textTransform: "capitalize", pl: 2 }}>
-                    {formatDate(entity.updated_at, "dateTimeLong")}
+                <Typography variant="body1" sx={{ textTransform: "capitalize" }}>
+                    {formatDate(entity?.created_at, "dateTimeLong")}
                 </Typography>
             </Grid>
-        }
-    </Grid>);
+            {entity?.updated_at &&
+                <Grid size="grow" sx={{ minWidth: "12rem" }}>
+                    <Typography variant="subtitle2" color="textSecondary">
+                        Fecha de última modificación:
+                    </Typography>
+                    <Typography variant="body1" sx={{ textTransform: "capitalize" }}>
+                        {formatDate(entity.updated_at, "dateTimeLong")}
+                    </Typography>
+                </Grid>
+            }
+        </Grid>
+    );
 }
 
 

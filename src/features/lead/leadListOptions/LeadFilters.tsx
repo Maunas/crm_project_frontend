@@ -211,8 +211,8 @@ const LeadFormFieldType = memo(({ register, control, name, leadField, errorMessa
             return (<LeadFormRelatedLead control={control} name={name} options={[]} size="small"
                 label={LEAD_FORM_LABEL} required={required} errorMessage={errorMessage} showAdornment />)
         case "FILE":
-            return (<LeadFormFile register={register} name={name} required={required} size="small" label={LEAD_FORM_LABEL}
-                errorMessage={errorMessage} showAdornment />)
+            return (<LeadFormFile control={control} name={name} required={required} size="small" label={LEAD_FORM_LABEL}
+                errorMessage={errorMessage} showAdornment subtype={subtypeCode} />)
         case "SELECTOR":
             return (<LeadFormSelector control={control} name={name} options={[]} size="small"
                 label={LEAD_FORM_LABEL} subtype={subtypeCode} required={required} errorMessage={errorMessage} showAdornment />)
