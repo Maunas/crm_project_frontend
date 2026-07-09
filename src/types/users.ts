@@ -66,3 +66,8 @@ export interface InviteResponse {
     expires_in_hours: number
     message: string
 }
+
+export interface AcceptInviteResponse {
+    message: string
+    organization_id: number
+}

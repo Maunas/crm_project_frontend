@@ -8,7 +8,7 @@ import { AddBusinessOutlined, GroupAddOutlined } from "@mui/icons-material"
 import { useUserContext } from "src/stores/UserContext"
 import { createOrganization } from "src/features/organizations/organizationServices"
 import { acceptInvite } from "src/features/auth/userServices"
-import { tokenStore } from "src/lib/tokenStore"
+import { getErrorMessage } from "src/lib/axios"
 import { useForm } from "react-hook-form"
 
 // ── Crear organizacion ────────────────────────────────────────────────────
@@ -23,8 +23,7 @@ function CreateOrgCard({ onSuccess }: { onSuccess: () => void }) {
             await createOrganization({ name: data.name, description: data.description || undefined })
             onSuccess()
         } catch (e: any) {
-            const detail = e?.response?.data?.detail ?? "Error al crear la organizacion."
-            setError("root", { message: detail })
+            setError("root", { message: getErrorMessage(e, "Error al crear la organizacion.") })
         }
     }
 
@@ -74,18 +73,16 @@ function CreateOrgCard({ onSuccess }: { onSuccess: () => void }) {
 interface JoinForm { token: string }
 
 function JoinOrgCard({ onSuccess }: { onSuccess: () => void }) {
-    const { user } = useUserContext()
     const { register, handleSubmit, setError, formState: { errors, isSubmitting } } = useForm<JoinForm>()
 
     const submit = async (data: JoinForm) => {
         try {
-            // El backend une al usuario existente a la org (name/password se ignoran si ya tiene cuenta)
-            const tokens = await acceptInvite(data.token.trim(), user?.name ?? "usuario", "_placeholder_")
-            tokenStore.setTokens(tokens.access_token, tokens.refresh_token, tokenStore.isRemembered())
+            // El usuario ya está autenticado: el backend solo lo une a la org del token.
+            // No emite tokens nuevos, así que no hay que tocar el tokenStore.
+            await acceptInvite(data.token.trim())
             onSuccess()
         } catch (e: any) {
-            const detail = e?.response?.data?.detail ?? "Token invalido o expirado."
-            setError("root", { message: detail })
+            setError("root", { message: getErrorMessage(e, "Token invalido o expirado.") })
         }
     }
 
