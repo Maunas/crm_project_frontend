@@ -20,6 +20,15 @@ export interface TokenResponse {
     expires_in: number
 }
 
+// Versión reducida de usuario, usada para selects dentro de una organización (GET /users/in-org/members)
+export interface UserPublic {
+    id: number,
+    name: string,
+    last_name: string | null,
+    email: string,
+    active: boolean,
+}
+
 export interface UserData extends Metadata {
     id: number,
     name: string,

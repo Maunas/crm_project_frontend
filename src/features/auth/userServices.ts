@@ -1,9 +1,16 @@
 import type { Paginable } from "src/types/shared"
-import type { TokenResponse, UserData, UserLogin, UserSignup, InviteRequest, InviteResponse } from "src/types/users"
+import type { TokenResponse, UserData, UserLogin, UserSignup, InviteRequest, InviteResponse, UserPublic } from "src/types/users"
 import axiosCRM from "src/lib/axios"
 
 export const getUsers = async (): Promise<Paginable<UserData>> => {
     const res = await axiosCRM.get("users")
+    return res.data
+}
+
+// Usuarios de la organización activa (X-Organization-Id), sin requerir permisos de admin.
+// Útil para selects de asignación (ej: miembros de un equipo).
+export const getUsersInOrg = async (): Promise<UserPublic[]> => {
+    const res = await axiosCRM.get("/users/in-org/members")
     return res.data
 }
 
