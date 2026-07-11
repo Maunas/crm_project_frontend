@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { NomenclatorItemFormSidebar } from './NomenclatorItemForm'
 import { GenericSidebar } from 'shared/layout/container/GenericContainer'
 import { DisableConfirmDialog } from 'src/components/ui/feedback/ConfirmationDialog'
@@ -16,6 +16,14 @@ import { disableNomenclatorItem, enableNomenclatorItem, getNomenclatorItems } fr
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { useUserContext } from 'src/stores/UserContext'
 import { ButtonGroup, Grid, List, ListItemText, Stack, Typography } from '@mui/material'
+import { OrderMenu } from 'src/components/ui/lists/OrderMenu'
+
+const ORDER_NOM_ITEM_FIELDS = (hasParent: boolean) => [
+    { name: "value", label: "Orden Alfabético" },
+    { name: "created_at", label: "Fecha de creación" },
+    { name: "updated_at", label: "Fecha de última actualización" },
+    ...(hasParent ? [{ name: "parent_item_value", label: "Ítem padre" }] : []),
+]
 
 export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorDetailed }) => {
 
@@ -27,11 +35,14 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(nomenclatorItems, 12)
 
+    const [orderParams, setOrderParams] = useState<{ order_by: string | null, ascending: boolean }>({ order_by: null, ascending: true })
+    const [onlyActive, setOnlyActive] = useState<boolean>(false)
+
     const fetchNomItems = useCallback((fetchPage: number, pageSize: number, nomId: number) => {
-        return getNomenclatorItems({ only_active: false, detailed: true, page: fetchPage, page_size: pageSize, nomenclator_id: nomId })
+        return getNomenclatorItems({ only_active: onlyActive, detailed: true, page: fetchPage, page_size: pageSize, nomenclator_id: nomId, ...orderParams })
             .then(res => setNomenclatorItems(res))
             .catch(e => showCommonErrorToast(e, "Ha ocurrido un error al traer los ítems del nomenclador"))
-    }, [])
+    }, [orderParams, onlyActive])
 
     const { loading, fnWithLoading: fetchNomLoad } = useLoading(fetchNomItems)
 
@@ -107,6 +118,13 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
 
     const isBlocked = !nomenclator.organization_id && activeOrg?.id !== 0
 
+    const orderOptions = useMemo(() => ORDER_NOM_ITEM_FIELDS(Boolean(nomenclator.parent_nomenclator)), [nomenclator.parent_nomenclator])
+
+    const handleOrderChange = (orderBy: string | null, asc: boolean, onlyActive: boolean) => {
+        setOrderParams({ order_by: orderBy, ascending: asc })
+        setOnlyActive(onlyActive)
+    }
+
     return (
         <>
             <Stack spacing={1}>
@@ -119,6 +137,9 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
                             </CommonButton>
                         }
                     </ButtonGroup>
+                </Stack>
+                <Stack direction="row">
+                    <OrderMenu onOrderChange={handleOrderChange} id='nom-item-order-menu' options={orderOptions} canFilterActive />
                 </Stack>
                 <LoadingScreenWrapper loading={loading}>
                     {nomenclatorItems && nomenclatorItems.items?.length > 0 ?

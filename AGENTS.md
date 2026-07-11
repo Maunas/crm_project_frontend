@@ -1,7 +1,12 @@
 # CRM Project Frontend - Agent Instructions
 
 ## Project Overview
-CRM project frontend, with React 19 + TypeScript + Vite, MUI v9.1.0, React Router v7, and React Hook Form. Pure Vite SPA — do not use Next.js patterns.
+CRM for any kind of client, with a strong emphasis on personalization and parametrization.
+
+## Stack
+- React 19 + TypeScript + Vite for the frontend
+- Pure Vite SPA
+- MUI v9.1.0, React Router v7, and React Hook Form
 
 ## Commands
 ```bash
@@ -115,6 +120,7 @@ No test framework configured yet.
 - Don't touch the remote repository
 - Never use `any` - fix the underlying type or ask.
 - Never log or expose access_token/refresh_token values, even in debug output
+- Do not use Next.js patterns
 
 ## Docs
 - When you need to search docs, use Context7 if available

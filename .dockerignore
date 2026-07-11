@@ -36,3 +36,4 @@ README.*
 AGENTS.md
 skills-lock.json
 **/src/logs
+**/*.tsbuildinfo

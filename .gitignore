@@ -22,3 +22,17 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment files
+.env
+.env.*
+
+# Project logs
+src/logs/
+
+# Skills / agent config
+.agents/
+skills-lock.json
+
+# TypeScript incremental build cache
+*.tsbuildinfo
