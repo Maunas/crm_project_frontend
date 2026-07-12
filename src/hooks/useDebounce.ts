@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react"
+import { showCommonErrorToast } from "src/utils/feedback"
 /**Asegura un tiempo de "timeout" milisegundos antes de realizar la función.
  * Evita mandar una petición cuando el valor cambia rápidamente, por ejemplo, ante un onChange en un input.
  */
@@ -11,11 +12,19 @@ export const useDebounce = (timeout = 1000) => {
         return () => clearTimeout(idTimeout.current)
     }, [])
 
-    const debouncedFunction = useCallback((callback: () => Promise<void>) => {
+    const debouncedFunction = useCallback((callback: () => void) => {
         clearTimeout(idTimeout.current)
         idTimeout.current = setTimeout(() => {
-            setLoading(true)
-            callback().finally(() => setLoading(false))
+            try {
+                setLoading(true)
+                callback()
+            }
+            catch (e) {
+                showCommonErrorToast(e)
+            }
+            finally {
+                setLoading(false)
+            }
         }, timeout)
     }, [timeout])
 

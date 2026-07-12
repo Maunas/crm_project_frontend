@@ -5,18 +5,20 @@ import CheckIcon from '@mui/icons-material/Check';
 
 interface OrderMenuProps {
     id?: string,
-    onOrderChange: (orderBy: string | null, asc: boolean, active: boolean) => void,
+    onOrderChange: (orderBy?: string, asc?: boolean, active?: boolean) => void,
     options: { label: string, name: string }[],
     canFilterActive?: boolean
 }
+
+//Agregar created at y updated at
 
 export const OrderMenu = ({ id = "order-menu", onOrderChange, options, canFilterActive = false }: OrderMenuProps) => {
 
     const [orderMenu, setOrderMenu] = useState<HTMLButtonElement | null>(null)
     const open = Boolean(orderMenu);
 
-    const [orderBy, setOrderBy] = useState<string | null>(null)
-    const [asc, setAsc] = useState<boolean>(false)
+    const [orderBy, setOrderBy] = useState<string | undefined>(undefined)
+    const [asc, setAsc] = useState<boolean>(true)
     const [active, setActive] = useState<boolean>(false)
 
     const handleClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -27,7 +29,7 @@ export const OrderMenu = ({ id = "order-menu", onOrderChange, options, canFilter
     }
 
     const handleOrderByClick = (newOrderBy: string) => {
-        const newValue = newOrderBy === orderBy ? null : newOrderBy
+        const newValue = newOrderBy === orderBy ? undefined : newOrderBy
         setOrderBy(newValue)
         onOrderChange(newValue, asc, active)
     }
@@ -63,9 +65,11 @@ export const OrderMenu = ({ id = "order-menu", onOrderChange, options, canFilter
                     horizontal: 'right',
                 }}
             >
-                <List sx={{ maxHeight: "30rem", minWidth: "15rem", maxWidth: "25rem", overflowY: "auto" }} dense >
+                <List sx={{ maxHeight: "30rem", minWidth: "15rem", maxWidth: "25rem", overflowY: "auto" }} dense>
                     {options?.length > 0 && <>
-                        <ListSubheader sx={{ backgroundColor: "transparent" }} disableSticky>Ordenar por</ListSubheader>
+                        <ListSubheader sx={{ backgroundColor: "transparent", lineHeight: "2rem" }} component="div" id={`${id}-subheader`}>
+                            Ordenar por
+                        </ListSubheader>
                         {options?.map(op =>
                             <ListItemButton onClick={() => handleOrderByClick(op.name)}>
                                 <ListItemIcon>
