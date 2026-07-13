@@ -8,7 +8,7 @@ import ACTION_ICONS from "shared/ui/buttons/ActionIcons";
 import { useLoading } from "src/hooks/useLoading";
 import type { InputMaskTemplate, LeadFieldDetailed, LeadFieldPost, LeadFieldTemplate, LeadFieldTypeDetailed } from "src/types/leadFields";
 import type { Campaign, CampaignDetailed } from "src/types/campaigns";
-import type { Nomenclator } from "src/types/nomenclators";
+import type { NomenclatorDetailed } from "src/types/nomenclators";
 import { createLeadField, getFieldTemplates, getFieldTypes, getInputMaskTemplates, updateLeadField } from "./leadFieldServices";
 import { getNomenclators } from "../nomenclators/nomenclatorService";
 import { getCampaigns } from "../campaigns/campaignServices";
@@ -30,6 +30,7 @@ import type { LeadFieldSection } from "src/types/orgProperties";
 interface LeadFieldSidebarProps {
   existingLF?: LeadFieldDetailed,
   campaign: CampaignDetailed,
+  leadFields?: LeadFieldDetailed[] | null,
   updateEntityOnList: (entity: LeadFieldDetailed) => void,
   handleSidebar: (
     mode: string,
@@ -38,7 +39,7 @@ interface LeadFieldSidebarProps {
   closeSidebar: () => void,
 }
 //Wrapper de CampaignForm para crear desde un Sidebar
-export const LeadFieldFormSidebar = ({ existingLF, campaign, updateEntityOnList, closeSidebar, handleSidebar }: LeadFieldSidebarProps) => {
+export const LeadFieldFormSidebar = ({ existingLF, campaign, leadFields, updateEntityOnList, closeSidebar, handleSidebar }: LeadFieldSidebarProps) => {
 
   const submit = (data: LeadFieldPost, reset: boolean = false) => {
     const updateInfo = (data: LeadFieldDetailed) => {
@@ -61,7 +62,7 @@ export const LeadFieldFormSidebar = ({ existingLF, campaign, updateEntityOnList,
   return <SidebarContentWrapper subtitle={campaign.name}
     title={existingLF ? `Modificar "${existingLF.name}"` : "Crear Campo"}
     icon={ACTION_ICONS.CREATE}>
-    <LeadFieldForm existingLF={existingLF} campaign={campaign} submit={submit} onCancel={closeSidebar} />
+    <LeadFieldForm existingLF={existingLF} campaign={campaign} leadFields={leadFields} submit={submit} onCancel={closeSidebar} />
   </SidebarContentWrapper>
 }
 
@@ -73,16 +74,17 @@ export interface LeadFieldPostCreation extends LeadFieldPost {
 interface LeadFieldFormProps {
   existingLF?: LeadFieldDetailed,
   campaign: Campaign,
+  leadFields?: LeadFieldDetailed[] | null,
   submit: (data: LeadFieldPost, reset?: boolean) => Promise<void>,
   onCancel: () => void,
 }
-export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFieldFormProps) => {
+export const LeadFieldForm = ({ existingLF, campaign, leadFields, submit, onCancel }: LeadFieldFormProps) => {
 
   const [fieldTemplates, setFieldTemplates] = useState<LeadFieldTemplate[]>([]);
   const [maskTemplates, setMaskTemplates] = useState<InputMaskTemplate[]>([]);
   const [fieldSections, setFieldSections] = useState<LeadFieldSection[]>([]);
   const [fieldTypes, setFieldTypes] = useState<LeadFieldTypeDetailed[]>([]);
-  const [nomenclators, setNomenclators] = useState<Nomenclator[]>([]);
+  const [nomenclators, setNomenclators] = useState<NomenclatorDetailed[]>([]);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [excelFormulas, setExcelFormulas] = useState<ExcelFormulaTemplate[]>([]);
 
@@ -99,7 +101,8 @@ export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFi
 
   useEffect(() => {
     if (!campaign.id) return;
-    getNomenclators({ global_nomenclator: true, campaign_id: campaign.id, page_size: 0 }).then(
+    //Se pide detallado para conocer los nomencladores padre válidos de cada catálogo (feature de campos dependientes)
+    getNomenclators({ global_nomenclator: true, campaign_id: campaign.id, page_size: 0, detailed: true }).then(
       res => setNomenclators(res.items),
     );
   }, [campaign.id]);
@@ -116,6 +119,7 @@ export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFi
       input_mask: existingLF?.input_mask ?? null,
       nomenclator_id: existingLF?.nomenclator?.id ?? null,
       related_campaign_id: existingLF?.related_campaign?.id ?? null,
+      depends_on_field_id: existingLF?.depends_on_field_id ?? null,
       required: existingLF?.required ?? false,
       is_primary: existingLF?.is_primary ?? false,
       is_visible: existingLF?.is_visible ?? true,
@@ -179,7 +183,7 @@ export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFi
           </ButtonGroup>
         }>
         <LeadFieldFormFields templates={fieldTemplates} sections={fieldSections}
-          nomenclators={nomenclators} campaigns={campaigns} types={fieldTypes}
+          nomenclators={nomenclators} campaigns={campaigns} types={fieldTypes} leadFields={leadFields ?? []}
           errors={errors} control={control} maskTemplates={maskTemplates}
           existingLFId={existingLF?.id} formulas={excelFormulas} setValue={setValue} getValues={getValues}
         />
@@ -193,8 +197,9 @@ interface LeadFieldFormFieldsProps {
   maskTemplates: InputMaskTemplate[];
   sections: LeadFieldSection[];
   types: LeadFieldTypeDetailed[];
-  nomenclators: Nomenclator[];
+  nomenclators: NomenclatorDetailed[];
   campaigns: Campaign[];
+  leadFields: LeadFieldDetailed[];
   control: Control<LeadFieldPostCreation>;
   errors: FieldErrors<LeadFieldPostCreation>;
   existingLFId?: number;
@@ -203,7 +208,7 @@ interface LeadFieldFormFieldsProps {
   getValues: UseFormGetValues<LeadFieldPostCreation>;
 }
 
-const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenclators, campaigns,
+const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenclators, campaigns, leadFields,
   control, existingLFId, errors, formulas, setValue, getValues }: LeadFieldFormFieldsProps) => {
 
   const [openFormulaModal, setOpenFormulaModal] = useState(false);
@@ -225,6 +230,23 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
     () => (types ? types?.find(i => i.code === fieldTypeCode) : null),
     [types, fieldTypeCode],
   );
+
+  const nomenclatorId = useWatch({ name: "nomenclator_id", control });
+  //Campos válidos como "padre" de este: mismo tipo nomenclador, misma campaña, y su catálogo debe ser
+  //un padre válido (M2M) del catálogo elegido en este campo (ver nomencladores.md §8 y campos_personalizados.md §11)
+  const dependsOnFieldOptions = useMemo(() => {
+    const selectedNomenclator = nomenclators.find(nom => nom.id === nomenclatorId)
+    const validParentNomenclatorIds = new Set(selectedNomenclator?.parent_nomenclators?.map(parent => parent.id) ?? [])
+    if (validParentNomenclatorIds.size === 0) return []
+    //leadFields viene del endpoint detallado (GET /lead_fields?detailed=true), que no trae "nomenclator_id"
+    //suelto, solo el objeto anidado "nomenclator" (a diferencia del endpoint simple) — hay que usar field.nomenclator?.id
+    return leadFields.filter(field =>
+      field.id !== existingLFId &&
+      field.field_type_code === "SELECTOR" &&
+      field.nomenclator?.id != null &&
+      validParentNomenclatorIds.has(field.nomenclator.id)
+    )
+  }, [leadFields, nomenclators, nomenclatorId, existingLFId])
 
   return (
     <Stack spacing={2} sx={{ justifyContent: "center" }}>
@@ -462,6 +484,29 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
                     errorMessage={errors?.input_mask?.message} />
                 </Grid>
               }
+            </Grid>
+          </>)
+      }
+      {
+        //Se muestra en creación y edición (a diferencia del resto de los campos de tipo/subtipo/nomenclador, esta
+        //dependencia sí se puede modificar después de creado el campo, ver campos_personalizados.md §11).
+        //Solo tiene sentido mostrar el selector si hay candidatos válidos como padre.
+        fieldTypeCode === "SELECTOR" && dependsOnFieldOptions.length > 0 && (
+          <>
+            <Divider />
+            <Grid spacing={1} container sx={{ minWidth: "20rem" }}>
+              <Grid size="grow" sx={{ minWidth: "20rem", justifyContent: "center" }} >
+                <ControlledAutocomplete
+                  name="depends_on_field_id"
+                  label="Depende del Campo"
+                  control={control}
+                  options={dependsOnFieldOptions}
+                  returnField="id"
+                  errorMessage={errors?.depends_on_field_id?.message}
+                  getOptionKey={(option) => `${option.id}`}
+                  getOptionLabel={(option) => option.name}
+                />
+              </Grid>
             </Grid>
           </>)
       }

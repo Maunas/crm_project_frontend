@@ -36,11 +36,16 @@ export const NomenclatorDetails = ({ nomenclator, closeSidebar, handleSidebar, h
                 </ButtonGroup>
             }>
             <Stack spacing={2}>
-                {nomenclator.parent_nomenclator &&
+                {nomenclator.parent_nomenclators && nomenclator.parent_nomenclators.length > 0 &&
                     <Stack spacing={1}>
-                        <Stack spacing={1} direction="row">
-                            <Typography>Depende del nomenclador:</Typography>
-                            <Link component={RouterLink} to={`/nomenclators/${nomenclator.parent_nomenclator.id}`}>{nomenclator.parent_nomenclator.name}</Link>
+                        <Stack spacing={1} direction="row" useFlexGap sx={{ flexWrap: "wrap", alignItems: "center" }}>
+                            <Typography>Depende de:</Typography>
+                            {nomenclator.parent_nomenclators.map((parent, idx) =>
+                                <span key={parent.id}>
+                                    <Link component={RouterLink} to={`/nomenclators/${parent.id}`}>{parent.name}</Link>
+                                    {idx < nomenclator.parent_nomenclators.length - 1 && ", "}
+                                </span>
+                            )}
                         </Stack>
                         <Divider />
                     </Stack>

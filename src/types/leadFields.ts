@@ -53,7 +53,9 @@ export interface LeadFieldPost {
   related_campaign_id?: number | null;
   //Calculated
   calculation_expression?: string | null;
-  title_order?: number | null
+  title_order?: number | null;
+  //Selector/Checkbox dependiente de otro campo nomenclador de la misma campaña
+  depends_on_field_id?: number | null;
 }
 
 export interface LeadField extends Omit<LeadFieldPost, "lead_field_section_id"> {
