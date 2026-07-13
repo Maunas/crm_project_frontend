@@ -11,7 +11,9 @@ interface BasicMultipleInputProps<Option> {
     required?: boolean,
     errorMessage?: string | null,
     size?: "small" | "medium",
-    startAdornment?: InputProps["startAdornment"]
+    startAdornment?: InputProps["startAdornment"],
+    disabled?: boolean,
+    helper?: string,
 }
 
 interface BasicControlFormInput<T extends FieldValues, Option> extends BasicMultipleInputProps<Option> {
@@ -180,12 +182,12 @@ interface ControlledRadioProps<T extends FieldValues, Option> extends Omit<Basic
     isReturnInt?: boolean
 }
 export const ControlledRadio = <T extends FieldValues, Option>
-    ({ control, label, name, options, required = false, errorMessage = null, row = true,
+    ({ control, label, name, options, required = false, errorMessage = null, row = true, disabled = false, helper,
         returnField, isReturnInt = false, keyField, getRadioLabel, ...props }: ControlledRadioProps<T, Option>) => {
     return (
         <Controller control={control} name={name} render={({ field }) => {
             return (
-                <FormControl required={required} error={!!errorMessage}>
+                <FormControl required={required} error={!!errorMessage} disabled={disabled}>
                     <FormLabel id={name}>{label}</FormLabel>
                     <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
                         {props.startAdornment}
@@ -197,10 +199,13 @@ export const ControlledRadio = <T extends FieldValues, Option>
                                 options.map(option =>
                                     <FormControlLabel key={`${option[keyField]}`}
                                         value={isReturnInt ? Number(option[returnField]) : option[returnField]}
-                                        control={<Radio />} label={getRadioLabel(option)} />
+                                        control={<Radio disabled={disabled} />} label={getRadioLabel(option)} />
                                 )}
                         </RadioGroup>
                     </Stack>
+                    {helper &&
+                        <FormHelperText>{helper}</FormHelperText>
+                    }
                     {errorMessage &&
                         <FormErrorMessage>{errorMessage}</FormErrorMessage>
                     }
@@ -216,7 +221,7 @@ interface CtrlGroupedCheckboxProps<T extends FieldValues, Option> extends BasicC
     row?: boolean,
 }
 export const ControlledGroupedCheckbox = <T extends FieldValues, Option>
-    ({ control, label, name, options, required = false, errorMessage = null, returnField = null,
+    ({ control, label, name, options, required = false, errorMessage = null, returnField = null, disabled = false, helper,
         row = true, keyField, getCheckboxLabel, ...props }: CtrlGroupedCheckboxProps<T, Option>) => {
 
     return (
@@ -224,7 +229,10 @@ export const ControlledGroupedCheckbox = <T extends FieldValues, Option>
             <>
                 <GroupedCheckbox field={field} label={label} options={options}
                     returnField={returnField} keyField={keyField} getCheckboxLabel={getCheckboxLabel}
-                    row={row} required={required} errorMessage={errorMessage} {...props} />
+                    row={row} required={required} errorMessage={errorMessage} disabled={disabled} {...props} />
+                {helper &&
+                    <FormHelperText>{helper}</FormHelperText>
+                }
                 {errorMessage &&
                     <FormErrorMessage>{errorMessage}</FormErrorMessage>
                 }
@@ -243,7 +251,7 @@ interface GroupedCheckboxProps<T extends FieldValues, Option> extends BasicMulti
 
 //Los checkbox tienen sus campos individualmente. Este componente crea un mapa para devolver los valores como un arreglo.
 const GroupedCheckbox = <T extends FieldValues, Option>
-    ({ field, label, options, required = false, errorMessage = null, returnField = null,
+    ({ field, label, options, required = false, errorMessage = null, returnField = null, disabled = false,
         row = true, keyField, getCheckboxLabel, ...props }: GroupedCheckboxProps<T, Option>) => {
 
     const [checkboxState, setCheckboxState] = useState(() => {
@@ -272,7 +280,7 @@ const GroupedCheckbox = <T extends FieldValues, Option>
     }
 
     return (
-        <FormControl required={required} error={!!errorMessage}>
+        <FormControl required={required} error={!!errorMessage} disabled={disabled}>
             <FormLabel>{label}</FormLabel>
             <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
                 {props.startAdornment}
@@ -281,7 +289,7 @@ const GroupedCheckbox = <T extends FieldValues, Option>
                         <FormControlLabel key={`${option[keyField]}`} label={getCheckboxLabel(option)}
                             control={
                                 <Checkbox checked={checkboxState.has(option?.[keyField])} onChange={(e, value) => handleChange(e, value, option)}
-                                    name={`${option[keyField]}`} />
+                                    name={`${option[keyField]}`} disabled={disabled} />
                             }
                         />)
                     )}

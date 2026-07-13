@@ -25,11 +25,16 @@ export const NomenclatorItemDetails = ({ item, closeSidebar, handleSidebar, hand
             <Stack spacing={2} >
                 {!item.organization_id && <Typography variant="body1" sx={{ fontStyle: "italic" }} >Nomenclador del Sistema</Typography>}
                 <Divider />
-                {item.parent_item &&
+                {item.parent_items && item.parent_items.length > 0 &&
                     <>
-                        <Stack direction="row" spacing={.5} sx={{ alignItems: "center" }}>
-                            <Typography variant="body1">Depende del Item de Nomenclador:</Typography>
-                            <Link href={`/nomenclators/${item.parent_item.nomenclator_id}?selected=${item.parent_item.id}`}>{item.parent_item.value}</Link>
+                        <Stack direction="row" spacing={.5} useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
+                            <Typography variant="body1">Depende de:</Typography>
+                            {item.parent_items.map((parent, idx) =>
+                                <span key={parent.id}>
+                                    <Link href={`/nomenclators/${parent.nomenclator_id}?selected=${parent.id}`}>{parent.value}</Link>
+                                    {idx < item.parent_items.length - 1 && ", "}
+                                </span>
+                            )}
                         </Stack>
                         <Divider />
                     </>}

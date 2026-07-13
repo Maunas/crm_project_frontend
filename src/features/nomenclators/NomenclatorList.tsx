@@ -149,9 +149,9 @@ export const NomenclatorList = () => {
                                                         <Stack spacing={.5} direction="row" sx={{ alignItems: "center" }}>
                                                             <EnabledIcon active={nom.active} size="small" />
                                                             <Stack spacing={-.5}>
-                                                                {nom.parent_nomenclator &&
+                                                                {nom.parent_nomenclators && nom.parent_nomenclators.length > 0 &&
                                                                     <Typography variant="caption" color="textSecondary" sx={{ fontWeight: 500, textTransform: "uppercase", wordBreak: "break-word" }}>
-                                                                        {nom.parent_nomenclator.name}
+                                                                        {nom.parent_nomenclators.map(parent => parent.name).join(", ")}
                                                                     </Typography>}
                                                                 <Typography sx={{ fontWeight: 500, wordBreak: "break-word" }}>{nom.name}</Typography>
                                                             </Stack>

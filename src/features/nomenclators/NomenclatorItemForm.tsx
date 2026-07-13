@@ -67,17 +67,29 @@ export const NomenclatorItemForm = ({ existingNom, nomenclator, submit, onCancel
     const defaultValues = useMemo(() => ({
         value: existingNom?.value ?? null,
         nomenclator_id: existingNom?.nomenclator_id ?? nomenclator?.id ?? null,
-        parent_item_id: existingNom?.parent_item?.id ?? null,
+        parent_item_ids: existingNom?.parent_items?.map(parent => parent.id) ?? [],
     }), [existingNom, nomenclator])
 
     const { control, handleSubmit, reset, formState: { errors }, setError } = useForm<NomenclatorItemPost>({ defaultValues })
 
     const [nomenclatorItems, setNomenclatorItems] = useState<NomenclatorItem[]>([])
 
+    //Los ítems padre válidos son los de cualquiera de los nomencladores declarados como padre del catálogo (M2M)
+    const parentNomenclatorIds = useMemo(() => nomenclator?.parent_nomenclators?.map(parent => parent.id) ?? [], [nomenclator])
+
     useEffect(() => {
-        if (!nomenclator?.parent_nomenclator?.id) return
-        getNomenclatorItems({ detailed: false, only_active: true, page_size: 0, nomenclator_id: nomenclator.parent_nomenclator.id }).then(res => setNomenclatorItems(res.items))
-    }, [existingNom, nomenclator])
+        if (parentNomenclatorIds.length === 0) return setNomenclatorItems([])
+        Promise.all(parentNomenclatorIds.map(nomId =>
+            getNomenclatorItems({ detailed: false, only_active: true, page_size: 0, nomenclator_id: nomId })
+        )).then(results => {
+            const merged = new Map<number, NomenclatorItem>()
+            results.forEach(res => res.items.forEach(item => merged.set(item.id, item)))
+            setNomenclatorItems(Array.from(merged.values()))
+        })
+    }, [parentNomenclatorIds])
+
+    //No puede ser padre de si mismo
+    const parentItemOptions = useMemo(() => nomenclatorItems.filter(item => item.id !== existingNom?.id), [nomenclatorItems, existingNom?.id])
 
     useEffect(() => { reset(defaultValues) }, [reset, defaultValues])
 
@@ -123,11 +135,11 @@ export const NomenclatorItemForm = ({ existingNom, nomenclator, submit, onCancel
                             <ControlledTextInput name="value" control={control} label="Valor"
                                 required errorMessage={errors.value?.message} />
                         </Grid>
-                        {nomenclator?.parent_nomenclator?.id && !existingNom &&
+                        {parentNomenclatorIds.length > 0 &&
                             <Grid size="grow" sx={{ minWidth: "20rem" }}>
-                                <ControlledAutocomplete control={control} label="Item del que depende" name="parent_item_id" options={nomenclatorItems}
+                                <ControlledAutocomplete control={control} multiple label="Ítems de los que depende" name="parent_item_ids" options={parentItemOptions}
                                     getOptionLabel={option => `${option.value!}`} getOptionKey={option => `${option.id}`} returnField="id"
-                                    errorMessage={errors?.parent_item_id?.message} />
+                                    errorMessage={errors?.parent_item_ids?.message} />
                             </Grid>
                         }
                     </Grid>
