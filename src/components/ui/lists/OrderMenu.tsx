@@ -1,7 +1,8 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import CommonButton from '../buttons/CommonButton'
-import { Divider, List, ListItemButton, ListItemIcon, ListSubheader, Popover } from '@mui/material';
+import { Divider, List, ListItemButton, ListItemIcon, ListSubheader, Popover, Stack } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
+import { SearchInput } from '../forms/SearchInput';
 
 interface OrderMenuProps {
     id?: string,
@@ -45,10 +46,16 @@ export const OrderMenu = ({ id = "order-menu", onOrderChange, options, canFilter
         onOrderChange(orderBy, asc, !prev)
     }
 
+    const fullOptions = useMemo(() => {
+        return [...options,
+        { name: "created_at", label: "Fecha de creación" },
+        { name: "updated_at", label: "Fecha de última actualización" },]
+    }, [options])
+
     return (
         <>
             <CommonButton actionType='REORDER' variant='outlined' color="secondary" onlyTooltip
-                onClick={handleClick} >
+                onClick={handleClick} sx={{ ml: "auto" }}>
                 Ordenar
             </CommonButton>
             <Popover
@@ -66,11 +73,11 @@ export const OrderMenu = ({ id = "order-menu", onOrderChange, options, canFilter
                 }}
             >
                 <List sx={{ maxHeight: "30rem", minWidth: "15rem", maxWidth: "25rem", overflowY: "auto" }} dense>
-                    {options?.length > 0 && <>
+                    {fullOptions?.length > 0 && <>
                         <ListSubheader sx={{ backgroundColor: "transparent", lineHeight: "2rem" }} component="div" id={`${id}-subheader`}>
                             Ordenar por
                         </ListSubheader>
-                        {options?.map(op =>
+                        {fullOptions?.map(op =>
                             <ListItemButton onClick={() => handleOrderByClick(op.name)}>
                                 <ListItemIcon>
                                     {orderBy === op.name && <CheckIcon fontSize='small' />}
@@ -107,3 +114,26 @@ export const OrderMenu = ({ id = "order-menu", onOrderChange, options, canFilter
         </>
     )
 }
+
+interface OrderSearchProps {
+    handleSearchChange: (search?: string | undefined, searchField?: string | undefined) => void,
+    searchOptions: {
+        name: string;
+        label: string;
+    }[],
+    handleOrderChange: (orderBy?: string | undefined, asc?: boolean, onlyActive?: boolean) => void,
+    orderOptions: {
+        name: string;
+        label: string;
+    }[]
+}
+
+export const OrderSearchMenu = ({ searchOptions, handleSearchChange, orderOptions, handleOrderChange }: OrderSearchProps) => {
+    return (
+        <Stack direction="row" spacing={2} useFlexGap sx={{ alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>
+            <SearchInput onSearch={handleSearchChange} id='nom-item-search' options={searchOptions} size="small" />
+            <OrderMenu onOrderChange={handleOrderChange} id='nom-item-order-menu' options={orderOptions} canFilterActive />
+        </Stack>
+    )
+}
+

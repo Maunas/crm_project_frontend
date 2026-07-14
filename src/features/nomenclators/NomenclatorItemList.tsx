@@ -16,17 +16,15 @@ import { disableNomenclatorItem, enableNomenclatorItem, getNomenclatorItems } fr
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { useUserContext } from 'src/stores/UserContext'
 import { ButtonGroup, Grid, List, ListItemText, Stack, Typography } from '@mui/material'
-import { OrderMenu } from 'src/components/ui/lists/OrderMenu'
-import { SearchInput } from 'src/components/ui/forms/SearchInput'
+import { OrderSearchMenu } from 'src/components/ui/lists/OrderMenu'
+import { useOrderSeachList } from 'src/hooks/useOrderSearchLists'
 
 const ORDER_NOM_ITEM_FIELDS = (hasParent: boolean) => [
     { name: "value", label: "Orden Alfabético" },
-    { name: "created_at", label: "Fecha de creación" },
-    { name: "updated_at", label: "Fecha de última actualización" },
     ...(hasParent ? [{ name: "parent_item_id", label: "Ítem padre" }] : []),
 ]
 
-const SEARCH_NOM_ITEM_FIELDS = () => [
+const SEARCH_NOM_ITEM_FIELDS = [
     { name: "value", label: "Valor" },
 ]
 
@@ -40,15 +38,13 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(nomenclatorItems, 12)
 
-    const [orderParams, setOrderParams] = useState<{ order_by?: string, ascending: boolean }>({ ascending: true })
-    const [searchParams, setSearchParams] = useState<{ search?: string, search_fields?: string }>({})
-    const [onlyActive, setOnlyActive] = useState<boolean>(false)
+    const { fetchParams, handleSearchChange, handleOrderChange } = useOrderSeachList()
 
     const fetchNomItems = useCallback((fetchPage: number, pageSize: number, nomId: number) => {
-        return getNomenclatorItems({ only_active: onlyActive, detailed: true, page: fetchPage, page_size: pageSize, nomenclator_id: nomId, ...orderParams, ...searchParams })
+        return getNomenclatorItems({ detailed: true, page: fetchPage, page_size: pageSize, nomenclator_id: nomId, ...fetchParams })
             .then(res => setNomenclatorItems(res))
             .catch(e => showCommonErrorToast(e, "Ha ocurrido un error al traer los ítems del nomenclador"))
-    }, [orderParams, onlyActive, searchParams])
+    }, [fetchParams])
 
     const { loading, fnWithLoading: fetchNomLoad } = useLoading(fetchNomItems)
 
@@ -125,22 +121,10 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
     const isBlocked = !nomenclator.organization_id && activeOrg?.id !== 0
 
     const orderOptions = useMemo(() => ORDER_NOM_ITEM_FIELDS(Boolean(nomenclator.parent_nomenclator)), [nomenclator.parent_nomenclator])
-    const searchOptions = useMemo(() => SEARCH_NOM_ITEM_FIELDS(), [])
-
-    const handleOrderChange = (orderBy?: string, asc: boolean = false, onlyActive: boolean = false) => {
-        if (!orderBy) setSearchParams({})
-        else setOrderParams({ order_by: orderBy, ascending: asc })
-        setOnlyActive(onlyActive)
-    }
-
-    const handleSearchChange = (search?: string, searchField?: string) => {
-        if (!search) setSearchParams({})
-        else setSearchParams({ search, search_fields: searchField })
-    }
 
     return (
         <>
-            <Stack spacing={1}>
+            <Stack spacing={2}>
                 <Stack spacing={1} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
                     <Typography variant="h3">Opciones de Nomenclador</Typography>
                     <ButtonGroup variant="outlined" sx={{ marginLeft: "auto" }} >
@@ -151,10 +135,7 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
                         }
                     </ButtonGroup>
                 </Stack>
-                <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
-                    <SearchInput onSearch={handleSearchChange} id='nom-item-search' options={searchOptions} />
-                    <OrderMenu onOrderChange={handleOrderChange} id='nom-item-order-menu' options={orderOptions} canFilterActive />
-                </Stack>
+                <OrderSearchMenu searchOptions={SEARCH_NOM_ITEM_FIELDS} handleSearchChange={handleSearchChange} orderOptions={orderOptions} handleOrderChange={handleOrderChange} />
                 <LoadingScreenWrapper loading={loading}>
                     {nomenclatorItems && nomenclatorItems.items?.length > 0 ?
                         <List dense>
@@ -191,8 +172,12 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
                                 )}
                             </Grid>
                         </List>
-                        : <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
-                            <Typography variant="h4">No se han encontrado opciones en este nomenclador...</Typography>
+                        : <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center", py: 5 }}>
+                            {fetchParams.search ?
+                                <Typography variant="h4">No se han encontrado opciones que correspondan al término "{fetchParams.search}"...</Typography>
+                                :
+                                <Typography variant="h4">No se han encontrado opciones en este nomenclador...</Typography>
+                            }
                             {!isBlocked &&
                                 <CommonButton actionType='CREATE' onClick={() => { handleSidebar("CREATE_NOM", null) }} variant="contained">Agregar</CommonButton>}
                         </Stack>

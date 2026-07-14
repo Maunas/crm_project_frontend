@@ -41,10 +41,10 @@ export const CustomListItem = styled(
             selectedStyle,
             ((!alwaysShowSecondary) && {
                 "& .MuiListItem-secondaryAction": {
-                    display: "none"
+                    visibility: "hidden",
                 },
                 "&:hover .MuiListItem-secondaryAction": {
-                    display: "block"
+                    visibility: "visible",
                 },
             })
         ]
