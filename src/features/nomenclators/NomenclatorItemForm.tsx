@@ -77,6 +77,12 @@ export const NomenclatorItemForm = ({ existingNom, nomenclator, submit, onCancel
     //Los ítems padre válidos son los de cualquiera de los nomencladores declarados como padre del catálogo (M2M)
     const parentNomenclatorIds = useMemo(() => nomenclator?.parent_nomenclators?.map(parent => parent.id) ?? [], [nomenclator])
 
+    //Nombre del nomenclador padre por id, para poder diferenciar ítems homónimos de distintos catálogos padre en el selector
+    const parentNomenclatorNameById = useMemo(() =>
+        new Map(nomenclator?.parent_nomenclators?.map(parent => [parent.id, parent.name]) ?? []),
+        [nomenclator]
+    )
+
     useEffect(() => {
         if (parentNomenclatorIds.length === 0) return setNomenclatorItems([])
         Promise.all(parentNomenclatorIds.map(nomId =>
@@ -138,7 +144,13 @@ export const NomenclatorItemForm = ({ existingNom, nomenclator, submit, onCancel
                         {parentNomenclatorIds.length > 0 &&
                             <Grid size="grow" sx={{ minWidth: "20rem" }}>
                                 <ControlledAutocomplete control={control} multiple label="Ítems de los que depende" name="parent_item_ids" options={parentItemOptions}
-                                    getOptionLabel={option => `${option.value!}`} getOptionKey={option => `${option.id}`} returnField="id"
+                                    getOptionLabel={option => parentNomenclatorIds.length > 1
+                                        ? `${option.value!} (${parentNomenclatorNameById.get(option.nomenclator_id ?? -1) ?? "Otro"})`
+                                        : `${option.value!}`}
+                                    groupBy={parentNomenclatorIds.length > 1
+                                        ? option => parentNomenclatorNameById.get(option.nomenclator_id ?? -1) ?? "Otro"
+                                        : undefined}
+                                    getOptionKey={option => `${option.id}`} returnField="id"
                                     errorMessage={errors?.parent_item_ids?.message} />
                             </Grid>
                         }

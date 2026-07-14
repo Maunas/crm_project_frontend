@@ -4,6 +4,7 @@ import DetailsMetadata from "shared/ui/details/DetailsMetadata"
 import CommonButton from "shared/ui/buttons/CommonButton"
 import HandleActiveButton from "shared/ui/buttons/HandleActiveButton"
 import type { CampaignDetailed, WorkspaceDetailed } from "src/types/campaigns"
+import { useUserContext } from "src/stores/UserContext"
 import { Stack, Typography, ButtonGroup, Divider } from "@mui/material"
 
 interface WorkspaceDetailsProps {
@@ -14,6 +15,8 @@ interface WorkspaceDetailsProps {
 }
 
 export const WorkspaceDetails = ({ entity, closeSidebar, handleSidebar, handleActive }: WorkspaceDetailsProps) => {
+
+    const { hasPermission } = useUserContext()
 
     if (entity) return (
         <Stack spacing={3} >
@@ -35,8 +38,12 @@ export const WorkspaceDetails = ({ entity, closeSidebar, handleSidebar, handleAc
                 <Divider />
                 <ButtonGroup sx={{ alignSelf: "end" }}>
                     <CommonButton onClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
-                    <HandleActiveButton active={entity.active} handleActive={() => handleActive(entity)} />
-                    <CommonButton onClick={() => handleSidebar("UPDATE_WSP", entity)} actionType="MODIFY" >Modificar</CommonButton>
+                    {hasPermission(entity.active ? "workspace:delete" : "workspace:update") &&
+                        <HandleActiveButton active={entity.active} handleActive={() => handleActive(entity)} />
+                    }
+                    {hasPermission("workspace:update") &&
+                        <CommonButton onClick={() => handleSidebar("UPDATE_WSP", entity)} actionType="MODIFY" >Modificar</CommonButton>
+                    }
                 </ButtonGroup>
             </Stack>
         </Stack>

@@ -17,6 +17,8 @@ import AddIcon from "@mui/icons-material/Add"
 import { deleteTag, getTags } from './LeadTagService'
 import type { LeadTag, LeadTagDetailed } from 'src/types/orgProperties'
 import { updateLeadTags } from 'src/features/lead/leadService'
+import { Can } from 'src/app/Can'
+import { useUserContext } from 'src/stores/UserContext'
 
 export const LeadTags = ({ lead, updateLeadInfo }: { lead: LeadDetailed, updateLeadInfo: (lead: LeadDetailed) => void }) => {
 
@@ -145,6 +147,9 @@ interface TagsMenuProps {
 const LeadTagsMenu = ({ leadId, tagList, leadTags, menuAnchor, handleClose, pageComponentProps,
     handleLeadTagUpdate, handleTagsUpdate, handleDeleteTag, loadingList = false }: TagsMenuProps) => {
 
+    const { hasPermission } = useUserContext()
+    const canUpdateLead = hasPermission("lead:update")
+
     const originalSelectedIds = useMemo(() => leadTags.map(tag => tag.id), [leadTags])
 
     const [selectedIds, setSelectedIds] = useState<number[]>(originalSelectedIds)
@@ -227,16 +232,20 @@ const LeadTagsMenu = ({ leadId, tagList, leadTags, menuAnchor, handleClose, page
                                     <CustomListItem key={`list-${tag.id}`} disablePadding
                                         secondaryAction={
                                             <Stack direction="row" sx={{ mr: -1 }}>
-                                                <CommonIconButton title="Modificar" actionType='MODIFY'
-                                                    size='small' tooltipSize="small" onClick={() => toggleEditTag(tag)} />
-                                                <CommonIconButton title="Eliminar" actionType='CLOSE'
-                                                    color="error" size='small' tooltipSize="small" onClick={() => handleSetDeletingTag(tag)} />
+                                                <Can permission="tag:update">
+                                                    <CommonIconButton title="Modificar" actionType='MODIFY'
+                                                        size='small' tooltipSize="small" onClick={() => toggleEditTag(tag)} />
+                                                </Can>
+                                                <Can permission="tag:delete">
+                                                    <CommonIconButton title="Eliminar" actionType='CLOSE'
+                                                        color="error" size='small' tooltipSize="small" onClick={() => handleSetDeletingTag(tag)} />
+                                                </Can>
                                             </Stack>
                                         }
                                     >
-                                        <ListItemButton onClick={() => handleCheckboxToggle(tag.id)} sx={{ py: .25 }}>
+                                        <ListItemButton onClick={() => handleCheckboxToggle(tag.id)} sx={{ py: .25 }} disabled={!canUpdateLead}>
                                             <ListItemIcon>
-                                                <Checkbox checked={selectedIds.includes(tag.id)} disableRipple
+                                                <Checkbox checked={selectedIds.includes(tag.id)} disableRipple disabled={!canUpdateLead}
                                                     edge="start" sx={{ py: 0 }} onChange={() => handleCheckboxToggle(tag.id)} />
                                             </ListItemIcon>
                                             <ListItemText sx={{ my: 0, mr: 3 }} primary={
@@ -252,10 +261,12 @@ const LeadTagsMenu = ({ leadId, tagList, leadTags, menuAnchor, handleClose, page
                         }
                     </LoadingScreenWrapper>
                     <ButtonGroup fullWidth>
-                        <CommonButton actionType='CREATE' onClick={toggleCreateTag} variant='outlined' fullWidth disabled={loadingSave}>
-                            Agregar
-                        </CommonButton>
-                        {isListChanged &&
+                        {hasPermission("tag:create") &&
+                            <CommonButton actionType='CREATE' onClick={toggleCreateTag} variant='outlined' fullWidth disabled={loadingSave}>
+                                Agregar
+                            </CommonButton>
+                        }
+                        {isListChanged && canUpdateLead &&
                             <CommonButton actionType='SAVE' onClick={saveTagsLoad} variant='contained' fullWidth loading={loadingSave}>
                                 Guardar
                             </CommonButton>

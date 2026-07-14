@@ -13,6 +13,7 @@ import type { OrganizationDetailed } from 'src/types/campaigns'
 import { disableOrganization, enableOrganization, getOrganization } from './organizationServices'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { useUserContext } from 'src/stores/UserContext'
+import { Can } from 'src/app/Can'
 import { useSearchParams } from 'react-router-dom'
 import { List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
 
@@ -106,9 +107,11 @@ export const OrganizationList = () => {
                 <Stack spacing={2} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
                     <Typography variant="h1">Lista de Organizaciones</Typography>
                     {userOrganizations && userOrganizations?.length > 0 &&
-                        <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_ORG", null)} sx={{ marginLeft: "auto" }} onlyTooltip>
-                            Agregar
-                        </CommonButton>
+                        <Can permission="organization:create">
+                            <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_ORG", null)} sx={{ marginLeft: "auto" }} onlyTooltip>
+                                Agregar
+                            </CommonButton>
+                        </Can>
                     }
                 </Stack>
                 <LoadingScreenWrapper loading={loadingOrgs}>
@@ -119,14 +122,18 @@ export const OrganizationList = () => {
                                     <CustomListItem key={org.id} isSelected={org.id === selectedEntity?.id} disablePadding secondaryAction={
                                         <Stack direction="row" sx={{ alignItems: "center" }}>
                                             <CommonIconButton actionType='DETAILS' title='Detalle' onClick={() => handleSidebar("DETAILS_ORG", org)} tooltipSize="small" size="small" />
-                                            <CommonIconButton actionType='MODIFY' title='Modificar' onClick={() => handleSidebar("UPDATE_ORG", org)} tooltipSize="small" size="small" />
+                                            <Can permission='organization:update'>
+                                                <CommonIconButton actionType='MODIFY' title='Modificar' onClick={() => handleSidebar("UPDATE_ORG", org)} tooltipSize="small" size="small" />
+                                            </Can>
                                             {(activeOrg?.id !== org.id && org.active) &&
                                                 <CommonIconButton actionType='CHECK' title='Seleccionar Activa' color="info" onClick={() => handleActiveOrg(org)} tooltipSize="small" size="small" />
                                             }
                                             {activeOrg?.id !== org.id &&
-                                                <CommonIconButton actionType={org.active ? "DISABLE" : "ENABLE"} tooltipSize="small" size="small"
-                                                    title={org.active ? "Deshabilitar" : "Habilitar"}
-                                                    onClick={() => setDeletingOrg(org)} color={org.active ? "error" : "success"} />
+                                                <Can permission={org.active ? 'organization:delete' : 'organization:update'}>
+                                                    <CommonIconButton actionType={org.active ? "DISABLE" : "ENABLE"} tooltipSize="small" size="small"
+                                                        title={org.active ? "Deshabilitar" : "Habilitar"}
+                                                        onClick={() => setDeletingOrg(org)} color={org.active ? "error" : "success"} />
+                                                </Can>
                                             }
                                         </Stack>
                                     }>
@@ -147,9 +154,11 @@ export const OrganizationList = () => {
                             </List>
                             : <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
                                 <Typography variant="h4">No se han encontrado organizaciones...</Typography>
-                                <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_ORG", null)} variant="contained">
-                                    Agregar
-                                </CommonButton>
+                                <Can permission="organization:create">
+                                    <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_ORG", null)} variant="contained">
+                                        Agregar
+                                    </CommonButton>
+                                </Can>
                             </Stack>
                         }
                     </Stack>

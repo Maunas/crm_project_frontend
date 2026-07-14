@@ -4,11 +4,12 @@ import { useUserContext } from 'src/stores/UserContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { Avatar, Box, Button, Divider, FormControlLabel, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Stack, Typography } from '@mui/material'
 import { useColorScheme, useTheme } from '@mui/material/styles';
-import { AccountCircle, Check, PersonOutlined, PersonAddOutlined } from '@mui/icons-material';
+import { AccountCircle, Check, Close, PersonOutlined, PersonAddOutlined } from '@mui/icons-material';
 import MoreIcon from '@mui/icons-material/More';
 import LoadingScreenWrapper from 'src/components/ui/feedback/LoadingScreen';
 import type { UserContextItems } from 'src/stores/UserContext';
 import { InviteDialog } from 'src/features/organizations/InviteDialog';
+import { showCommonErrorToast } from 'src/utils/feedback';
 import type { Organization } from 'src/types/users';
 
 function useRoleLabel(user: UserContextItems["user"], activeOrg: UserContextItems["activeOrg"]) {
@@ -25,7 +26,7 @@ const HeaderMenu = memo(() => {
     const nav = useNavigate()
     const [inviteOpen, setInviteOpen] = useState(false)
 
-    const { user, logout, activeOrganizations, activeOrg, setActiveOrg, loadingOrgs } = useUserContext()
+    const { user, logout, activeOrganizations, activeOrg, setActiveOrg, loadingOrgs, savedAccounts, switchAccount, removeSavedAccount } = useUserContext()
 
     const fullName = user ? [user.name, user.last_name].filter(Boolean).join(" ") : ""
     const roleLabel = useRoleLabel(user, activeOrg)
@@ -39,13 +40,31 @@ const HeaderMenu = memo(() => {
 
     const handleLogout = async () => {
         await logout()
-        nav("/login")
+        //Si logout() pasó a otra cuenta guardada, esto simplemente refresca la pantalla para esa cuenta;
+        //si no quedaba ninguna, el usuario ya quedó sin sesión y el layout lo manda a /login solo.
+        nav("/dashboard", { replace: true })
     }
 
     const handleOrgSwitch = (org: Organization) => {
         setActiveOrg(org)
         nav("/dashboard")
         handleMenuClose()
+    }
+
+    const handleAccountSwitch = async (userId: number) => {
+        if (userId === user?.id) { handleMenuClose(); return }
+        handleMenuClose()
+        try {
+            await switchAccount(userId)
+            nav("/dashboard")
+        } catch (e) {
+            showCommonErrorToast(e, "No se pudo cambiar a esa cuenta, iniciá sesión de nuevo.")
+        }
+    }
+
+    const handleRemoveAccount = (e: React.MouseEvent, userId: number) => {
+        e.stopPropagation()
+        removeSavedAccount(userId).catch(err => showCommonErrorToast(err, "No se pudo quitar la cuenta."))
     }
 
     const { setMode } = useColorScheme();
@@ -88,6 +107,30 @@ const HeaderMenu = memo(() => {
             open={isMenuOpen}
             onClose={handleMenuClose}
         >
+            <MenuItem>
+                <ListItemText>Cuentas</ListItemText>
+                <Divider />
+            </MenuItem>
+            {savedAccounts.map(acc => (
+                <MenuItem dense key={acc.userId} onClick={() => handleAccountSwitch(acc.userId)}>
+                    {acc.userId === user?.id &&
+                        <ListItemIcon><Check /></ListItemIcon>
+                    }
+                    <ListItemText inset={acc.userId !== user?.id}
+                        primary={[acc.name, acc.last_name].filter(Boolean).join(" ") || acc.email}
+                        secondary={acc.userId !== user?.id ? acc.email : undefined} />
+                    {acc.userId !== user?.id &&
+                        <IconButton size="small" edge="end" title="Quitar cuenta" onClick={(e) => handleRemoveAccount(e, acc.userId)}>
+                            <Close fontSize="small" />
+                        </IconButton>
+                    }
+                </MenuItem>
+            ))}
+            <MenuItem dense component={Link} to="/login" onClick={handleMenuClose}>
+                <ListItemIcon><PersonAddOutlined fontSize="small" /></ListItemIcon>
+                <ListItemText>Agregar cuenta</ListItemText>
+            </MenuItem>
+            <Divider />
             <MenuItem>
                 <ListItemText>Organizaciones</ListItemText>
                 <Divider />

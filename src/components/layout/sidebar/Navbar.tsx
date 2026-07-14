@@ -13,23 +13,26 @@ import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import GroupIcon from '@mui/icons-material/Group';
 import { useUserContext } from 'src/stores/UserContext';
+import { LEAD_PROPERTIES } from 'features/orgProperties/orgPropertiesList';
 
+//"permission" es el codename que hace falta para ver la sección (ver RequirePermission.tsx, mismo mapeo que routes.tsx).
+//Si no tiene "permission", se muestra a cualquier usuario logueado.
 const regularOptions = [
   { name: "Dashboard", icon: <DashboardIcon />, link: "/dashboard" },
-  { name: "Leads", icon: <PersonIcon />, link: "/leads" },
-  { name: "Campañas", icon: <WorkIcon />, link: "/campaigns" },
-  { name: "Organizaciones", icon: <StoreIcon />, link: "/organizations" },
-  { name: "Nomencladores", icon: <LabelIcon />, link: "/nomenclators" },
-  { name: "Propiedades de Organización", icon: <TuneIcon />, link: "/org-properties" },
-  { name: "Automatizaciones", icon: <AutoFixHighIcon />, link: "/automations" },
-  { name: "Auditoría de Sistema", icon: <VerifiedUserIcon />, link: "/audit-logs" }
+  { name: "Leads", icon: <PersonIcon />, link: "/leads", permission: "lead:view" },
+  { name: "Campañas", icon: <WorkIcon />, link: "/campaigns", permission: "workspace:view" },
+  { name: "Organizaciones", icon: <StoreIcon />, link: "/organizations", permission: "organization:view" },
+  { name: "Nomencladores", icon: <LabelIcon />, link: "/nomenclators", permission: "nomenclator:view" },
+  { name: "Propiedades de Organización", icon: <TuneIcon />, link: "/org-properties", permission: LEAD_PROPERTIES.map(prop => prop.permission) },
+  { name: "Automatizaciones", icon: <AutoFixHighIcon />, link: "/automations", permission: "field_automation:view" },
+  { name: "Auditoría de Sistema", icon: <VerifiedUserIcon />, link: "/audit-logs", permission: "system_audit_log:view" }
 ]
 
 const globalOptions = [
   { name: "Dashboard", icon: <DashboardIcon />, link: "/dashboard" },
-  { name: "Organizaciones", icon: <StoreIcon />, link: "/organizations" },
-  { name: "Usuarios", icon: <GroupIcon />, link: "/users" },
-  { name: "Auditoría de Sistema", icon: <VerifiedUserIcon />, link: "/audit-logs" }
+  { name: "Organizaciones", icon: <StoreIcon />, link: "/organizations", permission: "organization:view" },
+  { name: "Usuarios", icon: <GroupIcon />, link: "/users", permission: "user:view_all" },
+  { name: "Auditoría de Sistema", icon: <VerifiedUserIcon />, link: "/audit-logs", permission: "system_audit_log:view" }
 ]
 
 interface NavbarProps {
@@ -39,9 +42,13 @@ interface NavbarProps {
 const Navbar = memo(({ open }: NavbarProps) => {
   const { palette } = useTheme()
   const { pathname } = useLocation()
-  const { activeOrg } = useUserContext()
+  const { activeOrg, hasPermission } = useUserContext()
 
-  const options = activeOrg?.id === 1 ? globalOptions : regularOptions
+  const options = useMemo(() =>
+    (activeOrg?.id === 1 ? globalOptions : regularOptions)
+      .filter(op => !op.permission || (Array.isArray(op.permission) ? op.permission.some(hasPermission) : hasPermission(op.permission))),
+    [activeOrg, hasPermission]
+  )
 
   const activeIdx = useMemo(() =>
     options.findIndex(op =>

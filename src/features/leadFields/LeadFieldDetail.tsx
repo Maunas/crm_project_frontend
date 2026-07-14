@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useUserContext } from 'src/stores/UserContext';
 import { ValidationList } from '../validations/ValidationList';
 import { getTypeIconAndColor, LeadFieldTypeAvatar } from './LeadFieldTypeIcon';
 import { SidebarContentWrapper } from 'shared/layout/container/GenericContainer';
@@ -27,6 +28,8 @@ interface LeadFieldDetailProps {
 }
 
 export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeSidebar, campaignName, leadFieldListLength = 0, leadFields }: LeadFieldDetailProps) => {
+
+    const { hasPermission } = useUserContext()
 
     const dependsOnField = leadField.depends_on_field_id
         ? leadFields?.find(field => field.id === leadField.depends_on_field_id)
@@ -69,10 +72,10 @@ export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeS
             actions={
                 <ButtonGroup sx={{ ml: "auto" }}>
                     <CommonButton onClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
-                    {leadFieldListLength > 1 && //Si no se separa el condicional arruina el estilo del ButtonGroup
+                    {leadFieldListLength > 1 && hasPermission(leadField.active ? "lead_field:delete" : "lead_field:update") &&
                         <HandleActiveButton active={leadField.active} handleActive={() => setDeletingField(leadField)} />
                     }
-                    {leadFieldListLength > 1 &&
+                    {leadFieldListLength > 1 && hasPermission("lead_field:update") &&
                         <CommonButton onClick={() => handleSidebar("UPDATE_FIELD", leadField)} actionType="MODIFY" >
                             Modificar
                         </CommonButton>

@@ -16,8 +16,8 @@ export interface StateNodeData {
   category: StateCategory;
   isInitial: boolean;
   color?: string;
-  onEdit: (id: string) => void;
-  onDelete: (id: string) => void;
+  onEdit?: (id: string) => void;
+  onDelete?: (id: string) => void;
 }
 
 const getCategoryIcon = (category: StateCategory) => {
@@ -41,7 +41,7 @@ function StateNodeComponent({ id, data, selected }: NodeProps<{ data: StateNodeD
 
   return (
     <Box
-      onDoubleClick={() => onEdit(id)}
+      onDoubleClick={() => onEdit?.(id)}
       sx={{
         position: 'relative',
         minWidth: 160,
@@ -97,13 +97,15 @@ function StateNodeComponent({ id, data, selected }: NodeProps<{ data: StateNodeD
         </Typography>
       </Box>
 
-      {/* Botón de eliminar (Aparece en Hover) */}
-      <Box className="node-actions" sx={{ position: 'absolute', top: -12, right: -12, opacity: 0, transition: 'opacity 0.2s ease' }}>
-        <IconButton size="small" onClick={(e) => { e.stopPropagation(); onDelete(id); }}
-          sx={{ backgroundColor: 'error.dark', color: 'white', width: 24, height: 24, '&:hover': { backgroundColor: 'error.dark' } }}>
-          <DeleteIcon fontSize='small' />
-        </IconButton>
-      </Box>
+      {/* Botón de eliminar (Aparece en Hover, solo si hay permiso de edición) */}
+      {onDelete &&
+        <Box className="node-actions" sx={{ position: 'absolute', top: -12, right: -12, opacity: 0, transition: 'opacity 0.2s ease' }}>
+          <IconButton size="small" onClick={(e) => { e.stopPropagation(); onDelete(id); }}
+            sx={{ backgroundColor: 'error.dark', color: 'white', width: 24, height: 24, '&:hover': { backgroundColor: 'error.dark' } }}>
+            <DeleteIcon fontSize='small' />
+          </IconButton>
+        </Box>
+      }
 
       {/* Source handle - bottom */}
       <Handle

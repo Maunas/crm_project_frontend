@@ -15,6 +15,7 @@ import LoadingScreenWrapper from 'src/components/ui/feedback/LoadingScreen'
 import { DisableConfirmDialog } from 'src/components/ui/feedback/ConfirmationDialog'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { useUserContext } from 'src/stores/UserContext'
+import { Can } from 'src/app/Can'
 
 export const LeadFlowList = () => {
 
@@ -39,9 +40,11 @@ export const LeadFlowList = () => {
         <Stack spacing={2}>
             <Stack spacing={1} direction="row" useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
                 {(flows?.items && flows.items.length > 0) &&
-                    <CommonButton actionType="CREATE" component={Link} to="/lead-flow-editor" >
-                        Abrir Editor
-                    </CommonButton>}
+                    <Can permission="lead_flow:update">
+                        <CommonButton actionType="CREATE" component={Link} to="/lead-flow-editor" >
+                            Abrir Editor
+                        </CommonButton>
+                    </Can>}
             </Stack>
             <LoadingScreenWrapper loading={loading}>
                 {(flows?.items && flows.items.length > 0) ?
@@ -52,7 +55,9 @@ export const LeadFlowList = () => {
                     :
                     <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center", height: "30rem" }}>
                         <Typography variant="h4">No se han encontrado flujos de estado...</Typography>
-                        <CommonButton actionType="CREATE" onClick={() => nav("/lead-flow-editor")} variant="contained">Abrir Editor</CommonButton>
+                        <Can permission="lead_flow:update">
+                            <CommonButton actionType="CREATE" onClick={() => nav("/lead-flow-editor")} variant="contained">Abrir Editor</CommonButton>
+                        </Can>
                     </Stack>
                 }
             </LoadingScreenWrapper>
@@ -89,11 +94,15 @@ export const LeadFlowListData = ({ flows, updateList }: { flows: LeadFlowDetaile
                     <Grid key={`flow-${idx}`} size="grow" sx={{ minWidth: "15rem", minHeight: "100%" }}>
                         <CustomListItem disablePadding sx={{ height: "100%" }} secondaryAction={
                             <Stack direction="row" sx={{ alignItems: "center" }}>
-                                <CommonIconButton actionType='MODIFY' title="Editar" tooltipSize="small" size="small"
-                                    component={Link} to={`/lead-flow-editor/${flow.id}`} />
-                                <CommonIconButton actionType={flow.active ? "DISABLE" : "ENABLE"} title={flow.active ? "Deshabilitar" : "Habilitar"}
-                                    tooltipSize="small" size="small" color={flow.active ? "error" : "success"}
-                                    onClick={() => setDisableFlow(flow)} />
+                                <Can permission="lead_flow:update">
+                                    <CommonIconButton actionType='MODIFY' title="Editar" tooltipSize="small" size="small"
+                                        component={Link} to={`/lead-flow-editor/${flow.id}`} />
+                                </Can>
+                                <Can permission={flow.active ? "lead_flow:delete" : "lead_flow:update"}>
+                                    <CommonIconButton actionType={flow.active ? "DISABLE" : "ENABLE"} title={flow.active ? "Deshabilitar" : "Habilitar"}
+                                        tooltipSize="small" size="small" color={flow.active ? "error" : "success"}
+                                        onClick={() => setDisableFlow(flow)} />
+                                </Can>
                             </Stack>}>
                             <ListItemButton component={Link} to={`/lead-flow-editor/${flow.id}`} sx={{ height: "100%" }} >
                                 <ListItemText sx={{ mr: 4 }} primary={

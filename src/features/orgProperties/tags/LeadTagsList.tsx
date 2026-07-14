@@ -14,6 +14,8 @@ import { Divider, Grid, ListItemText, Stack, Typography } from '@mui/material'
 import { deleteTag, getTags } from './LeadTagService'
 import { TagFormSidebarWrapper } from './LeadTagForm'
 import type { LeadTagDetailed } from 'src/types/orgProperties'
+import { Can } from 'src/app/Can'
+import { useUserContext } from 'src/stores/UserContext'
 
 export const LeadTagsList = () => {
 
@@ -55,8 +57,10 @@ export const LeadTagsList = () => {
                 <Stack spacing={2}>
                     {(tags?.items && tags.items.length > 0) ?
                         <Stack spacing={2}>
-                            <CommonButton actionType="CREATE" variant="contained" sx={{ alignSelf: "start" }}
-                                onClick={() => setEditingTag(undefined)}>Agregar</CommonButton>
+                            <Can permission="tag:create">
+                                <CommonButton actionType="CREATE" variant="contained" sx={{ alignSelf: "start" }}
+                                    onClick={() => setEditingTag(undefined)}>Agregar</CommonButton>
+                            </Can>
                             <LeadTagsListData tags={tags.items}
                                 toggleUpdate={(tag: LeadTagDetailed) => setEditingTag(tag)}
                                 updateList={updateList} />
@@ -65,8 +69,10 @@ export const LeadTagsList = () => {
                         :
                         <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center", height: "30rem" }}>
                             <Typography variant="h4">No se han encontrado etiquetas de lead...</Typography>
-                            <CommonButton actionType="CREATE" variant="contained"
-                                onClick={() => setEditingTag(undefined)}>Agregar</CommonButton>
+                            <Can permission="tag:create">
+                                <CommonButton actionType="CREATE" variant="contained"
+                                    onClick={() => setEditingTag(undefined)}>Agregar</CommonButton>
+                            </Can>
                         </Stack>
                     }
                     {editingTag !== null &&
@@ -94,6 +100,8 @@ interface LeadTagsListDataProps {
 
 export const LeadTagsListData = ({ tags, toggleUpdate, updateList }: LeadTagsListDataProps) => {
 
+    const { hasPermission } = useUserContext()
+
     const [deletingTag, setDeletingTag] = useState<LeadTagDetailed | null>(null)
 
     const handleDelete = useCallback((id: number) => {
@@ -111,12 +119,12 @@ export const LeadTagsListData = ({ tags, toggleUpdate, updateList }: LeadTagsLis
                 {tags.map((tag, idx) =>
                     <Grid key={`tag-${idx}`} size="grow" sx={{ minWidth: "15rem", minHeight: "100%" }}>
                         <ResponsiveListItem disablePadding sx={{ height: "100%" }}
-                            onClick={() => toggleUpdate(tag)}
+                            onClick={() => hasPermission("tag:update") && toggleUpdate(tag)}
                             actions={[
-                                { actionType: "MODIFY", label: "Editar", onClick: () => toggleUpdate(tag) },
-                                {
+                                ...(hasPermission("tag:update") ? [{ actionType: "MODIFY", label: "Editar", onClick: () => toggleUpdate(tag) } as const] : []),
+                                ...(hasPermission("tag:delete") ? [{
                                     actionType: "DISABLE", color: "error", label: "Eliminar", onClick: () => setDeletingTag(tag)
-                                }
+                                } as const] : [])
                             ]}>
                             <ListItemText sx={{ mr: 4 }} primary={
                                 <Stack spacing={1} direction="row" color="inherit" sx={{ width: "100%", alignItems: "center" }}>

@@ -4,7 +4,7 @@ import { GenericSidebar } from 'shared/layout/container/GenericContainer'
 import { DisableConfirmDialog } from 'src/components/ui/feedback/ConfirmationDialog'
 import PaginationComponent from 'shared/ui/lists/PaginationComponent'
 import LoadingScreenWrapper from 'src/components/ui/feedback/LoadingScreen'
-import { ResponsiveListItem } from 'shared/ui/lists/CustomListItem'
+import { ResponsiveListItem, type ListItemAction } from 'shared/ui/lists/CustomListItem'
 import CommonButton from 'shared/ui/buttons/CommonButton'
 import { EnabledIcon } from 'shared/ui/lists/Icons'
 import { useListPagination } from 'src/hooks/useListPagination'
@@ -15,11 +15,12 @@ import type { Paginable } from 'src/types/shared'
 import { disableNomenclatorItem, enableNomenclatorItem, getNomenclatorItems } from './nomenclatorService'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { useUserContext } from 'src/stores/UserContext'
+import { Can } from 'src/app/Can'
 import { ButtonGroup, Grid, List, ListItemText, Stack, Typography } from '@mui/material'
 
 export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorDetailed }) => {
 
-    const { activeOrg } = useUserContext()
+    const { activeOrg, hasPermission } = useUserContext()
 
     const [nomenclatorItems, setNomenclatorItems] = useState<Paginable<NomenclatorItemDetailed> | null>(null)
 
@@ -114,9 +115,11 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
                     <Typography variant="h3">Opciones de Nomenclador</Typography>
                     <ButtonGroup variant="outlined" sx={{ marginLeft: "auto" }} >
                         {nomenclatorItems && nomenclatorItems.items?.length > 0 && !isBlocked &&
-                            <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_NOM", null) }} size="small" onlyTooltip>
-                                Agregar
-                            </CommonButton>
+                            <Can permission="nomenclator_item:create">
+                                <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_NOM", null) }} size="small" onlyTooltip>
+                                    Agregar
+                                </CommonButton>
+                            </Can>
                         }
                     </ButtonGroup>
                 </Stack>
@@ -128,13 +131,17 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
                                     <Grid size={{ xs: 12, sm: 6 }} key={nom.id}>
                                         <ResponsiveListItem disablePadding
                                             actions={[
-                                                { actionType: "MODIFY", label: "Modificar", onClick: () => handleSidebar("UPDATE_NOM", nom) },
-                                                {
-                                                    actionType: nom.active ? "DISABLE" : "ENABLE", label: nom.active ? "Deshabilitar" : "Habilitar",
-                                                    color: nom.active ? "error" : "success", onClick: () => handleDeletingItem(nom)
-                                                }
-                                            ]}
-                                            onClick={() => !isBlocked && handleSidebar("UPDATE_NOM", nom)}>
+                                                ...(hasPermission("nomenclator_item:update") ? [
+                                                    { actionType: "MODIFY", label: "Modificar", onClick: () => handleSidebar("UPDATE_NOM", nom) }
+                                                ] : []),
+                                                ...(hasPermission(nom.active ? "nomenclator_item:delete" : "nomenclator_item:update") ? [
+                                                    {
+                                                        actionType: nom.active ? "DISABLE" : "ENABLE", label: nom.active ? "Deshabilitar" : "Habilitar",
+                                                        color: nom.active ? "error" : "success", onClick: () => handleDeletingItem(nom)
+                                                    }
+                                                ] : [])
+                                            ] as ListItemAction[]}
+                                            onClick={() => !isBlocked && hasPermission("nomenclator_item:update") && handleSidebar("UPDATE_NOM", nom)}>
                                             <ListItemText
                                                 primary={
                                                     <Stack spacing={.5} direction="row" sx={{ alignItems: "center" }}>
@@ -159,7 +166,9 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
                         : <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
                             <Typography variant="h4">No se han encontrado opciones en este nomenclador...</Typography>
                             {!isBlocked &&
-                                <CommonButton actionType='CREATE' onClick={() => { handleSidebar("CREATE_NOM", null) }} variant="contained">Agregar</CommonButton>}
+                                <Can permission="nomenclator_item:create">
+                                    <CommonButton actionType='CREATE' onClick={() => { handleSidebar("CREATE_NOM", null) }} variant="contained">Agregar</CommonButton>
+                                </Can>}
                         </Stack>
                     }
                     <PaginationComponent {...pageComponentProps} />

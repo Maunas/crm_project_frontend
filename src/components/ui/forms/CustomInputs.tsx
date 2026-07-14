@@ -301,6 +301,10 @@ export const RegisteredTextInput = <T extends FieldValues>
               },
             },
           },
+          inputLabel: {
+            shrink: true,
+            ...slotProps?.inputLabel,
+          },
         }}
         {...props}
       />

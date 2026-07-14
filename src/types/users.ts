@@ -35,7 +35,15 @@ export interface OrganizationAccess extends Metadata {
     id: number,
     organization_id: number,
     is_owner: boolean,
-    roles: Role[]
+    roles: Role[],
+    // Codenames de todos los permisos que tiene el usuario en esta organización (unión de sus roles).
+    // Viene de GET/PUT /auth/me (UserDetailedResponse), ver backend/AGENTS.md §8.
+    permission_objects: Permission[]
+}
+
+export interface Permission {
+    name: string,
+    codename: string,
 }
 
 export interface Role extends Metadata {

@@ -15,6 +15,7 @@ import { showCommonErrorToast, showToast } from "src/utils/feedback"
 import { Link } from "react-router-dom"
 import { Grid, ListItemButton, ListItemText, Stack, Typography } from "@mui/material"
 import { useCallback } from "react"
+import { Can } from "src/app/Can"
 
 interface CampaignListProps {
     workspace: WorkspaceDetailed,
@@ -69,9 +70,11 @@ export const CampaignList = ({ workspace, handleSidebar, closeSidebar }: Campaig
                 <Stack spacing={1} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
                     <Typography variant="h3">Lista de Campañas</Typography>
                     {campaigns && campaigns?.items.length > 0 &&
-                        <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_CMP", workspace)} sx={{ marginLeft: "auto" }} size="small" onlyTooltip>
-                            Agregar
-                        </CommonButton>
+                        <Can permission="campaign:create">
+                            <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_CMP", workspace)} sx={{ marginLeft: "auto" }} size="small" onlyTooltip>
+                                Agregar
+                            </CommonButton>
+                        </Can>
                     }
                 </Stack>
                 <CampaignListData campaigns={campaigns.items} handleActiveCampaign={handleActiveCampaign} />
@@ -80,7 +83,9 @@ export const CampaignList = ({ workspace, handleSidebar, closeSidebar }: Campaig
         ) : (
             <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
                 <Typography variant="h4">No se han encontrado campañas para este espacio de trabajo...</Typography>
-                <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_CMP", workspace)} variant="contained">Agregar</CommonButton>
+                <Can permission="campaign:create">
+                    <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_CMP", workspace)} variant="contained">Agregar</CommonButton>
+                </Can>
             </Stack>
         )
         }
@@ -102,11 +107,15 @@ export const CampaignListData = ({ campaigns, handleActiveCampaign }: CampaignLi
                         <Stack direction="row" sx={{ alignItems: "center" }}>
                             <CommonIconButton actionType='DETAILS' title="Detalles" tooltipSize="small" size="small"
                                 component={Link} to={`/campaigns/${cmp.id}`} />
-                            <CommonIconButton actionType='LIST' title="Ver Leads" tooltipSize="small" size="small"
-                                component={Link} to={`/leads?workspace=${cmp.workspace_id}&campaign=${cmp.id}`} />
-                            <CommonIconButton actionType={cmp.active ? "DISABLE" : "ENABLE"} title={cmp.active ? "Deshabilitar" : "Habilitar"}
-                                tooltipSize="small" size="small" color={cmp.active ? "error" : "success"}
-                                onClick={() => setDeletingCmp(cmp)} />
+                            <Can permission="lead:view">
+                                <CommonIconButton actionType='LIST' title="Ver Leads" tooltipSize="small" size="small"
+                                    component={Link} to={`/leads?workspace=${cmp.workspace_id}&campaign=${cmp.id}`} />
+                            </Can>
+                            <Can permission={cmp.active ? "campaign:delete" : "campaign:update"}>
+                                <CommonIconButton actionType={cmp.active ? "DISABLE" : "ENABLE"} title={cmp.active ? "Deshabilitar" : "Habilitar"}
+                                    tooltipSize="small" size="small" color={cmp.active ? "error" : "success"}
+                                    onClick={() => setDeletingCmp(cmp)} />
+                            </Can>
                         </Stack>}>
                         <ListItemButton component={Link} to={`/campaigns/${cmp.id}`} sx={{ height: "100%" }} >
                             <ListItemText sx={{ mr: 7 }} primary={

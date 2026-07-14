@@ -11,6 +11,7 @@ import type { LeadComment } from "src/types/leads"
 import type { Paginable } from "src/types/shared"
 import { deleteComment, getComments } from "./leadActivitiesService"
 import { showCommonErrorToast, showToast } from "src/utils/feedback"
+import { useUserContext } from "src/stores/UserContext"
 import { Box, Divider, Grid, IconButton, Paper, Stack, Typography } from "@mui/material"
 import { alpha, styled } from "@mui/material/styles"
 import CloseIcon from '@mui/icons-material/Close';
@@ -19,6 +20,7 @@ import { getColorShades } from "src/utils/formatters"
 
 export const LeadComments = ({ leadId }: { leadId: number }) => {
 
+    const { hasPermission } = useUserContext()
     const [comments, setComments] = useState<Paginable<LeadComment> | null>(null)
     const [selectedCommentId, setSelectedCommentId] = useState<number | null>(null)
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(comments, 12)
@@ -71,8 +73,10 @@ export const LeadComments = ({ leadId }: { leadId: number }) => {
                         {comments?.items.map(com =>
                             <Grid key={com.id} size="grow" sx={{ minWidth: "15rem" }}>
                                 {com.id !== selectedCommentId ? (
-                                    <CommentInstance comment={com} onEdit={() => setSelectedCommentId(com.id)}
-                                        onDelete={() => setDeletingCom(com)} title={<MetadataShort metadata={com} onlyUser />}
+                                    <CommentInstance comment={com}
+                                        onEdit={hasPermission("lead_comment:update") ? () => setSelectedCommentId(com.id) : undefined}
+                                        onDelete={hasPermission("lead_comment:delete") ? () => setDeletingCom(com) : undefined}
+                                        title={<MetadataShort metadata={com} onlyUser />}
                                         footerContent={<MetadataShort metadata={com} onlyDate containerProps={{ sx: { ml: "auto" } }} />} >
                                         {com.content}
                                     </CommentInstance>
@@ -84,8 +88,12 @@ export const LeadComments = ({ leadId }: { leadId: number }) => {
                     </Grid>
                     <PaginationComponent {...pageComponentProps} />
                 </Stack>
-                <Divider />
-                <CreateCommentWrapper leadId={leadId} onCreate={onCreateComment} />
+                {hasPermission("lead_comment:create") &&
+                    <>
+                        <Divider />
+                        <CreateCommentWrapper leadId={leadId} onCreate={onCreateComment} />
+                    </>
+                }
             </Stack>
             <DisableConfirmDialog idModal="del-com" onConfirm={() => onDeleteComment(deletingCom!.id)} entity={deletingCom}
                 clearEntity={() => setDeletingCom(null)} entityTypeName="el comentario" onlyDelete />

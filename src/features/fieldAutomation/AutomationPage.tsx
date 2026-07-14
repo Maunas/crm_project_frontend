@@ -1,4 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
+import { Can } from 'src/app/Can';
+import { useUserContext } from 'src/stores/UserContext';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Box, Typography, alpha, useTheme, Stack } from '@mui/material';
 import { AutomationForm } from './AutomationForm';
@@ -30,7 +32,13 @@ export const AutomationPage = () => {
   const isEditing = Boolean(id && !isNaN(Number(id)));
   const isDuplicating = Boolean(duplicateFromId);
 
+  // Sin el permiso correspondiente (según se esté creando o editando), el formulario
+  // se fuerza a solo-lectura sin importar el toggle local ni el parámetro "edit" de la URL.
+  const { hasPermission } = useUserContext()
+  const canEdit = isEditing ? hasPermission("field_automation:update") : hasPermission("field_automation:create")
+
   const [readOnly, setReadOnly] = useState(isEditing && searchParams.get('edit') !== 'true');
+  const effectiveReadOnly = readOnly || !canEdit
   const [initialData, setInitialData] = useState<FieldAutomationDetailed | null>(null);
 
   const [fields, setFields] = useState<LeadField[]>([]);
@@ -61,6 +69,7 @@ export const AutomationPage = () => {
   }, [initialFetchLoad]);
 
   const handleSaveToApi = async (payload: FieldAutomationPost) => {
+    if (!canEdit) return
     try {
       if (isEditing) await updateFieldAutomation(payload, Number(id));
       else await createFieldAutomation(payload);
@@ -97,22 +106,30 @@ export const AutomationPage = () => {
                 </Typography>
                 {/* Badge de Estado: Se integra aquí el texto de "Modo visualización" */}
                 <CustomChip
-                  label={readOnly ? "Solo Lectura" : isDuplicating ? "Duplicando" : "Editando"}
+                  label={effectiveReadOnly ? "Solo Lectura" : isDuplicating ? "Duplicando" : "Editando"}
                   size="small"
-                  color={readOnly ? "default" : "primary"}
+                  color={effectiveReadOnly ? "default" : "primary"}
                 />
               </Stack>
 
               {/* Derecha: Botones de Acción */}
               <Box sx={{ ml: "auto" }}>
-                {readOnly ? (
-                  <CommonButton actionType='MODIFY' onClick={() => setReadOnly(false)} >
-                    Editar
-                  </CommonButton>
+                {effectiveReadOnly ? (
+                  // El toggle "Editar" solo tiene sentido al editar una automatización existente
+                  // (al crear una nueva, el formulario ya arranca editable si hay permiso de creación).
+                  isEditing && (
+                    <Can permission="field_automation:update">
+                      <CommonButton actionType='MODIFY' onClick={() => setReadOnly(false)} >
+                        Editar
+                      </CommonButton>
+                    </Can>
+                  )
                 ) : (
-                  <CommonButton actionType='SAVE' onClick={() => formSubmitRef.current?.()} loading={saving}>
-                    Guardar
-                  </CommonButton>
+                  <Can permission={isEditing ? "field_automation:update" : "field_automation:create"}>
+                    <CommonButton actionType='SAVE' onClick={() => formSubmitRef.current?.()} loading={saving}>
+                      Guardar
+                    </CommonButton>
+                  </Can>
                 )}
               </Box>
             </Stack>
@@ -124,7 +141,7 @@ export const AutomationPage = () => {
             campaignId={campaignId}
             onSave={handleSaveLoad}
             fields={fields}
-            readOnly={readOnly}
+            readOnly={effectiveReadOnly}
             isDuplicating={isDuplicating}
             submitRef={formSubmitRef}
           />

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { Can } from "src/app/Can"
 import { LeadFieldSections } from "./LeadDetailsSections"
 import { LeadTags } from "src/features/orgProperties/tags/LeadTagsMenu.tsx"
 import { LeadActivities } from "../activities/LeadActivities"
@@ -17,6 +18,7 @@ import { getLeadTitleArray } from "../leadUtils.ts"
 import { LeadTitleConfigSidebar } from "src/features/lead/leadTitleConfig/LeadTitleConfigSidebar"
 import { showCommonErrorToast, showToast } from "src/utils/feedback.ts"
 import { useLeadNavigation } from "../stores/LeadNavigationContext.tsx"
+import { useUserContext } from "src/stores/UserContext"
 import { Link as RouterLink, useNavigate, useParams } from "react-router-dom"
 import { Grid, Typography, ButtonGroup, Stack, Breadcrumbs, Link, Box, CircularProgress, Fab, Slide } from "@mui/material"
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
@@ -226,6 +228,7 @@ interface LeadInfoProps {
 }
 
 export const LeadInfo = ({ lead, leadTitle, handleActive, updateLeadInfo, onOpenTitleConfig }: LeadInfoProps) => {
+    const { hasPermission } = useUserContext()
     return (
         <Stack spacing={2}>
             <GenericPaper elevation={0}>
@@ -238,20 +241,26 @@ export const LeadInfo = ({ lead, leadTitle, handleActive, updateLeadInfo, onOpen
                                 </Typography>
                             </TitleAndActive>
                             {onOpenTitleConfig &&
-                                <CommonIconButton actionType="RENAME" title="Configurar título"
-                                    onClick={onOpenTitleConfig} size="small" />
+                                <Can permission="lead_field:update">
+                                    <CommonIconButton actionType="RENAME" title="Configurar título"
+                                        onClick={onOpenTitleConfig} size="small" />
+                                </Can>
                             }
                         </Stack>
                     </Stack>
                     <ButtonGroup fullWidth>
-                        <CommonButton actionType={lead.active ? "DISABLE" : "ENABLE"} variant="outlined"
-                            color={lead.active ? "error" : "success"} onClick={() => handleActive(lead)}>
-                            {lead.active ? "Eliminar" : "Habilitar"}
-                        </CommonButton>
-                        <CommonButton actionType="MODIFY" variant="contained" color="primary"
-                            component={RouterLink} to={`/leads/modify/${lead?.id}`}>
-                            Modificar
-                        </CommonButton>
+                        {hasPermission(lead.active ? "lead:delete" : "lead:update") &&
+                            <CommonButton actionType={lead.active ? "DISABLE" : "ENABLE"} variant="outlined"
+                                color={lead.active ? "error" : "success"} onClick={() => handleActive(lead)}>
+                                {lead.active ? "Eliminar" : "Habilitar"}
+                            </CommonButton>
+                        }
+                        {hasPermission("lead:update") &&
+                            <CommonButton actionType="MODIFY" variant="contained" color="primary"
+                                component={RouterLink} to={`/leads/modify/${lead?.id}`}>
+                                Modificar
+                            </CommonButton>
+                        }
                     </ButtonGroup>
                     <LeadTags lead={lead} updateLeadInfo={updateLeadInfo} />
                     <LeadDetailsState lead={lead} updateLeadInfo={updateLeadInfo} contactState={lead.contact_state} flowState={lead.current_state} />

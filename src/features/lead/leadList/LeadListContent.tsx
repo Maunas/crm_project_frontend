@@ -8,6 +8,7 @@ import type { Lead } from "src/types/leads"
 import { Link } from "react-router-dom"
 import { Stack, Typography, ButtonGroup, Badge } from "@mui/material"
 import { LeadBoardPresentation } from "./board/LeadBoardPresentation"
+import { useUserContext } from "src/stores/UserContext"
 
 interface LeadListContentProps {
     leads: Lead[],
@@ -43,6 +44,8 @@ interface LeadListContentProps {
 export const LeadListContent = memo(({ leads, leadFields, selectedFieldIds, activeFilters = 0, modalProps, orderProps, handleSelectedFieldIds,
     selectCheckboxProps, presentationMode, workspaceId, campaignId, filters }: LeadListContentProps) => {
 
+    const { hasPermission } = useUserContext()
+
     //Filtra los objetos LeadField para seguir el orden del arreglo de ids.
     const selectedColumns = useMemo(() => {
         if (!leadFields || leadFields.length === 0) return []
@@ -69,9 +72,11 @@ export const LeadListContent = memo(({ leads, leadFields, selectedFieldIds, acti
                 <Typography variant="h4">Agrega un lead nuevo{activeFilters > 0 && " o revisa los filtros activos"}</Typography>
             </Stack>
             <ButtonGroup >
-                <CommonButton actionType="CREATE" color="primary" component={Link} to={`/leads/new?workspace=${workspaceId}&campaign=${campaignId}`}>
-                    Agregar Lead
-                </CommonButton>
+                {hasPermission("lead:create") &&
+                    <CommonButton actionType="CREATE" color="primary" component={Link} to={`/leads/new?workspace=${workspaceId}&campaign=${campaignId}`}>
+                        Agregar Lead
+                    </CommonButton>
+                }
                 {activeFilters > 0 &&
                     <Badge badgeContent={activeFilters} color="success">
                         <CommonButton actionType="FILTER" color="secondary" onClick={() => modalProps.handleOpen("lead_filters")}>

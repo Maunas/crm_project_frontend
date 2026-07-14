@@ -16,12 +16,13 @@ import type { Paginable } from 'src/types/shared'
 import { disableNomenclator, enableNomenclator, getNomenclator, getNomenclators } from './nomenclatorService'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { useUserContext } from 'src/stores/UserContext'
+import { Can } from 'src/app/Can'
 import { useSearchParams } from 'react-router-dom'
 import { Grid, List, ListItemText, Stack, Typography } from '@mui/material'
 
 export const NomenclatorList = () => {
 
-    const { activeOrg } = useUserContext()
+    const { activeOrg, hasPermission } = useUserContext()
 
     const [nomenclators, setNomenclators] = useState<Paginable<NomenclatorDetailed> | null>(null)
 
@@ -118,10 +119,12 @@ export const NomenclatorList = () => {
                 <Stack direction="row" useFlexGap spacing={2} sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
                     <Typography variant="h1">Lista de Nomencladores</Typography>
                     {nomenclators && nomenclators.items?.length > 0 &&
-                        <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_NOM", null) }}
-                            sx={{ marginLeft: "auto" }} onlyTooltip>
-                            Agregar
-                        </CommonButton>
+                        <Can permission="nomenclator:create">
+                            <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_NOM", null) }}
+                                sx={{ marginLeft: "auto" }} onlyTooltip>
+                                Agregar
+                            </CommonButton>
+                        </Can>
                     }
                 </Stack>
                 <LoadingScreenWrapper loading={loading}>
@@ -138,11 +141,15 @@ export const NomenclatorList = () => {
                                                     actions={[
                                                         { actionType: "DETAILS", label: 'Detalle', onClick: () => handleSidebar("DETAILS_NOM", nom) },
                                                         ...(isBlocked ? [] : [
-                                                            { actionType: "MODIFY", label: 'Modificar', onClick: () => handleSidebar("UPDATE_NOM", nom) },
-                                                            {
-                                                                actionType: (nom.active ? "DISABLE" : "ENABLE"), label: nom.active ? "Deshabilitar" : "Habilitar",
-                                                                color: (nom.active ? "error" : "success"), onClick: () => handleDeletingNom(nom)
-                                                            }
+                                                            ...(hasPermission("nomenclator:update") ? [
+                                                                { actionType: "MODIFY", label: 'Modificar', onClick: () => handleSidebar("UPDATE_NOM", nom) }
+                                                            ] : []),
+                                                            ...(hasPermission(nom.active ? "nomenclator:delete" : "nomenclator:update") ? [
+                                                                {
+                                                                    actionType: (nom.active ? "DISABLE" : "ENABLE"), label: nom.active ? "Deshabilitar" : "Habilitar",
+                                                                    color: (nom.active ? "error" : "success"), onClick: () => handleDeletingNom(nom)
+                                                                }
+                                                            ] : [])
                                                         ] as ListItemAction[])
                                                     ]}>
                                                     <ListItemText primary={
@@ -169,9 +176,11 @@ export const NomenclatorList = () => {
                                 </List>
                                 : <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
                                     <Typography variant="h4">No se han encontrado nomencladores...</Typography>
-                                    <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_NOM", null) }} variant="contained">
-                                        Agregar
-                                    </CommonButton>
+                                    <Can permission="nomenclator:create">
+                                        <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_NOM", null) }} variant="contained">
+                                            Agregar
+                                        </CommonButton>
+                                    </Can>
                                 </Stack>
                         }
                         <PaginationComponent {...pageComponentProps} />

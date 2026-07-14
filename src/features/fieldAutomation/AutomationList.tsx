@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { GenericContainer } from 'shared/layout/container/GenericContainer';
 import PaginationComponent from 'shared/ui/lists/PaginationComponent';
-import { ResponsiveListItem } from 'shared/ui/lists/CustomListItem';
+import { ResponsiveListItem, type ListItemAction } from 'shared/ui/lists/CustomListItem';
 import CommonButton from 'shared/ui/buttons/CommonButton';
 import { EnabledIcon } from 'shared/ui/lists/Icons';
 import { useListPagination } from 'src/hooks/useListPagination';
@@ -18,6 +18,8 @@ import LoadingScreenWrapper from 'src/components/ui/feedback/LoadingScreen';
 import CustomChip from 'src/components/ui/details/CustomChip';
 import { ChipTooltip } from 'src/components/ui/details/ChipTooltip';
 import { DisableConfirmDialog } from 'src/components/ui/feedback/ConfirmationDialog';
+import { Can } from 'src/app/Can';
+import { useUserContext } from 'src/stores/UserContext';
 
 const NONE_OPTION: Campaign = {
   id: -1,
@@ -28,6 +30,7 @@ const NONE_OPTION: Campaign = {
 
 export const AutomationList = () => {
   const navigate = useNavigate();
+  const { hasPermission } = useUserContext();
 
   const [searchParams, setSearchParams] = useSearchParams();
   const urlCampaignId = searchParams.get('campaign');
@@ -113,16 +116,18 @@ export const AutomationList = () => {
                   size="small" sx={{ minWidth: 200, maxWidth: 250 }} />
               } />
           </Stack>
-          <CommonButton
-            actionType='CREATE'
-            onlyTooltip
-            disabled={!isCampaignSelected}
-            component={Link}
-            to={`/automations/create?campaign=${selectedCampaignId}`}
-            sx={{ ml: "auto" }}
-          >
-            Nueva Automatización
-          </CommonButton>
+          <Can permission="field_automation:create">
+            <CommonButton
+              actionType='CREATE'
+              onlyTooltip
+              disabled={!isCampaignSelected}
+              component={Link}
+              to={`/automations/create?campaign=${selectedCampaignId}`}
+              sx={{ ml: "auto" }}
+            >
+              Nueva Automatización
+            </CommonButton>
+          </Can>
         </Stack>
 
         <Stack spacing={2}>
@@ -143,18 +148,18 @@ export const AutomationList = () => {
                             actionType: "DETAILS", label: "Detalles", component: Link,
                             to: `/automations/${auto.id}?campaign=${selectedCampaignId}`
                           },
-                          {
+                          ...(hasPermission("field_automation:update") ? [{
                             actionType: "MODIFY", label: "Modificar", component: Link,
                             to: `/automations/${auto.id}?campaign=${selectedCampaignId}&edit=true`
-                          },
-                          {
+                          }] : []),
+                          ...(hasPermission("field_automation:create") ? [{
                             actionType: "DUPLICATE", label: "Duplicar", component: Link,
                             to: `/automations/create?campaign=${selectedCampaignId}&duplicate_from=${auto.id}`
-                          },
-                          {
+                          }] : []),
+                          ...(hasPermission("field_automation:delete") ? [{
                             actionType: "DISABLE", label: "Eliminar", color: "error", onClick: () => setDeletingAuto(auto)
-                          },
-                        ]}>
+                          }] : []),
+                        ] as ListItemAction[]}>
                         <ListItemText
                           primary={
                             <Stack spacing={1} direction="row" sx={{ alignItems: "center" }}>

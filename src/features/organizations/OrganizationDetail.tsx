@@ -14,7 +14,7 @@ interface DetailsProps {
     handleActive: (org: OrganizationDetailed) => void
 }
 const OrganizationDetails = ({ entity, closeSidebar, handleSidebar, handleActive }: DetailsProps) => {
-    const { activeOrg, setActiveOrg } = useUserContext()
+    const { activeOrg, setActiveOrg, hasPermission } = useUserContext()
 
     if (!entity) return
 
@@ -47,10 +47,12 @@ const OrganizationDetails = ({ entity, closeSidebar, handleSidebar, handleActive
                 <Divider />
                 <ButtonGroup sx={{ alignSelf: "end" }}>
                     <CommonButton onClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
-                    {activeOrg?.id !== entity.id &&
+                    {activeOrg?.id !== entity.id && hasPermission(entity.active ? "organization:delete" : "organization:update") &&
                         <HandleActiveButton active={entity.active} handleActive={() => handleActive(entity)} />
                     }
-                    <CommonButton onClick={() => handleSidebar("UPDATE_ORG", entity)} actionType="MODIFY" >Modificar</CommonButton>
+                    {hasPermission("organization:update") &&
+                        <CommonButton onClick={() => handleSidebar("UPDATE_ORG", entity)} actionType="MODIFY" >Modificar</CommonButton>
+                    }
                 </ButtonGroup>
             </Stack>
         </Stack>

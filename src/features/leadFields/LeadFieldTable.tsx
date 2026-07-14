@@ -15,6 +15,7 @@ import { DisableConfirmDialog } from "src/components/ui/feedback/ConfirmationDia
 import { getFieldsBySections } from "./leadFieldUtils"
 import { ColoredAccordionSummary } from "src/components/layout/container/ColoredHeaders"
 import GenericPaper from "src/components/layout/container/GenericPaper"
+import { Can } from "src/app/Can"
 
 const MIN_FIELDS = 10
 
@@ -29,14 +30,15 @@ interface LeadFieldTableSectionsProps {
     checkedItemsArray: LeadFieldDetailed[];
     addItem: (item: LeadFieldDetailed | LeadFieldDetailed[]) => void;
     removeItem: (item: LeadFieldDetailed | LeadFieldDetailed[]) => void;
+    openSectionIds: Set<number>,
+    setOpenSectionIds: React.Dispatch<React.SetStateAction<Set<number>>>,
 }
 
 export const LeadFieldTableSections = ({ leadFields, newFieldsBySectionIds, setNewFieldsBySectionIds, handleActive, isReordering,
-    handleSidebarWrapper, checkedItems, checkedItemsArray, addItem, removeItem }: LeadFieldTableSectionsProps) => {
+    handleSidebarWrapper, checkedItems, checkedItemsArray, addItem, removeItem, openSectionIds, setOpenSectionIds }: LeadFieldTableSectionsProps) => {
 
     const { palette } = useTheme()
     const [showAll, setShowAll] = useState<boolean>(false)
-    const [openTableId, setOpenTableId] = useState<number | null>(null)
 
     // Deshabilitación de campos
     const [deletingField, setDeletingField] = useState<LeadFieldDetailed | null>(null)
@@ -69,8 +71,13 @@ export const LeadFieldTableSections = ({ leadFields, newFieldsBySectionIds, setN
                 const sectionCheckedItems = checkedBySectionId.get(section.sectId) ?? 0
                 if (!leadFieldsData) return
                 return (
-                    <Accordion expanded={openTableId === section.sectId} component={GenericPaper} elevation={1} key={`${section.sectId}-acc`}
-                        onChange={(_, expanded) => expanded ? setOpenTableId(section.sectId) : setOpenTableId(null)}
+                    <Accordion expanded={openSectionIds.has(section.sectId)} component={GenericPaper} elevation={1} key={`${section.sectId}-acc`}
+                        onChange={(_, expanded) => setOpenSectionIds(prev => {
+                            const next = new Set(prev)
+                            if (expanded) next.add(section.sectId)
+                            else next.delete(section.sectId)
+                            return next
+                        })}
                         sx={[{ p: 0 }, isReordering ? dragStyles(idx, palette, "column", true) : {}]}
                         {...(isReordering ? {
                             onDragEnter: () => handleDragEnter(idx),
@@ -197,11 +204,15 @@ export const LeadFieldTable = memo(({ sectLeadFields, orderFieldsIds, setOrderFi
                                             onClick={stopPropagationEvent(() => handleSidebar("DETAILS_FIELD", rowData))} />
                                         {orderFieldsIds.length > 1 &&
                                             <>
-                                                <CommonIconButton actionType="MODIFY" title="Modificar" tooltipSize="small" size="small"
-                                                    onClick={stopPropagationEvent(() => handleSidebar("UPDATE_FIELD", rowData))} />
-                                                <CommonIconButton actionType={rowData.active ? "DISABLE" : "ENABLE"} tooltipSize="small" size="small"
-                                                    title={rowData.active ? "Deshabilitar" : "Habilitar"}
-                                                    onClick={stopPropagationEvent(() => setDeletingField(rowData))} color={rowData.active ? "error" : "success"} />
+                                                <Can permission="lead_field:update">
+                                                    <CommonIconButton actionType="MODIFY" title="Modificar" tooltipSize="small" size="small"
+                                                        onClick={stopPropagationEvent(() => handleSidebar("UPDATE_FIELD", rowData))} />
+                                                </Can>
+                                                <Can permission={rowData.active ? "lead_field:delete" : "lead_field:update"}>
+                                                    <CommonIconButton actionType={rowData.active ? "DISABLE" : "ENABLE"} tooltipSize="small" size="small"
+                                                        title={rowData.active ? "Deshabilitar" : "Habilitar"}
+                                                        onClick={stopPropagationEvent(() => setDeletingField(rowData))} color={rowData.active ? "error" : "success"} />
+                                                </Can>
                                             </>}
                                     </Stack>
                                 </TableCell>

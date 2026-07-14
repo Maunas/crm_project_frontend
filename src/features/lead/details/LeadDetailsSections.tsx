@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react"
+import { Can } from "src/app/Can"
 import { LeadPartialUpdate } from "./LeadPartialUpdate"
 import { BoolValue, DateValue, ListValues, ModalValue, NumberValue, StringValue } from "../shared/LeadValueComponents"
 import { LeadFieldTypeAvatar } from "features/leadFields/LeadFieldTypeIcon"
@@ -162,9 +163,11 @@ export const LeadFieldContent = (props: LeadFieldProps) => {
     return (
         <CustomListItem disablePadding
             secondaryAction={onToggleEdit &&
-                <CommonIconButton title="Modificar" actionType="MODIFY" onClick={onToggleEdit}
-                    size="small" tooltipSize="small" color="primary"
-                    disabled={typeCode === "CALCULATED" || !fieldValue?.field.is_visible} />
+                <Can permission="lead:update">
+                    <CommonIconButton title="Modificar" actionType="MODIFY" onClick={onToggleEdit}
+                        size="small" tooltipSize="small" color="primary"
+                        disabled={typeCode === "CALCULATED" || !fieldValue?.field.is_visible} />
+                </Can>
             } >
             <LeadFieldTypeAvatar typeCode={typeWithTemplates} subtypeCode={subtypeCode} />
             <ListItemText sx={{ mr: 6 }}>

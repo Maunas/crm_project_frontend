@@ -18,6 +18,7 @@ import type { Paginable } from 'src/types/shared'
 import { disableWorkspace, enableWorkspace, getWorkspace, getWorkspaces } from './workspaceServices'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback';
 import { useUserContext } from 'src/stores/UserContext';
+import { Can } from 'src/app/Can';
 import { useSearchParams } from 'react-router-dom';
 import { List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
 
@@ -126,9 +127,11 @@ export const WorkspaceList = () => {
                 <Stack spacing={2} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
                     <Typography variant="h1">Lista de Espacios de Trabajo</Typography>
                     {workspaces && workspaces?.items.length > 0 &&
-                        <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_WSP", null)} sx={{ marginLeft: "auto" }} onlyTooltip>
-                            Agregar
-                        </CommonButton>
+                        <Can permission="workspace:create">
+                            <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_WSP", null)} sx={{ marginLeft: "auto" }} onlyTooltip>
+                                Agregar
+                            </CommonButton>
+                        </Can>
                     }
                 </Stack>
                 <LoadingScreenWrapper loading={loading}>
@@ -140,11 +143,15 @@ export const WorkspaceList = () => {
                                         <Stack direction="row" sx={{ alignItems: "center" }}>
                                             <CommonIconButton actionType='DETAILS' title="Detalles" tooltipSize="small" size="small"
                                                 onClick={() => { handleSidebar("DETAILS_WSP", wsp) }} />
-                                            <CommonIconButton actionType='MODIFY' title="Modificar" tooltipSize="small" size="small"
-                                                onClick={() => { handleSidebar("UPDATE_WSP", wsp) }} />
-                                            <CommonIconButton actionType={wsp.active ? "DISABLE" : "ENABLE"} tooltipSize="small" size="small"
-                                                title={wsp.active ? "Deshabilitar" : "Habilitar"}
-                                                onClick={() => handleDeletingWsp(wsp)} color={wsp.active ? "error" : "success"} />
+                                            <Can permission="workspace:update">
+                                                <CommonIconButton actionType='MODIFY' title="Modificar" tooltipSize="small" size="small"
+                                                    onClick={() => { handleSidebar("UPDATE_WSP", wsp) }} />
+                                            </Can>
+                                            <Can permission={wsp.active ? "workspace:delete" : "workspace:update"}>
+                                                <CommonIconButton actionType={wsp.active ? "DISABLE" : "ENABLE"} tooltipSize="small" size="small"
+                                                    title={wsp.active ? "Deshabilitar" : "Habilitar"}
+                                                    onClick={() => handleDeletingWsp(wsp)} color={wsp.active ? "error" : "success"} />
+                                            </Can>
                                         </Stack>
                                     }>
                                         <ListItemButton onClick={() => { handleSidebar("DETAILS_WSP", wsp) }} >
@@ -161,9 +168,11 @@ export const WorkspaceList = () => {
                             </List>
                             : <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
                                 <Typography variant="h4">No se han encontrado espacios de trabajo...</Typography>
-                                <CommonButton actionType='CREATE' onClick={() => handleSidebar("CREATE_WSP", null)} variant="contained">
-                                    Agregar
-                                </CommonButton>
+                                <Can permission="workspace:create">
+                                    <CommonButton actionType='CREATE' onClick={() => handleSidebar("CREATE_WSP", null)} variant="contained">
+                                        Agregar
+                                    </CommonButton>
+                                </Can>
                             </Stack>
                         }
                         <PaginationComponent {...pageComponentProps} />

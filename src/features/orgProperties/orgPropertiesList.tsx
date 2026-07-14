@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { LeadFlowList } from '../leadFlows/LeadFlowList';
 import { CustomListItem, CustomListItemAvatar } from 'shared/ui/lists/CustomListItem';
 import ContainerWithSidebar, { SidebarContentWrapper } from 'shared/layout/container/GenericContainer';
@@ -15,48 +15,61 @@ import DiscountIcon from '@mui/icons-material/Discount';
 import FolderCopyIcon from '@mui/icons-material/FolderCopy';
 import { LeadTagsList } from './tags/LeadTagsList';
 import { FieldSectionList } from './fieldSections/FieldSectionList';
+import { useUserContext } from 'src/stores/UserContext';
 
 export interface OrgPropertiesItem {
     label: string,
     id: "FLOW" | "CONTACT" | "TAGS" | "SECTIONS",
     icon: ReactNode,
     color: ColorTypes,
-    content: ReactNode
+    content: ReactNode,
+    //Permiso :view de la entidad que maneja esta subsección. Se usa acá (para ocultar el ítem si falta) y en
+    //routes.tsx (para saber si mostrar la página: alcanza con tener el permiso de CUALQUIERA de estos 4).
+    permission: string,
 }
 export const LEAD_PROPERTIES: OrgPropertiesItem[] = [{
     label: "Flujo de Estados",
     id: "FLOW",
     icon: <AccountTreeIcon />,
     color: "primary",
-    content: <LeadFlowList />
+    content: <LeadFlowList />,
+    permission: "lead_flow:view",
 },
 {
     label: "Estados de Contacto",
     id: "CONTACT",
     icon: <ViewColumnIcon />,
     color: "secondary",
-    content: <ContactStateList />
+    content: <ContactStateList />,
+    permission: "lead_contact_state:view",
 },
 {
     label: "Etiquetas de Lead",
     id: "TAGS",
     icon: <DiscountIcon />,
     color: "info",
-    content: <LeadTagsList />
+    content: <LeadTagsList />,
+    permission: "tag:view",
 },
 {
     label: "Secciones de Campo",
     id: "SECTIONS",
     icon: <FolderCopyIcon />,
     color: "success",
-    content: <FieldSectionList />
+    content: <FieldSectionList />,
+    permission: "lead_field_section:view",
 }]
 
 const OrgProperties = () => {
 
     const [params, setParams] = useSearchParams()
+    const { hasPermission } = useUserContext()
 
     const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<OrgPropertiesItem>("id", params, setParams)
+
+    //Cada subsección se oculta si falta su permiso puntual (la ruta completa ya está gateada en routes.tsx
+    //con "cualquiera de los 4", así que si se llegó hasta acá, esta lista nunca queda vacía)
+    const visibleProperties = useMemo(() => LEAD_PROPERTIES.filter(prop => hasPermission(prop.permission)), [hasPermission])
 
     return (
         <ContainerWithSidebar isSidebarOpen={Boolean(sidebarMode)} closeSidebar={closeSidebar}
@@ -68,7 +81,7 @@ const OrgProperties = () => {
                 <Typography variant="h1">Propiedades de Organización</Typography>
                 <Stack spacing={2}>
                     <List>
-                        {LEAD_PROPERTIES.map(prop =>
+                        {visibleProperties.map(prop =>
                             <CustomListItem key={`${prop.id}`} isSelected={prop.id === selectedEntity?.id} disablePadding secondaryAction={
                                 <Stack direction="row" sx={{ alignItems: "center" }}>
                                     <CommonIconButton actionType='DETAILS' title="Detalles" tooltipSize="small" size="small"

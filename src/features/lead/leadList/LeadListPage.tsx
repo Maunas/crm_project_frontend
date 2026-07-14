@@ -22,10 +22,13 @@ import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { useLeadNavigation } from '../stores/LeadNavigationContext'
 import { Link as RouterLink, useNavigate, useSearchParams } from 'react-router-dom'
 import { Typography, Stack, ButtonGroup } from '@mui/material'
+import { useUserContext } from 'src/stores/UserContext'
 
 const DEFAULT_N_OF_FIELDS = 6
 
 export const LeadListPage = () => {
+
+    const { hasPermission } = useUserContext()
 
     const [params, setParams] = useSearchParams()
     const { modalProps } = useModal()
@@ -330,7 +333,7 @@ export const LeadListPage = () => {
                                 onlyTooltip
                             >Exportar Leads</CommonButton>
                         }
-                        {areThereLeads &&
+                        {areThereLeads && hasPermission("lead:create") &&
                             <CommonButton actionType='CREATE' variant="contained" color="primary"
                                 component={RouterLink} to={`/leads/new?workspace=${workspaceId}&campaign=${campaignId}`} onlyTooltip>
                                 Agregar

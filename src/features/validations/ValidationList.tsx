@@ -3,6 +3,7 @@ import { CodeBox } from 'shared/ui/details/CodeBox'
 import type { LeadFieldDetailed } from 'src/types/leadFields'
 import { List, ListItem, ListItemText, Paper, Stack, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
+import { Can } from 'src/app/Can'
 
 interface ValidationListProps {
     leadField: LeadFieldDetailed,
@@ -17,9 +18,11 @@ export const ValidationList = ({ leadField, handleSidebar }: ValidationListProps
         return (
             <Stack spacing={2} sx={{ justifyContent: "center" }}>
                 <Typography variant="h4" sx={{ textAlign: "center" }}>No hay validaciones cargadas</Typography>
-                <CommonButton actionType='CREATE' variant='contained' onClick={() => handleSidebar("UPDATE_VAL", leadField)}>
-                    Agregar
-                </CommonButton>
+                <Can permission="validation_rule:create">
+                    <CommonButton actionType='CREATE' variant='contained' onClick={() => handleSidebar("UPDATE_VAL", leadField)}>
+                        Agregar
+                    </CommonButton>
+                </Can>
             </Stack>
         )
     }
@@ -28,10 +31,12 @@ export const ValidationList = ({ leadField, handleSidebar }: ValidationListProps
         <Stack spacing={2}>
             <Stack direction="row" useFlexGap spacing={2} sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
                 <Typography variant="h3">Validaciones</Typography>
-                <CommonButton actionType='MODIFY' variant='contained' sx={{ marginLeft: "auto" }} size="small"
-                    onClick={() => handleSidebar("UPDATE_VAL", leadField)} onlyTooltip>
-                    Modificar
-                </CommonButton>
+                <Can permission="validation_rule:update">
+                    <CommonButton actionType='MODIFY' variant='contained' sx={{ marginLeft: "auto" }} size="small"
+                        onClick={() => handleSidebar("UPDATE_VAL", leadField)} onlyTooltip>
+                        Modificar
+                    </CommonButton>
+                </Can>
             </Stack>
             <List disablePadding>
                 {leadField.validation_rules.map(val =>

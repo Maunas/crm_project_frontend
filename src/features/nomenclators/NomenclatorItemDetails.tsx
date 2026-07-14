@@ -15,7 +15,7 @@ interface NomenclatorDetailsProps {
 
 export const NomenclatorItemDetails = ({ item, closeSidebar, handleSidebar, handleActive }: NomenclatorDetailsProps) => {
 
-    const { activeOrg } = useUserContext()
+    const { activeOrg, hasPermission } = useUserContext()
 
     if (item) return (
         <Stack spacing={3} >
@@ -42,10 +42,10 @@ export const NomenclatorItemDetails = ({ item, closeSidebar, handleSidebar, hand
                 <Divider />
                 <ButtonGroup sx={{ alignSelf: "end" }}>
                     <CommonButton onClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
-                    {(item.organization_id || activeOrg?.id === 0) &&
+                    {(item.organization_id || activeOrg?.id === 0) && hasPermission(item.active ? "nomenclator_item:delete" : "nomenclator_item:update") &&
                         <HandleActiveButton active={item.active} handleActive={() => handleActive(item)} />
                     }
-                    {(item.organization_id || activeOrg?.id === 0) &&
+                    {(item.organization_id || activeOrg?.id === 0) && hasPermission("nomenclator_item:update") &&
                         <CommonButton onClick={() => handleSidebar("UPDATE_NOM", item)} actionType="MODIFY" >Modificar</CommonButton>
                     }
                 </ButtonGroup>

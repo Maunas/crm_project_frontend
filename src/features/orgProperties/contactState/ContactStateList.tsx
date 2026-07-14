@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { ContactStateForm } from './ContactStateForm'
 import { DisableConfirmDialog } from 'src/components/ui/feedback/ConfirmationDialog'
 import PaginationComponent from 'shared/ui/lists/PaginationComponent'
-import { ResponsiveListItem } from 'shared/ui/lists/CustomListItem'
+import { ResponsiveListItem, type ListItemAction } from 'shared/ui/lists/CustomListItem'
 import LoadingScreenWrapper from 'src/components/ui/feedback/LoadingScreen'
 import GenericPaper from 'shared/layout/container/GenericPaper'
 import CommonButton from 'shared/ui/buttons/CommonButton'
@@ -15,6 +15,8 @@ import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { Divider, Grid, ListItemText, Stack, Typography } from '@mui/material'
 import type { LeadContactStateDetailed } from 'src/types/orgProperties'
 import { disableLeadContactState, enableLeadContactState, getLeadContactStates } from './contactStatesServices'
+import { Can } from 'src/app/Can'
+import { useUserContext } from 'src/stores/UserContext'
 
 export const ContactStateList = () => {
 
@@ -57,8 +59,10 @@ export const ContactStateList = () => {
                 <Stack spacing={2}>
                     {(states?.items && states.items.length > 0) ?
                         <Stack spacing={2}>
-                            <CommonButton actionType="CREATE" variant="contained" sx={{ alignSelf: "start" }}
-                                onClick={() => setEditingState(undefined)}>Agregar</CommonButton>
+                            <Can permission="lead_contact_state:create">
+                                <CommonButton actionType="CREATE" variant="contained" sx={{ alignSelf: "start" }}
+                                    onClick={() => setEditingState(undefined)}>Agregar</CommonButton>
+                            </Can>
                             <ContactStateListData states={states.items}
                                 toggleUpdate={(state: LeadContactStateDetailed) => setEditingState(state)}
                                 updateList={updateList} />
@@ -67,8 +71,10 @@ export const ContactStateList = () => {
                         :
                         <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center", height: "30rem" }}>
                             <Typography variant="h4">No se han encontrado estados de contacto...</Typography>
-                            <CommonButton actionType="CREATE" variant="contained"
-                                onClick={() => setEditingState(undefined)}>Agregar</CommonButton>
+                            <Can permission="lead_contact_state:create">
+                                <CommonButton actionType="CREATE" variant="contained"
+                                    onClick={() => setEditingState(undefined)}>Agregar</CommonButton>
+                            </Can>
                         </Stack>
                     }
                     {editingState !== null &&
@@ -96,6 +102,8 @@ interface ContactStateListDataProps {
 
 export const ContactStateListData = ({ states, toggleUpdate, updateList }: ContactStateListDataProps) => {
 
+    const { hasPermission } = useUserContext()
+
     const [disableState, setDisableState] = useState<LeadContactStateDetailed | null>(null)
 
     const handleEnableDisable = useCallback((id: number, isActive: boolean) => {
@@ -122,15 +130,19 @@ export const ContactStateListData = ({ states, toggleUpdate, updateList }: Conta
                 {states.map((state, idx) =>
                     <Grid key={`state-${idx}`} size="grow" sx={{ minWidth: "15rem", minHeight: "100%" }}>
                         <ResponsiveListItem disablePadding sx={{ height: "100%" }}
-                            onClick={() => toggleUpdate(state)}
+                            onClick={() => hasPermission("lead_contact_state:update") && toggleUpdate(state)}
                             actions={[
-                                { actionType: "MODIFY", label: "Editar", onClick: () => toggleUpdate(state) },
-                                {
-                                    actionType: state.active ? "DISABLE" : "ENABLE", color: state.active ? "error" : "success",
-                                    label: state.active ? "Deshabilitar" : "Habilitar",
-                                    onClick: () => setDisableState(state)
-                                }
-                            ]}>
+                                ...(hasPermission("lead_contact_state:update") ? [
+                                    { actionType: "MODIFY", label: "Editar", onClick: () => toggleUpdate(state) }
+                                ] : []),
+                                ...(hasPermission(state.active ? "lead_contact_state:delete" : "lead_contact_state:update") ? [
+                                    {
+                                        actionType: state.active ? "DISABLE" : "ENABLE", color: state.active ? "error" : "success",
+                                        label: state.active ? "Deshabilitar" : "Habilitar",
+                                        onClick: () => setDisableState(state)
+                                    }
+                                ] : [])
+                            ] as ListItemAction[]}>
                             <ListItemText sx={{ mr: 4 }} primary={
                                 <Stack spacing={1} direction="row" color="inherit" sx={{ width: "100%", alignItems: "center" }}>
                                     <EnabledIcon active={state.active} />

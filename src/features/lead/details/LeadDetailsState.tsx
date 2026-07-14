@@ -9,6 +9,7 @@ import type { Lead, LeadDetailed } from 'src/types/leads'
 import { changeContactState, changeFlowState } from './LeadDetailsService'
 import { showCommonErrorToast } from 'src/utils/feedback'
 import { getLeadContactStates } from 'src/features/orgProperties/contactState/contactStatesServices'
+import { useUserContext } from 'src/stores/UserContext'
 
 interface LeadDetailsState {
     lead: LeadDetailed,
@@ -18,6 +19,9 @@ interface LeadDetailsState {
 }
 
 export const LeadDetailsState = ({ lead, contactState, flowState, updateLeadInfo }: LeadDetailsState) => {
+
+    const { hasPermission } = useUserContext()
+    const canUpdate = hasPermission("lead:update")
 
     const [nextFlowStates, setNextFlowStates] = useState<LeadState[]>([])
     const [contactStates, setContactStates] = useState<LeadContactState[]>([])
@@ -50,7 +54,8 @@ export const LeadDetailsState = ({ lead, contactState, flowState, updateLeadInfo
     return (
         <Stack spacing={1} direction="row" useFlexGap sx={{ alignItems: "center", justifyContent: "start", flexWrap: "wrap" }}>
             {flowState && setNextFlowStates?.length > 0 && <>
-                <CustomChip label={flowState.name} chipColor={flowState.color} onClick={e => setFlowAnchor(e.currentTarget)} />
+                <CustomChip label={flowState.name} chipColor={flowState.color}
+                    onClick={canUpdate ? e => setFlowAnchor(e.currentTarget) : undefined} />
                 <Popover
                     id="next-flow-states"
                     open={Boolean(flowAnchor)}
@@ -67,7 +72,8 @@ export const LeadDetailsState = ({ lead, contactState, flowState, updateLeadInfo
             </>}
 
             {contactState && contactStates?.length > 0 && <>
-                <CustomChip label={contactState.name} chipColor={contactState.color} onClick={e => setContactAnchor(e.currentTarget)} />
+                <CustomChip label={contactState.name} chipColor={contactState.color}
+                    onClick={canUpdate ? e => setContactAnchor(e.currentTarget) : undefined} />
                 <Popover
                     id="next-cont-states"
                     open={Boolean(contactAnchor)}
