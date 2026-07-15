@@ -24,6 +24,7 @@ const ORDER_CMP_FIELDS = [
 
 const SEARCH_CMP_FIELDS = [
     { name: "name", label: "Nombre" },
+    { name: "description", label: "Descripción" },
 ]
 
 interface CampaignListProps {
@@ -73,7 +74,8 @@ export const CampaignList = ({ workspace, handleSidebar, closeSidebar }: Campaig
         }
     }, [fetchLoading, fetchPage, closeSidebar, pageSize, workspace.id])
 
-    if (campaigns?.items && campaigns.items.length > 0) return (
+
+    return (
         <Stack spacing={2}>
             <Stack spacing={1} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
                 <Typography variant="h3">Lista de Campañas</Typography>
@@ -84,18 +86,26 @@ export const CampaignList = ({ workspace, handleSidebar, closeSidebar }: Campaig
                 }
             </Stack>
             <OrderSearchMenu searchOptions={SEARCH_CMP_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_CMP_FIELDS} handleOrderChange={handleOrderChange} />
-            <LoadingScreenWrapper loading={loading}>
-                <CampaignListData campaigns={campaigns.items} handleActiveCampaign={handleActiveCampaign} />
-                <PaginationComponent {...pageComponentProps} />
-            </LoadingScreenWrapper>
+            {(campaigns?.items && campaigns.items.length > 0) ?
+                <LoadingScreenWrapper loading={loading}>
+                    <CampaignListData campaigns={campaigns.items} handleActiveCampaign={handleActiveCampaign} />
+                    <PaginationComponent {...pageComponentProps} />
+                </LoadingScreenWrapper>
+                :
+                <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
+                    {fetchParams.search ?
+                        <Typography variant="h4" sx={{ textAlign: "center" }}>
+                            No se han encontrado opciones que correspondan al término:
+                            <span style={{ fontStyle: "italic", fontWeight: "normal" }}> {fetchParams.search}</span>
+                        </Typography>
+                        :
+                        <Typography variant="h4">No se han encontrado campañas para este espacio de trabajo...</Typography>
+                    }
+                    <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_CMP", workspace)} variant="contained">Agregar</CommonButton>
+                </Stack>
+            }
         </Stack>
     )
-
-    else return (
-        <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
-            <Typography variant="h4">No se han encontrado campañas para este espacio de trabajo...</Typography>
-            <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_CMP", workspace)} variant="contained">Agregar</CommonButton>
-        </Stack>)
 }
 interface CampaignListDataProps {
     campaigns: CampaignDetailed[],

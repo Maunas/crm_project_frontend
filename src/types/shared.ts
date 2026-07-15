@@ -58,11 +58,15 @@ export interface SearchParams {
   search_fields?: string
 }
 
-export interface ListParams extends OrderParams, SearchParams {
+export interface OrderSearchParams extends OrderParams, SearchParams {
   only_active?: boolean,
+}
+
+export interface ListParams extends OrderParams, SearchParams {
   detailed?: boolean,
   page?: number,
   page_size?: number,
+  only_active?: boolean,
 }
 export interface WorkspaceParams extends ListParams {
   organization_id?: number

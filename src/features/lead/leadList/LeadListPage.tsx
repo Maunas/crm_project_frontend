@@ -251,7 +251,7 @@ export const LeadListPage = () => {
         }
         let newOrderParams: OrderParams = {}
         if (view?.sort_config?.order_by && view?.sort_config?.ascending !== undefined) {
-            newOrderParams = { order_by: view.sort_config.order_by, ascending: view.sort_config.ascending }
+            newOrderParams = { order_by: `${view.sort_config.order_by}`, ascending: view.sort_config.ascending }
             setOrderParams(newOrderParams)
             setOrderList(view.sort_config.order_by, view.sort_config.ascending)
         }

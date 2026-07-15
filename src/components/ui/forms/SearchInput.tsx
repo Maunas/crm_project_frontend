@@ -1,20 +1,32 @@
-import { useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { Box, MenuItem, TextField } from '@mui/material';
 import ChipSelect from './ChipSelect'
 import { useDebounce } from 'src/hooks/useDebounce';
 import { ChipTooltip } from '../details/ChipTooltip';
+import type { SearchParams } from 'src/types/shared';
 
-interface OrderMenuProps {
+interface SearchInputProps {
     id?: string,
     onSearch: (search?: string, searchFields?: string) => void,
     options?: { label: string, name: string }[],
-    size?: "medium" | "small"
+    size?: "medium" | "small",
+    defaultValues?: SearchParams,
+    hiddenSelector?: boolean,
 }
 
-export const SearchInput = ({ id = "search", onSearch, options = [], size = "medium" }: OrderMenuProps) => {
+export const SearchInput = ({ id = "search", onSearch, options = [], size = "medium", defaultValues, hiddenSelector = false }: SearchInputProps) => {
 
-    const [search, setSearch] = useState<string | undefined>()
-    const [searchFields, setSearchFields] = useState<string | undefined>(options.length > 0 ? options[0].name : undefined)
+    const [search, setSearch] = useState<string | undefined>(defaultValues?.search)
+    const [searchFields, setSearchFields] = useState<string | undefined>(defaultValues?.search_fields ?? (options.length > 0 ? options[0].name : undefined))
+
+    const selectorRef = useRef<HTMLDivElement>(null)
+    const [selectorWidth, setSelectorWidth] = useState<number>(0)
+
+    useLayoutEffect(() => {
+        if (hiddenSelector || !selectorRef.current) return
+        const { width } = selectorRef.current.getBoundingClientRect()
+        setSelectorWidth(width)
+    }, [hiddenSelector, searchFields, size])
 
     const handleSearchChange = (newValue: string) => {
         const searchValue = newValue === "" ? undefined : newValue
@@ -37,16 +49,26 @@ export const SearchInput = ({ id = "search", onSearch, options = [], size = "med
                 onChange={(e) => debouncedFunction(() => handleSearchChange(e.target.value))}
                 size={size}
                 fullWidth
+                defaultValue={defaultValues?.search}
+                slotProps={{
+                    input: {
+                        sx: {
+                            pr: `${selectorWidth}px`
+                        }
+                    }
+                }}
             />
-            <Box sx={{ position: "absolute", top: "50%", right: ".5rem", transform: "translateY(-50%)" }}>
-                {options.length === 1 ?
-                    <ChipTooltip title="No hay más opciones" color='primary' boxed>
+            {!hiddenSelector &&
+                <Box ref={selectorRef} sx={{ position: "absolute", top: "50%", right: ".5rem", transform: "translateY(-50%)" }}>
+                    {options.length === 1 ?
+                        <ChipTooltip title="No hay más opciones" color='primary' boxed>
+                            <SelectField id={id} options={options} size={size} handleFieldChange={handleFieldChange} searchFields={searchFields} />
+                        </ChipTooltip>
+                        :
                         <SelectField id={id} options={options} size={size} handleFieldChange={handleFieldChange} searchFields={searchFields} />
-                    </ChipTooltip>
-                    :
-                    <SelectField id={id} options={options} size={size} handleFieldChange={handleFieldChange} searchFields={searchFields} />
-                }
-            </Box>
+                    }
+                </Box>}
+
         </Box>
     )
 }

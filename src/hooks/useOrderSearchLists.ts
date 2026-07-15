@@ -1,11 +1,21 @@
 import { useCallback, useMemo, useState } from "react"
-import type { OrderParams, SearchParams } from "src/types/shared"
+import type { OrderParams, OrderSearchParams, SearchParams } from "src/types/shared"
 
-export const useOrderSeachList = () => {
+export const useOrderSeachList = (
+    defaultValues?: OrderSearchParams
+) => {
 
-    const [orderParams, setOrderParams] = useState<OrderParams>({})
-    const [searchParams, setSearchParams] = useState<SearchParams>({})
-    const [onlyActive, setOnlyActive] = useState<boolean>(false)
+    const {
+        order_by: defOrderBy,
+        ascending: defAsc,
+        search: defSearch,
+        search_fields: defFields,
+        only_active: defOnlyAct
+    } = defaultValues ?? {}
+
+    const [orderParams, setOrderParams] = useState<OrderParams>({ order_by: defOrderBy, ascending: defAsc })
+    const [searchParams, setSearchParams] = useState<SearchParams>({ search: defSearch, search_fields: defFields })
+    const [onlyActive, setOnlyActive] = useState<boolean>(defOnlyAct ?? false)
 
 
     const handleOrderChange = useCallback((orderBy?: string, asc: boolean = false, onlyActive: boolean = false) => {

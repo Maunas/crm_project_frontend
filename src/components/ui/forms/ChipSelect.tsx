@@ -4,9 +4,9 @@ import { textTheme } from "src/theme/typographyTheme";
 import { getColorShades } from "src/utils/formatters";
 
 const CHIP_OPACITY = .25
-const CHIP_SIZES = {
-    small: { padding: "1px .5rem", gap: "2px", fontSize: ".75rem", lineHeight: 0 },
-    medium: { padding: ".25rem .5rem", gap: ".25rem", fontSize: ".875rem", lineHeight: 0 },
+export const CHIP_SIZES = {
+    small: { padding: "1px .5rem", gap: "2px", fontSize: ".75em", lineHeight: 0 },
+    medium: { padding: ".25rem .5rem", gap: ".25rem", fontSize: ".875em", lineHeight: 0 },
 }
 
 const ICON_SIZE_EM = textTheme.root.lineHeight

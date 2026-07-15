@@ -3,24 +3,24 @@ import CommonButton from '../buttons/CommonButton'
 import { Box, Divider, List, ListItemButton, ListItemIcon, ListSubheader, Popover, Stack } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import { SearchInput } from '../forms/SearchInput';
+import type { OrderParams, OrderSearchParams } from 'src/types/shared';
 
 interface OrderMenuProps {
     id?: string,
     onOrderChange: (orderBy?: string, asc?: boolean, active?: boolean) => void,
     options: { label: string, name: string }[],
-    canFilterActive?: boolean
+    canFilterActive?: boolean,
+    defaultValues?: OrderParams & { only_active?: boolean }
 }
 
-//Agregar created at y updated at
-
-export const OrderMenu = ({ id = "order-menu", onOrderChange, options, canFilterActive = false }: OrderMenuProps) => {
+export const OrderMenu = ({ id = "order-menu", onOrderChange, options, canFilterActive = false, defaultValues }: OrderMenuProps) => {
 
     const [orderMenu, setOrderMenu] = useState<HTMLButtonElement | null>(null)
     const open = Boolean(orderMenu);
 
-    const [orderBy, setOrderBy] = useState<string | undefined>(undefined)
-    const [asc, setAsc] = useState<boolean>(true)
-    const [active, setActive] = useState<boolean>(false)
+    const [orderBy, setOrderBy] = useState<string | undefined>(defaultValues?.order_by != null ? String(defaultValues.order_by) : undefined)
+    const [asc, setAsc] = useState<boolean>(defaultValues?.ascending ?? true)
+    const [active, setActive] = useState<boolean>(defaultValues?.only_active ?? false)
 
     const handleClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         setOrderMenu(e.currentTarget)
@@ -126,17 +126,18 @@ interface OrderSearchProps {
         name: string;
         label: string;
     }[],
-    size?: "small" | "medium"
+    size?: "small" | "medium",
+    defaultValues?: OrderSearchParams
+    hiddenSelector?: boolean,
 }
 
-export const OrderSearchMenu = ({ searchOptions, handleSearchChange, orderOptions, handleOrderChange, size = "small" }: OrderSearchProps) => {
+export const OrderSearchMenu = ({ searchOptions, handleSearchChange, orderOptions, handleOrderChange, size = "small", defaultValues, hiddenSelector = false }: OrderSearchProps) => {
     return (
         <Stack direction="row" spacing={2} useFlexGap sx={{ alignItems: "center", justifyContent: "end", flexWrap: "wrap", py: 1 }}>
-            <SearchInput onSearch={handleSearchChange} id='nom-item-search' options={searchOptions} size={size} />
+            <SearchInput onSearch={handleSearchChange} id='nom-item-search' options={searchOptions} size={size} defaultValues={defaultValues} hiddenSelector={hiddenSelector} />
             <Box>
-                <OrderMenu onOrderChange={handleOrderChange} id='nom-item-order-menu' options={orderOptions} canFilterActive />
+                <OrderMenu onOrderChange={handleOrderChange} id='nom-item-order-menu' options={orderOptions} canFilterActive defaultValues={defaultValues} />
             </Box>
         </Stack>
     )
 }
-
