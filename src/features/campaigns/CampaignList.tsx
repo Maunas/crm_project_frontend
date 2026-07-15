@@ -15,6 +15,16 @@ import { showCommonErrorToast, showToast } from "src/utils/feedback"
 import { Link } from "react-router-dom"
 import { Grid, ListItemButton, ListItemText, Stack, Typography } from "@mui/material"
 import { useCallback } from "react"
+import { useOrderSeachList } from "src/hooks/useOrderSearchLists"
+import { OrderSearchMenu } from "src/components/ui/lists/OrderMenu"
+
+const ORDER_CMP_FIELDS = [
+    { name: "name", label: "Orden Alfabético" },
+]
+
+const SEARCH_CMP_FIELDS = [
+    { name: "name", label: "Nombre" },
+]
 
 interface CampaignListProps {
     workspace: WorkspaceDetailed,
@@ -27,12 +37,12 @@ export const CampaignList = ({ workspace, handleSidebar, closeSidebar }: Campaig
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(campaigns, 12)
 
+    const { fetchParams, handleSearchChange, handleOrderChange } = useOrderSeachList()
+
     const fetchCampaigns = useCallback((workspaceId: number, page: number, pageSize: number) => {
-        return getCampaigns({
-            workspace_id: workspaceId, detailed: true, only_active: false,
-            page: page || 1, page_size: pageSize
-        }).then(setCampaigns)
-    }, [])
+        return getCampaigns({ workspace_id: workspaceId, detailed: true, page: page || 1, page_size: pageSize, ...fetchParams })
+            .then(setCampaigns)
+    }, [fetchParams])
 
     const { fnWithLoading: fetchLoading, loading } = useLoading(fetchCampaigns)
 
@@ -63,28 +73,29 @@ export const CampaignList = ({ workspace, handleSidebar, closeSidebar }: Campaig
         }
     }, [fetchLoading, fetchPage, closeSidebar, pageSize, workspace.id])
 
-    return (<LoadingScreenWrapper loading={loading}>
-        {(campaigns?.items && campaigns.items.length > 0) ? (
-            <Stack spacing={2}>
-                <Stack spacing={1} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
-                    <Typography variant="h3">Lista de Campañas</Typography>
-                    {campaigns && campaigns?.items.length > 0 &&
-                        <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_CMP", workspace)} sx={{ marginLeft: "auto" }} size="small" onlyTooltip>
-                            Agregar
-                        </CommonButton>
-                    }
-                </Stack>
+    if (campaigns?.items && campaigns.items.length > 0) return (
+        <Stack spacing={2}>
+            <Stack spacing={1} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
+                <Typography variant="h3">Lista de Campañas</Typography>
+                {campaigns && campaigns?.items.length > 0 &&
+                    <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_CMP", workspace)} sx={{ marginLeft: "auto" }} size="small" onlyTooltip>
+                        Agregar
+                    </CommonButton>
+                }
+            </Stack>
+            <OrderSearchMenu searchOptions={SEARCH_CMP_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_CMP_FIELDS} handleOrderChange={handleOrderChange} />
+            <LoadingScreenWrapper loading={loading}>
                 <CampaignListData campaigns={campaigns.items} handleActiveCampaign={handleActiveCampaign} />
                 <PaginationComponent {...pageComponentProps} />
-            </Stack>
-        ) : (
-            <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
-                <Typography variant="h4">No se han encontrado campañas para este espacio de trabajo...</Typography>
-                <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_CMP", workspace)} variant="contained">Agregar</CommonButton>
-            </Stack>
-        )
-        }
-    </LoadingScreenWrapper>)
+            </LoadingScreenWrapper>
+        </Stack>
+    )
+
+    else return (
+        <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
+            <Typography variant="h4">No se han encontrado campañas para este espacio de trabajo...</Typography>
+            <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_CMP", workspace)} variant="contained">Agregar</CommonButton>
+        </Stack>)
 }
 interface CampaignListDataProps {
     campaigns: CampaignDetailed[],

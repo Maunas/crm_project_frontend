@@ -18,6 +18,17 @@ import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { useUserContext } from 'src/stores/UserContext'
 import { useSearchParams } from 'react-router-dom'
 import { Grid, List, ListItemText, Stack, Typography } from '@mui/material'
+import { useOrderSeachList } from 'src/hooks/useOrderSearchLists'
+import { OrderSearchMenu } from 'src/components/ui/lists/OrderMenu'
+
+const ORDER_NOM_FIELDS = [
+    { name: "name", label: "Orden Alfabético" },
+    { name: "parent_nomenclator_id", label: "Nomenclador padre" },
+]
+
+const SEARCH_NOM_FIELDS = [
+    { name: "name", label: "Nombre" },
+]
 
 export const NomenclatorList = () => {
 
@@ -31,10 +42,12 @@ export const NomenclatorList = () => {
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(nomenclators)
 
+    const { fetchParams, handleSearchChange, handleOrderChange } = useOrderSeachList()
+
     const fetchNom = useCallback((fetchPage: number, pageSize: number) => {
-        return getNomenclators({ only_active: false, detailed: true, page: fetchPage, page_size: pageSize })
+        return getNomenclators({ detailed: true, page: fetchPage, page_size: pageSize, ...fetchParams })
             .then(setNomenclators)
-    }, [])
+    }, [fetchParams])
 
     const { loading, fnWithLoading: fetchNomLoad } = useLoading(fetchNom)
 
@@ -46,7 +59,7 @@ export const NomenclatorList = () => {
     const updateEntityOnList = useCallback((entity: NomenclatorDetailed | null, mode: string) => {
         switch (mode) {
             case "CREATE_NOM": {
-                getNomenclators({ detailed: true, page_size: pageSize, only_active: false, page: nomenclators?.page }).then(setNomenclators)
+                fetchNomLoad(nomenclators?.page, pageSize)
                 break;
             }
             case "UPDATE_NOM": {
@@ -62,11 +75,11 @@ export const NomenclatorList = () => {
             }
             case "DELETE_NOM": {
                 if (selectedEntity && entity?.id === selectedEntity.id) closeSidebar()
-                getNomenclators({ detailed: true, page_size: pageSize, only_active: false, page: nomenclators?.page }).then(setNomenclators)
+                fetchNomLoad(nomenclators?.page, pageSize)
                 break;
             }
         }
-    }, [closeSidebar, nomenclators?.page, pageSize, selectedEntity])
+    }, [closeSidebar, nomenclators?.page, pageSize, selectedEntity, fetchNomLoad])
 
     const handleActive = useCallback(async (nom: NomenclatorDetailed | null) => {
         if (!nom) return
@@ -124,6 +137,7 @@ export const NomenclatorList = () => {
                         </CommonButton>
                     }
                 </Stack>
+                <OrderSearchMenu searchOptions={SEARCH_NOM_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_NOM_FIELDS} handleOrderChange={handleOrderChange} />
                 <LoadingScreenWrapper loading={loading}>
                     <Stack spacing={2}>
                         {

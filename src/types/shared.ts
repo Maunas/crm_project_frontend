@@ -53,14 +53,16 @@ export interface OrderParams {
   order_by?: number | string | null,
   ascending?: boolean
 }
+export interface SearchParams {
+  search?: string,
+  search_fields?: string
+}
 
-export interface ListParams extends OrderParams {
+export interface ListParams extends OrderParams, SearchParams {
   only_active?: boolean,
   detailed?: boolean,
   page?: number,
   page_size?: number,
-  search?: string,
-  search_fields?: string
 }
 export interface WorkspaceParams extends ListParams {
   organization_id?: number

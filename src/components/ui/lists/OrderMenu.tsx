@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import CommonButton from '../buttons/CommonButton'
-import { Divider, List, ListItemButton, ListItemIcon, ListSubheader, Popover, Stack } from '@mui/material';
+import { Box, Divider, List, ListItemButton, ListItemIcon, ListSubheader, Popover, Stack } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import { SearchInput } from '../forms/SearchInput';
 
@@ -78,7 +78,7 @@ export const OrderMenu = ({ id = "order-menu", onOrderChange, options, canFilter
                             Ordenar por
                         </ListSubheader>
                         {fullOptions?.map(op =>
-                            <ListItemButton onClick={() => handleOrderByClick(op.name)}>
+                            <ListItemButton onClick={() => handleOrderByClick(op.name)} key={op.name}>
                                 <ListItemIcon>
                                     {orderBy === op.name && <CheckIcon fontSize='small' />}
                                 </ListItemIcon>
@@ -125,14 +125,17 @@ interface OrderSearchProps {
     orderOptions: {
         name: string;
         label: string;
-    }[]
+    }[],
+    size?: "small" | "medium"
 }
 
-export const OrderSearchMenu = ({ searchOptions, handleSearchChange, orderOptions, handleOrderChange }: OrderSearchProps) => {
+export const OrderSearchMenu = ({ searchOptions, handleSearchChange, orderOptions, handleOrderChange, size = "small" }: OrderSearchProps) => {
     return (
-        <Stack direction="row" spacing={2} useFlexGap sx={{ alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>
-            <SearchInput onSearch={handleSearchChange} id='nom-item-search' options={searchOptions} size="small" />
-            <OrderMenu onOrderChange={handleOrderChange} id='nom-item-order-menu' options={orderOptions} canFilterActive />
+        <Stack direction="row" spacing={2} useFlexGap sx={{ alignItems: "center", justifyContent: "end", flexWrap: "wrap", py: 1 }}>
+            <SearchInput onSearch={handleSearchChange} id='nom-item-search' options={searchOptions} size={size} />
+            <Box>
+                <OrderMenu onOrderChange={handleOrderChange} id='nom-item-order-menu' options={orderOptions} canFilterActive />
+            </Box>
         </Stack>
     )
 }

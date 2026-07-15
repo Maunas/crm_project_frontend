@@ -1,12 +1,14 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { NomenclatorItemFormSidebar } from './NomenclatorItemForm'
+import { DisableConfirmDialog } from 'shared/ui/feedback/ConfirmationDialog'
 import { GenericSidebar } from 'shared/layout/container/GenericContainer'
-import { DisableConfirmDialog } from 'src/components/ui/feedback/ConfirmationDialog'
 import PaginationComponent from 'shared/ui/lists/PaginationComponent'
-import LoadingScreenWrapper from 'src/components/ui/feedback/LoadingScreen'
+import LoadingScreenWrapper from 'shared/ui/feedback/LoadingScreen'
 import { ResponsiveListItem } from 'shared/ui/lists/CustomListItem'
+import { OrderSearchMenu } from 'shared/ui/lists/OrderMenu'
 import CommonButton from 'shared/ui/buttons/CommonButton'
 import { EnabledIcon } from 'shared/ui/lists/Icons'
+import { useOrderSeachList } from 'src/hooks/useOrderSearchLists'
 import { useListPagination } from 'src/hooks/useListPagination'
 import { useLoading } from 'src/hooks/useLoading'
 import { useSidebar } from 'src/hooks/useSidebar'
@@ -16,8 +18,6 @@ import { disableNomenclatorItem, enableNomenclatorItem, getNomenclatorItems } fr
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { useUserContext } from 'src/stores/UserContext'
 import { ButtonGroup, Grid, List, ListItemText, Stack, Typography } from '@mui/material'
-import { OrderSearchMenu } from 'src/components/ui/lists/OrderMenu'
-import { useOrderSeachList } from 'src/hooks/useOrderSearchLists'
 
 const ORDER_NOM_ITEM_FIELDS = (hasParent: boolean) => [
     { name: "value", label: "Orden Alfabético" },
@@ -124,7 +124,7 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
 
     return (
         <>
-            <Stack spacing={2}>
+            <Stack spacing={1}>
                 <Stack spacing={1} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
                     <Typography variant="h3">Opciones de Nomenclador</Typography>
                     <ButtonGroup variant="outlined" sx={{ marginLeft: "auto" }} >
@@ -135,7 +135,7 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
                         }
                     </ButtonGroup>
                 </Stack>
-                <OrderSearchMenu searchOptions={SEARCH_NOM_ITEM_FIELDS} handleSearchChange={handleSearchChange} orderOptions={orderOptions} handleOrderChange={handleOrderChange} />
+                <OrderSearchMenu searchOptions={SEARCH_NOM_ITEM_FIELDS} handleSearchChange={handleSearchChange} orderOptions={orderOptions} handleOrderChange={handleOrderChange} size="small" />
                 <LoadingScreenWrapper loading={loading}>
                     {nomenclatorItems && nomenclatorItems.items?.length > 0 ?
                         <List dense>

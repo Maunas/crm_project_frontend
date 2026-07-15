@@ -30,7 +30,7 @@ export const SearchInput = ({ id = "search", onSearch, options = [], size = "med
     }
 
     return (
-        <Box sx={{ position: "relative", maxWidth: "30rem", minWidth: "15rem", flex: 1 }}>
+        <Box sx={{ position: "relative", maxWidth: "20rem", minWidth: "15rem", flex: 1 }}>
             <TextField
                 id={`${id}-input`}
                 label="Buscar"
