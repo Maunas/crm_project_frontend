@@ -18,6 +18,7 @@ import { disableNomenclatorItem, enableNomenclatorItem, getNomenclatorItems } fr
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { useUserContext } from 'src/stores/UserContext'
 import { ButtonGroup, Grid, List, ListItemText, Stack, Typography } from '@mui/material'
+import { NoItemsMessage } from 'src/components/ui/lists/NoItemsMessage'
 
 const ORDER_NOM_ITEM_FIELDS = (hasParent: boolean) => [
     { name: "value", label: "Orden Alfabético" },
@@ -172,15 +173,14 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
                                 )}
                             </Grid>
                         </List>
-                        : <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center", py: 5 }}>
-                            {fetchParams.search ?
-                                <Typography variant="h4">No se han encontrado opciones que correspondan al término "{fetchParams.search}"...</Typography>
-                                :
-                                <Typography variant="h4">No se han encontrado opciones en este nomenclador...</Typography>
-                            }
+                        :
+                        <>
+                            <NoItemsMessage search={fetchParams.search}>
+                                No se han encontrado opciones en este nomenclador...
+                            </NoItemsMessage>
                             {!isBlocked &&
                                 <CommonButton actionType='CREATE' onClick={() => { handleSidebar("CREATE_NOM", null) }} variant="contained">Agregar</CommonButton>}
-                        </Stack>
+                        </>
                     }
                     <PaginationComponent {...pageComponentProps} />
                 </LoadingScreenWrapper >
