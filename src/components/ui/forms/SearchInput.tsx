@@ -38,7 +38,7 @@ export const SearchInput = ({ id = "search", onSearch, options = [], size = "med
 
     const handleFieldChange = (newField: string) => {
         setSearchFields(newField)
-        onSearch(search, newField)
+        if (search) onSearch(search, newField)
     }
 
     return (

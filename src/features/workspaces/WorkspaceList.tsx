@@ -20,6 +20,18 @@ import { showCommonErrorToast, showToast } from 'src/utils/feedback';
 import { useUserContext } from 'src/stores/UserContext';
 import { useSearchParams } from 'react-router-dom';
 import { List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
+import { useOrderSeachList } from 'src/hooks/useOrderSearchLists';
+import { OrderSearchMenu } from 'src/components/ui/lists/OrderMenu';
+import { NoItemsMessage } from 'src/components/ui/lists/NoItemsMessage';
+
+const ORDER_WSP_FIELDS = [
+    { name: "name", label: "Orden Alfabético" },
+]
+
+const SEARCH_WSP_FIELDS = [
+    { name: "name", label: "Nombre" },
+    { name: "description", label: "Descripción" },
+]
 
 export const WorkspaceList = () => {
 
@@ -31,13 +43,15 @@ export const WorkspaceList = () => {
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(workspaces)
 
+    const { fetchParams, handleSearchChange, handleOrderChange } = useOrderSeachList()
+
     const { activeOrg } = useUserContext()
 
     const fetchWorkspaces = useCallback((fetchPage: number, pageSize: number) => {
-        return getWorkspaces({ detailed: true, page_size: pageSize, only_active: false, page: fetchPage })
+        return getWorkspaces({ detailed: true, page_size: pageSize, page: fetchPage, ...fetchParams })
             .then(setWorkspaces)
             .catch(e => showCommonErrorToast(e))
-    }, [])
+    }, [fetchParams])
 
     const { loading, fnWithLoading: fetchWspLoad } = useLoading(fetchWorkspaces)
 
@@ -122,7 +136,7 @@ export const WorkspaceList = () => {
                     closeSidebar={closeSidebar} updateEntityOnList={updateEntityOnList}
                     handleActive={handleDeletingWsp} />
             }>
-            <Stack spacing={3}>
+            <Stack spacing={2}>
                 <Stack spacing={2} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
                     <Typography variant="h1">Lista de Espacios de Trabajo</Typography>
                     {workspaces && workspaces?.items.length > 0 &&
@@ -131,6 +145,8 @@ export const WorkspaceList = () => {
                         </CommonButton>
                     }
                 </Stack>
+                <OrderSearchMenu searchOptions={SEARCH_WSP_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_WSP_FIELDS} handleOrderChange={handleOrderChange} />
+
                 <LoadingScreenWrapper loading={loading}>
                     <Stack spacing={2}>
                         {workspaces?.items && workspaces?.items?.length > 0 ?
@@ -160,10 +176,12 @@ export const WorkspaceList = () => {
                                 )}
                             </List>
                             : <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
-                                <Typography variant="h4">No se han encontrado espacios de trabajo...</Typography>
-                                <CommonButton actionType='CREATE' onClick={() => handleSidebar("CREATE_WSP", null)} variant="contained">
-                                    Agregar
-                                </CommonButton>
+                                <NoItemsMessage search={fetchParams.search}
+                                    emptyFetchMessage="No se han encontrado espacios de trabajo...">
+                                    <CommonButton actionType='CREATE' onClick={() => handleSidebar("CREATE_WSP", null)} variant="contained">
+                                        Agregar
+                                    </CommonButton>
+                                </NoItemsMessage>
                             </Stack>
                         }
                         <PaginationComponent {...pageComponentProps} />

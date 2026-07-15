@@ -17,6 +17,7 @@ import { Grid, ListItemButton, ListItemText, Stack, Typography } from "@mui/mate
 import { useCallback } from "react"
 import { useOrderSeachList } from "src/hooks/useOrderSearchLists"
 import { OrderSearchMenu } from "src/components/ui/lists/OrderMenu"
+import { NoItemsMessage } from "src/components/ui/lists/NoItemsMessage"
 
 const ORDER_CMP_FIELDS = [
     { name: "name", label: "Orden Alfabético" },
@@ -92,17 +93,10 @@ export const CampaignList = ({ workspace, handleSidebar, closeSidebar }: Campaig
                     <PaginationComponent {...pageComponentProps} />
                 </LoadingScreenWrapper>
                 :
-                <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
-                    {fetchParams.search ?
-                        <Typography variant="h4" sx={{ textAlign: "center" }}>
-                            No se han encontrado opciones que correspondan al término:
-                            <span style={{ fontStyle: "italic", fontWeight: "normal" }}> {fetchParams.search}</span>
-                        </Typography>
-                        :
-                        <Typography variant="h4">No se han encontrado campañas para este espacio de trabajo...</Typography>
-                    }
+                <NoItemsMessage search={fetchParams.search}
+                    emptyFetchMessage="No se han encontrado campañas para este espacio de trabajo...">
                     <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_CMP", workspace)} variant="contained">Agregar</CommonButton>
-                </Stack>
+                </NoItemsMessage>
             }
         </Stack>
     )

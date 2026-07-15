@@ -136,7 +136,7 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
                         }
                     </ButtonGroup>
                 </Stack>
-                <OrderSearchMenu searchOptions={SEARCH_NOM_ITEM_FIELDS} handleSearchChange={handleSearchChange} orderOptions={orderOptions} handleOrderChange={handleOrderChange} size="small" />
+                <OrderSearchMenu searchOptions={SEARCH_NOM_ITEM_FIELDS} handleSearchChange={handleSearchChange} orderOptions={orderOptions} handleOrderChange={handleOrderChange} />
                 <LoadingScreenWrapper loading={loading}>
                     {nomenclatorItems && nomenclatorItems.items?.length > 0 ?
                         <List dense>
@@ -174,13 +174,10 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
                             </Grid>
                         </List>
                         :
-                        <>
-                            <NoItemsMessage search={fetchParams.search}>
-                                No se han encontrado opciones en este nomenclador...
-                            </NoItemsMessage>
+                        <NoItemsMessage search={fetchParams.search} emptyFetchMessage="No se han encontrado opciones en este nomenclador..." >
                             {!isBlocked &&
                                 <CommonButton actionType='CREATE' onClick={() => { handleSidebar("CREATE_NOM", null) }} variant="contained">Agregar</CommonButton>}
-                        </>
+                        </NoItemsMessage>
                     }
                     <PaginationComponent {...pageComponentProps} />
                 </LoadingScreenWrapper >

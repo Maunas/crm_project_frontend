@@ -5,8 +5,8 @@ import { getColorShades } from "src/utils/formatters";
 
 const CHIP_OPACITY = .25
 export const CHIP_SIZES = {
-    small: { padding: "1px .5rem", gap: "2px", fontSize: ".75em", lineHeight: 0 },
-    medium: { padding: ".25rem .5rem", gap: ".25rem", fontSize: ".875em", lineHeight: 0 },
+    small: { padding: "1px .5rem", gap: "2px", fontSize: ".75em", lineHeight: 1.5 },
+    medium: { padding: ".25rem .5rem", gap: ".25rem", fontSize: ".875em", lineHeight: 1.5 },
 }
 
 const ICON_SIZE_EM = textTheme.root.lineHeight
@@ -33,7 +33,6 @@ const ChipSelectRoot = styled(Select, {
             backgroundColor: theme.alpha(paletteColors.LIGHT, CHIP_OPACITY),
             borderColor: theme.alpha(paletteColors.MAIN, .5),
             color: theme.palette.contrast[900],
-            verticalAlign: "center",
             ...sizeObject,
             // Oculta el borde por defecto del OutlinedInput
             "& .MuiOutlinedInput-notchedOutline": { border: "none" },
@@ -43,10 +42,14 @@ const ChipSelectRoot = styled(Select, {
                 right: "3px",
             },
             "& .MuiSelect-select": {
+                minHeight: 0,
                 padding: 0,
-                paddingRight: "1rem !important",
-                display: "flex",
-                alignItems: "center",
+                paddingRight: ".8rem !important",
+                overflow: "hidden",
+                whiteSpace: "nowrap",
+                textOverflow: "ellipsis",
+                minWidth: 0,
+                maxWidth: size === "small" ? "5rem" : "6rem",
             },
         },
         theme.applyStyles("dark", {
