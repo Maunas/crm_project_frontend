@@ -130,7 +130,7 @@ export const NomenclatorList = () => {
         }>
             <Stack>
                 <Stack direction="row" useFlexGap spacing={2} sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
-                    <Typography variant="h1">Lista de Nomencladores</Typography>
+                    <Typography variant="h1">Nomencladores</Typography>
                     {nomenclators && nomenclators.items?.length > 0 &&
                         <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_NOM", null) }}
                             sx={{ marginLeft: "auto" }} onlyTooltip>
@@ -183,8 +183,7 @@ export const NomenclatorList = () => {
                                     </Grid>
                                 </List>
                                 :
-                                <NoItemsMessage search={fetchParams.search}
-                                    emptyFetchMessage="No se han encontrado nomencladores...">
+                                <NoItemsMessage search={fetchParams.search} emptyFetchMessage="No se han encontrado nomencladores...">
                                     <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_NOM", null) }} variant="contained">
                                         Agregar
                                     </CommonButton>

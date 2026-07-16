@@ -2,14 +2,16 @@ import { useCallback, useEffect, useState } from 'react'
 import { WorkspaceFormSidebar } from './WorkspaceForms';
 import { WorkspaceDetails } from './WorkspaceDetails'
 import { CreateCampaignFormSidebar } from 'features/campaigns/CampaignForms';
+import { DisableConfirmDialog } from 'shared/ui/feedback/ConfirmationDialog';
 import ContainerWithSidebar from 'shared/layout/container/GenericContainer';
-import { DisableConfirmDialog } from 'src/components/ui/feedback/ConfirmationDialog';
-import { CommonIconButton } from 'shared/ui/buttons/CommonIconButton';
-import PaginationComponent from 'shared/ui/lists/PaginationComponent'
-import LoadingScreenWrapper from 'src/components/ui/feedback/LoadingScreen';
-import { CustomListItem } from 'shared/ui/lists/CustomListItem';
+import PaginationComponent from 'shared/ui/lists/PaginationComponent';
+import LoadingScreenWrapper from 'shared/ui/feedback/LoadingScreen';
+import { ResponsiveListItem } from 'shared/ui/lists/CustomListItem';
+import { NoItemsMessage } from 'shared/ui/lists/NoItemsMessage';
+import { OrderSearchMenu } from 'shared/ui/lists/OrderMenu';
 import CommonButton from 'shared/ui/buttons/CommonButton';
 import { EnabledIcon } from 'shared/ui/lists/Icons';
+import { useOrderSeachList } from 'src/hooks/useOrderSearchLists';
 import { useListPagination } from 'src/hooks/useListPagination';
 import { useSidebar } from 'src/hooks/useSidebar';
 import { useLoading } from 'src/hooks/useLoading';
@@ -19,10 +21,7 @@ import { disableWorkspace, enableWorkspace, getWorkspace, getWorkspaces } from '
 import { showCommonErrorToast, showToast } from 'src/utils/feedback';
 import { useUserContext } from 'src/stores/UserContext';
 import { useSearchParams } from 'react-router-dom';
-import { List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
-import { useOrderSeachList } from 'src/hooks/useOrderSearchLists';
-import { OrderSearchMenu } from 'src/components/ui/lists/OrderMenu';
-import { NoItemsMessage } from 'src/components/ui/lists/NoItemsMessage';
+import { List, ListItemText, Stack, Typography } from '@mui/material'
 
 const ORDER_WSP_FIELDS = [
     { name: "name", label: "Orden Alfabético" },
@@ -138,7 +137,7 @@ export const WorkspaceList = () => {
             }>
             <Stack spacing={2}>
                 <Stack spacing={2} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
-                    <Typography variant="h1">Lista de Espacios de Trabajo</Typography>
+                    <Typography variant="h1">Espacios de Trabajo</Typography>
                     {workspaces && workspaces?.items.length > 0 &&
                         <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_WSP", null)} sx={{ marginLeft: "auto" }} onlyTooltip>
                             Agregar
@@ -152,27 +151,24 @@ export const WorkspaceList = () => {
                         {workspaces?.items && workspaces?.items?.length > 0 ?
                             <List>
                                 {workspaces?.items.map(wsp =>
-                                    <CustomListItem key={`wsp-${wsp.id}`} isSelected={wsp.id === selectedEntity?.id} disablePadding secondaryAction={
-                                        <Stack direction="row" sx={{ alignItems: "center" }}>
-                                            <CommonIconButton actionType='DETAILS' title="Detalles" tooltipSize="small" size="small"
-                                                onClick={() => { handleSidebar("DETAILS_WSP", wsp) }} />
-                                            <CommonIconButton actionType='MODIFY' title="Modificar" tooltipSize="small" size="small"
-                                                onClick={() => { handleSidebar("UPDATE_WSP", wsp) }} />
-                                            <CommonIconButton actionType={wsp.active ? "DISABLE" : "ENABLE"} tooltipSize="small" size="small"
-                                                title={wsp.active ? "Deshabilitar" : "Habilitar"}
-                                                onClick={() => handleDeletingWsp(wsp)} color={wsp.active ? "error" : "success"} />
-                                        </Stack>
-                                    }>
-                                        <ListItemButton onClick={() => { handleSidebar("DETAILS_WSP", wsp) }} >
-                                            <ListItemText sx={{ mr: 7 }} primary={
-                                                <Stack spacing={1} direction="row">
-                                                    <EnabledIcon active={wsp.active} />
-                                                    <Typography sx={{ fontWeight: "bold" }}>{wsp.name}</Typography>
-                                                </Stack>
+                                    <ResponsiveListItem key={`wsp-${wsp.id}`} isSelected={wsp.id === selectedEntity?.id} disablePadding
+                                        onClick={() => handleSidebar("DETAILS_WSP", wsp)}
+                                        actions={[
+                                            { actionType: "DETAILS", label: "Detalle", onClick: () => handleSidebar("DETAILS_WSP", wsp) },
+                                            { actionType: "LIST", label: "Ver Leads", onClick: () => handleSidebar("UPDATE_WSP", wsp) },
+                                            {
+                                                actionType: wsp.active ? "DISABLE" : "ENABLE", label: wsp.active ? "Deshabilitar" : "Habilitar",
+                                                color: wsp.active ? "error" : "success", onClick: () => handleDeletingWsp(wsp)
                                             }
-                                                secondary={wsp.description} />
-                                        </ListItemButton>
-                                    </CustomListItem>
+                                        ]}>
+                                        <ListItemText sx={{ mr: 7 }} primary={
+                                            <Stack spacing={1} direction="row">
+                                                <EnabledIcon active={wsp.active} />
+                                                <Typography sx={{ fontWeight: 500 }}>{wsp.name}</Typography>
+                                            </Stack>
+                                        }
+                                            secondary={wsp.description} />
+                                    </ResponsiveListItem>
                                 )}
                             </List>
                             : <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>

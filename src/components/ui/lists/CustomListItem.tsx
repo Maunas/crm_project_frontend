@@ -53,18 +53,26 @@ export const CustomListItem = styled(
 interface ResponsiveListItemProps extends ListItemOwnProps {
     size?: "small" | "medium"
     actions: ListItemAction[],
-    onClick?: () => unknown
+    onClick?: () => unknown,
+    component?: React.ElementType,
+    to?: string,
 }
 /**
  * Solo muestra los secondaryAction si se está haciendo hover.
  */
-export const ResponsiveListItem = ({ size = "small", actions, children, onClick, ...props }: ResponsiveListItemProps) => {
+export const ResponsiveListItem = ({ size = "small", actions, children, onClick, component, to, ...props }: ResponsiveListItemProps) => {
     const isTouchDevice = useMediaQuery('(pointer: coarse)')
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
     const menuButton = useRef(null)
     const showMenu = isTouchDevice && actions.length > 1
 
+    const handleItemClick = () => {
+        if (showMenu) return { onClick: () => setAnchorEl(menuButton.current) } //Si es responsive, muestra menú
+        if (onClick) return { onClick } //Si tiene onClick, lo ejecuta
+        if (component && to) return { component, to } //Si tiene component y to, los define
+        return {}
+    }
     return <CustomListItem sx={{ height: "100%" }}
         alwaysShowSecondary={isTouchDevice} {...props}
         secondaryAction={showMenu ?
@@ -81,7 +89,7 @@ export const ResponsiveListItem = ({ size = "small", actions, children, onClick,
                         onClick={action.onClick} component={action.component} to={action.to} color={action.color ?? "action"} size={size} tooltipSize={size} />
                 ))}
             </Stack>}>
-        <ListItemButton onClick={() => showMenu ? setAnchorEl(menuButton.current) : onClick?.()}
+        <ListItemButton {...handleItemClick()}
             sx={{ height: "100%", "&&": { pr: showMenu ? 5 : actions.length * 3 + 2 } }} >
             {children}
         </ListItemButton>
@@ -119,7 +127,7 @@ const ListActionMenu = ({ actions, anchorEl, closeMenu }: ActionGroupProps) => {
                     horizontal: 'right',
                 }}>
                 {actions.map(action => (
-                    <MenuItem key={action.label}
+                    <MenuItem key={action.label} dense
                         onClick={() => {
                             if (action.onClick) action.onClick()
                             closeMenu()
