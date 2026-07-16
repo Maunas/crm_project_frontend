@@ -16,6 +16,7 @@ import { OrderSearchMenu } from 'shared/ui/lists/OrderMenu'
 import { deleteTag, getTags } from './LeadTagService'
 import { TagFormSidebarWrapper } from './LeadTagForm'
 import type { LeadTagDetailed } from 'src/types/orgProperties'
+import { NoItemsMessage } from 'src/components/ui/lists/NoItemsMessage'
 
 const ORDER_TAG_FIELDS = [
     { name: "name", label: "Orden Alfabético" },
@@ -63,38 +64,42 @@ export const LeadTagsList = () => {
 
     return (
         <Stack spacing={2}>
-            <LoadingScreenWrapper loading={loading}>
-                <Stack spacing={2}>
+            <Stack spacing={2} direction="row" useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
+                {(tags?.items && tags.items.length > 0) &&
+                    <CommonButton actionType="CREATE" variant="contained" onClick={() => setEditingTag(undefined)}>
+                        Agregar
+                    </CommonButton>}
+                <OrderSearchMenu searchOptions={SEARCH_TAG_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_TAG_FIELDS} handleOrderChange={handleOrderChange} />
+            </Stack>
+            <Stack spacing={2}>
+                <LoadingScreenWrapper loading={loading}>
                     {(tags?.items && tags.items.length > 0) ?
                         <Stack spacing={2}>
-                            <OrderSearchMenu searchOptions={SEARCH_TAG_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_TAG_FIELDS} handleOrderChange={handleOrderChange} />
-                            <CommonButton actionType="CREATE" variant="contained" sx={{ alignSelf: "start" }}
-                                onClick={() => setEditingTag(undefined)}>Agregar</CommonButton>
                             <LeadTagsListData tags={tags.items}
                                 toggleUpdate={(tag: LeadTagDetailed) => setEditingTag(tag)}
                                 updateList={updateList} />
                             <PaginationComponent {...pageComponentProps} />
                         </Stack>
                         :
-                        <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center", height: "30rem" }}>
-                            <Typography variant="h4">No se han encontrado etiquetas de lead...</Typography>
+                        <NoItemsMessage search={fetchParams.search}
+                            emptyFetchMessage="No se han encontrado etiquetas de lead...">
                             <CommonButton actionType="CREATE" variant="contained"
                                 onClick={() => setEditingTag(undefined)}>Agregar</CommonButton>
-                        </Stack>
+                        </NoItemsMessage>
                     }
-                    {editingTag !== null &&
-                        <>
-                            <Divider />
-                            <GenericPaper elevation={4} sx={{ px: 3, py: 2 }}>
-                                <Stack spacing={2}>
-                                    <TagFormSidebarWrapper existingTag={editingTag}
-                                        onClose={() => setEditingTag(null)} onSubmit={updateList} />
-                                </Stack>
-                            </GenericPaper>
-                        </>
-                    }
-                </Stack>
-            </LoadingScreenWrapper >
+                </LoadingScreenWrapper >
+                {editingTag !== null &&
+                    <>
+                        <Divider />
+                        <GenericPaper elevation={4} sx={{ px: 3, py: 2 }}>
+                            <Stack spacing={2}>
+                                <TagFormSidebarWrapper existingTag={editingTag}
+                                    onClose={() => setEditingTag(null)} onSubmit={updateList} />
+                            </Stack>
+                        </GenericPaper>
+                    </>
+                }
+            </Stack>
         </Stack>
     )
 }

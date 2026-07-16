@@ -17,6 +17,7 @@ import { Divider, Grid, ListItemText, Stack, Typography } from '@mui/material'
 import { OrderSearchMenu } from 'shared/ui/lists/OrderMenu'
 import type { LeadContactStateDetailed } from 'src/types/orgProperties'
 import { disableLeadContactState, enableLeadContactState, getLeadContactStates } from './contactStatesServices'
+import { NoItemsMessage } from 'src/components/ui/lists/NoItemsMessage'
 
 const ORDER_STATE_FIELDS = [
     { name: "name", label: "Orden Alfabético" },
@@ -25,7 +26,6 @@ const ORDER_STATE_FIELDS = [
 
 const SEARCH_STATE_FIELDS = [
     { name: "name", label: "Nombre" },
-    { name: "description", label: "Descripción" },
 ]
 
 export const ContactStateList = () => {
@@ -38,8 +38,7 @@ export const ContactStateList = () => {
 
     const fetchStates = useCallback((fetchPage: number, pageSize: number) => {
         return getLeadContactStates({
-            detailed: true,
-            page: fetchPage, page_size: pageSize, ...fetchParams
+            detailed: true, page: fetchPage, page_size: pageSize, ...fetchParams
         })
             .then(setStates)
             .catch(e => showCommonErrorToast(e, "Error recuperando la lista de estados"))
@@ -67,38 +66,42 @@ export const ContactStateList = () => {
 
     return (
         <Stack spacing={2}>
+            <Stack spacing={2} direction="row" useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
+                {(states?.items && states.items.length > 0) &&
+                    <CommonButton actionType="CREATE" variant="contained"
+                        onClick={() => setEditingState(undefined)}>
+                        Agregar
+                    </CommonButton>}
+                <OrderSearchMenu searchOptions={SEARCH_STATE_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_STATE_FIELDS} handleOrderChange={handleOrderChange} />
+            </Stack>
+
             <LoadingScreenWrapper loading={loading}>
-                <Stack spacing={2}>
-                    {(states?.items && states.items.length > 0) ?
-                        <Stack spacing={2}>
-                            <OrderSearchMenu searchOptions={SEARCH_STATE_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_STATE_FIELDS} handleOrderChange={handleOrderChange} />
-                            <CommonButton actionType="CREATE" variant="contained" sx={{ alignSelf: "start" }}
-                                onClick={() => setEditingState(undefined)}>Agregar</CommonButton>
-                            <ContactStateListData states={states.items}
-                                toggleUpdate={(state: LeadContactStateDetailed) => setEditingState(state)}
-                                updateList={updateList} />
-                            <PaginationComponent {...pageComponentProps} />
-                        </Stack>
-                        :
-                        <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center", height: "30rem" }}>
-                            <Typography variant="h4">No se han encontrado estados de contacto...</Typography>
-                            <CommonButton actionType="CREATE" variant="contained"
-                                onClick={() => setEditingState(undefined)}>Agregar</CommonButton>
-                        </Stack>
-                    }
-                    {editingState !== null &&
-                        <>
-                            <Divider />
-                            <GenericPaper elevation={4} sx={{ px: 3, py: 2 }}>
-                                <Stack spacing={2}>
-                                    <ContactStateForm existingState={editingState}
-                                        onClose={() => setEditingState(null)} onSubmit={updateList} />
-                                </Stack>
-                            </GenericPaper>
-                        </>
-                    }
-                </Stack>
+                {(states?.items && states.items.length > 0) ?
+                    <Stack spacing={2}>
+                        <ContactStateListData states={states.items}
+                            toggleUpdate={(state: LeadContactStateDetailed) => setEditingState(state)}
+                            updateList={updateList} />
+                        <PaginationComponent {...pageComponentProps} />
+                    </Stack>
+                    :
+                    <NoItemsMessage search={fetchParams.search}
+                        emptyFetchMessage="No se han encontrado estados de contacto...">
+                        <CommonButton actionType="CREATE" variant="contained"
+                            onClick={() => setEditingState(undefined)}>Agregar</CommonButton>
+                    </NoItemsMessage>
+                }
             </LoadingScreenWrapper >
+            {editingState !== null &&
+                <>
+                    <Divider />
+                    <GenericPaper elevation={4} sx={{ px: 3, py: 2 }}>
+                        <Stack spacing={2}>
+                            <ContactStateForm existingState={editingState}
+                                onClose={() => setEditingState(null)} onSubmit={updateList} />
+                        </Stack>
+                    </GenericPaper>
+                </>
+            }
         </Stack>
     )
 }

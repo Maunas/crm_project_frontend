@@ -17,6 +17,7 @@ import { DisableConfirmDialog } from 'src/components/ui/feedback/ConfirmationDia
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { OrderSearchMenu } from 'shared/ui/lists/OrderMenu'
 import { useUserContext } from 'src/stores/UserContext'
+import { NoItemsMessage } from 'src/components/ui/lists/NoItemsMessage'
 
 const ORDER_FLOW_FIELDS = [
     { name: "name", label: "Orden Alfabético" },
@@ -24,7 +25,7 @@ const ORDER_FLOW_FIELDS = [
 
 const SEARCH_FLOW_FIELDS = [
     { name: "name", label: "Nombre" },
-    { name: "decription", label: "Descripción" },
+    { name: "description", label: "Descripción" },
 ]
 
 export const LeadFlowList = () => {
@@ -50,12 +51,12 @@ export const LeadFlowList = () => {
 
     return (
         <Stack spacing={2}>
-            <OrderSearchMenu searchOptions={SEARCH_FLOW_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_FLOW_FIELDS} handleOrderChange={handleOrderChange} />
-            <Stack spacing={1} direction="row" useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
+            <Stack spacing={2} direction="row" useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
                 {(flows?.items && flows.items.length > 0) &&
                     <CommonButton actionType="CREATE" component={Link} to="/lead-flow-editor" >
                         Abrir Editor
                     </CommonButton>}
+                <OrderSearchMenu searchOptions={SEARCH_FLOW_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_FLOW_FIELDS} handleOrderChange={handleOrderChange} />
             </Stack>
             <LoadingScreenWrapper loading={loading}>
                 {(flows?.items && flows.items.length > 0) ?
@@ -64,10 +65,10 @@ export const LeadFlowList = () => {
                         <PaginationComponent {...pageComponentProps} />
                     </Stack>
                     :
-                    <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center", height: "30rem" }}>
-                        <Typography variant="h4">No se han encontrado flujos de estado...</Typography>
+                    <NoItemsMessage search={fetchParams.search}
+                        emptyFetchMessage="No se han encontrado flujos de estado...">
                         <CommonButton actionType="CREATE" onClick={() => nav("/lead-flow-editor")} variant="contained">Abrir Editor</CommonButton>
-                    </Stack>
+                    </NoItemsMessage>
                 }
             </LoadingScreenWrapper>
         </Stack>

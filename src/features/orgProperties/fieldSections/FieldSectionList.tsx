@@ -16,6 +16,7 @@ import { OrderSearchMenu } from 'shared/ui/lists/OrderMenu'
 import type { LeadFieldSectionDetailed } from 'src/types/orgProperties'
 import { disableFieldSection, enableFieldSection, getFieldSections } from './fieldSectionsServices'
 import { FieldSectionForm } from './FieldSectionForm'
+import { NoItemsMessage } from 'src/components/ui/lists/NoItemsMessage'
 
 const ORDER_SEC_FIELDS = [
     { name: "name", label: "Orden Alfabético" },
@@ -63,36 +64,41 @@ export const FieldSectionList = () => {
 
     return (
         <Stack spacing={2}>
-            <LoadingScreenWrapper loading={loading}>
-                <Stack spacing={2}>
+            <Stack spacing={2} direction="row" useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
+                {(sections?.items && sections.items.length > 0) &&
+                    <CommonButton actionType="CREATE" variant="contained" onClick={() => setEditingSection(undefined)}>
+                        Agregar
+                    </CommonButton>
+                }
+                <OrderSearchMenu searchOptions={SEARCH_SEC_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_SEC_FIELDS} handleOrderChange={handleOrderChange} />
+            </Stack>
+            <Stack spacing={2}>
+                <LoadingScreenWrapper loading={loading}>
                     {(sections?.items && sections.items.length > 0) ?
                         <Stack spacing={2}>
-                            <OrderSearchMenu searchOptions={SEARCH_SEC_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_SEC_FIELDS} handleOrderChange={handleOrderChange} />
-                            <CommonButton actionType="CREATE" variant="contained" sx={{ alignSelf: "start" }}
-                                onClick={() => setEditingSection(undefined)}>Agregar</CommonButton>
                             <FieldSectionListData sections={sections.items}
                                 toggleUpdate={(state: LeadFieldSectionDetailed) => setEditingSection(state)}
                                 updateList={updateList} />
                             <PaginationComponent {...pageComponentProps} />
                         </Stack>
                         :
-                        <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center", height: "30rem" }}>
-                            <Typography variant="h4">No se han encontrado secciones de campo...</Typography>
+                        <NoItemsMessage search={fetchParams.search}
+                            emptyFetchMessage="No se han encontrado secciones de campo...">
                             <CommonButton actionType="CREATE" variant="contained"
                                 onClick={() => setEditingSection(undefined)}>Agregar</CommonButton>
-                        </Stack>
+                        </NoItemsMessage>
                     }
-                    {editingSection !== null &&
-                        <>
-                            <Divider />
-                            <GenericPaper elevation={4} sx={{ px: 3, py: 2 }}>
-                                <FieldSectionForm existingSection={editingSection}
-                                    onClose={() => setEditingSection(null)} onSubmit={updateList} />
-                            </GenericPaper>
-                        </>
-                    }
-                </Stack>
-            </LoadingScreenWrapper >
+                </LoadingScreenWrapper >
+                {editingSection !== null &&
+                    <>
+                        <Divider />
+                        <GenericPaper elevation={4} sx={{ px: 3, py: 2 }}>
+                            <FieldSectionForm existingSection={editingSection}
+                                onClose={() => setEditingSection(null)} onSubmit={updateList} />
+                        </GenericPaper>
+                    </>
+                }
+            </Stack>
         </Stack>
     )
 }
