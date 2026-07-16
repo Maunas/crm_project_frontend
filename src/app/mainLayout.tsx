@@ -6,7 +6,7 @@ import { useUserContext } from 'src/stores/UserContext';
 import LoadingScreenWrapper from 'src/components/ui/feedback/LoadingScreen';
 
 export default function MainLayout() {
-    const { user, isRestoring, userOrganizations, loadingOrgs } = useUserContext()
+    const { user, isRestoring, orgHeaderList, loadingOrgs } = useUserContext()
     const nav = useNavigate()
 
     useEffect(() => {
@@ -15,10 +15,10 @@ export default function MainLayout() {
 
     // Si el usuario no tiene ninguna org (y ya terminaron de cargar) -> onboarding
     useEffect(() => {
-        if (!isRestoring && !loadingOrgs && user && userOrganizations.length === 0) {
+        if (!isRestoring && !loadingOrgs && user && orgHeaderList.length === 0) {
             nav('/onboarding', { replace: true })
         }
-    }, [user, isRestoring, loadingOrgs, userOrganizations, nav])
+    }, [user, isRestoring, loadingOrgs, orgHeaderList, nav])
 
     if (isRestoring) return (
         <LoadingScreenWrapper loading sx={{ height: "100vh" }} />
