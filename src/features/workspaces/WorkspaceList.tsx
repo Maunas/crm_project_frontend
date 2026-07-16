@@ -161,7 +161,7 @@ export const WorkspaceList = () => {
                                         <ListItemText sx={{ mr: 7 }} primary={
                                             <Stack spacing={1} direction="row">
                                                 <EnabledIcon active={wsp.active} />
-                                                <Typography sx={{ fontWeight: 500 }}>{wsp.name}</Typography>
+                                                <Typography>{wsp.name}</Typography>
                                             </Stack>
                                         }
                                             secondary={wsp.description} />

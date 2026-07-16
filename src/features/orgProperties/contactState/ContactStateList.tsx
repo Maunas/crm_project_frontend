@@ -9,12 +9,24 @@ import CommonButton from 'shared/ui/buttons/CommonButton'
 import CustomChip from 'shared/ui/details/CustomChip'
 import { EnabledIcon } from 'shared/ui/lists/Icons'
 import { useListPagination } from 'src/hooks/useListPagination'
+import { useOrderSeachList } from 'src/hooks/useOrderSearchLists'
 import { useLoading } from 'src/hooks/useLoading'
 import type { Paginable } from 'src/types/shared'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { Divider, Grid, ListItemText, Stack, Typography } from '@mui/material'
+import { OrderSearchMenu } from 'shared/ui/lists/OrderMenu'
 import type { LeadContactStateDetailed } from 'src/types/orgProperties'
 import { disableLeadContactState, enableLeadContactState, getLeadContactStates } from './contactStatesServices'
+
+const ORDER_STATE_FIELDS = [
+    { name: "name", label: "Orden Alfabético" },
+    { name: "order", label: "Orden de Presentación" },
+]
+
+const SEARCH_STATE_FIELDS = [
+    { name: "name", label: "Nombre" },
+    { name: "description", label: "Descripción" },
+]
 
 export const ContactStateList = () => {
 
@@ -22,14 +34,16 @@ export const ContactStateList = () => {
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(states)
 
+    const { fetchParams, handleSearchChange, handleOrderChange } = useOrderSeachList()
+
     const fetchStates = useCallback((fetchPage: number, pageSize: number) => {
         return getLeadContactStates({
-            detailed: true, only_active: false,
-            page: fetchPage, page_size: pageSize
+            detailed: true,
+            page: fetchPage, page_size: pageSize, ...fetchParams
         })
             .then(setStates)
             .catch(e => showCommonErrorToast(e, "Error recuperando la lista de estados"))
-    }, [])
+    }, [fetchParams])
 
     const { fnWithLoading: fetchStatesLoad, loading } = useLoading(fetchStates)
 
@@ -57,6 +71,7 @@ export const ContactStateList = () => {
                 <Stack spacing={2}>
                     {(states?.items && states.items.length > 0) ?
                         <Stack spacing={2}>
+                            <OrderSearchMenu searchOptions={SEARCH_STATE_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_STATE_FIELDS} handleOrderChange={handleOrderChange} />
                             <CommonButton actionType="CREATE" variant="contained" sx={{ alignSelf: "start" }}
                                 onClick={() => setEditingState(undefined)}>Agregar</CommonButton>
                             <ContactStateListData states={states.items}
@@ -130,7 +145,7 @@ export const ContactStateListData = ({ states, toggleUpdate, updateList }: Conta
                             <ListItemText sx={{ mr: 4 }} primary={
                                 <Stack spacing={1} direction="row" color="inherit" sx={{ width: "100%", alignItems: "center" }}>
                                     <EnabledIcon active={state.active} />
-                                    <Typography sx={{ fontWeight: "500" }} color="inherit">{state.name}</Typography>
+                                    <Typography color="inherit">{state.name}</Typography>
                                     {state.is_initial &&
                                         <CustomChip chipColor='info' label="Inicial" size="small" />}
                                 </Stack>

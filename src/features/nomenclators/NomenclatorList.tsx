@@ -160,10 +160,10 @@ export const NomenclatorList = () => {
                                                             <EnabledIcon active={nom.active} size="small" />
                                                             <Stack spacing={-.5}>
                                                                 {nom.parent_nomenclator &&
-                                                                    <Typography variant="caption" color="textSecondary" sx={{ fontWeight: 500, textTransform: "uppercase", wordBreak: "break-word" }}>
-                                                                        {nom.parent_nomenclator.name}
-                                                                    </Typography>}
-                                                                <Typography sx={{ fontWeight: 500, wordBreak: "break-word" }}>{nom.name}</Typography>
+<Typography variant="caption" color="textSecondary" sx={{ textTransform: "uppercase", wordBreak: "break-word" }}>
+                                                                    {nom.parent_nomenclator.name}
+                                                                </Typography>}
+                                                                <Typography sx={{ wordBreak: "break-word" }}>{nom.name}</Typography>
                                                             </Stack>
                                                         </Stack>
                                                     }

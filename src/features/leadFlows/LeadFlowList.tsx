@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useListPagination } from 'src/hooks/useListPagination'
+import { useOrderSeachList } from 'src/hooks/useOrderSearchLists'
 import type { LeadFlowDetailed } from 'src/types/leadFlow'
 import type { Paginable } from 'src/types/shared'
 import { Grid, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
@@ -14,7 +15,17 @@ import { useLoading } from 'src/hooks/useLoading'
 import LoadingScreenWrapper from 'src/components/ui/feedback/LoadingScreen'
 import { DisableConfirmDialog } from 'src/components/ui/feedback/ConfirmationDialog'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
+import { OrderSearchMenu } from 'shared/ui/lists/OrderMenu'
 import { useUserContext } from 'src/stores/UserContext'
+
+const ORDER_FLOW_FIELDS = [
+    { name: "name", label: "Orden Alfabético" },
+]
+
+const SEARCH_FLOW_FIELDS = [
+    { name: "name", label: "Nombre" },
+    { name: "decription", label: "Descripción" },
+]
 
 export const LeadFlowList = () => {
 
@@ -25,9 +36,11 @@ export const LeadFlowList = () => {
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(flows, 12)
 
+    const { fetchParams, handleSearchChange, handleOrderChange } = useOrderSeachList()
+
     const fetchFlows = useCallback((fetchPage: number, pageSize: number) => getLeadFlows({
-        page: fetchPage || 1, page_size: pageSize, detailed: true, only_active: false
-    }).then(setFlows), [])
+        page: fetchPage || 1, page_size: pageSize, detailed: true, ...fetchParams
+    }).then(setFlows), [fetchParams])
 
     const { fnWithLoading, loading } = useLoading(fetchFlows)
 
@@ -37,6 +50,7 @@ export const LeadFlowList = () => {
 
     return (
         <Stack spacing={2}>
+            <OrderSearchMenu searchOptions={SEARCH_FLOW_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_FLOW_FIELDS} handleOrderChange={handleOrderChange} />
             <Stack spacing={1} direction="row" useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
                 {(flows?.items && flows.items.length > 0) &&
                     <CommonButton actionType="CREATE" component={Link} to="/lead-flow-editor" >
@@ -99,7 +113,7 @@ export const LeadFlowListData = ({ flows, updateList }: { flows: LeadFlowDetaile
                                 <ListItemText sx={{ mr: 4 }} primary={
                                     <Stack spacing={1} direction="row" color="inherit" sx={{ width: "100%", alignItems: "center" }}>
                                         <EnabledIcon active={flow.active} />
-                                        <Typography sx={{ fontWeight: "bold" }} color="inherit">{flow.name}</Typography>
+                                        <Typography color="inherit">{flow.name}</Typography>
                                     </Stack>
                                 }
                                     secondary={flow.description} />

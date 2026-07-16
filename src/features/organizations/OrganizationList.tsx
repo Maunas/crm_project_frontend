@@ -152,7 +152,7 @@ export const OrganizationList = () => {
                                         <Stack spacing={1} direction="row">
                                             <EnabledIcon active={org.active} />
                                             <Typography color={activeOrg?.id === org.id ? "info" : "textPrimary"}
-                                                sx={{ fontWeight: 500, textDecoration: activeOrg?.id === org.id ? "underline" : "none" }}>
+                                                sx={{ textDecoration: activeOrg?.id === org.id ? "underline" : "none" }}>
                                                 {org.name}
                                             </Typography>
                                         </Stack>

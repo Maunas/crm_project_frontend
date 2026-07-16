@@ -7,13 +7,23 @@ import GenericPaper from 'shared/layout/container/GenericPaper'
 import CommonButton from 'shared/ui/buttons/CommonButton'
 import { EnabledIcon } from 'shared/ui/lists/Icons'
 import { useListPagination } from 'src/hooks/useListPagination'
+import { useOrderSeachList } from 'src/hooks/useOrderSearchLists'
 import { useLoading } from 'src/hooks/useLoading'
 import type { Paginable } from 'src/types/shared'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { Divider, Grid, ListItemText, Stack, Typography } from '@mui/material'
+import { OrderSearchMenu } from 'shared/ui/lists/OrderMenu'
 import { deleteTag, getTags } from './LeadTagService'
 import { TagFormSidebarWrapper } from './LeadTagForm'
 import type { LeadTagDetailed } from 'src/types/orgProperties'
+
+const ORDER_TAG_FIELDS = [
+    { name: "name", label: "Orden Alfabético" },
+]
+
+const SEARCH_TAG_FIELDS = [
+    { name: "name", label: "Nombre" },
+]
 
 export const LeadTagsList = () => {
 
@@ -21,13 +31,15 @@ export const LeadTagsList = () => {
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(tags)
 
+    const { fetchParams, handleSearchChange, handleOrderChange } = useOrderSeachList()
+
     const fetchTags = useCallback((fetchPage: number, pageSize: number) => {
         return getTags({
-            detailed: true, only_active: false, page: fetchPage, page_size: pageSize
+            detailed: true, page: fetchPage, page_size: pageSize, ...fetchParams
         })
             .then(setTags)
             .catch(e => showCommonErrorToast(e, "Error recuperando la lista de etiquetas"))
-    }, [])
+    }, [fetchParams])
 
     const { fnWithLoading: fetchTagsLoad, loading } = useLoading(fetchTags)
 
@@ -55,6 +67,7 @@ export const LeadTagsList = () => {
                 <Stack spacing={2}>
                     {(tags?.items && tags.items.length > 0) ?
                         <Stack spacing={2}>
+                            <OrderSearchMenu searchOptions={SEARCH_TAG_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_TAG_FIELDS} handleOrderChange={handleOrderChange} />
                             <CommonButton actionType="CREATE" variant="contained" sx={{ alignSelf: "start" }}
                                 onClick={() => setEditingTag(undefined)}>Agregar</CommonButton>
                             <LeadTagsListData tags={tags.items}
@@ -119,7 +132,7 @@ export const LeadTagsListData = ({ tags, toggleUpdate, updateList }: LeadTagsLis
                             <ListItemText sx={{ mr: 4 }} primary={
                                 <Stack spacing={1} direction="row" color="inherit" sx={{ width: "100%", alignItems: "center" }}>
                                     <EnabledIcon active={tag.active} />
-                                    <Typography sx={{ fontWeight: "500" }} color="inherit">{tag.name}</Typography>
+                                    <Typography color="inherit">{tag.name}</Typography>
                                 </Stack>
                             } />
                         </ResponsiveListItem>

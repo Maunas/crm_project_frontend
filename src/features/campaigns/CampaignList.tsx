@@ -129,7 +129,7 @@ export const CampaignListData = ({ campaigns, handleActiveCampaign }: CampaignLi
                         <ListItemText sx={{ mr: 7 }} primary={
                             <Stack spacing={1} direction="row" color="inherit" sx={{ width: "100%", alignItems: "center" }}>
                                 <EnabledIcon active={cmp.active} />
-                                <Typography sx={{ fontWeight: 500 }} color="inherit">{cmp.name}</Typography>
+                                <Typography color="inherit">{cmp.name}</Typography>
                             </Stack>
                         }
                             secondary={cmp.description} />

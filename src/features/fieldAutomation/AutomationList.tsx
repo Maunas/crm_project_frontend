@@ -109,7 +109,7 @@ export const AutomationList = () => {
 
   return (
     <GenericContainer>
-      <Stack spacing={3}>
+      <Stack spacing={2}>
         <Stack spacing={2} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
           <Stack direction="row" sx={{ alignItems: 'center', gap: 3, flexWrap: "wrap" }}>
             <Typography variant="h1">Automatizaciones</Typography>
@@ -166,7 +166,7 @@ export const AutomationList = () => {
                             primary={
                               <Stack spacing={1} direction="row" sx={{ alignItems: "center" }}>
                                 <EnabledIcon active={auto.active} />
-                                <Typography sx={{ fontWeight: "bold" }}>{auto.name}</Typography>
+                                <Typography>{auto.name}</Typography>
 
                                 {/* CHIP DE PRIORIDAD */}
                                 <ChipTooltip title="Prioridad de ejecución (menor número = se ejecuta primero)">

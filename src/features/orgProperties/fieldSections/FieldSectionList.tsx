@@ -7,13 +7,23 @@ import GenericPaper from 'shared/layout/container/GenericPaper'
 import CommonButton from 'shared/ui/buttons/CommonButton'
 import { EnabledIcon } from 'shared/ui/lists/Icons'
 import { useListPagination } from 'src/hooks/useListPagination'
+import { useOrderSeachList } from 'src/hooks/useOrderSearchLists'
 import { useLoading } from 'src/hooks/useLoading'
 import type { Paginable } from 'src/types/shared'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { Divider, Grid, ListItemText, Stack, Typography } from '@mui/material'
+import { OrderSearchMenu } from 'shared/ui/lists/OrderMenu'
 import type { LeadFieldSectionDetailed } from 'src/types/orgProperties'
 import { disableFieldSection, enableFieldSection, getFieldSections } from './fieldSectionsServices'
 import { FieldSectionForm } from './FieldSectionForm'
+
+const ORDER_SEC_FIELDS = [
+    { name: "name", label: "Orden Alfabético" },
+]
+
+const SEARCH_SEC_FIELDS = [
+    { name: "name", label: "Nombre" },
+]
 
 export const FieldSectionList = () => {
 
@@ -21,13 +31,15 @@ export const FieldSectionList = () => {
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(sections)
 
+    const { fetchParams, handleSearchChange, handleOrderChange } = useOrderSeachList()
+
     const fetchSections = useCallback((fetchPage: number, pageSize: number) => {
         return getFieldSections({
-            detailed: true, only_active: false, page: fetchPage, page_size: pageSize
+            detailed: true, page: fetchPage, page_size: pageSize, ...fetchParams
         })
             .then(setSections)
             .catch(e => showCommonErrorToast(e, "Error recuperando la lista de secciones"))
-    }, [])
+    }, [fetchParams])
 
     const { fnWithLoading: fetchSectionsLoad, loading } = useLoading(fetchSections)
 
@@ -55,6 +67,7 @@ export const FieldSectionList = () => {
                 <Stack spacing={2}>
                     {(sections?.items && sections.items.length > 0) ?
                         <Stack spacing={2}>
+                            <OrderSearchMenu searchOptions={SEARCH_SEC_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_SEC_FIELDS} handleOrderChange={handleOrderChange} />
                             <CommonButton actionType="CREATE" variant="contained" sx={{ alignSelf: "start" }}
                                 onClick={() => setEditingSection(undefined)}>Agregar</CommonButton>
                             <FieldSectionListData sections={sections.items}
@@ -126,7 +139,7 @@ const FieldSectionListData = ({ sections, toggleUpdate, updateList }: FieldSecti
                             <ListItemText sx={{ mr: 4 }} primary={
                                 <Stack spacing={1} direction="row" color="inherit" sx={{ width: "100%", alignItems: "center" }}>
                                     <EnabledIcon active={section.active} />
-                                    <Typography sx={{ fontWeight: "500" }} color="inherit">{section.name}</Typography>
+                                    <Typography color="inherit">{section.name}</Typography>
                                 </Stack>
                             } />
                         </ResponsiveListItem>

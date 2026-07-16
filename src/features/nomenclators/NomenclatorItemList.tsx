@@ -155,10 +155,10 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
                                                         <EnabledIcon active={nom.active} size="small" />
                                                         <Stack spacing={-.5}>
                                                             {nom.parent_item &&
-                                                                <Typography variant="caption" color="textSecondary" sx={{ fontWeight: 500, textTransform: "uppercase", wordBreak: "break-word" }}>
+<Typography variant="caption" color="textSecondary" sx={{ textTransform: "uppercase", wordBreak: "break-word" }}>
                                                                     {nom.parent_item.value}
                                                                 </Typography>}
-                                                            <Typography sx={{ fontWeight: 500, wordBreak: "break-word" }}>{nom.value}</Typography>
+                                                                <Typography sx={{ wordBreak: "break-word" }}>{nom.value}</Typography>
                                                         </Stack>
                                                     </Stack>
                                                 }

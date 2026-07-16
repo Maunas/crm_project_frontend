@@ -39,6 +39,11 @@ export const CustomListItem = styled(
 
         return [
             selectedStyle,
+            {
+                "& .MuiListItemText-primary .MuiTypography-root": {
+                    fontWeight: 500,
+                },
+            },
             ((!alwaysShowSecondary) && {
                 "& .MuiListItem-secondaryAction": {
                     visibility: "hidden",
