@@ -2,7 +2,7 @@ import { type ReactNode } from "react"
 import { GenericSidebarContent, GenericSidebarHeader } from "./ColoredHeaders"
 import GenericPaper from "./GenericPaper"
 import { CommonIconButton } from "shared/ui/buttons/CommonIconButton"
-import { Divider, Drawer, Stack, useMediaQuery, useTheme, type DrawerProps, Typography, Box, styled } from "@mui/material"
+import { Drawer, Stack, useMediaQuery, useTheme, type DrawerProps, Typography, Box, styled } from "@mui/material"
 import { CustomAvatar } from "src/components/ui/details/CustomAvatar"
 
 const SidebarPaper = styled(GenericPaper)({ padding: 0 })
@@ -70,9 +70,9 @@ interface SidebarContentWrapperProps {
 export const SidebarContentWrapper = ({ title, subtitle, icon, actions, iconColor, children }: SidebarContentWrapperProps) => {
 
     return (
-        <Stack spacing={2} sx={{ height: "100%" }} useFlexGap>
+        <Stack sx={{ height: "100%" }} useFlexGap>
             <GenericSidebarHeader color={iconColor} >
-                <Stack direction="row" spacing={2} sx={{ p: "1rem 4rem 1rem 1.5rem", height: "6rem", alignItems: "center" }}>
+                <Stack direction="row" spacing={2} sx={{ height: "100%", width: "100%", alignItems: "center" }}>
                     <CustomAvatar color={iconColor}>{icon}</CustomAvatar>
                     <Stack>
                         <Typography variant="subtitle2" color="textSecondary"
@@ -80,7 +80,6 @@ export const SidebarContentWrapper = ({ title, subtitle, icon, actions, iconColo
                         <Typography variant="h2" >{title}</Typography>
                     </Stack>
                 </Stack>
-                <Divider />
             </GenericSidebarHeader >
             <GenericSidebarContent >
                 {actions ?
@@ -97,7 +96,7 @@ export const SidebarContentWrapper = ({ title, subtitle, icon, actions, iconColo
  */
 export const SidebarContentActionsWrapper = ({ actions, children }: { actions?: ReactNode, children: ReactNode }) => {
     return (
-        <Stack sx={{ minHeight: "100%" }}>
+        <Stack sx={{ height: "100%" }}>
             <Box className="sidebar-content">
                 {children}
             </Box>
