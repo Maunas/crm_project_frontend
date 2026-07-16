@@ -124,12 +124,8 @@ export const ContactStateListData = ({ states, toggleUpdate, updateList }: Conta
                         <ResponsiveListItem disablePadding sx={{ height: "100%" }}
                             onClick={() => toggleUpdate(state)}
                             actions={[
-                                { actionType: "MODIFY", label: "Editar", onClick: () => toggleUpdate(state) },
-                                {
-                                    actionType: state.active ? "DISABLE" : "ENABLE", color: state.active ? "error" : "success",
-                                    label: state.active ? "Deshabilitar" : "Habilitar",
-                                    onClick: () => setDisableState(state)
-                                }
+                                { template: "MODIFY", onClick: () => toggleUpdate(state) },
+                                { template: state.active ? "DISABLE" : "ENABLE", onClick: () => setDisableState(state) },
                             ]}>
                             <ListItemText sx={{ mr: 4 }} primary={
                                 <Stack spacing={1} direction="row" color="inherit" sx={{ width: "100%", alignItems: "center" }}>

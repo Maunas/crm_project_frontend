@@ -120,12 +120,8 @@ const FieldSectionListData = ({ sections, toggleUpdate, updateList }: FieldSecti
                         <ResponsiveListItem disablePadding sx={{ height: "100%" }}
                             onClick={() => toggleUpdate(section)}
                             actions={[
-                                { actionType: "MODIFY", label: "Editar", onClick: () => toggleUpdate(section) },
-                                {
-                                    actionType: section.active ? "DISABLE" : "ENABLE", color: section.active ? "error" : "success",
-                                    label: section.active ? "Deshabilitar" : "Habilitar",
-                                    onClick: () => setDisableSection(section)
-                                }
+                                { template: "MODIFY", onClick: () => toggleUpdate(section) },
+                                { template: section.active ? "DISABLE" : "ENABLE", onClick: () => setDisableSection(section) },
                             ]}>
                             <ListItemText sx={{ mr: 4 }} primary={
                                 <Stack spacing={1} direction="row" color="inherit" sx={{ width: "100%", alignItems: "center" }}>

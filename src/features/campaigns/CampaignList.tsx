@@ -116,14 +116,16 @@ export const CampaignListData = ({ campaigns, handleActiveCampaign }: CampaignLi
             {campaigns.map((cmp, idx) =>
                 <Grid container key={`cmp-${idx}`} size="grow" sx={{ minWidth: "15rem", alignSelf: "stretch", alignItems: "start" }}>
                     <ResponsiveListItem disablePadding sx={{ height: "100%" }} component={Link} to={`/campaigns/${cmp.id}`}
-                        actions={[
-                            { actionType: "DETAILS", label: "Detalle", component: Link, to: `/campaigns/${cmp.id}` },
-                            { actionType: "LIST", label: "Ver Leads", component: Link, to: `/leads?workspace=${cmp.workspace_id}&campaign=${cmp.id}` },
-                            {
-                                actionType: cmp.active ? "DISABLE" : "ENABLE", label: cmp.active ? "Deshabilitar" : "Habilitar",
-                                color: cmp.active ? "error" : "success", onClick: () => setDeletingCmp(cmp)
-                            }
-                        ]}>
+                        actions={
+                            [
+                                { template: "DETAILS", component: Link, to: `/campaigns/${cmp.id}` },
+                                {
+                                    actionType: "LIST", label: "Ver Leads", component: Link,
+                                    to: `/leads?workspace=${cmp.workspace_id}&campaign=${cmp.id}`
+                                },
+                                { template: cmp.active ? "DISABLE" : "ENABLE", onClick: () => setDeletingCmp(cmp) },
+                            ]
+                        }>
                         <ListItemText sx={{ mr: 7 }} primary={
                             <Stack spacing={1} direction="row" color="inherit" sx={{ width: "100%", alignItems: "center" }}>
                                 <EnabledIcon active={cmp.active} />
@@ -133,7 +135,8 @@ export const CampaignListData = ({ campaigns, handleActiveCampaign }: CampaignLi
                             secondary={cmp.description} />
                     </ResponsiveListItem>
                 </Grid>
-            )}
+            )
+            }
             <DisableConfirmDialog idModal='conf-delete-cmp-list' entity={deletingCmp} clearEntity={() => setDeletingCmp(null)} entityTypeName="la campaña"
                 onConfirm={() => handleActiveCampaign(deletingCmp!)} />
         </Grid >

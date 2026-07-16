@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { OrganizationFormSidebar } from './OrganizationForm'
 import OrganizationDetails from './OrganizationDetail'
-import { ResponsiveListItem, type ListItemAction } from 'shared/ui/lists/CustomListItem'
+import { ResponsiveListItem } from 'shared/ui/lists/CustomListItem'
 import { DisableConfirmDialog } from 'shared/ui/feedback/ConfirmationDialog'
 import ContainerWithSidebar from 'shared/layout/container/GenericContainer'
 import LoadingScreenWrapper from 'shared/ui/feedback/LoadingScreen'
@@ -141,16 +141,13 @@ export const OrganizationList = () => {
                                 <ResponsiveListItem key={org.id} isSelected={org.id === selectedEntity?.id} disablePadding
                                     onClick={() => handleSidebar("DETAILS_ORG", org)}
                                     actions={[
-                                        { actionType: "DETAILS", label: "Detalle", onClick: () => handleSidebar("DETAILS_ORG", org) },
-                                        { actionType: "MODIFY", label: "Modificar", onClick: () => handleSidebar("UPDATE_ORG", org) },
-                                        ...(activeOrg?.id !== org.id ? [{
-                                            actionType: org.active ? "DISABLE" : "ENABLE", label: org.active ? "Deshabilitar" : "Habilitar",
-                                            color: org.active ? "error" : "success", onClick: () => setDeletingOrg(org)
-                                        }] : []),
-                                        ...(activeOrg?.id !== org.id && org.active ? [{
-                                            actionType: "CHECK", label: "Seleccionar Activa", color: "info", onClick: () => handleActiveOrg(org)
-                                        }] : [])
-                                    ] as ListItemAction[]}>
+                                        { template: "DETAILS", onClick: () => handleSidebar("DETAILS_ORG", org) },
+                                        { template: "MODIFY", onClick: () => handleSidebar("UPDATE_ORG", org) },
+                                        activeOrg?.id !== org.id &&
+                                        { template: org.active ? "DISABLE" : "ENABLE", onClick: () => setDeletingOrg(org) },
+                                        activeOrg?.id !== org.id && org.active &&
+                                        { actionType: "CHECK", label: "Seleccionar Activa", color: "info", onClick: () => handleActiveOrg(org) },
+                                    ]}>
                                     <ListItemText sx={{ mr: 10 }} primary={
                                         <Stack spacing={1} direction="row">
                                             <EnabledIcon active={org.active} />

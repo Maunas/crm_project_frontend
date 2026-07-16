@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useState } from 'react'
 import { NomenclatorFormSidebar } from './NomenclatorForm'
 import { NomenclatorDetails } from './NomenclatorDetails'
-import { ResponsiveListItem, type ListItemAction } from 'shared/ui/lists/CustomListItem'
+import { ResponsiveListItem } from 'shared/ui/lists/CustomListItem'
 import ContainerWithSidebar from 'shared/layout/container/GenericContainer'
 import { DisableConfirmDialog } from 'src/components/ui/feedback/ConfirmationDialog'
 import PaginationComponent from 'shared/ui/lists/PaginationComponent'
@@ -33,7 +33,7 @@ const SEARCH_NOM_FIELDS = [
 
 export const NomenclatorList = () => {
 
-    const { activeOrg } = useUserContext()
+    const { activeOrg, user } = useUserContext()
 
     const [nomenclators, setNomenclators] = useState<Paginable<NomenclatorDetailed> | null>(null)
 
@@ -146,19 +146,14 @@ export const NomenclatorList = () => {
                                 <List dense>
                                     <Grid container sx={{ alignItems: "stretch" }}>
                                         {nomenclators.items.map(nom => {
-                                            const isBlocked = !nom.organization_id && activeOrg?.id !== 0
+                                            const isBlocked = nom.organization_id === 1 && !user?.is_superuser
                                             return (<Grid size={{ xs: 12, sm: 12, md: 6, lg: 4 }} key={nom.id}>
                                                 <ResponsiveListItem isSelected={nom.id === selectedEntity?.id} disablePadding
                                                     onClick={() => handleSidebar("DETAILS_NOM", nom)}
                                                     actions={[
-                                                        { actionType: "DETAILS", label: 'Detalle', onClick: () => handleSidebar("DETAILS_NOM", nom) },
-                                                        ...(isBlocked ? [] : [
-                                                            { actionType: "MODIFY", label: 'Modificar', onClick: () => handleSidebar("UPDATE_NOM", nom) },
-                                                            {
-                                                                actionType: (nom.active ? "DISABLE" : "ENABLE"), label: nom.active ? "Deshabilitar" : "Habilitar",
-                                                                color: (nom.active ? "error" : "success"), onClick: () => handleDeletingNom(nom)
-                                                            }
-                                                        ] as ListItemAction[])
+                                                        { template: "DETAILS", onClick: () => handleSidebar("DETAILS_NOM", nom) },
+                                                        !isBlocked && { template: "MODIFY", onClick: () => handleSidebar("UPDATE_NOM", nom) },
+                                                        !isBlocked && { template: nom.active ? "DISABLE" : "ENABLE", onClick: () => handleDeletingNom(nom) },
                                                     ]}>
                                                     <ListItemText primary={
                                                         <Stack spacing={.5} direction="row" sx={{ alignItems: "center" }}>
@@ -172,7 +167,7 @@ export const NomenclatorList = () => {
                                                             </Stack>
                                                         </Stack>
                                                     }
-                                                        secondary={!nom.organization_id &&
+                                                        secondary={nom.organization_id === 1 &&
                                                             <span style={{ fontStyle: "italic" }}>Nomenclador del Sistema</span>
                                                         } />
                                                 </ResponsiveListItem>

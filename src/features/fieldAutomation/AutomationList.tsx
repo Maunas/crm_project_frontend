@@ -157,21 +157,10 @@ export const AutomationList = () => {
                         <ResponsiveListItem key={auto.id} disablePadding
                           onClick={() => navigate(`/automations/${auto.id}?campaign=${selectedCampaignId}`)}
                           actions={[
-                            {
-                              actionType: "DETAILS", label: "Detalles", component: Link,
-                              to: `/automations/${auto.id}?campaign=${selectedCampaignId}`
-                            },
-                            {
-                              actionType: "MODIFY", label: "Modificar", component: Link,
-                              to: `/automations/${auto.id}?campaign=${selectedCampaignId}&edit=true`
-                            },
-                            {
-                              actionType: "DUPLICATE", label: "Duplicar", component: Link,
-                              to: `/automations/create?campaign=${selectedCampaignId}&duplicate_from=${auto.id}`
-                            },
-                            {
-                              actionType: "DISABLE", label: "Eliminar", color: "error", onClick: () => setDeletingAuto(auto)
-                            },
+                            { template: "DETAILS", component: Link, to: `/automations/${auto.id}?campaign=${selectedCampaignId}` },
+                            { template: "MODIFY", component: Link, to: `/automations/${auto.id}?campaign=${selectedCampaignId}&edit=true` },
+                            { actionType: "DUPLICATE", label: "Duplicar", component: Link, to: `/automations/create?campaign=${selectedCampaignId}&duplicate_from=${auto.id}` },
+                            { template: "DELETE", onClick: () => setDeletingAuto(auto) },
                           ]}>
                           <ListItemText
                             primary={

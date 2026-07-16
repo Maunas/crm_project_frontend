@@ -145,11 +145,8 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
                                     <Grid size={{ xs: 12, sm: 6 }} key={nom.id}>
                                         <ResponsiveListItem disablePadding
                                             actions={[
-                                                { actionType: "MODIFY", label: "Modificar", onClick: () => handleSidebar("UPDATE_NOM", nom) },
-                                                {
-                                                    actionType: nom.active ? "DISABLE" : "ENABLE", label: nom.active ? "Deshabilitar" : "Habilitar",
-                                                    color: nom.active ? "error" : "success", onClick: () => handleDeletingItem(nom)
-                                                }
+                                                { template: "MODIFY", onClick: () => handleSidebar("UPDATE_NOM", nom) },
+                                                { template: nom.active ? "DISABLE" : "ENABLE", onClick: () => handleDeletingItem(nom) },
                                             ]}
                                             onClick={() => !isBlocked && handleSidebar("UPDATE_NOM", nom)}>
                                             <ListItemText

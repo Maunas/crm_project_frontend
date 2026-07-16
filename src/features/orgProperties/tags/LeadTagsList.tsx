@@ -113,10 +113,8 @@ export const LeadTagsListData = ({ tags, toggleUpdate, updateList }: LeadTagsLis
                         <ResponsiveListItem disablePadding sx={{ height: "100%" }}
                             onClick={() => toggleUpdate(tag)}
                             actions={[
-                                { actionType: "MODIFY", label: "Editar", onClick: () => toggleUpdate(tag) },
-                                {
-                                    actionType: "DISABLE", color: "error", label: "Eliminar", onClick: () => setDeletingTag(tag)
-                                }
+                                { template: "MODIFY", onClick: () => toggleUpdate(tag) },
+                                { template: "DELETE", onClick: () => setDeletingTag(tag) },
                             ]}>
                             <ListItemText sx={{ mr: 4 }} primary={
                                 <Stack spacing={1} direction="row" color="inherit" sx={{ width: "100%", alignItems: "center" }}>

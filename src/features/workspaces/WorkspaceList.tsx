@@ -153,14 +153,11 @@ export const WorkspaceList = () => {
                                 {workspaces?.items.map(wsp =>
                                     <ResponsiveListItem key={`wsp-${wsp.id}`} isSelected={wsp.id === selectedEntity?.id} disablePadding
                                         onClick={() => handleSidebar("DETAILS_WSP", wsp)}
-                                        actions={[
-                                            { actionType: "DETAILS", label: "Detalle", onClick: () => handleSidebar("DETAILS_WSP", wsp) },
-                                            { actionType: "LIST", label: "Ver Leads", onClick: () => handleSidebar("UPDATE_WSP", wsp) },
-                                            {
-                                                actionType: wsp.active ? "DISABLE" : "ENABLE", label: wsp.active ? "Deshabilitar" : "Habilitar",
-                                                color: wsp.active ? "error" : "success", onClick: () => handleDeletingWsp(wsp)
-                                            }
-                                        ]}>
+                                    actions={[
+                                        { template: "DETAILS", onClick: () => handleSidebar("DETAILS_WSP", wsp) },
+                                        { actionType: "LIST", label: "Ver Leads", onClick: () => handleSidebar("UPDATE_WSP", wsp) },
+                                        { template: wsp.active ? "DISABLE" : "ENABLE", onClick: () => handleDeletingWsp(wsp) },
+                                    ]}>
                                         <ListItemText sx={{ mr: 7 }} primary={
                                             <Stack spacing={1} direction="row">
                                                 <EnabledIcon active={wsp.active} />
