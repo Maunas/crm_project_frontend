@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { NomenclatorItemFormSidebar } from './NomenclatorItemForm'
 import { DisableConfirmDialog } from 'shared/ui/feedback/ConfirmationDialog'
-import { GenericSidebar } from 'shared/layout/container/GenericContainer'
+import { GenericSidebar } from 'shared/layout/container/GenericSidebar'
 import PaginationComponent from 'shared/ui/lists/PaginationComponent'
 import LoadingScreenWrapper from 'shared/ui/feedback/LoadingScreen'
 import { ResponsiveListItem } from 'shared/ui/lists/CustomListItem'

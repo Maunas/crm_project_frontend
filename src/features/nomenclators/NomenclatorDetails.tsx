@@ -1,5 +1,5 @@
 import { NomenclatorItemList } from "./NomenclatorItemList"
-import { SidebarContentWrapper } from "shared/layout/container/GenericContainer"
+import { SidebarContentWrapper } from "shared/layout/container/GenericSidebar"
 import HandleActiveButton from "shared/ui/buttons/HandleActiveButton"
 import DetailsMetadata from "shared/ui/details/DetailsMetadata"
 import CommonButton from "shared/ui/buttons/CommonButton"

@@ -4,7 +4,7 @@ import CommonButton from "shared/ui/buttons/CommonButton"
 import HandleActiveButton from "shared/ui/buttons/HandleActiveButton"
 import type { CampaignDetailed, WorkspaceDetailed } from "src/types/campaigns"
 import { Stack, Typography, ButtonGroup, Divider } from "@mui/material"
-import { SidebarContentWrapper } from "src/components/layout/container/GenericContainer"
+import { SidebarContentWrapper } from "src/components/layout/container/GenericSidebar"
 import { EnabledIcon } from "src/components/ui/lists/Icons"
 
 interface WorkspaceDetailsProps {

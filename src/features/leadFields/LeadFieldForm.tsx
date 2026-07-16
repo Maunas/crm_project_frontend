@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { SidebarContentWrapper, SidebarContentActionsWrapper } from "shared/layout/container/GenericContainer";
+import { SidebarContentWrapper, SidebarContentActionsWrapper } from "shared/layout/container/GenericSidebar";
 import { ControlledAutocomplete, ControlledRadio } from "shared/ui/forms/CustomMultipleInputs";
 import { ControlledCheckbox, ControlledTextInput } from "shared/ui/forms/CustomInputs";
 import { FormErrorMessage } from "shared/ui/forms/FormFeedback";
