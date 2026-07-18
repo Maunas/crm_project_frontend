@@ -22,6 +22,7 @@ import { useUserContext } from "src/stores/UserContext";
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import { ImportLeadsPage } from "./features/lead/ImportLeadsPage";
 import { SystemAuditList } from "./features/audit/SystemAuditLogs";
+import { TeamsPage } from "./features/teams/TeamsPage";
 
 // Muestra GlobalDashboard para Panel Global (id=1), OrgDashboard para el resto
 function DashboardRouter() {
@@ -67,6 +68,7 @@ export const router = createBrowserRouter([
             },
             { path: "/leads/import", Component: ImportLeadsPage },
             { path: "/campaigns/", Component: WorkspaceList },
+            { path: "/teams/", Component: TeamsPage },
             { path: "/nomenclators/", Component: NomenclatorList },
             { path: "/audit-logs/", Component: SystemAuditList },
             { path: "/organizations/", Component: OrganizationList },

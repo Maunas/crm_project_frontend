@@ -78,6 +78,7 @@ export const NomenclatorItemForm = ({ existingNom, nomenclator, submit, onCancel
     const parentNomenclatorIds = useMemo(() => nomenclator?.parent_nomenclators?.map(parent => parent.id) ?? [], [nomenclator])
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         if (parentNomenclatorIds.length === 0) return setNomenclatorItems([])
         Promise.all(parentNomenclatorIds.map(nomId =>
             getNomenclatorItems({ detailed: false, only_active: true, page_size: 0, nomenclator_id: nomId })

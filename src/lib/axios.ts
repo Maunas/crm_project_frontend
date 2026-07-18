@@ -1,6 +1,7 @@
 import type { Organization } from "src/types/campaigns"
 import axios from "axios"
 import { tokenStore } from "./tokenStore"
+import type { SimpleErrorBody } from "src/types/shared"
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000"
 
@@ -9,6 +10,25 @@ export const axiosCRM = axios.create({
 })
 
 export default axiosCRM
+
+// ── Manejo de errores ─────────────────────────────────────────────────────
+// El backend devuelve errores en dos formatos posibles bajo `detail`:
+//   - string simple (errores de negocio, ej. HTTPException("Token inválido"))
+//   - array de { field, message } (errores de validación de Pydantic, ver
+//     app/core/exceptions/handlers.py::pydantic_exception_handler)
+// Este helper normaliza ambos casos a un string listo para mostrar.
+export function getErrorMessage(error: SimpleErrorBody, fallback = "Ocurrió un error inesperado."): string {
+    const detail = error?.response?.data?.detail
+    if (!detail) return fallback
+    if (typeof detail === "string") return detail
+    if (Array.isArray(detail)) {
+        return detail
+            .map((d) => (d && typeof d === "object" ? d.message ?? JSON.stringify(d) : String(d)))
+            .join(" ")
+    }
+    if (typeof detail === "object" && detail.message) return detail.message
+    return fallback
+}
 
 // ── Request interceptor ───────────────────────────────────────────────────
 axiosCRM.interceptors.request.use(config => {

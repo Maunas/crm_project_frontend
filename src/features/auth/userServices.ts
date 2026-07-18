@@ -1,9 +1,16 @@
 import type { Paginable } from "src/types/shared"
-import type { TokenResponse, UserData, UserLogin, UserSignup, InviteRequest, InviteResponse } from "src/types/users"
+import type { TokenResponse, UserData, UserLogin, UserSignup, InviteRequest, InviteResponse, AcceptInviteResponse, UserPublic } from "src/types/users"
 import axiosCRM from "src/lib/axios"
 
 export const getUsers = async (): Promise<Paginable<UserData>> => {
     const res = await axiosCRM.get("users")
+    return res.data
+}
+
+// Usuarios de la organización activa (X-Organization-Id), sin requerir permisos de admin.
+// Útil para selects de asignación (ej: miembros de un equipo).
+export const getUsersInOrg = async (): Promise<UserPublic[]> => {
+    const res = await axiosCRM.get("/users/in-org/members")
     return res.data
 }
 
@@ -65,10 +72,10 @@ export const inviteUser = async (data: InviteRequest): Promise<InviteResponse> =
     return res.data
 }
 
-export const acceptInvite = async (invite_token: string, name: string, password: string): Promise<TokenResponse> => {
-    const res = await axiosCRM.post("/auth/accept-invite", null, {
-        params: { invite_token, name, password }
-    })
+// El usuario ya debe estar autenticado (Authorization header); el backend lo une
+// a la organización del token y no emite tokens nuevos.
+export const acceptInvite = async (invite_token: string): Promise<AcceptInviteResponse> => {
+    const res = await axiosCRM.post("/auth/accept-invite", { invite_token })
     return res.data
 }
 
