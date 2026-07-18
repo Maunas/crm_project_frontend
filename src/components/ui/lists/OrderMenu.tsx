@@ -117,13 +117,13 @@ export const OrderMenu = ({ id = "order-menu", onOrderChange, options, canFilter
 
 interface OrderSearchProps {
     handleSearchChange: (search?: string | undefined, searchField?: string | undefined) => void,
-    searchOptions: {
+    searchOptions?: {
         name: string;
         label: string;
         selectOptions?: { label: string, value: string }[]
     }[],
     handleOrderChange: (orderBy?: string | undefined, asc?: boolean, onlyActive?: boolean) => void,
-    orderOptions: {
+    orderOptions?: {
         name: string;
         label: string;
     }[],
@@ -132,7 +132,7 @@ interface OrderSearchProps {
     hiddenSelector?: boolean,
 }
 
-export const OrderSearchMenu = ({ searchOptions, handleSearchChange, orderOptions, handleOrderChange, size = "small", defaultValues, hiddenSelector = false }: OrderSearchProps) => {
+export const OrderSearchMenu = ({ searchOptions = [], handleSearchChange, orderOptions = [], handleOrderChange, size = "small", defaultValues, hiddenSelector = false }: OrderSearchProps) => {
     return (
         <Stack direction="row" spacing={2} useFlexGap sx={{ alignItems: "center", justifyContent: "end", justifySelf: "end", ml: "auto", flexWrap: "wrap", py: 1 }}>
             <SearchInput onSearch={handleSearchChange} id='nom-item-search' options={searchOptions} size={size} defaultValues={defaultValues} hiddenSelector={hiddenSelector} />

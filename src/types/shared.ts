@@ -28,7 +28,7 @@ export interface Metadata {
   active: boolean;
   created_by: number;
   updated_by?: number;
-  creator?: UserData;
+  creator: UserData;
   updater?: UserData | null;
 }
 

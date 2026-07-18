@@ -59,6 +59,7 @@ export const SearchInput = ({ id = "search", onSearch, options = [], size = "med
             setSearch(undefined)
             onSearch(undefined, newField)
         } else if (search) {
+            alert(search)
             onSearch(search, newField)
         }
     }
@@ -104,7 +105,7 @@ export const SearchInput = ({ id = "search", onSearch, options = [], size = "med
                     onChange={(e) => debouncedFunction(() => handleSearchChange(e.target.value))}
                     size={size}
                     fullWidth
-                    defaultValue={defaultValues?.search}
+                    defaultValue={search}
                     slotProps={{
                         input: {
                             sx: {
