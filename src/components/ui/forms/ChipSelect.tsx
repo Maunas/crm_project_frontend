@@ -49,7 +49,7 @@ const ChipSelectRoot = styled(Select, {
                 whiteSpace: "nowrap",
                 textOverflow: "ellipsis",
                 minWidth: 0,
-                maxWidth: size === "small" ? "5rem" : "6rem",
+                maxWidth: size === "small" ? "4rem" : "5rem",
             },
         },
         theme.applyStyles("dark", {

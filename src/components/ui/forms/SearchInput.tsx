@@ -1,5 +1,5 @@
-import { useLayoutEffect, useRef, useState } from 'react'
-import { Box, MenuItem, TextField } from '@mui/material';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { Autocomplete, Box, MenuItem, TextField } from '@mui/material';
 import ChipSelect from './ChipSelect'
 import { useDebounce } from 'src/hooks/useDebounce';
 import { ChipTooltip } from '../details/ChipTooltip';
@@ -8,7 +8,11 @@ import type { SearchParams } from 'src/types/shared';
 interface SearchInputProps {
     id?: string,
     onSearch: (search?: string, searchFields?: string) => void,
-    options?: { label: string, name: string }[],
+    options?: {
+        name: string;
+        label: string;
+        searchOptions?: { label: string, value: string }[]
+    }[],
     size?: "medium" | "small",
     defaultValues?: SearchParams,
     hiddenSelector?: boolean,
@@ -18,6 +22,11 @@ export const SearchInput = ({ id = "search", onSearch, options = [], size = "med
 
     const [search, setSearch] = useState<string | undefined>(defaultValues?.search)
     const [searchFields, setSearchFields] = useState<string | undefined>(defaultValues?.search_fields ?? (options.length > 0 ? options[0].name : undefined))
+
+    const selectedOption = useMemo(
+        () => options?.find(o => o.name === searchFields),
+        [options, searchFields]
+    )
 
     const selectorRef = useRef<HTMLDivElement>(null)
     const [selectorWidth, setSelectorWidth] = useState<number>(0)
@@ -34,30 +43,76 @@ export const SearchInput = ({ id = "search", onSearch, options = [], size = "med
         onSearch(searchValue, searchFields)
     }
 
+    const handleSelectSearchOption = (newValue: string | null) => {
+        setSearch(newValue ?? undefined)
+        onSearch(newValue ?? undefined, searchFields)
+    }
+
     const { debouncedFunction } = useDebounce()
 
     const handleFieldChange = (newField: string) => {
         setSearchFields(newField)
-        if (search) onSearch(search, newField)
+        //Si el nuevo campo tiene subopciones, se borra el valor para evitar  comportamiento inesperado
+        //Si no, busca el mismo valor en el nuevo campo
+        const newOption = options?.find(o => o.name === newField)
+        if (newOption?.searchOptions) {
+            setSearch(undefined)
+            onSearch(undefined, newField)
+        } else if (search) {
+            onSearch(search, newField)
+        }
     }
 
     return (
         <Box sx={{ position: "relative", maxWidth: "20rem", minWidth: "15rem", flex: 1 }}>
-            <TextField
-                id={`${id}-input`}
-                label="Buscar"
-                onChange={(e) => debouncedFunction(() => handleSearchChange(e.target.value))}
-                size={size}
-                fullWidth
-                defaultValue={defaultValues?.search}
-                slotProps={{
-                    input: {
-                        sx: {
-                            pr: `${selectorWidth}px`
+            {selectedOption?.searchOptions ?
+                <Autocomplete
+                    options={selectedOption.searchOptions}
+                    getOptionLabel={(option) => option.label}
+                    isOptionEqualToValue={(option, value) => option.value === value.value}
+                    onChange={(_, newValue) => handleSelectSearchOption(newValue?.value ?? null)}
+                    value={selectedOption.searchOptions.find(o => o.value === search) ?? null}
+                    forcePopupIcon={false}
+                    slotProps={{
+                        clearIndicator: {
+                            sx: {
+                                mr: `${selectorWidth}px`,
+                            }
                         }
-                    }
-                }}
-            />
+                    }}
+                    renderInput={(params) => (
+                        <TextField
+                            {...params}
+                            label="Buscar"
+                            size={size}
+                            slotProps={{
+                                ...params.slotProps,
+                                input: {
+                                    ...params.slotProps?.input,
+                                    sx: { pr: `calc(${selectorWidth}px + 2rem) !important` },
+                                }
+                            }}
+                        />
+                    )}
+                    size={size}
+                    fullWidth
+                />
+                :
+                <TextField
+                    id={`${id}-input`}
+                    label="Buscar"
+                    onChange={(e) => debouncedFunction(() => handleSearchChange(e.target.value))}
+                    size={size}
+                    fullWidth
+                    defaultValue={defaultValues?.search}
+                    slotProps={{
+                        input: {
+                            sx: {
+                                pr: `${selectorWidth}px`,
+                            }
+                        }
+                    }}
+                />}
             {!hiddenSelector &&
                 <Box ref={selectorRef} sx={{ position: "absolute", top: "50%", right: ".5rem", transform: "translateY(-50%)" }}>
                     {options.length === 1 ?

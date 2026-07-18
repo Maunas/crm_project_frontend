@@ -225,8 +225,8 @@ export const BoolValue = memo(({ value, size = "medium" }: BoolValueProps) => {
     return (
         <CustomChip chipColor={boolValue ? "success" : "error"} size={size} sx={{ fontWeight: "bold" }}
             label={boolValue ?
-                <><CheckIcon fontSize={size} /> Si </>
-                : <><CloseIcon fontSize={size} /> No</>
+                <Stack direction="row" spacing={.5}><CheckIcon fontSize={size} /><span> Si</span></Stack>
+                : <Stack direction="row" spacing={.5}><CloseIcon fontSize={size} /><span> No</span></Stack>
             } />
     )
 })

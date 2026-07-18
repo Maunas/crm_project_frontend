@@ -120,6 +120,7 @@ interface OrderSearchProps {
     searchOptions: {
         name: string;
         label: string;
+        selectOptions?: { label: string, value: string }[]
     }[],
     handleOrderChange: (orderBy?: string | undefined, asc?: boolean, onlyActive?: boolean) => void,
     orderOptions: {
@@ -133,7 +134,7 @@ interface OrderSearchProps {
 
 export const OrderSearchMenu = ({ searchOptions, handleSearchChange, orderOptions, handleOrderChange, size = "small", defaultValues, hiddenSelector = false }: OrderSearchProps) => {
     return (
-        <Stack direction="row" spacing={2} useFlexGap sx={{ alignItems: "center", justifyContent: "end", flexGrow: 1, flexWrap: "wrap", py: 1 }}>
+        <Stack direction="row" spacing={2} useFlexGap sx={{ alignItems: "center", justifyContent: "end", justifySelf: "end", ml: "auto", flexWrap: "wrap", py: 1 }}>
             <SearchInput onSearch={handleSearchChange} id='nom-item-search' options={searchOptions} size={size} defaultValues={defaultValues} hiddenSelector={hiddenSelector} />
             <Box>
                 <OrderMenu onOrderChange={handleOrderChange} id='nom-item-order-menu' options={orderOptions} canFilterActive defaultValues={defaultValues} />
