@@ -21,6 +21,6 @@ export interface NomenclatorItemPost {
 export interface NomenclatorItem extends Omit<NomenclatorItemPost, "parent_item_id"> {
   id: number;
   organization_id: number | null;
-  parent_item: NomenclatorItem
+  parent_item: NomenclatorItem | null
 }
 export interface NomenclatorItemDetailed extends NomenclatorItem, Metadata { }

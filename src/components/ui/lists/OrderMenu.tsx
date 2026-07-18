@@ -9,11 +9,11 @@ interface OrderMenuProps {
     id?: string,
     onOrderChange: (orderBy?: string, asc?: boolean, active?: boolean) => void,
     options: { label: string, name: string }[],
-    canFilterActive?: boolean,
+    noFilterActive?: boolean,
     defaultValues?: OrderParams & { only_active?: boolean }
 }
 
-export const OrderMenu = ({ id = "order-menu", onOrderChange, options, canFilterActive = false, defaultValues }: OrderMenuProps) => {
+export const OrderMenu = ({ id = "order-menu", onOrderChange, options, noFilterActive = false, defaultValues }: OrderMenuProps) => {
 
     const [orderMenu, setOrderMenu] = useState<HTMLButtonElement | null>(null)
     const open = Boolean(orderMenu);
@@ -100,7 +100,7 @@ export const OrderMenu = ({ id = "order-menu", onOrderChange, options, canFilter
                         </ListItemIcon>
                         Orden Descendente
                     </ListItemButton>
-                    {canFilterActive && <>
+                    {!noFilterActive && <>
                         <Divider sx={{ my: .5 }} />
                         <ListItemButton onClick={handleActiveClick}>
                             <ListItemIcon>
@@ -130,14 +130,15 @@ interface OrderSearchProps {
     size?: "small" | "medium",
     defaultValues?: OrderSearchParams
     hiddenSelector?: boolean,
+    noFilterActive?: boolean
 }
 
-export const OrderSearchMenu = ({ searchOptions = [], handleSearchChange, orderOptions = [], handleOrderChange, size = "small", defaultValues, hiddenSelector = false }: OrderSearchProps) => {
+export const OrderSearchMenu = ({ searchOptions = [], handleSearchChange, orderOptions = [], handleOrderChange, size = "small", defaultValues, hiddenSelector = false, noFilterActive = false }: OrderSearchProps) => {
     return (
         <Stack direction="row" spacing={2} useFlexGap sx={{ alignItems: "center", justifyContent: "end", justifySelf: "end", ml: "auto", flexWrap: "wrap", py: 1 }}>
             <SearchInput onSearch={handleSearchChange} id='nom-item-search' options={searchOptions} size={size} defaultValues={defaultValues} hiddenSelector={hiddenSelector} />
             <Box>
-                <OrderMenu onOrderChange={handleOrderChange} id='nom-item-order-menu' options={orderOptions} canFilterActive defaultValues={defaultValues} />
+                <OrderMenu onOrderChange={handleOrderChange} id='nom-item-order-menu' options={orderOptions} noFilterActive={noFilterActive} defaultValues={defaultValues} />
             </Box>
         </Stack>
     )

@@ -84,12 +84,12 @@ export const LeadComments = ({ leadId }: { leadId: number }) => {
     const [deletingCom, setDeletingCom] = useState<LeadComment | null>(null)
 
     const searchOptions = useMemo(() => {
-        if (!comments) return SEARCH_BY_UPDATER_DEFAULT
+        if (!comments || comments?.items.length === 0) return SEARCH_BY_UPDATER_DEFAULT
         const users = new Map()
         //Busca a los usuarios que han escrito comentarios
         comments?.items.forEach((comment) => {
             const updater = comment.updater ?? comment.creator
-            if (!users.has(updater.id)) {
+            if (updater && !users.has(updater.id)) {
                 users.set(updater.id, updater.name)
             }
         })
