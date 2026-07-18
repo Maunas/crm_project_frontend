@@ -22,10 +22,15 @@ interface LeadFieldDetailProps {
     updateEntity: (mode: string, entity: LeadFieldDetailed) => void,
     closeSidebar: () => void,
     leadFieldListLength?: number,
+    leadFields?: LeadFieldDetailed[] | null,
     campaignName: string
 }
 
-export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeSidebar, campaignName, leadFieldListLength = 0 }: LeadFieldDetailProps) => {
+export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeSidebar, campaignName, leadFieldListLength = 0, leadFields }: LeadFieldDetailProps) => {
+
+    const dependsOnField = leadField.depends_on_field_id
+        ? leadFields?.find(field => field.id === leadField.depends_on_field_id)
+        : undefined
 
     const handleActive = async (field: LeadFieldDetailed | null) => {
         if (!field || !field.id) return
@@ -132,6 +137,12 @@ export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeS
                                         }
                                     </CodeBox>
                                 </Paper>
+                            </Stack>
+                        }
+                        {dependsOnField &&
+                            <Stack spacing={1} sx={{ alignItems: "start" }}>
+                                <Typography variant="body1" sx={{ fontWeight: 500 }}>Depende del Campo</Typography>
+                                <CustomChip chipColor="secondary" label={dependsOnField.name} />
                             </Stack>
                         }
                     </Stack>

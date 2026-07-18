@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { LeadFormBool, LeadFormDate, LeadFormFile, LeadFormNumber, LeadFormText } from "../shared/LeadFormFields"
-import { LeadFormRelatedLead, LeadFormSelector } from "../shared/LeadFormMultipleFields"
+import { DependentLeadFormSelector, LeadFormRelatedLead, LeadFormSelector } from "../shared/LeadFormMultipleFields"
 import LoadingScreenWrapper from "src/components/ui/feedback/LoadingScreen"
 import { FormErrorMessage } from "shared/ui/forms/FormFeedback"
 import CommonButton from "shared/ui/buttons/CommonButton"
@@ -13,7 +13,7 @@ import { getNomenclatorItems } from "features/nomenclators/nomenclatorService"
 import { getLeadFields } from "features/leadFields/leadFieldServices"
 import { createFormDataFromLead, setLeadFormErrors, updateSelectorOptions } from "../leadUtils"
 import { getListField } from "src/utils/lists"
-import { useFieldArray, useForm, type Control, type Path, type UseFormRegister } from "react-hook-form"
+import { useFieldArray, useForm, type Control, type Path, type UseFormRegister, type UseFormSetValue } from "react-hook-form"
 import { Accordion, AccordionDetails, Grid, ButtonGroup, Stack, Typography, Box } from "@mui/material"
 import { ExpandMore } from "@mui/icons-material"
 import { getLeadFormFieldsBySections, orderFieldsBySections } from "src/features/leadFields/leadFieldUtils"
@@ -48,13 +48,20 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
         values: []
     }), [campaignId])
 
-    const { register, control, handleSubmit, setError, reset, formState: { errors } } = useForm<LeadPostForm>({ defaultValues })
+    const { register, control, handleSubmit, setError, reset, setValue, formState: { errors } } = useForm<LeadPostForm>({ defaultValues })
 
     useEffect(() => {
         reset(defaultValues)
     }, [defaultValues, reset])
 
     const { fields, replace } = useFieldArray({ name: "values", control })
+
+    //Mapa de field_id -> path del valor en el fieldArray, para que un campo dependiente pueda "observar" a su padre
+    const fieldIdToValuePath = useMemo(() => {
+        const map = new Map<number, Path<LeadPostForm>>()
+        fields.forEach((f, idx) => map.set(f.field_id, `values.${idx}.value` as Path<LeadPostForm>))
+        return map
+    }, [fields])
 
     const submit = useCallback((data: LeadPostForm) => {
         return onSubmit(createFormDataFromLead(data))
@@ -175,6 +182,10 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
                                                         leadField={sectField.field.fieldData}
                                                         relatedLeads={relatedLeads.get(sectField.field?.fieldData?.related_campaign_id ?? -1)}
                                                         selectors={selectors.get(sectField.field?.fieldData?.nomenclator_id ?? -1)}
+                                                        parentName={sectField.field.fieldData.depends_on_field_id
+                                                            ? fieldIdToValuePath.get(sectField.field.fieldData.depends_on_field_id)
+                                                            : undefined}
+                                                        setValue={setValue}
                                                         errorMessage={errors?.values?.[sectField.globalIdx]?.value?.message} />
                                                 </Grid>
                                             )}
@@ -210,10 +221,13 @@ interface LeadFormFieldTypeProps {
     leadField: LeadField,
     relatedLeads?: Lead[],
     selectors?: NomenclatorItem[],
+    //Path del valor del campo padre (si este campo depende de otro, ver depends_on_field_id) y setValue para poder limpiarlo
+    parentName?: Path<LeadPostForm>,
+    setValue?: UseFormSetValue<LeadPostForm>,
     errorMessage?: string
 }
 
-const LeadFormFieldType = ({ register, control, name, leadField, relatedLeads, selectors, errorMessage }: LeadFormFieldTypeProps) => {
+const LeadFormFieldType = ({ register, control, name, leadField, relatedLeads, selectors, parentName, setValue, errorMessage }: LeadFormFieldTypeProps) => {
 
     const label = leadField.name
     const typeCode = leadField.field_type_code
@@ -228,6 +242,11 @@ const LeadFormFieldType = ({ register, control, name, leadField, relatedLeads, s
             return (<LeadFormFile control={control} name={name} label={label} required={required}
                 errorMessage={errorMessage} showAdornment subtype={subtypeCode} />)
         case "SELECTOR":
+            //Si depende de otro campo, sus opciones se resuelven en cascada a partir del valor elegido en el padre
+            if (leadField.depends_on_field_id && parentName && setValue) {
+                return (<DependentLeadFormSelector control={control} name={name} parentName={parentName} setValue={setValue}
+                    label={label} subtype={subtypeCode} required={required} errorMessage={errorMessage} showAdornment />)
+            }
             return (<LeadFormSelector control={control} name={name} options={selectors}
                 label={label} subtype={subtypeCode} required={required} errorMessage={errorMessage} showAdornment />)
         case "BOOL":

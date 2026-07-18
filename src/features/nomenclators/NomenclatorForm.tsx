@@ -65,7 +65,7 @@ export const NomenclatorForm = ({ existingNom, submit, onCancel }: NomenclatorPr
 
     const defaultValues = useMemo(() => ({
         name: existingNom?.name ?? null,
-        parent_nomenclator_id: existingNom?.parent_nomenclator?.id ?? null,
+        parent_nomenclator_ids: existingNom?.parent_nomenclators?.map(parent => parent.id) ?? [],
     }), [existingNom])
 
     const { control, handleSubmit, reset, formState: { errors }, setError } = useForm<NomenclatorPost>({ defaultValues })
@@ -75,6 +75,9 @@ export const NomenclatorForm = ({ existingNom, submit, onCancel }: NomenclatorPr
     useEffect(() => {
         getNomenclators({ detailed: false, only_active: true, page_size: 0 }).then(res => setNomenclators(res.items))
     }, [])
+
+    //No puede ser padre de si mismo
+    const parentOptions = useMemo(() => nomenclators.filter(nom => nom.id !== existingNom?.id), [nomenclators, existingNom?.id])
 
     useEffect(() => { reset(defaultValues) }, [reset, defaultValues])
 
@@ -108,14 +111,12 @@ export const NomenclatorForm = ({ existingNom, submit, onCancel }: NomenclatorPr
                             <ControlledTextInput name="name" control={control} label="Nombre"
                                 required errorMessage={errors.name?.message} />
                         </Grid>
-                        {!existingNom &&
-                            <Grid size="grow" sx={{ minWidth: "20rem" }}>
-                                <ControlledAutocomplete control={control}
-                                    options={nomenclators} label="Nomenclador Padre" name="parent_nomenclator_id"
-                                    getOptionLabel={option => option.name!} getOptionKey={option => `${option.id}`} returnField="id"
-                                    errorMessage={errors?.parent_nomenclator_id?.message} />
-                            </Grid>
-                        }
+                        <Grid size="grow" sx={{ minWidth: "20rem" }}>
+                            <ControlledAutocomplete control={control} multiple
+                                options={parentOptions} label="Nomencladores Padre" name="parent_nomenclator_ids"
+                                getOptionLabel={option => option.name!} getOptionKey={option => `${option.id}`} returnField="id"
+                                errorMessage={errors?.parent_nomenclator_ids?.message} />
+                        </Grid>
                     </Grid>
                     {errors?.root &&
                         <FormErrorMessage >{errors?.root?.message}</FormErrorMessage>

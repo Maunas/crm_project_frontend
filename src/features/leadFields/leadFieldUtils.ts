@@ -15,6 +15,9 @@ export const getFieldDataByType = (data: LeadFieldPost, isTemplate = false, isMa
         is_visible: data.is_visible,
         lead_field_section_id: data.lead_field_section_id,
         default_value: data.default_value,
+        //A diferencia del resto de los campos de tipo/nomenclador, esta dependencia se puede
+        //modificar también en la edición, no solo al crear (ver campos_personalizados.md §11)
+        depends_on_field_id: data.depends_on_field_id ?? null,
     };
 
     //Si la máscara es por template, devuelve el código unicamente

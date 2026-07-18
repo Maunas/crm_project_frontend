@@ -121,7 +121,7 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
 
     const isBlocked = !nomenclator.organization_id && activeOrg?.id !== 0
 
-    const orderOptions = useMemo(() => ORDER_NOM_ITEM_FIELDS(Boolean(nomenclator.parent_nomenclator)), [nomenclator.parent_nomenclator])
+    const orderOptions = useMemo(() => ORDER_NOM_ITEM_FIELDS(Boolean(nomenclator.parent_nomenclators)), [nomenclator.parent_nomenclators])
 
     return (
         <>
@@ -154,11 +154,11 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
                                                     <Stack spacing={.5} direction="row" sx={{ alignItems: "center" }}>
                                                         <EnabledIcon active={nom.active} size="small" />
                                                         <Stack spacing={-.5}>
-                                                            {nom.parent_item &&
-<Typography variant="caption" color="textSecondary" sx={{ textTransform: "uppercase", wordBreak: "break-word" }}>
-                                                                    {nom.parent_item.value}
+                                                            {nom.parent_items && nom.parent_items.length > 0 &&
+                                                                <Typography variant="caption" color="textSecondary" sx={{ fontWeight: 500, textTransform: "uppercase", wordBreak: "break-word" }}>
+                                                                    {nom.parent_items.map(parent => parent.value).join(", ")}
                                                                 </Typography>}
-                                                                <Typography sx={{ wordBreak: "break-word" }}>{nom.value}</Typography>
+                                                            <Typography sx={{ wordBreak: "break-word" }}>{nom.value}</Typography>
                                                         </Stack>
                                                     </Stack>
                                                 }

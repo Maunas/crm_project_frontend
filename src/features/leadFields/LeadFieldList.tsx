@@ -259,14 +259,14 @@ const LeadFieldSidebar = ({ mode, entity, handleSidebar, closeSidebar, updateEnt
     const content = useMemo(() => ({
         "DETAILS_FIELD":
             <LeadFieldDetail campaignName={campaign.name} leadField={entity as LeadFieldDetailed} leadFieldListLength={leadFields?.length ?? 0}
-                closeSidebar={closeSidebar} handleSidebar={handleSidebar} updateEntity={updateEntity} />
+                leadFields={leadFields} closeSidebar={closeSidebar} handleSidebar={handleSidebar} updateEntity={updateEntity} />
         ,
         "CREATE_FIELD":
-            <LeadFieldFormSidebar campaign={campaign} closeSidebar={closeSidebar} handleSidebar={handleSidebar}
+            <LeadFieldFormSidebar campaign={campaign} leadFields={leadFields} closeSidebar={closeSidebar} handleSidebar={handleSidebar}
                 updateEntityOnList={(entity) => updateEntity(mode!, entity)} />
         ,
         "UPDATE_FIELD":
-            <LeadFieldFormSidebar existingLF={entity as LeadFieldDetailed} campaign={campaign}
+            <LeadFieldFormSidebar existingLF={entity as LeadFieldDetailed} campaign={campaign} leadFields={leadFields}
                 updateEntityOnList={(entity) => updateEntity(mode!, entity)}
                 closeSidebar={closeSidebar} handleSidebar={handleSidebar} />
         ,
@@ -274,7 +274,7 @@ const LeadFieldSidebar = ({ mode, entity, handleSidebar, closeSidebar, updateEnt
             updateEntityOnList={(entity) => updateEntity("UPDATE_FIELD", entity)}
             handleSidebar={handleSidebar} />
         ,
-    }), [campaign, closeSidebar, entity, handleSidebar, leadFields?.length, mode, updateEntity])
+    }), [campaign, closeSidebar, entity, handleSidebar, leadFields, mode, updateEntity])
 
     const contentMode = mode as keyof typeof content
     return content[contentMode]
