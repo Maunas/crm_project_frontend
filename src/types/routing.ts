@@ -1,0 +1,141 @@
+import type { Metadata } from "./shared";
+
+// -----------------------------------------------------------------------
+// Constantes (reflejan app/models/lead_routing_policy.py)
+// -----------------------------------------------------------------------
+
+export const NATIVE_FIELDS = [
+  "assigned_to_user_id",
+  "team_id",
+  "created_at",
+  "updated_at",
+  "campaign_id",
+  "current_state_id",
+] as const;
+export type NativeField = typeof NATIVE_FIELDS[number];
+
+export const NATIVE_FIELD_LABELS: Record<NativeField, string> = {
+  assigned_to_user_id: "Usuario Asignado",
+  team_id: "Equipo Actual",
+  created_at: "Fecha de Creación",
+  updated_at: "Fecha de Última Modificación",
+  campaign_id: "Campaña",
+  current_state_id: "Estado Actual",
+};
+
+// Campos nativos que solo soportan eq/neq (no rangos)
+export const NATIVE_ID_FIELDS: NativeField[] = [
+  "assigned_to_user_id", "team_id", "campaign_id", "current_state_id",
+];
+// Campos nativos de fecha (soportan rango)
+export const NATIVE_DATE_FIELDS: NativeField[] = ["created_at", "updated_at"];
+
+export const ROUTING_FORBIDDEN_FIELD_TYPES = ["FILE", "URL", "ADDRESS", "RICH_TEXT", "TAGS", "PASSWORD"];
+
+// Operadores válidos según tipo de campo dinámico (o categoría nativa)
+export const OPERATOR_RULES: Record<string, string[]> = {
+  STRING: ["eq", "neq", "like", "ilike"],
+  INT: ["eq", "neq", "gt", "lt", "gte", "lte"],
+  NUMBER: ["eq", "neq", "gt", "lt", "gte", "lte"],
+  MONEY: ["eq", "neq", "gt", "lt", "gte", "lte"],
+  RATING: ["eq", "neq", "gt", "lt", "gte", "lte"],
+  DATE: ["eq", "neq", "gt", "lt", "gte", "lte"],
+  DATE_TIME: ["eq", "neq", "gt", "lt", "gte", "lte"],
+  BOOL: ["eq", "neq"],
+  SELECTOR: ["eq", "eq_strict", "neq", "in", "not_in"],
+  CHECKBOX: ["eq", "eq_strict", "neq", "in", "not_in"],
+  CALCULATED: ["eq", "neq", "gt", "lt", "gte", "lte", "like", "ilike"],
+  _NATIVE_DATE: ["eq", "neq", "gt", "lt", "gte", "lte"],
+  _NATIVE_ID: ["eq", "neq"],
+};
+
+export const OPERATOR_LABELS: Record<string, string> = {
+  eq: "Igual a (=)",
+  eq_strict: "Igual exacto (conjunto)",
+  neq: "Distinto de (!=)",
+  gt: "Mayor que (>)",
+  lt: "Menor que (<)",
+  gte: "Mayor o igual (>=)",
+  lte: "Menor o igual (<=)",
+  like: "Contiene texto",
+  ilike: "Contiene texto (sin mayúsculas)",
+  in: "Está en la lista",
+  not_in: "No está en la lista",
+};
+
+export const VALID_RANGE_OPS_MIN = ["gt", "gte"];
+export const VALID_RANGE_OPS_MAX = ["lt", "lte"];
+export const LIST_OPERATORS = ["in", "not_in", "eq_strict"];
+
+export type ConditionMode = "simple" | "list" | "range";
+
+// -----------------------------------------------------------------------
+// Condición
+// -----------------------------------------------------------------------
+
+export interface LeadRoutingConditionPost {
+  position: number;
+  lead_field_id?: number | null;
+  native_field?: NativeField | null;
+
+  operator?: string | null;
+  value_str?: string | null;
+
+  value_list?: string[] | null;
+
+  operator_min?: string | null;
+  value_min?: string | null;
+  operator_max?: string | null;
+  value_max?: string | null;
+}
+
+export interface LeadRoutingCondition extends LeadRoutingConditionPost {
+  id: number;
+  policy_id: number;
+}
+
+// -----------------------------------------------------------------------
+// Política
+// -----------------------------------------------------------------------
+
+export interface LeadRoutingPolicyBase {
+  name: string;
+  description?: string | null;
+  priority: number;
+  logical_operator: "AND" | "OR";
+  target_team_id: number;
+  campaign_id?: number | null;
+}
+
+export interface LeadRoutingPolicyPost extends LeadRoutingPolicyBase {
+  conditions: LeadRoutingConditionPost[];
+}
+
+export interface LeadRoutingPolicyUpdate extends Partial<LeadRoutingPolicyBase> {
+  conditions?: LeadRoutingConditionPost[];
+}
+
+export interface LeadRoutingPolicy extends LeadRoutingPolicyBase {
+  id: number;
+  organization_id: number;
+}
+
+export interface LeadRoutingPolicyDetailed extends LeadRoutingPolicy, Metadata {
+  conditions: LeadRoutingCondition[];
+}
+
+// -----------------------------------------------------------------------
+// Validate (sin persistir)
+// -----------------------------------------------------------------------
+
+export interface LeadRoutingPolicyValidateRequest {
+  campaign_id?: number | null;
+  target_team_id: number;
+  logical_operator: "AND" | "OR";
+  conditions: LeadRoutingConditionPost[];
+}
+
+export interface LeadRoutingPolicyValidateResponse {
+  valid: boolean;
+  errors: string[];
+}

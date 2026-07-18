@@ -18,6 +18,7 @@ const regularOptions = [
   { name: "Dashboard", icon: <DashboardIcon />, link: "/dashboard" },
   { name: "Leads", icon: <PersonIcon />, link: "/leads" },
   { name: "Campañas", icon: <WorkIcon />, link: "/campaigns" },
+  { name: "Equipos", icon: <GroupIcon />, link: "/teams" },
   { name: "Organizaciones", icon: <StoreIcon />, link: "/organizations" },
   { name: "Nomencladores", icon: <LabelIcon />, link: "/nomenclators" },
   { name: "Propiedades de Organización", icon: <TuneIcon />, link: "/org-properties" },
