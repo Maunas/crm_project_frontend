@@ -2,29 +2,46 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { CustomTimelineItem } from "shared/ui/lists/CustomTimelineItem"
 import { CustomListItemAvatar } from "shared/ui/lists/CustomListItem"
 import PaginationComponent from "shared/ui/lists/PaginationComponent"
+import LoadingScreenWrapper from "shared/ui/feedback/LoadingScreen"
 import { MetadataShort } from "shared/ui/details/DetailsMetadata"
-import LoadingScreenWrapper from "src/components/ui/feedback/LoadingScreen"
+import { OrderSearchMenu } from "shared/ui/lists/OrderMenu"
 import CustomChip from "shared/ui/details/CustomChip"
+import { useOrderSeachList } from "src/hooks/useOrderSearchLists"
 import { useListPagination } from "src/hooks/useListPagination"
 import { useLoading } from "src/hooks/useLoading"
-import type { ColorTypes } from "src/types/mui-theme.d"
-import type { Paginable } from "src/types/shared"
 import type { LeadAudit, LeadDetailed } from "src/types/leads"
+import type { ColorTypes } from "src/types/mui-theme.d"
+import type { LeadState } from "src/types/leadFlow"
+import type { Paginable } from "src/types/shared"
+import { getLeadFlowStates } from "features/leadFlows/leadFlowServices/FlowService"
 import { getAudit } from "./leadActivitiesService"
 import { showCommonErrorToast } from "src/utils/feedback"
 import { Avatar, Box, Button, Card, CardActionArea, CardActions, CardContent, CardHeader, Collapse, Divider, Stack, Typography } from "@mui/material"
 import { timelineItemClasses } from "@mui/lab/TimelineItem"
 import Timeline from '@mui/lab/Timeline';
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward"
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward"
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import WatchLaterIcon from '@mui/icons-material/WatchLater';
 import EditIcon from "@mui/icons-material/Edit"
 import AddIcon from "@mui/icons-material/Add"
-import AccountTreeIcon from '@mui/icons-material/AccountTree';
-import type { LeadState } from "src/types/leadFlow"
-import { getLeadFlowStates } from "src/features/leadFlows/leadFlowServices/FlowService"
+import { NoItemsMessage } from "src/components/ui/lists/NoItemsMessage"
 
 const MAX_ITEMS_NUM = 3
+
+const AUDIT_TYPES = {
+  "FIELDS_UPDATED": { icon: <EditIcon />, color: "info", label: "Actualización de datos", value: "FIELDS_UPDATED" },
+  "LEAD_CREATED": { icon: <AddIcon />, color: "success", label: "Lead Creado", value: "LEAD_CREATED" },
+  "STATE_CHANGED": { icon: <AccountTreeIcon />, color: "warning", label: "Cambio de Estado", value: "STATE_CHANGED" },
+  "DEFAULT": { icon: <InfoOutlinedIcon />, color: "error", label: "Otros", value: "DEFAULT" }
+}
+
+const SEARCH_AUDIT_FIELDS = [
+  { name: "activity_type", label: "Tipo", searchOptions: Array.from(Object.values(AUDIT_TYPES)) },
+]
+const ORDER_AUDIT_FIELDS = [
+  { name: "activity_type", label: "Tipo de Actividad" },
+]
 
 export const LeadAuditList = ({ lead, reloadAudit }: { lead: LeadDetailed, reloadAudit: number }) => {
 
@@ -36,21 +53,32 @@ export const LeadAuditList = ({ lead, reloadAudit }: { lead: LeadDetailed, reloa
       .then(res => setStatesList(res.items))
   }, [lead.current_state.lead_flow_id])
 
-  const { fetchPage, pageSize, pageComponentProps } = useListPagination(audit, 8)
+  const { fetchPage, pageSize, pageComponentProps, goToPageOne } = useListPagination(audit, 8)
+  const { fetchParams, handleOrderChange, handleSearchChange } = useOrderSeachList()
+
+  const onOrderChange = useCallback((orderBy?: string, asc?: boolean, onlyActive?: boolean) => {
+    handleOrderChange(orderBy, asc, onlyActive)
+    goToPageOne()
+  }, [handleOrderChange, goToPageOne])
+
+  const onSearchChange = useCallback((search?: string, searchField?: string) => {
+    handleSearchChange(search, searchField)
+    goToPageOne()
+  }, [handleSearchChange, goToPageOne])
 
   const fetchAuditList = useCallback((leadId: number, fetchPage: number, pageSize: number) => {
-    return getAudit({ lead_id: leadId, page: fetchPage, page_size: pageSize })
+    return getAudit({ lead_id: leadId, page: fetchPage, page_size: pageSize, ...fetchParams })
       .then(setAudit)
       .catch(e => showCommonErrorToast(e))
-  }, [])
+  }, [fetchParams])
 
   const { fnWithLoading: fetchAuditLoad, loading } = useLoading(fetchAuditList)
 
   useEffect(() => {
     if (!lead.id) return
     fetchAuditLoad(lead.id, fetchPage, pageSize)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lead.id, fetchPage, pageSize])
+
+  }, [lead.id, fetchPage, pageSize, fetchAuditLoad])
 
   //Recarga cuando hay un cambio. No realiza cuando reloadAudit === 0 (Primera carga).
   useEffect(() => {
@@ -71,113 +99,114 @@ export const LeadAuditList = ({ lead, reloadAudit }: { lead: LeadDetailed, reloa
   }
 
   return (
-    <LoadingScreenWrapper loading={loading}>
-      <Stack spacing={2} sx={{ height: "100%" }}>
-        <Timeline sx={{
-          flexGrow: 1,
-          [`& .${timelineItemClasses.root}:before`]: {
-            flex: 0,
-            padding: 0,
-          },
-        }}>
-          {audit?.items.map((item, idx) => {
-            const stateChangeFromObject = item.activity_type !== "STATE_CHANGED" ? undefined : statesList?.find(i => i.id === item.details.from_state_id)
-            const stateChangeToObject = item.activity_type !== "STATE_CHANGED" ? undefined : statesList?.find(i => i.id === item.details.to_state_id)
-            return (
-              <CustomTimelineItem selected={idx === showItems} last={idx === audit.items.length - 1} key={item.id}>
-                <Card raised>
-                  <CardActionArea onClick={() => handleShowItems(idx)} title="Ver detalle">
-                    <LeadAuditHeader activityType={item.activity_type}
-                      message={item.details.message ?? item.details.notes ??
-                        (item.details?.changes && `${Object.values(item.details?.changes ?? {}).length} cambios`)} />
-                  </CardActionArea>
-                  <Collapse in={idx === showItems} timeout="auto" unmountOnExit>
-                    <Divider />
-                    {item?.details?.changes &&
-                      <CardContent sx={{ py: 1 }}>
-                        <Stack spacing={1} useFlexGap sx={{ alignItems: "start" }}>
-                          {Object.entries(item.details.changes).map(([field_id, change], idx) => {
-                            if (!showMoreItems && idx >= MAX_ITEMS_NUM) return null
+    <Stack spacing={2} sx={{ height: "100%" }}>
+      <OrderSearchMenu
+        searchOptions={SEARCH_AUDIT_FIELDS}
+        handleSearchChange={onSearchChange}
+        orderOptions={ORDER_AUDIT_FIELDS}
+        handleOrderChange={onOrderChange}
+      />
+      <LoadingScreenWrapper loading={loading}>
+        {audit?.items && audit?.items.length > 0 ?
+          <>
+            <Timeline sx={{
+              flexGrow: 1,
+              [`& .${timelineItemClasses.root}:before`]: {
+                flex: 0,
+                padding: 0,
+              },
+            }}>
+              {audit?.items.map((item, idx) => {
+                const stateChangeFromObject = item.activity_type !== "STATE_CHANGED" ? undefined : statesList?.find(i => i.id === item.details.from_state_id)
+                const stateChangeToObject = item.activity_type !== "STATE_CHANGED" ? undefined : statesList?.find(i => i.id === item.details.to_state_id)
+                return (
+                  <CustomTimelineItem selected={idx === showItems} last={idx === audit.items.length - 1} key={item.id}>
+                    <Card raised>
+                      <CardActionArea onClick={() => handleShowItems(idx)} title="Ver detalle">
+                        <LeadAuditHeader activityType={item.activity_type}
+                          message={item.details.message ?? item.details.notes ??
+                            (item.details?.changes && `${Object.values(item.details?.changes ?? {}).length} cambios`)} />
+                      </CardActionArea>
+                      <Collapse in={idx === showItems} timeout="auto" unmountOnExit>
+                        <Divider />
+                        {item?.details?.changes &&
+                          <CardContent sx={{ py: 1 }}>
+                            <Stack spacing={1} useFlexGap sx={{ alignItems: "start" }}>
+                              {Object.entries(item.details.changes).map(([field_id, change], idx) => {
+                                if (!showMoreItems && idx >= MAX_ITEMS_NUM) return null
 
-                            return (
-                              <Stack spacing={1} key={`audit-${item.id}-${field_id}`} sx={{ alignItems: "start" }}>
-                                <Typography variant="body2" sx={{ fontWeight: "bold" }}>{change.field_name}:</Typography>
-                                <Stack direction="row" useFlexGap spacing={1} sx={{ flexWrap: "wrap", px: 1, alignItems: "center" }}>
-                                  <Box>
-                                    <LeadAuditValue value={change.old_value} id={item.id} color="error" size="small" fieldName={change.field_name} />
-                                  </Box>
-                                  <ArrowForwardIcon fontSize="small" />
-                                  <Box>
-                                    <LeadAuditValue value={change.new_value} id={item.id} color="success" size="small" fieldName={change.field_name} />
-                                  </Box>
-                                </Stack>
-                              </Stack>
-                            )
-                          })}
-                          {!showMoreItems && Object.values(item.details.changes)?.length > MAX_ITEMS_NUM &&
-                            <Button sx={{ mx: "auto" }} onClick={() => setShowMoreItems(true)}>Ver más</Button>
-                          }
-                        </Stack>
-                      </CardContent>
-                    }
-                    {item?.details?.to_state_id && item?.details?.from_state_id &&
-                      <CardContent sx={{ py: 1 }}>
-                        <Stack direction="row" useFlexGap spacing={1} sx={{ flexWrap: "wrap", px: 1, alignItems: "center" }}>
-                          <Box>
-                            <LeadAuditValue value={stateChangeFromObject?.name ?? item?.details?.from_state_id}
-                              id={item.id} color={stateChangeFromObject?.color ?? "secondary"} size="small" />
-                          </Box>
-                          <ArrowForwardIcon fontSize="small" />
-                          <Box>
-                            <LeadAuditValue value={stateChangeToObject?.name ?? item?.details?.to_state_id}
-                              id={item.id} color={stateChangeToObject?.color ?? "primary"} size="small" />
-                          </Box>
-                        </Stack>
-                      </CardContent>
-                    }
-                    <Divider />
-                    <CardActions sx={{ py: .5 }}>
-                      <Stack direction="row" spacing={.5} sx={{ alignItems: "center", justifyContent: "end", ml: "auto" }}>
-                        <WatchLaterIcon fontSize="small" />
-                        <MetadataShort metadata={item} noIcon containerProps={{ sx: { marginRight: ".5rem" } }} />
-                      </Stack>
-                    </CardActions>
-                  </Collapse>
-                </Card>
-              </CustomTimelineItem>
-            )
-          })}
-        </Timeline>
-        <PaginationComponent {...pageComponentProps} />
-      </Stack >
-    </LoadingScreenWrapper>
+                                return (
+                                  <Stack spacing={1} key={`audit-${item.id}-${field_id}`} sx={{ alignItems: "start" }}>
+                                    <Typography variant="body2" sx={{ fontWeight: "bold" }}>{change.field_name}:</Typography>
+                                    <Stack direction="row" useFlexGap spacing={1} sx={{ flexWrap: "wrap", px: 1, alignItems: "center" }}>
+                                      <Box>
+                                        <LeadAuditValue value={change.old_value} id={item.id} color="error" size="small" fieldName={change.field_name} />
+                                      </Box>
+                                      <ArrowForwardIcon fontSize="small" />
+                                      <Box>
+                                        <LeadAuditValue value={change.new_value} id={item.id} color="success" size="small" fieldName={change.field_name} />
+                                      </Box>
+                                    </Stack>
+                                  </Stack>
+                                )
+                              })}
+                              {!showMoreItems && Object.values(item.details.changes)?.length > MAX_ITEMS_NUM &&
+                                <Button sx={{ mx: "auto" }} onClick={() => setShowMoreItems(true)}>Ver más</Button>
+                              }
+                            </Stack>
+                          </CardContent>
+                        }
+                        {item?.details?.to_state_id && item?.details?.from_state_id &&
+                          <CardContent sx={{ py: 1 }}>
+                            <Stack direction="row" useFlexGap spacing={1} sx={{ flexWrap: "wrap", px: 1, alignItems: "center" }}>
+                              <Box>
+                                <LeadAuditValue value={stateChangeFromObject?.name ?? item?.details?.from_state_id}
+                                  id={item.id} color={stateChangeFromObject?.color ?? "secondary"} size="small" />
+                              </Box>
+                              <ArrowForwardIcon fontSize="small" />
+                              <Box>
+                                <LeadAuditValue value={stateChangeToObject?.name ?? item?.details?.to_state_id}
+                                  id={item.id} color={stateChangeToObject?.color ?? "primary"} size="small" />
+                              </Box>
+                            </Stack>
+                          </CardContent>
+                        }
+                        <Divider />
+                        <CardActions sx={{ py: .5 }}>
+                          <Stack direction="row" spacing={.5} sx={{ alignItems: "center", justifyContent: "end", ml: "auto" }}>
+                            <WatchLaterIcon fontSize="small" />
+                            <MetadataShort metadata={item} noIcon containerProps={{ sx: { marginRight: ".5rem" } }} />
+                          </Stack>
+                        </CardActions>
+                      </Collapse>
+                    </Card>
+                  </CustomTimelineItem>
+                )
+              })}
+            </Timeline>
+            <PaginationComponent {...pageComponentProps} />
+          </>
+          :
+          <NoItemsMessage emptyFetchMessage="No hay datos registrados al momento"
+            search={fetchParams.search} genericSearchMsg />
+        }
+      </LoadingScreenWrapper>
+    </Stack >
   )
 }
 
 interface ActivityInfoProps {
   icon: React.ReactNode,
   color: ColorTypes,
-  title: string
+  label: string,
+  value: string
 }
 
-const LeadAuditHeader = ({ activityType, message }: { activityType?: string, message?: string }) => {
+const LeadAuditHeader = ({ activityType, message }: { activityType?: keyof typeof AUDIT_TYPES, message?: string }) => {
 
-  const activityInfo = useMemo<ActivityInfoProps>(() => {
-    switch (activityType) {
-      case "FIELDS_UPDATED": return (
-        { icon: <EditIcon />, color: "info", title: "Actualización de datos" }
-      )
-      case "LEAD_CREATED": return (
-        { icon: <AddIcon />, color: "success", title: "Nuevo Lead" }
-      )
-      case "STATE_CHANGED": return (
-        { icon: <AccountTreeIcon />, color: "warning", title: "Cambio de Estado" }
-      )
-      default: return (
-        { icon: <InfoOutlinedIcon />, color: "error", title: "Otro" }
-      )
-    }
-  }, [activityType])
+  const activityInfo = useMemo<ActivityInfoProps>(() =>
+    (AUDIT_TYPES[activityType ?? "DEFAULT"] ?? AUDIT_TYPES.DEFAULT) as ActivityInfoProps
+    , [activityType])
 
   return (
     <CardHeader sx={{ py: 1 }}
@@ -187,7 +216,7 @@ const LeadAuditHeader = ({ activityType, message }: { activityType?: string, mes
         </Avatar>
       </CustomListItemAvatar>}
       title={<Typography variant="body2" sx={{ fontWeight: 600 }}>
-        {activityInfo.title}
+        {activityInfo.label}
       </Typography>}
       subheader={message}
     />
