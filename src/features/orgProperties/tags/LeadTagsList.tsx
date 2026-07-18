@@ -7,13 +7,24 @@ import GenericPaper from 'shared/layout/container/GenericPaper'
 import CommonButton from 'shared/ui/buttons/CommonButton'
 import { EnabledIcon } from 'shared/ui/lists/Icons'
 import { useListPagination } from 'src/hooks/useListPagination'
+import { useOrderSeachList } from 'src/hooks/useOrderSearchLists'
 import { useLoading } from 'src/hooks/useLoading'
 import type { Paginable } from 'src/types/shared'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { Divider, Grid, ListItemText, Stack, Typography } from '@mui/material'
+import { OrderSearchMenu } from 'shared/ui/lists/OrderMenu'
 import { deleteTag, getTags } from './LeadTagService'
 import { TagFormSidebarWrapper } from './LeadTagForm'
 import type { LeadTagDetailed } from 'src/types/orgProperties'
+import { NoItemsMessage } from 'src/components/ui/lists/NoItemsMessage'
+
+const ORDER_TAG_FIELDS = [
+    { name: "name", label: "Orden Alfabético" },
+]
+
+const SEARCH_TAG_FIELDS = [
+    { name: "name", label: "Nombre" },
+]
 
 export const LeadTagsList = () => {
 
@@ -21,13 +32,15 @@ export const LeadTagsList = () => {
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(tags)
 
+    const { fetchParams, handleSearchChange, handleOrderChange } = useOrderSeachList()
+
     const fetchTags = useCallback((fetchPage: number, pageSize: number) => {
         return getTags({
-            detailed: true, only_active: false, page: fetchPage, page_size: pageSize
+            detailed: true, page: fetchPage, page_size: pageSize, ...fetchParams
         })
             .then(setTags)
             .catch(e => showCommonErrorToast(e, "Error recuperando la lista de etiquetas"))
-    }, [])
+    }, [fetchParams])
 
     const { fnWithLoading: fetchTagsLoad, loading } = useLoading(fetchTags)
 
@@ -51,37 +64,42 @@ export const LeadTagsList = () => {
 
     return (
         <Stack spacing={2}>
-            <LoadingScreenWrapper loading={loading}>
-                <Stack spacing={2}>
+            <Stack spacing={2} direction="row" useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
+                {(tags?.items && tags.items.length > 0) &&
+                    <CommonButton actionType="CREATE" variant="contained" onClick={() => setEditingTag(undefined)}>
+                        Agregar
+                    </CommonButton>}
+                <OrderSearchMenu searchOptions={SEARCH_TAG_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_TAG_FIELDS} handleOrderChange={handleOrderChange} />
+            </Stack>
+            <Stack spacing={2}>
+                <LoadingScreenWrapper loading={loading}>
                     {(tags?.items && tags.items.length > 0) ?
                         <Stack spacing={2}>
-                            <CommonButton actionType="CREATE" variant="contained" sx={{ alignSelf: "start" }}
-                                onClick={() => setEditingTag(undefined)}>Agregar</CommonButton>
                             <LeadTagsListData tags={tags.items}
                                 toggleUpdate={(tag: LeadTagDetailed) => setEditingTag(tag)}
                                 updateList={updateList} />
                             <PaginationComponent {...pageComponentProps} />
                         </Stack>
                         :
-                        <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center", height: "30rem" }}>
-                            <Typography variant="h4">No se han encontrado etiquetas de lead...</Typography>
+                        <NoItemsMessage search={fetchParams.search}
+                            emptyFetchMessage="No se han encontrado etiquetas de lead...">
                             <CommonButton actionType="CREATE" variant="contained"
                                 onClick={() => setEditingTag(undefined)}>Agregar</CommonButton>
-                        </Stack>
+                        </NoItemsMessage>
                     }
-                    {editingTag !== null &&
-                        <>
-                            <Divider />
-                            <GenericPaper elevation={4} sx={{ px: 3, py: 2 }}>
-                                <Stack spacing={2}>
-                                    <TagFormSidebarWrapper existingTag={editingTag}
-                                        onClose={() => setEditingTag(null)} onSubmit={updateList} />
-                                </Stack>
-                            </GenericPaper>
-                        </>
-                    }
-                </Stack>
-            </LoadingScreenWrapper >
+                </LoadingScreenWrapper >
+                {editingTag !== null &&
+                    <>
+                        <Divider />
+                        <GenericPaper elevation={4} sx={{ px: 3, py: 2 }}>
+                            <Stack spacing={2}>
+                                <TagFormSidebarWrapper existingTag={editingTag}
+                                    onClose={() => setEditingTag(null)} onSubmit={updateList} />
+                            </Stack>
+                        </GenericPaper>
+                    </>
+                }
+            </Stack>
         </Stack>
     )
 }
@@ -113,15 +131,13 @@ export const LeadTagsListData = ({ tags, toggleUpdate, updateList }: LeadTagsLis
                         <ResponsiveListItem disablePadding sx={{ height: "100%" }}
                             onClick={() => toggleUpdate(tag)}
                             actions={[
-                                { actionType: "MODIFY", label: "Editar", onClick: () => toggleUpdate(tag) },
-                                {
-                                    actionType: "DISABLE", color: "error", label: "Eliminar", onClick: () => setDeletingTag(tag)
-                                }
+                                { template: "MODIFY", onClick: () => toggleUpdate(tag) },
+                                { template: "DELETE", onClick: () => setDeletingTag(tag) },
                             ]}>
                             <ListItemText sx={{ mr: 4 }} primary={
                                 <Stack spacing={1} direction="row" color="inherit" sx={{ width: "100%", alignItems: "center" }}>
                                     <EnabledIcon active={tag.active} />
-                                    <Typography sx={{ fontWeight: "500" }} color="inherit">{tag.name}</Typography>
+                                    <Typography color="inherit">{tag.name}</Typography>
                                 </Stack>
                             } />
                         </ResponsiveListItem>

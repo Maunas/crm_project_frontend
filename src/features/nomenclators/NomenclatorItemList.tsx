@@ -1,12 +1,14 @@
-import { memo, useCallback, useEffect, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { NomenclatorItemFormSidebar } from './NomenclatorItemForm'
-import { GenericSidebar } from 'shared/layout/container/GenericContainer'
-import { DisableConfirmDialog } from 'src/components/ui/feedback/ConfirmationDialog'
+import { DisableConfirmDialog } from 'shared/ui/feedback/ConfirmationDialog'
+import { GenericSidebar } from 'shared/layout/container/GenericSidebar'
 import PaginationComponent from 'shared/ui/lists/PaginationComponent'
-import LoadingScreenWrapper from 'src/components/ui/feedback/LoadingScreen'
+import LoadingScreenWrapper from 'shared/ui/feedback/LoadingScreen'
 import { ResponsiveListItem } from 'shared/ui/lists/CustomListItem'
+import { OrderSearchMenu } from 'shared/ui/lists/OrderMenu'
 import CommonButton from 'shared/ui/buttons/CommonButton'
 import { EnabledIcon } from 'shared/ui/lists/Icons'
+import { useOrderSeachList } from 'src/hooks/useOrderSearchLists'
 import { useListPagination } from 'src/hooks/useListPagination'
 import { useLoading } from 'src/hooks/useLoading'
 import { useSidebar } from 'src/hooks/useSidebar'
@@ -16,6 +18,16 @@ import { disableNomenclatorItem, enableNomenclatorItem, getNomenclatorItems } fr
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { useUserContext } from 'src/stores/UserContext'
 import { ButtonGroup, Grid, List, ListItemText, Stack, Typography } from '@mui/material'
+import { NoItemsMessage } from 'src/components/ui/lists/NoItemsMessage'
+
+const ORDER_NOM_ITEM_FIELDS = (hasParent: boolean) => [
+    { name: "value", label: "Orden Alfabético" },
+    ...(hasParent ? [{ name: "parent_item_id", label: "Ítem padre" }] : []),
+]
+
+const SEARCH_NOM_ITEM_FIELDS = [
+    { name: "value", label: "Valor" },
+]
 
 export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorDetailed }) => {
 
@@ -27,11 +39,13 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(nomenclatorItems, 12)
 
+    const { fetchParams, handleSearchChange, handleOrderChange } = useOrderSeachList()
+
     const fetchNomItems = useCallback((fetchPage: number, pageSize: number, nomId: number) => {
-        return getNomenclatorItems({ only_active: false, detailed: true, page: fetchPage, page_size: pageSize, nomenclator_id: nomId })
+        return getNomenclatorItems({ detailed: true, page: fetchPage, page_size: pageSize, nomenclator_id: nomId, ...fetchParams })
             .then(res => setNomenclatorItems(res))
             .catch(e => showCommonErrorToast(e, "Ha ocurrido un error al traer los ítems del nomenclador"))
-    }, [])
+    }, [fetchParams])
 
     const { loading, fnWithLoading: fetchNomLoad } = useLoading(fetchNomItems)
 
@@ -107,6 +121,8 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
 
     const isBlocked = !nomenclator.organization_id && activeOrg?.id !== 0
 
+    const orderOptions = useMemo(() => ORDER_NOM_ITEM_FIELDS(Boolean(nomenclator.parent_nomenclators)), [nomenclator.parent_nomenclators])
+
     return (
         <>
             <Stack spacing={1}>
@@ -120,6 +136,7 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
                         }
                     </ButtonGroup>
                 </Stack>
+                <OrderSearchMenu searchOptions={SEARCH_NOM_ITEM_FIELDS} handleSearchChange={handleSearchChange} orderOptions={orderOptions} handleOrderChange={handleOrderChange} />
                 <LoadingScreenWrapper loading={loading}>
                     {nomenclatorItems && nomenclatorItems.items?.length > 0 ?
                         <List dense>
@@ -128,11 +145,8 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
                                     <Grid size={{ xs: 12, sm: 6 }} key={nom.id}>
                                         <ResponsiveListItem disablePadding
                                             actions={[
-                                                { actionType: "MODIFY", label: "Modificar", onClick: () => handleSidebar("UPDATE_NOM", nom) },
-                                                {
-                                                    actionType: nom.active ? "DISABLE" : "ENABLE", label: nom.active ? "Deshabilitar" : "Habilitar",
-                                                    color: nom.active ? "error" : "success", onClick: () => handleDeletingItem(nom)
-                                                }
+                                                { template: "MODIFY", onClick: () => handleSidebar("UPDATE_NOM", nom) },
+                                                { template: nom.active ? "DISABLE" : "ENABLE", onClick: () => handleDeletingItem(nom) },
                                             ]}
                                             onClick={() => !isBlocked && handleSidebar("UPDATE_NOM", nom)}>
                                             <ListItemText
@@ -144,7 +158,7 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
                                                                 <Typography variant="caption" color="textSecondary" sx={{ fontWeight: 500, textTransform: "uppercase", wordBreak: "break-word" }}>
                                                                     {nom.parent_items.map(parent => parent.value).join(", ")}
                                                                 </Typography>}
-                                                            <Typography sx={{ fontWeight: 500, wordBreak: "break-word" }}>{nom.value}</Typography>
+                                                            <Typography sx={{ wordBreak: "break-word" }}>{nom.value}</Typography>
                                                         </Stack>
                                                     </Stack>
                                                 }
@@ -156,11 +170,11 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
                                 )}
                             </Grid>
                         </List>
-                        : <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
-                            <Typography variant="h4">No se han encontrado opciones en este nomenclador...</Typography>
+                        :
+                        <NoItemsMessage search={fetchParams.search} emptyFetchMessage="No se han encontrado opciones en este nomenclador..." >
                             {!isBlocked &&
                                 <CommonButton actionType='CREATE' onClick={() => { handleSidebar("CREATE_NOM", null) }} variant="contained">Agregar</CommonButton>}
-                        </Stack>
+                        </NoItemsMessage>
                     }
                     <PaginationComponent {...pageComponentProps} />
                 </LoadingScreenWrapper >

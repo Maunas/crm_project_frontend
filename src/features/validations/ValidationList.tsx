@@ -37,12 +37,12 @@ export const ValidationList = ({ leadField, handleSidebar }: ValidationListProps
                 {leadField.validation_rules.map(val =>
                     <ListItem key={val.id} disablePadding sx={{ mb: 1, overflow: "hidden" }} component={Paper} elevation={7} >
                         <ListItemText sx={{ m: 0 }} primary={
-                            <Stack spacing={1}>
-                                <Stack sx={{ p: ".5rem 1rem 0 " }}>
-                                    <Typography>
+                            <Stack spacing={.25}>
+                                <Stack sx={{ p: ".5rem .75rem 0 " }}>
+                                    <Typography variant="body2" sx={{ textTransform: "uppercase", fontWeight: 500 }}>
                                         {val.name}
                                     </Typography>
-                                    <Typography variant='body2' sx={{ fontStyle: "italic", color: palette.error.main }} >
+                                    <Typography variant='caption' sx={{ fontStyle: "italic", color: palette.error.main }} >
                                         {val.error_message}
                                     </Typography>
                                 </Stack>

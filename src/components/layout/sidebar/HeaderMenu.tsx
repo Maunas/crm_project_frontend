@@ -9,7 +9,7 @@ import MoreIcon from '@mui/icons-material/More';
 import LoadingScreenWrapper from 'src/components/ui/feedback/LoadingScreen';
 import type { UserContextItems } from 'src/stores/UserContext';
 import { InviteDialog } from 'src/features/organizations/InviteDialog';
-import type { Organization } from 'src/types/users';
+import type { Organization } from 'src/types/campaigns';
 
 function useRoleLabel(user: UserContextItems["user"], activeOrg: UserContextItems["activeOrg"]) {
     if (!user) return ""
@@ -25,7 +25,7 @@ const HeaderMenu = memo(() => {
     const nav = useNavigate()
     const [inviteOpen, setInviteOpen] = useState(false)
 
-    const { user, logout, activeOrganizations, activeOrg, setActiveOrg, loadingOrgs } = useUserContext()
+    const { user, logout, orgHeaderList, activeOrg, setActiveOrg, loadingOrgs } = useUserContext()
 
     const fullName = user ? [user.name, user.last_name].filter(Boolean).join(" ") : ""
     const roleLabel = useRoleLabel(user, activeOrg)
@@ -94,7 +94,7 @@ const HeaderMenu = memo(() => {
             </MenuItem>
             <LoadingScreenWrapper loading={loadingOrgs} sx={{ minWidth: "15rem", height: "10rem" }}>
                 {
-                    activeOrganizations?.map(org => (
+                    orgHeaderList?.map(org => (
                         <MenuItem dense key={org.id} onClick={() => handleOrgSwitch(org)}>
                             {org.id === activeOrg?.id &&
                                 <ListItemIcon><Check /></ListItemIcon>

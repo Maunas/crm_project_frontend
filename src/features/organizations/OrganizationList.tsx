@@ -1,29 +1,58 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { OrganizationFormSidebar } from './OrganizationForm'
 import OrganizationDetails from './OrganizationDetail'
+import { ResponsiveListItem } from 'shared/ui/lists/CustomListItem'
+import { DisableConfirmDialog } from 'shared/ui/feedback/ConfirmationDialog'
 import ContainerWithSidebar from 'shared/layout/container/GenericContainer'
-import { DisableConfirmDialog } from 'src/components/ui/feedback/ConfirmationDialog'
-import { CommonIconButton } from 'shared/ui/buttons/CommonIconButton'
-import LoadingScreenWrapper from 'src/components/ui/feedback/LoadingScreen'
-import { CustomListItem } from 'shared/ui/lists/CustomListItem'
+import LoadingScreenWrapper from 'shared/ui/feedback/LoadingScreen'
+import { NoItemsMessage } from 'shared/ui/lists/NoItemsMessage'
+import { OrderSearchMenu } from 'shared/ui/lists/OrderMenu'
 import CommonButton from 'shared/ui/buttons/CommonButton'
 import { EnabledIcon } from 'shared/ui/lists/Icons'
+import { useOrderSeachList } from 'src/hooks/useOrderSearchLists'
+import { useLoading } from 'src/hooks/useLoading'
 import { useSidebar } from 'src/hooks/useSidebar'
 import type { OrganizationDetailed } from 'src/types/campaigns'
-import { disableOrganization, enableOrganization, getOrganization } from './organizationServices'
+import { disableOrganization, enableOrganization, getOrganization, getOrganizations } from './organizationServices'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { useUserContext } from 'src/stores/UserContext'
 import { useSearchParams } from 'react-router-dom'
-import { List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
+import { List, ListItemText, Stack, Typography } from '@mui/material'
+
+const ORDER_ORG_FIELDS = [
+    { name: "name", label: "Orden Alfabético" },
+]
+
+const SEARCH_ORG_FIELDS = [
+    { name: "name", label: "Nombre" },
+    { name: "description", label: "Descripción" },
+]
 
 export const OrganizationList = () => {
 
     const [params, setParams] = useSearchParams()
 
-    const { userOrganizations, activeOrg, setActiveOrg,
-        fetchOrganizations, setOrganizations, loadingOrgs } = useUserContext()
+    const { activeOrg, setActiveOrg, fetchOrgHeaderList, hasOneActiveOrg } = useUserContext()
 
     const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<OrganizationDetailed>("id", params, setParams, getOrganization, "DETAILS_ORG")
+
+    const [organizations, setOrganizations] = useState<OrganizationDetailed[]>([])
+
+    const { fetchParams, handleSearchChange, handleOrderChange } = useOrderSeachList()
+
+    const fetchOrganizations = useCallback(async () => {
+        return getOrganizations({ detailed: true, page_size: 0, ...fetchParams })
+            .then(orgList => {
+                const filteredList = orgList.items.filter(org => org.id !== 1)
+                setOrganizations(filteredList)
+            })
+    }, [fetchParams])
+
+    const { loading, fnWithLoading: fetchOrgLoad } = useLoading(fetchOrganizations)
+
+    useEffect(() => {
+        fetchOrgLoad()
+    }, [fetchOrgLoad])
 
     const handleActiveOrg = (org: OrganizationDetailed) => {
         if (!org.active) return
@@ -32,10 +61,12 @@ export const OrganizationList = () => {
 
     const updateEntityOnList = useCallback((newOrg: OrganizationDetailed, mode: string) => {
         switch (mode) {
-            case "CREATE_ORG":
-                return fetchOrganizations()
+            case "CREATE_ORG": case "DELETE_ORG":
+                fetchOrgHeaderList()
+                return fetchOrgLoad()
             case "UPDATE_ORG": {
                 return setOrganizations(prevList => {
+                    fetchOrgHeaderList()
                     if (!prevList || prevList.length === 0) return prevList
                     const newOrganizationsItems = [...prevList]
                     const orgIdx = prevList.findIndex(org => org.id === newOrg.id)
@@ -44,17 +75,8 @@ export const OrganizationList = () => {
                     return newOrganizationsItems
                 })
             }
-            case "DELETE_ORG": {
-                return setOrganizations(prevList => {
-                    if (!prevList || prevList.length === 0) return prevList
-                    if (activeOrg?.id === newOrg.id) return prevList
-                    if (selectedEntity && newOrg.id === selectedEntity.id) closeSidebar()
-                    const newOrganizationsItems = [...prevList]
-                    return newOrganizationsItems.filter(org => org.id !== newOrg.id)
-                })
-            }
         }
-    }, [closeSidebar, fetchOrganizations, selectedEntity, activeOrg?.id, setOrganizations])
+    }, [setOrganizations, fetchOrgLoad, fetchOrgHeaderList])
 
     const handleActive = useCallback(async (org: OrganizationDetailed | null) => {
         if (!org) return
@@ -69,7 +91,7 @@ export const OrganizationList = () => {
             if (selectedEntity?.id === org.id) closeSidebar()
         }
         if (org.active) {
-            if (activeOrg?.id === org.id) return
+            if (activeOrg?.id === org.id && hasOneActiveOrg) return
             return disableOrganization(org.id)
                 .then((res) => {
                     if (res.action === "disabled") {
@@ -90,7 +112,7 @@ export const OrganizationList = () => {
                 })
                 .catch(e => showCommonErrorToast(e))
         }
-    }, [closeSidebar, handleSidebar, selectedEntity, activeOrg?.id, updateEntityOnList])
+    }, [closeSidebar, handleSidebar, selectedEntity, activeOrg?.id, updateEntityOnList, hasOneActiveOrg])
 
     const [deletingOrg, setDeletingOrg] = useState<OrganizationDetailed | null>(null)
     const handleDeletingOrg = (deletingOrg: OrganizationDetailed) => {
@@ -102,59 +124,52 @@ export const OrganizationList = () => {
             <OrganizationSidebar mode={sidebarMode} entity={selectedEntity} handleSidebar={handleSidebar}
                 closeSidebar={closeSidebar} updateEntityOnList={updateEntityOnList} handleActive={handleDeletingOrg} />
         }>
-            <Stack spacing={3}>
+            <Stack spacing={2}>
                 <Stack spacing={2} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
-                    <Typography variant="h1">Lista de Organizaciones</Typography>
-                    {userOrganizations && userOrganizations?.length > 0 &&
+                    <Typography variant="h1">Organizaciones</Typography>
+                    {organizations && organizations?.length > 0 &&
                         <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_ORG", null)} sx={{ marginLeft: "auto" }} onlyTooltip>
                             Agregar
                         </CommonButton>
                     }
                 </Stack>
-                <LoadingScreenWrapper loading={loadingOrgs}>
-                    <Stack spacing={2}>
-                        {userOrganizations && userOrganizations?.length > 0 ?
-                            <List>
-                                {userOrganizations.map(org =>
-                                    <CustomListItem key={org.id} isSelected={org.id === selectedEntity?.id} disablePadding secondaryAction={
-                                        <Stack direction="row" sx={{ alignItems: "center" }}>
-                                            <CommonIconButton actionType='DETAILS' title='Detalle' onClick={() => handleSidebar("DETAILS_ORG", org)} tooltipSize="small" size="small" />
-                                            <CommonIconButton actionType='MODIFY' title='Modificar' onClick={() => handleSidebar("UPDATE_ORG", org)} tooltipSize="small" size="small" />
-                                            {(activeOrg?.id !== org.id && org.active) &&
-                                                <CommonIconButton actionType='CHECK' title='Seleccionar Activa' color="info" onClick={() => handleActiveOrg(org)} tooltipSize="small" size="small" />
-                                            }
-                                            {activeOrg?.id !== org.id &&
-                                                <CommonIconButton actionType={org.active ? "DISABLE" : "ENABLE"} tooltipSize="small" size="small"
-                                                    title={org.active ? "Deshabilitar" : "Habilitar"}
-                                                    onClick={() => setDeletingOrg(org)} color={org.active ? "error" : "success"} />
-                                            }
+                <OrderSearchMenu searchOptions={SEARCH_ORG_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_ORG_FIELDS} handleOrderChange={handleOrderChange} />
+                <LoadingScreenWrapper loading={loading}>
+                    {organizations && organizations?.length > 0 ?
+                        <List>
+                            {organizations.map(org =>
+                                <ResponsiveListItem key={org.id} isSelected={org.id === selectedEntity?.id} disablePadding
+                                    onClick={() => handleSidebar("DETAILS_ORG", org)}
+                                    actions={[
+                                        { template: "DETAILS", onClick: () => handleSidebar("DETAILS_ORG", org) },
+                                        { template: "MODIFY", onClick: () => handleSidebar("UPDATE_ORG", org) },
+                                        activeOrg?.id !== org.id &&
+                                        { template: org.active ? "DISABLE" : "ENABLE", onClick: () => setDeletingOrg(org) },
+                                        activeOrg?.id !== org.id && org.active &&
+                                        { actionType: "CHECK", label: "Seleccionar Activa", color: "info", onClick: () => handleActiveOrg(org) },
+                                    ]}>
+                                    <ListItemText sx={{ mr: 10 }} primary={
+                                        <Stack spacing={1} direction="row">
+                                            <EnabledIcon active={org.active} />
+                                            <Typography color={activeOrg?.id === org.id ? "info" : "textPrimary"}
+                                                sx={{ textDecoration: activeOrg?.id === org.id ? "underline" : "none" }}>
+                                                {org.name}
+                                            </Typography>
                                         </Stack>
-                                    }>
-                                        <ListItemButton onClick={() => handleSidebar("DETAILS_ORG", org)}>
-                                            <ListItemText sx={{ mr: 10 }} primary={
-                                                <Stack spacing={1} direction="row">
-                                                    <EnabledIcon active={org.active} />
-                                                    <Typography color={activeOrg?.id === org.id ? "info" : "textPrimary"}
-                                                        sx={{ fontWeight: "bold", textDecoration: activeOrg?.id === org.id ? "underline" : "none" }}>
-                                                        {org.name}
-                                                    </Typography>
-                                                </Stack>
-                                            }
-                                                secondary={org.description} />
-                                        </ListItemButton>
-                                    </CustomListItem>
-                                )}
-                            </List>
-                            : <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
-                                <Typography variant="h4">No se han encontrado organizaciones...</Typography>
-                                <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_ORG", null)} variant="contained">
-                                    Agregar
-                                </CommonButton>
-                            </Stack>
-                        }
-                    </Stack>
+                                    }
+                                        secondary={org.description} />
+                                </ResponsiveListItem>
+                            )}
+                        </List>
+                        :
+                        <NoItemsMessage search={fetchParams.search} emptyFetchMessage="No se han encontrado organizaciones...">
+                            <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_ORG", null)} variant="contained">
+                                Agregar
+                            </CommonButton>
+                        </NoItemsMessage>
+                    }
                 </LoadingScreenWrapper>
-            </Stack>
+            </Stack >
             <DisableConfirmDialog idModal="del-org-list" entity={deletingOrg} clearEntity={() => setDeletingOrg(null)}
                 onConfirm={() => handleActive(deletingOrg)} entityTypeName='la organización' />
         </ContainerWithSidebar >

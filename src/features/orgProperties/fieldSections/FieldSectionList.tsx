@@ -7,13 +7,24 @@ import GenericPaper from 'shared/layout/container/GenericPaper'
 import CommonButton from 'shared/ui/buttons/CommonButton'
 import { EnabledIcon } from 'shared/ui/lists/Icons'
 import { useListPagination } from 'src/hooks/useListPagination'
+import { useOrderSeachList } from 'src/hooks/useOrderSearchLists'
 import { useLoading } from 'src/hooks/useLoading'
 import type { Paginable } from 'src/types/shared'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { Divider, Grid, ListItemText, Stack, Typography } from '@mui/material'
+import { OrderSearchMenu } from 'shared/ui/lists/OrderMenu'
 import type { LeadFieldSectionDetailed } from 'src/types/orgProperties'
 import { disableFieldSection, enableFieldSection, getFieldSections } from './fieldSectionsServices'
 import { FieldSectionForm } from './FieldSectionForm'
+import { NoItemsMessage } from 'src/components/ui/lists/NoItemsMessage'
+
+const ORDER_SEC_FIELDS = [
+    { name: "name", label: "Orden Alfabético" },
+]
+
+const SEARCH_SEC_FIELDS = [
+    { name: "name", label: "Nombre" },
+]
 
 export const FieldSectionList = () => {
 
@@ -21,13 +32,15 @@ export const FieldSectionList = () => {
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(sections)
 
+    const { fetchParams, handleSearchChange, handleOrderChange } = useOrderSeachList()
+
     const fetchSections = useCallback((fetchPage: number, pageSize: number) => {
         return getFieldSections({
-            detailed: true, only_active: false, page: fetchPage, page_size: pageSize
+            detailed: true, page: fetchPage, page_size: pageSize, ...fetchParams
         })
             .then(setSections)
             .catch(e => showCommonErrorToast(e, "Error recuperando la lista de secciones"))
-    }, [])
+    }, [fetchParams])
 
     const { fnWithLoading: fetchSectionsLoad, loading } = useLoading(fetchSections)
 
@@ -51,35 +64,41 @@ export const FieldSectionList = () => {
 
     return (
         <Stack spacing={2}>
-            <LoadingScreenWrapper loading={loading}>
-                <Stack spacing={2}>
+            <Stack spacing={2} direction="row" useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
+                {(sections?.items && sections.items.length > 0) &&
+                    <CommonButton actionType="CREATE" variant="contained" onClick={() => setEditingSection(undefined)}>
+                        Agregar
+                    </CommonButton>
+                }
+                <OrderSearchMenu searchOptions={SEARCH_SEC_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_SEC_FIELDS} handleOrderChange={handleOrderChange} />
+            </Stack>
+            <Stack spacing={2}>
+                <LoadingScreenWrapper loading={loading}>
                     {(sections?.items && sections.items.length > 0) ?
                         <Stack spacing={2}>
-                            <CommonButton actionType="CREATE" variant="contained" sx={{ alignSelf: "start" }}
-                                onClick={() => setEditingSection(undefined)}>Agregar</CommonButton>
                             <FieldSectionListData sections={sections.items}
                                 toggleUpdate={(state: LeadFieldSectionDetailed) => setEditingSection(state)}
                                 updateList={updateList} />
                             <PaginationComponent {...pageComponentProps} />
                         </Stack>
                         :
-                        <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center", height: "30rem" }}>
-                            <Typography variant="h4">No se han encontrado secciones de campo...</Typography>
+                        <NoItemsMessage search={fetchParams.search}
+                            emptyFetchMessage="No se han encontrado secciones de campo...">
                             <CommonButton actionType="CREATE" variant="contained"
                                 onClick={() => setEditingSection(undefined)}>Agregar</CommonButton>
-                        </Stack>
+                        </NoItemsMessage>
                     }
-                    {editingSection !== null &&
-                        <>
-                            <Divider />
-                            <GenericPaper elevation={4} sx={{ px: 3, py: 2 }}>
-                                <FieldSectionForm existingSection={editingSection}
-                                    onClose={() => setEditingSection(null)} onSubmit={updateList} />
-                            </GenericPaper>
-                        </>
-                    }
-                </Stack>
-            </LoadingScreenWrapper >
+                </LoadingScreenWrapper >
+                {editingSection !== null &&
+                    <>
+                        <Divider />
+                        <GenericPaper elevation={4} sx={{ px: 3, py: 2 }}>
+                            <FieldSectionForm existingSection={editingSection}
+                                onClose={() => setEditingSection(null)} onSubmit={updateList} />
+                        </GenericPaper>
+                    </>
+                }
+            </Stack>
         </Stack>
     )
 }
@@ -120,17 +139,13 @@ const FieldSectionListData = ({ sections, toggleUpdate, updateList }: FieldSecti
                         <ResponsiveListItem disablePadding sx={{ height: "100%" }}
                             onClick={() => toggleUpdate(section)}
                             actions={[
-                                { actionType: "MODIFY", label: "Editar", onClick: () => toggleUpdate(section) },
-                                {
-                                    actionType: section.active ? "DISABLE" : "ENABLE", color: section.active ? "error" : "success",
-                                    label: section.active ? "Deshabilitar" : "Habilitar",
-                                    onClick: () => setDisableSection(section)
-                                }
+                                { template: "MODIFY", onClick: () => toggleUpdate(section) },
+                                { template: section.active ? "DISABLE" : "ENABLE", onClick: () => setDisableSection(section) },
                             ]}>
                             <ListItemText sx={{ mr: 4 }} primary={
                                 <Stack spacing={1} direction="row" color="inherit" sx={{ width: "100%", alignItems: "center" }}>
                                     <EnabledIcon active={section.active} />
-                                    <Typography sx={{ fontWeight: "500" }} color="inherit">{section.name}</Typography>
+                                    <Typography color="inherit">{section.name}</Typography>
                                 </Stack>
                             } />
                         </ResponsiveListItem>

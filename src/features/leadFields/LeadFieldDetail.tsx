@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ValidationList } from '../validations/ValidationList';
 import { getTypeIconAndColor, LeadFieldTypeAvatar } from './LeadFieldTypeIcon';
-import { SidebarContentWrapper } from 'shared/layout/container/GenericContainer';
+import { SidebarContentWrapper } from 'shared/layout/container/GenericSidebar';
 import { DisableConfirmDialog } from 'src/components/ui/feedback/ConfirmationDialog';
 import HandleActiveButton from 'shared/ui/buttons/HandleActiveButton';
 import { CustomListItem } from 'shared/ui/lists/CustomListItem';

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import React, { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import { getOrganizations } from 'src/features/organizations/organizationServices'
 import {
     loginUser,
@@ -11,17 +11,16 @@ import {
 import { tokenStore } from 'src/lib/tokenStore'
 import axios from 'axios'
 import { API_BASE_URL } from 'src/lib/axios'
-import type { Organization, OrganizationDetailed } from 'src/types/campaigns'
+import type { Organization } from 'src/types/campaigns'
 import type { UserData, UserLogin, UserSignup } from 'src/types/users'
 import { SUPERUSER } from 'src/utils/constants'
+import { showCommonErrorToast } from 'src/utils/feedback'
 
 export interface UserContextItems {
-    userOrganizations: OrganizationDetailed[],
-    activeOrganizations: Organization[],
+    orgHeaderList: Organization[],
     activeOrg: Organization | null,
     setActiveOrg: (org: Organization) => void,
-    setOrganizations: React.Dispatch<React.SetStateAction<OrganizationDetailed[]>>,
-    fetchOrganizations: () => void,
+    fetchOrgHeaderList: () => void,
     user: UserData | null,
     isRestoring: boolean,
     login: (data: UserLogin, rememberMe?: boolean) => Promise<void>,
@@ -30,6 +29,7 @@ export interface UserContextItems {
     signup: (data: UserSignup) => Promise<void>,
     logout: () => Promise<void>,
     loadingOrgs: boolean,
+    hasOneActiveOrg: boolean
 }
 
 const UserContext = createContext<UserContextItems | undefined>(undefined)
@@ -47,29 +47,28 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
         }
     })
 
-    const [organizations, setOrganizations] = React.useState<OrganizationDetailed[]>([])
+    const [orgHeaderList, setOrgHeaderList] = React.useState<Organization[]>([])
     const [loadingOrgs, setLoadingOrgs] = useState(false)
 
     const [isRestoring, setIsRestoring] = useState(
         tokenStore.hasSession() && !tokenStore.getAccessToken()
     )
 
-    const fetchOrganizations = () => {
+    const fetchOrgHeaderList = useCallback(() => {
         setLoadingOrgs(true)
-        getOrganizations({ only_active: true, detailed: true, page_size: 0 })
+        getOrganizations({ only_active: true, detailed: false, page_size: 0 })
             .then(orgs => {
-                const filtered = orgs.items.filter(o => o.id !== 1)
-                setOrganizations(filtered)
+                setOrgHeaderList(orgs.items)
                 setActiveOrgState(prev => {
                     if (prev?.id === 1) return prev // Panel Global, mantener
-                    if (!prev) return filtered[0] ?? null
-                    const stillValid = filtered.some(o => o.id === prev.id)
-                    return stillValid ? prev : (filtered[0] ?? null)
+                    if (!prev) return orgs.items[0] ?? null
+                    const stillValid = orgs.items.some(o => o.id === prev.id)
+                    return stillValid ? prev : (orgs.items[0] ?? null)
                 })
             })
-            .catch(() => {})
+            .catch((e) => { showCommonErrorToast(e, "Error obteniendo organizaciones") })
             .finally(() => setLoadingOrgs(false))
-    }
+    }, [])
 
     // Restaurar sesión al recargar la página
     useEffect(() => {
@@ -89,7 +88,7 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
             .then(userData => {
                 setUser(userData)
                 if (userData.is_superuser) setActiveOrgState(prev => prev ?? SUPERUSER)
-                fetchOrganizations()
+                fetchOrgHeaderList()
             })
             .catch(() => {
                 tokenStore.clear()
@@ -97,7 +96,7 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
                 setUser(null)
             })
             .finally(() => setIsRestoring(false))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     useEffect(() => {
@@ -105,13 +104,8 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
         else window.localStorage.removeItem("user")
     }, [user])
 
-    const activeOrganizations = useMemo(() => {
-        const active = organizations.filter(org => org.active) as Organization[]
-        if (user?.is_superuser) active.push(SUPERUSER)
-        return active
-    }, [organizations, user])
 
-    const [activeOrg, setActiveOrgState] = React.useState<Organization | null>(() => {
+    const [activeOrg, setActiveOrgState] = useState<Organization | null>(() => {
         try {
             const stored = window.localStorage.getItem("selected_org")
             return stored ? JSON.parse(stored) : null
@@ -123,7 +117,7 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
 
     const setActiveOrg = (org: Organization) => setActiveOrgState(org)
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (activeOrg) window.localStorage.setItem("selected_org", JSON.stringify(activeOrg))
         else window.localStorage.removeItem("selected_org")
     }, [activeOrg])
@@ -134,7 +128,7 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
         const userData = await getCurrentUser()
         setUser(userData)
         if (userData.is_superuser) setActiveOrgState(prev => prev ?? SUPERUSER)
-        fetchOrganizations()
+        fetchOrgHeaderList()
     }
 
     const updateUser = async (data: UserProfileUpdate) => {
@@ -155,7 +149,7 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
         const userData = await getCurrentUser()
         setUser(userData)
         if (userData.is_superuser) setActiveOrgState(prev => prev ?? SUPERUSER)
-        fetchOrganizations()
+        fetchOrgHeaderList()
     }
 
     const logout = async () => {
@@ -167,18 +161,18 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
         localStorage.removeItem("user")
         localStorage.removeItem("selected_org")
         setUser(null)
-        setOrganizations([])
+        fetchOrgHeaderList()
         setActiveOrgState(null)
     }
 
+    const hasOneActiveOrg = orgHeaderList && orgHeaderList?.length <= 1
+
     return (
         <UserContext.Provider value={{
-            userOrganizations: organizations,
-            activeOrganizations,
+            orgHeaderList,
             activeOrg,
             setActiveOrg,
-            setOrganizations,
-            fetchOrganizations,
+            fetchOrgHeaderList,
             user,
             isRestoring,
             login,
@@ -187,6 +181,7 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
             logout,
             refreshUser,
             loadingOrgs,
+            hasOneActiveOrg
         }}>
             {children}
         </UserContext.Provider>

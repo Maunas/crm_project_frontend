@@ -17,7 +17,7 @@ import { useNavigate } from "react-router-dom"
 import { ButtonGroup, Grid, Stack, Typography, IconButton, Box } from "@mui/material"
 import EditIcon from "@mui/icons-material/Edit"
 import CreateIcon from "@mui/icons-material/Create"
-import { SidebarContentActionsWrapper, SidebarContentWrapper } from "src/components/layout/container/GenericContainer"
+import { SidebarContentActionsWrapper, SidebarContentWrapper } from "src/components/layout/container/GenericSidebar"
 
 interface UpdateCampaignSidebarProps {
     existingCmp: CampaignDetailed,

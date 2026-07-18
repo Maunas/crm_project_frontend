@@ -1,5 +1,5 @@
 import { NomenclatorItemList } from "./NomenclatorItemList"
-import { SidebarContentWrapper } from "shared/layout/container/GenericContainer"
+import { SidebarContentWrapper } from "shared/layout/container/GenericSidebar"
 import HandleActiveButton from "shared/ui/buttons/HandleActiveButton"
 import DetailsMetadata from "shared/ui/details/DetailsMetadata"
 import CommonButton from "shared/ui/buttons/CommonButton"
@@ -18,19 +18,19 @@ interface NomenclatorDetailsProps {
 
 export const NomenclatorDetails = ({ nomenclator, closeSidebar, handleSidebar, handleActive }: NomenclatorDetailsProps) => {
 
-    const { activeOrg } = useUserContext()
+    const { user } = useUserContext()
 
     if (nomenclator) return (
         <SidebarContentWrapper title={nomenclator.name} icon={<EnabledIcon active={nomenclator.active} isAvatar />}
             iconColor={nomenclator.active ? "success" : "error"}
-            subtitle={!nomenclator.organization_id ? "Nomenclador del Sistema" : "Nomenclador"}
+            subtitle={nomenclator.organization_id === 1 ? "Nomenclador del Sistema" : "Nomenclador"}
             actions={
                 <ButtonGroup>
                     <CommonButton onClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
-                    {(nomenclator.organization_id || activeOrg?.id === 0) &&
+                    {(nomenclator.organization_id !== 1 || user?.is_superuser) &&
                         <HandleActiveButton active={nomenclator.active} handleActive={() => handleActive(nomenclator)} />
                     }
-                    {(nomenclator.organization_id || activeOrg?.id === 0) &&
+                    {(nomenclator.organization_id !== 1 || user?.is_superuser) &&
                         <CommonButton onClick={() => handleSidebar("UPDATE_NOM", nomenclator)} actionType="MODIFY" >Modificar</CommonButton>
                     }
                 </ButtonGroup>

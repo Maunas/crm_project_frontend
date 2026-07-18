@@ -28,7 +28,7 @@ export interface Metadata {
   active: boolean;
   created_by: number;
   updated_by?: number;
-  creator?: UserData;
+  creator: UserData;
   updater?: UserData | null;
 }
 
@@ -53,14 +53,20 @@ export interface OrderParams {
   order_by?: number | string | null,
   ascending?: boolean
 }
+export interface SearchParams {
+  search?: string,
+  search_fields?: string
+}
 
-export interface ListParams extends OrderParams {
+export interface OrderSearchParams extends OrderParams, SearchParams {
   only_active?: boolean,
+}
+
+export interface ListParams extends OrderParams, SearchParams {
   detailed?: boolean,
   page?: number,
   page_size?: number,
-  search?: string,
-  search_fields?: string
+  only_active?: boolean,
 }
 export interface WorkspaceParams extends ListParams {
   organization_id?: number

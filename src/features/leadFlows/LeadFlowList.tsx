@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useListPagination } from 'src/hooks/useListPagination'
+import { useOrderSeachList } from 'src/hooks/useOrderSearchLists'
 import type { LeadFlowDetailed } from 'src/types/leadFlow'
 import type { Paginable } from 'src/types/shared'
 import { Grid, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
@@ -14,7 +15,18 @@ import { useLoading } from 'src/hooks/useLoading'
 import LoadingScreenWrapper from 'src/components/ui/feedback/LoadingScreen'
 import { DisableConfirmDialog } from 'src/components/ui/feedback/ConfirmationDialog'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
+import { OrderSearchMenu } from 'shared/ui/lists/OrderMenu'
 import { useUserContext } from 'src/stores/UserContext'
+import { NoItemsMessage } from 'src/components/ui/lists/NoItemsMessage'
+
+const ORDER_FLOW_FIELDS = [
+    { name: "name", label: "Orden Alfabético" },
+]
+
+const SEARCH_FLOW_FIELDS = [
+    { name: "name", label: "Nombre" },
+    { name: "description", label: "Descripción" },
+]
 
 export const LeadFlowList = () => {
 
@@ -25,9 +37,11 @@ export const LeadFlowList = () => {
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(flows, 12)
 
+    const { fetchParams, handleSearchChange, handleOrderChange } = useOrderSeachList()
+
     const fetchFlows = useCallback((fetchPage: number, pageSize: number) => getLeadFlows({
-        page: fetchPage || 1, page_size: pageSize, detailed: true, only_active: false
-    }).then(setFlows), [])
+        page: fetchPage || 1, page_size: pageSize, detailed: true, ...fetchParams
+    }).then(setFlows), [fetchParams])
 
     const { fnWithLoading, loading } = useLoading(fetchFlows)
 
@@ -37,11 +51,12 @@ export const LeadFlowList = () => {
 
     return (
         <Stack spacing={2}>
-            <Stack spacing={1} direction="row" useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
+            <Stack spacing={2} direction="row" useFlexGap sx={{ alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>
                 {(flows?.items && flows.items.length > 0) &&
                     <CommonButton actionType="CREATE" component={Link} to="/lead-flow-editor" >
                         Abrir Editor
                     </CommonButton>}
+                <OrderSearchMenu searchOptions={SEARCH_FLOW_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_FLOW_FIELDS} handleOrderChange={handleOrderChange} />
             </Stack>
             <LoadingScreenWrapper loading={loading}>
                 {(flows?.items && flows.items.length > 0) ?
@@ -50,10 +65,10 @@ export const LeadFlowList = () => {
                         <PaginationComponent {...pageComponentProps} />
                     </Stack>
                     :
-                    <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center", height: "30rem" }}>
-                        <Typography variant="h4">No se han encontrado flujos de estado...</Typography>
+                    <NoItemsMessage search={fetchParams.search}
+                        emptyFetchMessage="No se han encontrado flujos de estado...">
                         <CommonButton actionType="CREATE" onClick={() => nav("/lead-flow-editor")} variant="contained">Abrir Editor</CommonButton>
-                    </Stack>
+                    </NoItemsMessage>
                 }
             </LoadingScreenWrapper>
         </Stack>
@@ -99,7 +114,7 @@ export const LeadFlowListData = ({ flows, updateList }: { flows: LeadFlowDetaile
                                 <ListItemText sx={{ mr: 4 }} primary={
                                     <Stack spacing={1} direction="row" color="inherit" sx={{ width: "100%", alignItems: "center" }}>
                                         <EnabledIcon active={flow.active} />
-                                        <Typography sx={{ fontWeight: "bold" }} color="inherit">{flow.name}</Typography>
+                                        <Typography color="inherit">{flow.name}</Typography>
                                     </Stack>
                                 }
                                     secondary={flow.description} />

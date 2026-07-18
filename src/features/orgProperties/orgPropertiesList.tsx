@@ -1,7 +1,8 @@
 import { type ReactNode } from 'react';
 import { LeadFlowList } from '../leadFlows/LeadFlowList';
 import { CustomListItem, CustomListItemAvatar } from 'shared/ui/lists/CustomListItem';
-import ContainerWithSidebar, { SidebarContentWrapper } from 'shared/layout/container/GenericContainer';
+import ContainerWithSidebar from 'shared/layout/container/GenericContainer';
+import { SidebarContentWrapper } from 'shared/layout/container/GenericSidebar';
 import { CommonIconButton } from 'shared/ui/buttons/CommonIconButton';
 import { useSidebar } from 'src/hooks/useSidebar';
 import type { ColorTypes } from 'src/types/mui-theme.d';

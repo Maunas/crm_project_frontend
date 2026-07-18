@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useState } from 'react'
 import { NomenclatorFormSidebar } from './NomenclatorForm'
 import { NomenclatorDetails } from './NomenclatorDetails'
-import { ResponsiveListItem, type ListItemAction } from 'shared/ui/lists/CustomListItem'
+import { ResponsiveListItem } from 'shared/ui/lists/CustomListItem'
 import ContainerWithSidebar from 'shared/layout/container/GenericContainer'
 import { DisableConfirmDialog } from 'src/components/ui/feedback/ConfirmationDialog'
 import PaginationComponent from 'shared/ui/lists/PaginationComponent'
@@ -18,10 +18,22 @@ import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { useUserContext } from 'src/stores/UserContext'
 import { useSearchParams } from 'react-router-dom'
 import { Grid, List, ListItemText, Stack, Typography } from '@mui/material'
+import { useOrderSeachList } from 'src/hooks/useOrderSearchLists'
+import { OrderSearchMenu } from 'src/components/ui/lists/OrderMenu'
+import { NoItemsMessage } from 'src/components/ui/lists/NoItemsMessage'
+
+const ORDER_NOM_FIELDS = [
+    { name: "name", label: "Orden Alfabético" },
+    { name: "parent_nomenclator_id", label: "Nomenclador padre" },
+]
+
+const SEARCH_NOM_FIELDS = [
+    { name: "name", label: "Nombre" },
+]
 
 export const NomenclatorList = () => {
 
-    const { activeOrg } = useUserContext()
+    const { activeOrg, user } = useUserContext()
 
     const [nomenclators, setNomenclators] = useState<Paginable<NomenclatorDetailed> | null>(null)
 
@@ -31,10 +43,12 @@ export const NomenclatorList = () => {
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(nomenclators)
 
+    const { fetchParams, handleSearchChange, handleOrderChange } = useOrderSeachList()
+
     const fetchNom = useCallback((fetchPage: number, pageSize: number) => {
-        return getNomenclators({ only_active: false, detailed: true, page: fetchPage, page_size: pageSize })
+        return getNomenclators({ detailed: true, page: fetchPage, page_size: pageSize, ...fetchParams })
             .then(setNomenclators)
-    }, [])
+    }, [fetchParams])
 
     const { loading, fnWithLoading: fetchNomLoad } = useLoading(fetchNom)
 
@@ -46,7 +60,7 @@ export const NomenclatorList = () => {
     const updateEntityOnList = useCallback((entity: NomenclatorDetailed | null, mode: string) => {
         switch (mode) {
             case "CREATE_NOM": {
-                getNomenclators({ detailed: true, page_size: pageSize, only_active: false, page: nomenclators?.page }).then(setNomenclators)
+                fetchNomLoad(nomenclators?.page, pageSize)
                 break;
             }
             case "UPDATE_NOM": {
@@ -62,11 +76,11 @@ export const NomenclatorList = () => {
             }
             case "DELETE_NOM": {
                 if (selectedEntity && entity?.id === selectedEntity.id) closeSidebar()
-                getNomenclators({ detailed: true, page_size: pageSize, only_active: false, page: nomenclators?.page }).then(setNomenclators)
+                fetchNomLoad(nomenclators?.page, pageSize)
                 break;
             }
         }
-    }, [closeSidebar, nomenclators?.page, pageSize, selectedEntity])
+    }, [closeSidebar, nomenclators?.page, pageSize, selectedEntity, fetchNomLoad])
 
     const handleActive = useCallback(async (nom: NomenclatorDetailed | null) => {
         if (!nom) return
@@ -116,7 +130,7 @@ export const NomenclatorList = () => {
         }>
             <Stack>
                 <Stack direction="row" useFlexGap spacing={2} sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
-                    <Typography variant="h1">Lista de Nomencladores</Typography>
+                    <Typography variant="h1">Nomencladores</Typography>
                     {nomenclators && nomenclators.items?.length > 0 &&
                         <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_NOM", null) }}
                             sx={{ marginLeft: "auto" }} onlyTooltip>
@@ -124,6 +138,7 @@ export const NomenclatorList = () => {
                         </CommonButton>
                     }
                 </Stack>
+                <OrderSearchMenu searchOptions={SEARCH_NOM_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_NOM_FIELDS} handleOrderChange={handleOrderChange} />
                 <LoadingScreenWrapper loading={loading}>
                     <Stack spacing={2}>
                         {
@@ -131,19 +146,14 @@ export const NomenclatorList = () => {
                                 <List dense>
                                     <Grid container sx={{ alignItems: "stretch" }}>
                                         {nomenclators.items.map(nom => {
-                                            const isBlocked = !nom.organization_id && activeOrg?.id !== 0
+                                            const isBlocked = nom.organization_id === 1 && !user?.is_superuser
                                             return (<Grid size={{ xs: 12, sm: 12, md: 6, lg: 4 }} key={nom.id}>
                                                 <ResponsiveListItem isSelected={nom.id === selectedEntity?.id} disablePadding
                                                     onClick={() => handleSidebar("DETAILS_NOM", nom)}
                                                     actions={[
-                                                        { actionType: "DETAILS", label: 'Detalle', onClick: () => handleSidebar("DETAILS_NOM", nom) },
-                                                        ...(isBlocked ? [] : [
-                                                            { actionType: "MODIFY", label: 'Modificar', onClick: () => handleSidebar("UPDATE_NOM", nom) },
-                                                            {
-                                                                actionType: (nom.active ? "DISABLE" : "ENABLE"), label: nom.active ? "Deshabilitar" : "Habilitar",
-                                                                color: (nom.active ? "error" : "success"), onClick: () => handleDeletingNom(nom)
-                                                            }
-                                                        ] as ListItemAction[])
+                                                        { template: "DETAILS", onClick: () => handleSidebar("DETAILS_NOM", nom) },
+                                                        !isBlocked && { template: "MODIFY", onClick: () => handleSidebar("UPDATE_NOM", nom) },
+                                                        !isBlocked && { template: nom.active ? "DISABLE" : "ENABLE", onClick: () => handleDeletingNom(nom) },
                                                     ]}>
                                                     <ListItemText primary={
                                                         <Stack spacing={.5} direction="row" sx={{ alignItems: "center" }}>
@@ -157,7 +167,7 @@ export const NomenclatorList = () => {
                                                             </Stack>
                                                         </Stack>
                                                     }
-                                                        secondary={!nom.organization_id &&
+                                                        secondary={nom.organization_id === 1 &&
                                                             <span style={{ fontStyle: "italic" }}>Nomenclador del Sistema</span>
                                                         } />
                                                 </ResponsiveListItem>
@@ -167,12 +177,12 @@ export const NomenclatorList = () => {
                                         )}
                                     </Grid>
                                 </List>
-                                : <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
-                                    <Typography variant="h4">No se han encontrado nomencladores...</Typography>
+                                :
+                                <NoItemsMessage search={fetchParams.search} emptyFetchMessage="No se han encontrado nomencladores...">
                                     <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_NOM", null) }} variant="contained">
                                         Agregar
                                     </CommonButton>
-                                </Stack>
+                                </NoItemsMessage>
                         }
                         <PaginationComponent {...pageComponentProps} />
                     </Stack>

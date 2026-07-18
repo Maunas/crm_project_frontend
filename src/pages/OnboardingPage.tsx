@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import {
     Box, Button, Card, CardContent, CircularProgress,
@@ -10,6 +10,7 @@ import { createOrganization } from "src/features/organizations/organizationServi
 import { acceptInvite } from "src/features/auth/userServices"
 import { tokenStore } from "src/lib/tokenStore"
 import { useForm } from "react-hook-form"
+import type { SimpleErrorBody } from "src/types/shared"
 
 // ── Crear organizacion ────────────────────────────────────────────────────
 
@@ -22,8 +23,11 @@ function CreateOrgCard({ onSuccess }: { onSuccess: () => void }) {
         try {
             await createOrganization({ name: data.name, description: data.description || undefined })
             onSuccess()
-        } catch (e: any) {
-            const detail = e?.response?.data?.detail ?? "Error al crear la organizacion."
+        } catch (e) {
+            const error = e as SimpleErrorBody
+            const detail = typeof error?.response?.data?.detail === "string" ?
+                error?.response?.data?.detail
+                : "Error al crear la organizacion."
             setError("root", { message: detail })
         }
     }
@@ -83,8 +87,11 @@ function JoinOrgCard({ onSuccess }: { onSuccess: () => void }) {
             const tokens = await acceptInvite(data.token.trim(), user?.name ?? "usuario", "_placeholder_")
             tokenStore.setTokens(tokens.access_token, tokens.refresh_token, tokenStore.isRemembered())
             onSuccess()
-        } catch (e: any) {
-            const detail = e?.response?.data?.detail ?? "Token invalido o expirado."
+        } catch (e) {
+            const error = e as SimpleErrorBody
+            const detail = typeof error?.response?.data?.detail === "string" ?
+                error?.response?.data?.detail
+                : "Token invalido o expirado."
             setError("root", { message: detail })
         }
     }
@@ -128,19 +135,19 @@ function JoinOrgCard({ onSuccess }: { onSuccess: () => void }) {
 
 export function OnboardingPage() {
     const nav = useNavigate()
-    const { user, isRestoring, fetchOrganizations, refreshUser, userOrganizations: organizations } = useUserContext()
+    const { user, isRestoring, fetchOrgHeaderList, refreshUser, orgHeaderList } = useUserContext()
 
     useEffect(() => {
         if (!isRestoring && !user) nav("/login", { replace: true })
     }, [user, isRestoring, nav])
 
     useEffect(() => {
-        if (!isRestoring && user && organizations.length > 0) nav("/", { replace: true })
-    }, [user, organizations, isRestoring, nav])
+        if (!isRestoring && user && orgHeaderList.length > 0) nav("/", { replace: true })
+    }, [user, orgHeaderList.length, isRestoring, nav])
 
     const handleSuccess = async () => {
         await refreshUser()
-        fetchOrganizations()
+        fetchOrgHeaderList()
     }
 
     if (isRestoring || !user) {

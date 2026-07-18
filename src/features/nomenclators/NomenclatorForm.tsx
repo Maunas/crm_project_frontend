@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { SidebarContentActionsWrapper, SidebarContentWrapper } from "shared/layout/container/GenericContainer"
+import { SidebarContentActionsWrapper, SidebarContentWrapper } from "shared/layout/container/GenericSidebar"
 import { ControlledAutocomplete } from "shared/ui/forms/CustomMultipleInputs"
 import { ControlledTextInput } from "shared/ui/forms/CustomInputs"
 import { FormErrorMessage } from "shared/ui/forms/FormFeedback"

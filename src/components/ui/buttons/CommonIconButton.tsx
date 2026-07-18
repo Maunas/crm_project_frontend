@@ -47,7 +47,7 @@ export const CommonIconButton = ({ actionType = "NONE", title, color = "action",
     )
 
     return (
-        <ChipTooltip title={title} color={chipColor} size={tooltipSize}>
+        <ChipTooltip title={title} color={chipColor} size={tooltipSize} >
             <IconButton edge="end" aria-label={title} size={size} disabled={loading}
                 {...props} sx={{ ...borderStyle, ...props.sx }}>
                 {actionIcon}
