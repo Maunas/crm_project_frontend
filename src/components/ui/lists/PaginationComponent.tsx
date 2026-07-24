@@ -4,9 +4,10 @@ import { memo } from "react"
 interface PaginationComponentProps {
   totalPages: number,
   page: number,
-  handlePage: (event: React.ChangeEvent<unknown>, value: number) => void
+  handlePage: (event: React.ChangeEvent<unknown>, value: number) => void,
+  size?: "small" | "medium" | "large"
 }
-const PaginationComponent = memo(({ totalPages, page, handlePage }: PaginationComponentProps) => {
+const PaginationComponent = memo(({ totalPages, page, handlePage, size = "medium" }: PaginationComponentProps) => {
   return (
     <Box sx={{ width: "100%" }}>
       <Pagination
@@ -15,6 +16,7 @@ const PaginationComponent = memo(({ totalPages, page, handlePage }: PaginationCo
         shape="rounded"
         color="primary"
         onChange={handlePage}
+        size={size}
       />
     </Box>
   )
