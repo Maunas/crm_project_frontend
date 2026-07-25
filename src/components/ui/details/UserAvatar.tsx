@@ -1,5 +1,6 @@
-import { Avatar, Tooltip } from '@mui/material';
+import { Tooltip } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material';
+import { CustomAvatar } from './CustomAvatar';
 
 interface UserAvatarProps {
     name: string;
@@ -29,20 +30,23 @@ export const UserAvatar = ({ name, src, size = 36, tooltip = false, sx }: UserAv
     const color = nameToColor(name);
 
     const avatar = (
-        <Avatar
+        <CustomAvatar
+            color={color}
             src={src}
+            variant='circular'
+            ring
             sx={{
                 width: size,
                 height: size,
-                bgcolor: color,
                 fontSize: size * 0.38,
                 fontWeight: 700,
                 letterSpacing: 0.5,
                 ...sx,
             }}
+
         >
             {!src && getInitials(name)}
-        </Avatar>
+        </CustomAvatar>
     );
 
     if (tooltip) {

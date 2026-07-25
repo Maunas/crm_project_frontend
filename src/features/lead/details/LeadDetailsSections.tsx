@@ -231,7 +231,7 @@ export const LeadFieldContent = (props: LeadFieldProps) => {
             //el `??` de más abajo cae en el mismo placeholder "Sin valor. Clic para cargar." que ya usan
             //los demás tipos.
             case "BOOL": return (value !== null && value !== undefined && value !== "")
-                ? <BoolValue value={`${value}`} /> : undefined
+                ? <BoolValue value={`${value}`} size="small" /> : undefined
 
             case "DATE":
             case "DATE_TIME": return value ? <DateValue date={`${value}`} subtype={subtypeCode ?? undefined} /> : undefined

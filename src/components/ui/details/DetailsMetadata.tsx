@@ -1,37 +1,56 @@
-import { Grid, Stack, Tooltip, Typography } from "@mui/material";
+import { Divider, Grid, Stack, Tooltip, Typography } from "@mui/material";
 import type { Metadata } from "src/types/shared";
 import { formatDate, formatUserFullName } from "src/utils/formatters";
-import WatchLaterIcon from '@mui/icons-material/WatchLater';
 import PersonIcon from '@mui/icons-material/Person';
+import WatchLaterIcon from '@mui/icons-material/WatchLater';
+import ACTION_ICONS from "../buttons/ActionIcons";
+import type { ReactNode } from "react";
+import { ChipTooltip } from "./ChipTooltip";
+import { UserAvatar } from "./UserAvatar";
 
 interface DetailsMetadataProps<T extends Metadata> {
     entity: T
 }
 
 export default function DetailsMetadata<T extends Metadata>({ entity }: DetailsMetadataProps<T>) {
+    const hasModifier = entity?.updater && entity.updated_at !== entity.created_at
+    const creatorName = entity.creator ? [entity.creator.name, entity.creator.last_name].filter(Boolean).join(" ") : ""
+    const updaterName = entity.updater ? [entity.updater.name, entity.updater.last_name].filter(Boolean).join(" ") : ""
     return (
-        <Grid container spacing={1} sx={{ minWidth: "20rem" }}>
-            <Grid size="grow" sx={{ minWidth: "12rem" }}>
-                <Typography variant="subtitle2" color="textSecondary">
-                    Fecha de creación:
-                </Typography>
-                <Typography variant="body1" sx={{ textTransform: "capitalize" }}>
-                    {formatDate(entity?.created_at, "dateTimeLong")}
-                </Typography>
-            </Grid>
-            {entity?.updated_at &&
-                <Grid size="grow" sx={{ minWidth: "12rem" }}>
-                    <Typography variant="subtitle2" color="textSecondary">
-                        Fecha de última modificación:
-                    </Typography>
-                    <Typography variant="body1" sx={{ textTransform: "capitalize" }}>
-                        {formatDate(entity.updated_at, "dateTimeLong")}
-                    </Typography>
-                </Grid>
+        <Stack direction="row" spacing={3} useFlexGap divider={<Divider orientation="vertical" flexItem />}
+            sx={{ minWidth: "20rem", justifyContent: "space-between", flexWrap: "wrap" }}>
+            <MetadataItem title="Creado por" name={creatorName} email={entity.creator?.email} date={entity?.created_at} icon={ACTION_ICONS.PERSON_OUTLINE} />
+            {hasModifier &&
+                <MetadataItem title="Modificado por" name={updaterName} email={entity.updater?.email} date={entity?.updated_at} icon={ACTION_ICONS.MODIFY} />
             }
-        </Grid>
+        </Stack>
     );
 }
+
+export const MetadataItem = ({ title, name, email, date }: { title: string, name?: string | null, email?: string | null, date?: string | null, icon?: ReactNode }) => {
+    return (
+        <Stack spacing={.5} sx={{ flex: 1 }}>
+            <Typography variant="caption" color="textSecondary" sx={{ textTransform: "uppercase", fontWeight: 600, letterSpacing: 0.5 }}>
+                {title}
+            </Typography>
+            <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                {name && <UserAvatar name={name} />}
+                <Stack>
+                    <ChipTooltip title={email} color="secondary" size="small">
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                            {name}
+                        </Typography>
+                    </ChipTooltip>
+                    {date &&
+                        <Typography variant="caption" color="textSecondary" sx={{ textTransform: "capitalize" }}>
+                            {formatDate(`${date}`, "dateTimeLong")}
+                        </Typography>}
+                </Stack>
+            </Stack>
+        </Stack>
+    )
+}
+
 
 
 interface MetadataShortProps {

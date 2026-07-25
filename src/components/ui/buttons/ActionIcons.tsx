@@ -25,6 +25,8 @@ import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import DownloadIcon from '@mui/icons-material/Download';
 import UploadIcon from '@mui/icons-material/Upload'
 import TuneIcon from '@mui/icons-material/Tune'
+import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 
 const ACTION_ICONS = {
     NONE: <></>,
@@ -55,6 +57,8 @@ const ACTION_ICONS = {
     DOWNLOAD: <DownloadIcon sx={{ display: "block" }} />,
     IMPORT: <UploadIcon sx={{ display: "block" }} />,
     PARAMETERS: <TuneIcon sx={{ display: "block" }} />,
+    PERSON_OUTLINE: <BadgeOutlinedIcon sx={{ display: "block" }} />,
+    CALENDAR: <CalendarMonthIcon sx={{ display: "block" }} />,
 
 }
 
