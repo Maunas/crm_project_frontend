@@ -11,9 +11,7 @@ import { useListPagination } from "src/hooks/useListPagination"
 import { useLoading } from "src/hooks/useLoading"
 import type { LeadAudit, LeadDetailed } from "src/types/leads"
 import type { ColorTypes } from "src/types/mui-theme.d"
-import type { LeadState } from "src/types/leadFlow"
 import type { Paginable } from "src/types/shared"
-import { getLeadFlowStates } from "features/leadFlows/leadFlowServices/FlowService"
 import { getAudit } from "./leadActivitiesService"
 import { showCommonErrorToast } from "src/utils/feedback"
 import { Avatar, Box, Button, Card, CardActionArea, CardActions, CardContent, CardHeader, Collapse, Divider, Stack, Typography } from "@mui/material"
@@ -26,6 +24,8 @@ import WatchLaterIcon from '@mui/icons-material/WatchLater';
 import EditIcon from "@mui/icons-material/Edit"
 import AddIcon from "@mui/icons-material/Add"
 import { NoItemsMessage } from "src/components/ui/lists/NoItemsMessage"
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import ContactPageIcon from '@mui/icons-material/ContactPage';
 
 const MAX_ITEMS_NUM = 3
 
@@ -33,6 +33,8 @@ const AUDIT_TYPES = {
   "FIELDS_UPDATED": { icon: <EditIcon />, color: "info", label: "Actualización de datos", value: "FIELDS_UPDATED" },
   "LEAD_CREATED": { icon: <AddIcon />, color: "success", label: "Lead Creado", value: "LEAD_CREATED" },
   "STATE_CHANGED": { icon: <AccountTreeIcon />, color: "warning", label: "Cambio de Estado", value: "STATE_CHANGED" },
+  "LEAD_REASSIGNED": { icon: <SwapHorizIcon />, color: "secondary", label: "Reasignación", value: "LEAD_REASSIGNED" },
+  "CONTACT_STATE_CHANGED": { icon: <ContactPageIcon />, color: "primary", label: "Cambio de Estado de Contacto", value: "CONTACT_STATE_CHANGED" },
   "DEFAULT": { icon: <InfoOutlinedIcon />, color: "error", label: "Otros", value: "DEFAULT" }
 }
 
@@ -46,12 +48,6 @@ const ORDER_AUDIT_FIELDS = [
 export const LeadAuditList = ({ lead, reloadAudit }: { lead: LeadDetailed, reloadAudit: number }) => {
 
   const [audit, setAudit] = useState<Paginable<LeadAudit> | null>(null)
-  const [statesList, setStatesList] = useState<LeadState[]>([])
-
-  useEffect(() => {
-    getLeadFlowStates({ detailed: false, lead_flow_id: lead.current_state.lead_flow_id, only_active: false, page_size: 0 })
-      .then(res => setStatesList(res.items))
-  }, [lead.current_state.lead_flow_id])
 
   const { fetchPage, pageSize, pageComponentProps, goToPageOne } = useListPagination(audit, 8)
   const { fetchParams, handleOrderChange, handleSearchChange } = useOrderSeachList()
@@ -108,7 +104,7 @@ export const LeadAuditList = ({ lead, reloadAudit }: { lead: LeadDetailed, reloa
       />
       <LoadingScreenWrapper loading={loading}>
         {audit?.items && audit?.items.length > 0 ?
-          <>
+          <Stack spacing={2} sx={{ height: "100%" }}>
             <Timeline sx={{
               flexGrow: 1,
               [`& .${timelineItemClasses.root}:before`]: {
@@ -117,8 +113,6 @@ export const LeadAuditList = ({ lead, reloadAudit }: { lead: LeadDetailed, reloa
               },
             }}>
               {audit?.items.map((item, idx) => {
-                const stateChangeFromObject = item.activity_type !== "STATE_CHANGED" ? undefined : statesList?.find(i => i.id === item.details.from_state_id)
-                const stateChangeToObject = item.activity_type !== "STATE_CHANGED" ? undefined : statesList?.find(i => i.id === item.details.to_state_id)
                 return (
                   <CustomTimelineItem selected={idx === showItems} last={idx === audit.items.length - 1} key={item.id}>
                     <Card raised>
@@ -160,14 +154,67 @@ export const LeadAuditList = ({ lead, reloadAudit }: { lead: LeadDetailed, reloa
                           <CardContent sx={{ py: 1 }}>
                             <Stack direction="row" useFlexGap spacing={1} sx={{ flexWrap: "wrap", px: 1, alignItems: "center" }}>
                               <Box>
-                                <LeadAuditValue value={stateChangeFromObject?.name ?? item?.details?.from_state_id}
-                                  id={item.id} color={stateChangeFromObject?.color ?? "secondary"} size="small" />
+                                <LeadAuditValue value={item.details.from_state_name ?? item.details.from_state_id}
+                                  id={item.id} color={item.details.from_state_color ?? "secondary"} size="small" />
                               </Box>
                               <ArrowForwardIcon fontSize="small" />
                               <Box>
-                                <LeadAuditValue value={stateChangeToObject?.name ?? item?.details?.to_state_id}
-                                  id={item.id} color={stateChangeToObject?.color ?? "primary"} size="small" />
+                                <LeadAuditValue value={item.details.to_state_name ?? item.details.to_state_id}
+                                  id={item.id} color={item.details.to_state_color ?? "primary"} size="small" />
                               </Box>
+                            </Stack>
+                          </CardContent>
+                        }
+                        {item.activity_type === "CONTACT_STATE_CHANGED" &&
+                          <CardContent sx={{ py: 1 }}>
+                            <Stack direction="row" useFlexGap spacing={1} sx={{ flexWrap: "wrap", px: 1, alignItems: "center" }}>
+                              <Box>
+                                <LeadAuditValue value={item.details.from_contact_state_name ?? item.details.from_contact_state_id ?? null}
+                                  id={item.id} color={item.details.from_contact_state_color ?? "secondary"} size="small" />
+                              </Box>
+                              <ArrowForwardIcon fontSize="small" />
+                              <Box>
+                                <LeadAuditValue value={item.details.to_contact_state_name ?? item.details.to_contact_state_id}
+                                  id={item.id} color={item.details.to_contact_state_color ?? "primary"} size="small" />
+                              </Box>
+                            </Stack>
+                          </CardContent>
+                        }
+                        {item.activity_type === "LEAD_REASSIGNED" &&
+                          <CardContent sx={{ py: 1 }}>
+                            <Stack spacing={1} sx={{ alignItems: "start" }}>
+                              {item.details.previous_team_id !== item.details.new_team_id &&
+                                <Stack spacing={1} sx={{ alignItems: "start" }}>
+                                  <Typography variant="body2" sx={{ fontWeight: "bold" }}>Equipo:</Typography>
+                                  <Stack direction="row" useFlexGap spacing={1} sx={{ flexWrap: "wrap", px: 1, alignItems: "center" }}>
+                                    <Box>
+                                      <LeadAuditValue value={item.details.previous_team_name ?? item.details.previous_team_id ?? null}
+                                        id={item.id} color="error" size="small" />
+                                    </Box>
+                                    <ArrowForwardIcon fontSize="small" />
+                                    <Box>
+                                      <LeadAuditValue value={item.details.new_team_name ?? item.details.new_team_id ?? null}
+                                        id={item.id} color="success" size="small" />
+                                    </Box>
+                                  </Stack>
+                                </Stack>
+                              }
+                              {item.details.previous_user_id !== item.details.new_user_id &&
+                                <Stack spacing={1} sx={{ alignItems: "start" }}>
+                                  <Typography variant="body2" sx={{ fontWeight: "bold" }}>Usuario Asignado:</Typography>
+                                  <Stack direction="row" useFlexGap spacing={1} sx={{ flexWrap: "wrap", px: 1, alignItems: "center" }}>
+                                    <Box>
+                                      <LeadAuditValue value={item.details.previous_user_name ?? item.details.previous_user_id ?? null}
+                                        id={item.id} color="error" size="small" />
+                                    </Box>
+                                    <ArrowForwardIcon fontSize="small" />
+                                    <Box>
+                                      <LeadAuditValue value={item.details.new_user_name ?? item.details.new_user_id ?? null}
+                                        id={item.id} color="success" size="small" />
+                                    </Box>
+                                  </Stack>
+                                </Stack>
+                              }
                             </Stack>
                           </CardContent>
                         }
@@ -185,7 +232,7 @@ export const LeadAuditList = ({ lead, reloadAudit }: { lead: LeadDetailed, reloa
               })}
             </Timeline>
             <PaginationComponent {...pageComponentProps} />
-          </>
+          </Stack >
           :
           <NoItemsMessage emptyFetchMessage="No hay datos registrados al momento"
             search={fetchParams.search} genericSearchMsg />
@@ -225,7 +272,7 @@ const LeadAuditHeader = ({ activityType, message }: { activityType?: keyof typeo
 
 
 interface LeadAuditValueProps {
-  value: string | number | number[] | null,
+  value?: string | number | number[] | null,
   fieldName?: string,
   size?: "small" | "medium" | "large" | "xlarge",
   color?: string,
