@@ -1,5 +1,5 @@
 import type { LeadFieldValue, LeadFieldValueDetailed } from "./leadFields";
-import type { LeadFilter, ListParams, Metadata } from "./shared";
+import type { Creator, LeadFilter, ListParams, Metadata, Updater } from "./shared";
 import type { LeadState, LeadStateDetailed } from "./leadFlow";
 import type { ColorTypes } from "./mui-theme.d";
 import type { LeadContactState, LeadContactStateDetailed, LeadTag } from "./orgProperties";
@@ -21,6 +21,7 @@ export interface LeadTeam {
 export interface LeadUser {
   id: number;
   name: string;
+  last_name?: string | null;
   email: string;
 }
 
@@ -41,6 +42,12 @@ export interface Lead {
   picture_avatar_url?: string | null;
   team?: LeadTeam | null;
   assigned_to_user?: LeadUser | null;
+  //Tipados como Creator/Updater (de shared.ts) y no como LeadUser: LeadDetailed extiende tanto
+  //Lead como Metadata, y Metadata ya declara creator/updater con esos tipos. Si acá se usara
+  //LeadUser (con forma distinta, ej. name no nullable) TypeScript rechaza el extends múltiple
+  //por tener el mismo campo con tipos no idénticos en las dos interfaces base.
+  creator?: Creator | null;
+  updater?: Updater | null;
   //Solo viene poblado cuando este Lead aparece como "lead relacionado" (campo tipo LEAD) dentro
   //de OTRO lead, y el usuario actual no tiene acceso a su campaña. En ese caso field_values ya
   //viene recortado por el backend a solo los campos title_order (ver RelatedLeadResponse en

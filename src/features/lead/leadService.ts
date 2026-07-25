@@ -1,5 +1,6 @@
 import type { BulkDeleteResponse, DeleteResponse, EnableResponse, LeadFilter, LeadListParams, ListParams, Paginable } from "src/types/shared";
 import type { Lead, LeadDetailed, LeadView, LeadViewDetailed, LeadViewPost } from "src/types/leads";
+import type { BulkAssignRequest } from "src/types/teams";
 import axiosCRM from "src/lib/axios";
 
 export const getLeads = async <T extends ListParams>(params?: T)
@@ -137,6 +138,14 @@ export const processImport = async (campaignId: number, file: File, mapping: Rec
 export const changeStateLead = async (lead_id: number, state_id: number): Promise<LeadDetailed> => {
   const body = { "new_state_id": state_id }
   const response = await axiosCRM.post(`leads/${lead_id}/change_state`, body);
+  return response.data;
+};
+
+//Reasignación de equipo/usuario asignado. Pensado para lotes (ver TeamAccessPanel/bulk actions),
+//pero también sirve para un único lead (lead_ids: [id]) — es el único endpoint que puede tocar
+//team_id/assigned_to_user_id, ya que LeadUpdate (PUT /leads/{id}) no los incluye.
+export const bulkAssignLeads = async (body: BulkAssignRequest): Promise<Lead[]> => {
+  const response = await axiosCRM.patch(`leads/bulk-assign`, body);
   return response.data;
 };
 

@@ -7,16 +7,22 @@ import LoadingScreenWrapper from "src/components/ui/feedback/LoadingScreen.tsx"
 import GenericPaper from "shared/layout/container/GenericPaper"
 import { ListActionMenu, type ListItemAction } from "shared/ui/lists/CustomListItem"
 import { useLoading } from "src/hooks/useLoading.ts"
-import type { LeadDetailed } from "src/types/leads.ts"
+import type { Lead, LeadDetailed, LeadTeam } from "src/types/leads.ts"
 import type { Campaign } from "src/types/campaigns.ts"
-import { disableLead, enableLead, getLead } from "../leadService.ts"
+import type { BulkAssignRequest } from "src/types/teams.ts"
+import type { UserPublic } from "src/types/users.ts"
+import { bulkAssignLeads, disableLead, enableLead, getLead } from "../leadService.ts"
 import { getCampaign } from "src/features/campaigns/campaignServices.ts"
 import { getLeadTitleArray, getLeadSubtitleArray } from "../leadUtils.ts"
 import { LeadTitleConfigSidebar } from "src/features/lead/leadTitleConfig/LeadTitleConfigSidebar"
 import { showCommonErrorToast, showToast } from "src/utils/feedback.ts"
 import { useLeadNavigation } from "../stores/LeadNavigationContext.tsx"
+import { useUserContext } from "src/stores/UserContext"
 import { Link as RouterLink, useNavigate, useParams } from "react-router-dom"
-import { Grid, Typography, Stack, Breadcrumbs, Link, Box, CircularProgress, Fab, Slide, Tooltip, Button, IconButton } from "@mui/material"
+import {
+    Grid, Typography, Stack, Breadcrumbs, Link, Box, CircularProgress, Fab, Slide, Tooltip, Button, IconButton,
+    Autocomplete, TextField, Divider
+} from "@mui/material"
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import MailOutlineIcon from '@mui/icons-material/MailOutlined';
@@ -25,10 +31,14 @@ import EventIcon from '@mui/icons-material/Event';
 import PersonIcon from '@mui/icons-material/Person';
 import GroupsIcon from '@mui/icons-material/Groups';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutlined';
+import EditIcon from '@mui/icons-material/Edit';
 import { LeadDetailsState } from "./LeadDetailsState.tsx"
 import type { LeadFieldDetailed } from "src/types/leadFields.ts"
 import { UserAvatar } from "shared/ui/details/UserAvatar.tsx"
-import { formatDate } from "src/utils/formatters.ts"
+import { formatDate, formatUserFullName } from "src/utils/formatters.ts"
+import { getTeams } from "../teamService.ts"
+import { getUsersInOrg } from "src/features/auth/userServices.ts"
 
 export const LeadDetailsLayout = () => {
 
@@ -299,7 +309,7 @@ export const LeadInfo = ({ lead, leadTitle, leadSubtitle, handleActive, updateLe
                     <LeadQuickActions />
                     <LeadDetailsState lead={lead} updateLeadInfo={updateLeadInfo} contactState={lead.contact_state} flowState={lead.current_state} />
                     <LeadTags lead={lead} updateLeadInfo={updateLeadInfo} />
-                    <LeadMetaInfo lead={lead} />
+                    <LeadMetaInfo lead={lead} updateLeadInfo={updateLeadInfo} />
                 </Stack>
             </GenericPaper>
             <LeadFieldSections lead={lead} updateLeadInfo={updateLeadInfo} />
@@ -329,50 +339,181 @@ const LeadQuickActions = () => {
     )
 }
 
+// Opción genérica para los selectores de Usuario/Equipo asignado. id: null representa
+// "Sin asignar" (para poder desasignar, ver bulk_assign/clear_team/clear_user en el backend).
+interface AssignOption {
+    id: number | null
+    label: string
+}
+const UNASSIGNED_OPTION: AssignOption = { id: null, label: "Sin asignar" }
+
 /**
- * Meta-datos del lead: propietario (usuario/equipo asignado), creación y última actividad.
- * El backend todavía no expone `assigned_to_user`/`team` en el detalle del lead (solo en el
- * listado), así que por ahora se muestran solo las etiquetas de Propietario sin resolver
- * el nombre, como recordatorio para agregar ese dato en el backend más adelante.
+ * Meta-datos del lead: propietario (usuario/equipo asignado, editables vía selector), quién lo
+ * creó/modificó, y fechas de creación/última modificación. Layout en 2 columnas: izquierda
+ * (Usuario asignado -> Creado por -> Fecha Creación) y derecha (Equipo asignado -> Modificado por
+ * -> Fecha Modificación), pedido explícitamente por el usuario.
+ * `valueTooltip` (email de creador/modificador) reutiliza el mismo patrón de
+ * `SystemAuditLogs.tsx`/`DetailsMetadata.tsx` (nombre completo visible, email en hover).
  */
-const LeadMetaInfo = ({ lead }: { lead: LeadDetailed }) => {
-    const rows: { icon: ReactNode, label: string, value?: string }[] = [
-        ...(lead.assigned_to_user_id ? [{ icon: <PersonIcon fontSize="small" />, label: "Usuario asignado" }] : []),
-        ...(lead.team_id ? [{ icon: <GroupsIcon fontSize="small" />, label: "Equipo asignado" }] : []),
-        { icon: undefined, label: "Creado", value: formatDate(lead.created_at, "custom", "DD/MM/YYYY HH:mm") },
-        ...(lead.updated_at ? [{ icon: undefined, label: "Última actividad", value: formatDate(lead.updated_at, "custom", "DD/MM/YYYY HH:mm") }] : []),
-    ]
+const LeadMetaInfo = ({ lead, updateLeadInfo }: { lead: LeadDetailed, updateLeadInfo: (lead: LeadDetailed, reloadAudits?: boolean) => void }) => {
+    //Mismo permiso que exige el backend en PATCH /leads/bulk-assign ("lead:update", ver
+    //lead_controller.py) para reasignar equipo/usuario — igual criterio que el resto del detalle
+    //(se muestra siempre el valor actual, solo se gatea la posibilidad de cambiarlo).
+    const { hasPermission } = useUserContext()
+    const canUpdateLead = hasPermission("lead:update")
+
+    const [users, setUsers] = useState<UserPublic[]>([])
+    const [teams, setTeams] = useState<LeadTeam[]>([])
+
+    useEffect(() => {
+        if (!canUpdateLead) return
+        getUsersInOrg().then(setUsers).catch(e => showCommonErrorToast(e, "No se pudieron cargar los usuarios de la organización."))
+        getTeams({ page_size: 0 }).then(res => setTeams(res.items)).catch(e => showCommonErrorToast(e, "No se pudieron cargar los equipos."))
+    }, [canUpdateLead])
+
+    const userOptions = useMemo<AssignOption[]>(() => [
+        UNASSIGNED_OPTION,
+        ...users.map(u => ({ id: u.id, label: formatUserFullName(u) ?? u.email })),
+    ], [users])
+    const teamOptions = useMemo<AssignOption[]>(() => [
+        UNASSIGNED_OPTION,
+        ...teams.map(t => ({ id: t.id, label: t.name })),
+    ], [teams])
+
+    const currentUserOption: AssignOption = lead.assigned_to_user
+        ? { id: lead.assigned_to_user.id, label: formatUserFullName(lead.assigned_to_user) ?? lead.assigned_to_user.email }
+        : UNASSIGNED_OPTION
+    const currentTeamOption: AssignOption = lead.team
+        ? { id: lead.team.id, label: lead.team.name }
+        : UNASSIGNED_OPTION
+
+    const [assigning, setAssigning] = useState(false)
+
+    const handleAssign = useCallback((body: Omit<BulkAssignRequest, "lead_ids">, merge: (updated: Lead) => Partial<LeadDetailed>) => {
+        setAssigning(true)
+        bulkAssignLeads({ lead_ids: [lead.id], ...body })
+            .then(res => {
+                const updated = res[0]
+                //El timeline del lead registra un evento LEAD_REASSIGNED (ver lead_service.bulk_assign),
+                //así que recargamos la pestaña de Auditoría igual que al cambiar etapa/estado.
+                if (updated) updateLeadInfo({ ...lead, ...merge(updated) }, true)
+            })
+            .catch(e => showCommonErrorToast(e))
+            .finally(() => setAssigning(false))
+    }, [lead, updateLeadInfo])
+
+    const handleAssignUser = (option: AssignOption | null) => {
+        if (!option || option.id === currentUserOption.id) return
+        handleAssign(
+            option.id === null ? { clear_user: true } : { target_user_id: option.id },
+            updated => ({ assigned_to_user_id: updated.assigned_to_user_id, assigned_to_user: updated.assigned_to_user }),
+        )
+    }
+
+    const handleAssignTeam = (option: AssignOption | null) => {
+        if (!option || option.id === currentTeamOption.id) return
+        handleAssign(
+            option.id === null ? { clear_team: true } : { target_team_id: option.id },
+            updated => ({ team_id: updated.team_id, team: updated.team }),
+        )
+    }
 
     return (
-        // Grid (en vez de una Stack por fila) para que la columna de la etiqueta ("Creado",
-        // "Última actividad", etc.) tenga el mismo ancho en todas las filas, y así los valores
-        // (fechas) queden alineados entre sí sin importar que los textos midan distinto.
-        // Cada fila usa display:"contents" para que sus 3 celdas se acomoden directo en el grid
-        // del padre; por eso siempre se renderizan las 3 (icono/label/valor), aunque estén vacías,
-        // para no correr el conteo de columnas de las filas siguientes.
-        // Las 3 columnas son "auto" (se ajustan a su contenido). Se probó alinear todo el bloque a
-        // la derecha (justifyContent:"end"); el usuario prefirió volver a dejarlo a la izquierda,
-        // conservando igual la alineación entre filas. justifyContent:"start" se pone explícito
-        // (en vez de confiar en el default "normal" del grid) porque ese default terminaba
-        // renderizando el bloque centrado.
-        <Box sx={{ display: "grid", gridTemplateColumns: "auto auto auto", columnGap: 1, rowGap: .5, justifyContent: "start", width: "100%" }}>
-            {rows.map(row =>
-                <Box key={row.label} sx={{ display: "contents" }}>
-                    <Box sx={{ display: "flex", alignItems: "center", color: "text.secondary" }}>
-                        {row.icon &&
-                            <Tooltip title={row.label}>
-                                <Box sx={{ display: "flex" }}>{row.icon}</Box>
-                            </Tooltip>
-                        }
-                    </Box>
-                    <Typography variant="caption" color="text.secondary" sx={{ alignSelf: "center", whiteSpace: "nowrap" }}>
-                        {row.label}
-                    </Typography>
-                    <Typography variant="caption" sx={{ alignSelf: "center", fontWeight: 600, whiteSpace: "nowrap" }}>
-                        {row.value ?? ""}
-                    </Typography>
-                </Box>
-            )}
-        </Box>
+        <Stack spacing={1.25} sx={{ width: "100%" }}>
+            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, columnGap: 3, width: "100%" }}>
+                <OwnerSelectRow icon={<PersonIcon fontSize="small" />} title="Usuario asignado"
+                    canEdit={canUpdateLead} options={userOptions} value={currentUserOption}
+                    onChange={handleAssignUser} disabled={assigning} />
+                <OwnerSelectRow icon={<GroupsIcon fontSize="small" />} title="Equipo asignado"
+                    canEdit={canUpdateLead} options={teamOptions} value={currentTeamOption}
+                    onChange={handleAssignTeam} disabled={assigning} />
+            </Box>
+
+            <Divider sx={{ opacity: .6 }} />
+
+            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, columnGap: 3, rowGap: .5, width: "100%" }}>
+                <Stack spacing={.5}>
+                    <MetaSectionTitle icon={<AddCircleOutlineIcon fontSize="small" />} title="Creación" />
+                    <MetaPlainRow label="Usuario" value={formatUserFullName(lead.creator) ?? "Sistema"}
+                        valueTooltip={lead.creator?.email ?? undefined} />
+                    <MetaPlainRow label="Fecha" value={formatDate(lead.created_at, "custom", "DD/MM/YYYY HH:mm")} />
+                </Stack>
+                <Stack spacing={.5}>
+                    <MetaSectionTitle icon={<EditIcon fontSize="small" />} title="Modificación" />
+                    {lead.updated_at && <>
+                        <MetaPlainRow label="Usuario" value={formatUserFullName(lead.updater) ?? "Sistema"}
+                            valueTooltip={lead.updater?.email ?? undefined} />
+                        <MetaPlainRow label="Fecha" value={formatDate(lead.updated_at, "custom", "DD/MM/YYYY HH:mm")} />
+                    </>}
+                </Stack>
+            </Box>
+        </Stack>
     )
 }
+
+/** Título de sección con ícono visible (no en tooltip, a diferencia de OwnerSelectRow): "Creación"/"Modificación". */
+const MetaSectionTitle = ({ icon, title }: { icon: ReactNode, title: string }) => (
+    <Stack direction="row" spacing={.5} sx={{ alignItems: "center", color: "text.secondary" }}>
+        {icon}
+        <Typography variant="caption" sx={{ fontWeight: 700, textTransform: "uppercase", letterSpacing: ".04em" }}>
+            {title}
+        </Typography>
+    </Stack>
+)
+
+interface MetaPlainRowProps {
+    label: string
+    value?: string
+    valueTooltip?: string
+}
+
+//Filas simples debajo de MetaSectionTitle (Usuario/Fecha): sin ícono, solo texto — el ícono ya
+//quedó puesto arriba, en el título de la sección.
+const MetaPlainRow = ({ label, value, valueTooltip }: MetaPlainRowProps) => (
+    <Stack direction="row" spacing={.75} sx={{ alignItems: "center", pl: .25 }}>
+        <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: "nowrap" }}>{label}:</Typography>
+        <Tooltip title={valueTooltip ?? ""} disableHoverListener={!valueTooltip}>
+            <Typography variant="caption" sx={{ fontWeight: 600, whiteSpace: "nowrap" }}>{value ?? "—"}</Typography>
+        </Tooltip>
+    </Stack>
+)
+
+interface OwnerSelectRowProps {
+    icon: ReactNode
+    title: string
+    canEdit: boolean
+    options: AssignOption[]
+    value: AssignOption
+    onChange: (option: AssignOption | null) => void
+    disabled?: boolean
+}
+
+/**
+ * Fila de "Usuario asignado"/"Equipo asignado": ícono con tooltip (nombre de la fila) + valor.
+ * Si tiene permiso (`lead:update`) el valor es un Autocomplete editable (incluye "Sin asignar"
+ * para desasignar); si no, se muestra el nombre actual como texto simple, igual criterio que el
+ * resto del detalle (siempre visible, solo se gatea la posibilidad de cambiarlo).
+ */
+const OwnerSelectRow = ({ icon, title, canEdit, options, value, onChange, disabled }: OwnerSelectRowProps) => (
+    <Stack direction="row" spacing={.75} sx={{ alignItems: "center" }}>
+        <Tooltip title={title}>
+            <Box sx={{ display: "flex", color: "text.secondary" }}>{icon}</Box>
+        </Tooltip>
+        {canEdit ? (
+            <Autocomplete<AssignOption>
+                size="small"
+                options={options}
+                value={value}
+                disableClearable
+                disabled={disabled}
+                isOptionEqualToValue={(o, v) => o.id === v.id}
+                getOptionLabel={o => o.label}
+                onChange={(_, newValue) => onChange(newValue)}
+                sx={{ minWidth: 160, flexGrow: 1, "& .MuiInputBase-root": { fontSize: "0.8rem" } }}
+                renderInput={params => <TextField {...params} variant="standard" placeholder={title} />}
+            />
+        ) : (
+            <Typography variant="caption" sx={{ fontWeight: 600 }}>{value.label}</Typography>
+        )}
+    </Stack>
+)

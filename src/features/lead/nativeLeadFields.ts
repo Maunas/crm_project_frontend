@@ -28,4 +28,6 @@ export const NATIVE_LEAD_FIELDS: LeadField[] = [
     { ...base, id: -4, name: 'Asignado a',             field_type_code: 'NATIVE_ID', field_subtype_code: null, field_type: NATIVE_TYPE, nativeKey: 'assigned_to_user_id'   },
     { ...base, id: -5, name: 'Fecha de creación',      field_type_code: 'DATE',      field_subtype_code: 'DATE_ONLY', field_type: DATE_TYPE,  nativeKey: 'created_at'           },
     { ...base, id: -6, name: 'Fecha de actualización', field_type_code: 'DATE',      field_subtype_code: 'DATE_ONLY', field_type: DATE_TYPE,  nativeKey: 'updated_at'           },
+    { ...base, id: -7, name: 'Usuario Creador',        field_type_code: 'NATIVE_ID', field_subtype_code: null, field_type: NATIVE_TYPE, nativeKey: 'created_by'            },
+    { ...base, id: -8, name: 'Usuario Modificación',   field_type_code: 'NATIVE_ID', field_subtype_code: null, field_type: NATIVE_TYPE, nativeKey: 'updated_by'            },
 ]

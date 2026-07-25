@@ -37,6 +37,7 @@ import { getCampaign } from 'src/features/campaigns/campaignServices'
 import type { LeadContactState } from 'src/types/orgProperties'
 import type { LeadState } from 'src/types/leadFlow'
 import type { LeadTeam, LeadUser } from 'src/types/leads'
+import { formatUserFullName } from 'src/utils/formatters'
 
 // ── FormFilter: extiende LeadFilter con campos UI para rangos ─────────────────
 interface FormFilter {
@@ -540,6 +541,9 @@ export const LeadFiltersItem = memo(({
                 return (nativeOptions?.teams ?? []).map(t => ({ id: t.id, label: t.name }))
             case 'assigned_to_user_id':
                 return (nativeOptions?.users ?? []).map(u => ({ id: u.id, label: u.name ?? u.email }))
+            case 'created_by':
+            case 'updated_by':
+                return (nativeOptions?.users ?? []).map(u => ({ id: u.id, label: formatUserFullName(u) ?? u.email }))
             default:
                 return []
         }
