@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { Can } from 'src/app/Can';
+import { Can } from 'src/components/auth/Can';
 import { useUserContext } from 'src/stores/UserContext';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Box, Typography, alpha, useTheme, Stack } from '@mui/material';

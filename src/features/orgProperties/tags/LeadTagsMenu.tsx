@@ -9,7 +9,7 @@ import { InlineColorPickerButton } from 'src/components/ui/forms/ColorPicker'
 import { createTag, getTags } from './LeadTagService'
 import type { LeadTag } from 'src/types/orgProperties'
 import { updateLeadTags } from 'src/features/lead/leadService'
-import { Can } from 'src/app/Can'
+import { Can } from 'src/components/auth/Can'
 import { useUserContext } from 'src/stores/UserContext'
 
 //Color por defecto del picker cuando el usuario todavía no eligió ninguno (un gris azulado neutro,

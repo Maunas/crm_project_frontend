@@ -5,7 +5,7 @@ import type { ColorTypes } from 'src/types/mui-theme.d'
 import { IconButton, ListItem, ListItemAvatar, ListItemButton, ListItemIcon, ListItemText, Menu, MenuItem, Paper, Stack, useMediaQuery, type ListItemOwnProps } from '@mui/material'
 import { alpha, styled } from '@mui/material/styles'
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import { Can } from 'src/app/Can'
+import { Can } from 'src/components/auth/Can'
 import { useUserContext } from 'src/stores/UserContext'
 
 /**

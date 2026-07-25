@@ -17,7 +17,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import { formatDate, formatUserFullName } from "src/utils/formatters"
 import { UserAvatar } from "shared/ui/details/UserAvatar"
 import { useUserContext } from "src/stores/UserContext"
-import { Can } from "src/app/Can"
+import { Can } from "src/components/auth/Can"
 
 const SEARCH_COMMENTS_FIELDS = [
     { name: "content", label: "Contenido" },

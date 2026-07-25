@@ -6,7 +6,7 @@ import type { CampaignDetailed, WorkspaceDetailed } from "src/types/campaigns"
 import { Stack, Typography, ButtonGroup, Divider } from "@mui/material"
 import { SidebarContentWrapper } from "src/components/layout/container/GenericSidebar"
 import { EnabledIcon } from "src/components/ui/lists/Icons"
-import { Can } from "src/app/Can"
+import { Can } from "src/components/auth/Can"
 
 interface WorkspaceDetailsProps {
     entity: WorkspaceDetailed | null,

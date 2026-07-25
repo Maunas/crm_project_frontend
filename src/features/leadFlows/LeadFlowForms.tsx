@@ -3,7 +3,7 @@ import { ControlledSwitch, RegisteredTextInput } from 'shared/ui/forms/CustomInp
 import { ControlledAutocomplete } from 'shared/ui/forms/CustomMultipleInputs'
 import { FormErrorMessage } from 'shared/ui/forms/FormFeedback'
 import CommonButton from 'shared/ui/buttons/CommonButton'
-import { Can } from 'src/app/Can'
+import { Can } from 'src/components/auth/Can'
 import { useUserContext } from 'src/stores/UserContext'
 import { useLoading } from 'src/hooks/useLoading';
 import type { StateCategory } from 'src/types/leadFlow'

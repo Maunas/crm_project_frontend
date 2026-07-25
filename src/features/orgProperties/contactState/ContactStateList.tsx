@@ -18,7 +18,7 @@ import { OrderSearchMenu } from 'shared/ui/lists/OrderMenu'
 import type { LeadContactStateDetailed } from 'src/types/orgProperties'
 import { disableLeadContactState, enableLeadContactState, getLeadContactStates } from './contactStatesServices'
 import { NoItemsMessage } from 'src/components/ui/lists/NoItemsMessage'
-import { Can } from 'src/app/Can'
+import { Can } from 'src/components/auth/Can'
 import { useUserContext } from 'src/stores/UserContext'
 
 const ORDER_STATE_FIELDS = [

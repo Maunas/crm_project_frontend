@@ -20,7 +20,7 @@ import { ChipTooltip } from 'src/components/ui/details/ChipTooltip';
 import { DisableConfirmDialog } from 'src/components/ui/feedback/ConfirmationDialog';
 import { useOrderSeachList } from 'src/hooks/useOrderSearchLists';
 import { OrderSearchMenu } from 'src/components/ui/lists/OrderMenu';
-import { Can } from 'src/app/Can';
+import { Can } from 'src/components/auth/Can';
 
 const ORDER_AUTO_FIELDS = [
   { name: "name", label: "Orden Alfabético" },

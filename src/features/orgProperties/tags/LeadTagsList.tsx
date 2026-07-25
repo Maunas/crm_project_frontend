@@ -17,7 +17,7 @@ import { deleteTag, getTags } from './LeadTagService'
 import { TagFormSidebarWrapper } from './LeadTagForm'
 import type { LeadTagDetailed } from 'src/types/orgProperties'
 import { NoItemsMessage } from 'src/components/ui/lists/NoItemsMessage'
-import { Can } from 'src/app/Can'
+import { Can } from 'src/components/auth/Can'
 import { useUserContext } from 'src/stores/UserContext'
 
 const ORDER_TAG_FIELDS = [

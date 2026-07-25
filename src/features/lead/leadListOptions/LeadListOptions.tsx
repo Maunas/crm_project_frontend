@@ -11,7 +11,7 @@ import { getWorkspaces } from "src/features/workspaces/workspaceServices";
 import { getCampaigns } from "src/features/campaigns/campaignServices";
 import { useUserContext } from 'src/stores/UserContext';
 import { Badge, Button, Divider, Grid, Menu, MenuItem, Stack, ToggleButton, ToggleButtonGroup, Typography, ButtonGroup } from "@mui/material"
-import { Can } from 'src/app/Can';
+import { Can } from 'src/components/auth/Can';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import WindowIcon from '@mui/icons-material/Window';

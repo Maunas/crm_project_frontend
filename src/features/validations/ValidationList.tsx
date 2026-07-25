@@ -3,7 +3,7 @@ import { CodeBox } from 'shared/ui/details/CodeBox'
 import type { LeadFieldDetailed } from 'src/types/leadFields'
 import { List, ListItem, ListItemText, Paper, Stack, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { Can } from 'src/app/Can'
+import { Can } from 'src/components/auth/Can'
 
 interface ValidationListProps {
     leadField: LeadFieldDetailed,
