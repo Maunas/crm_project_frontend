@@ -13,6 +13,7 @@ lead/
     LeadListCellValue.tsx
     LeadListContent.tsx
     LeadListPage.tsx
+    LeadSidebar.tsx
     LeadTablePresentation.tsx
   leadForm/             → Formulario de lead
     LeadForm.tsx         → LeadPostForm (tipos + lógica)
@@ -47,6 +48,8 @@ lead/
   ImportLeadsPage.tsx
   leadService.ts
   leadUtils.ts
+  nativeLeadFields.ts
+  teamService.ts
 ```
 
 ## Componentes principales
@@ -68,6 +71,13 @@ Tabla de leads con columnas dinámicas según campos seleccionados.
 Vista kanban (board) de leads agrupados por estado.
 - Columnas: `LeadBoardColumn` (un estado de lead)
 - Cards: `LeadBoardCard` (info resumida del lead)
+
+### `LeadSidebar` — `leadList/LeadSidebar.tsx`
+Sidebar izquierdo del listado de leads con controles de vista, filtros y paginación.
+- Selector de vista (tabla/board)
+- Gestión de vistas guardadas (crear, editar, eliminar)
+- Filtros avanzados (`LeadFilters`)
+- Paginación (`PaginationComponent`)
 
 ### `CreateLeadFormPage` / `UpdateLeadFormPage` — `leadForm/LeadFormWraper.tsx`
 Páginas de creación/edición de leads. Rutas: `/leads/new`, `/leads/modify/:id`.
@@ -121,7 +131,8 @@ Sistema de comentarios en el detalle del lead.
 ### `LeadActivities` / `LeadAudit` — `activities/`
 Historial de actividades y auditoría del lead.
 
-## Servicios (`leadService.ts`)
+## Servicios
+### `leadService.ts`
 ```tsx
 getLeads(params?: LeadListParams) → Paginable<Lead>
 getLead(id: number) → LeadDetailed
@@ -130,6 +141,18 @@ updateLead(id: number, data: Partial<LeadPost>) → Lead
 deleteLead(id: number) → DeleteResponse
 simulateLead(data: LeadPost) → ValidationResult
 ```
+
+### `teamService.ts`
+Servicio auxiliar dentro del módulo lead para asignación de equipos a leads.
+```tsx
+getLeadTeams() → Team[]
+assignTeam(leadId: number, teamId: number) → void
+```
+
+## Utilidades
+
+### `nativeLeadFields.ts`
+Define los 6 campos nativos del modelo `Lead` que se tratan como campos virtuales (IDs negativos para no colisionar con campos custom): `contact_state_id`, `current_state_id`, `team_id`, `assigned_to_user_id`, `created_at`, `updated_at`. Se inyectan en la lista de `leadFields` para filtros y columnas de tabla.
 
 ## Rutas
 - `/leads/` → `LeadListPage`

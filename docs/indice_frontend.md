@@ -9,7 +9,7 @@
 | Doc | Descripción |
 |---|---|
 | [`compartidos/componentes_layout.md`](compartidos/componentes_layout.md) | Sidebar/Header/Navbar, GenericContainer, GenericPaper, GenericModal, GenericSidebar, ColoredHeaders |
-| [`compartidos/componentes_ui.md`](compartidos/componentes_ui.md) | Botones, formularios controlados, detalles/chips, feedback (diálogos), listas/tablas, modales |
+| [`compartidos/componentes_ui.md`](compartidos/componentes_ui.md) | Botones, control de acceso (Can/RequirePermission), formularios controlados, detalles/chips, feedback (diálogos), listas/tablas, modales |
 
 ## Hooks y utilidades
 | Doc | Descripción |
