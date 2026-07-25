@@ -13,6 +13,17 @@ export interface LeadPost {
   values: LeadPostValue[];
 }
 
+export interface LeadTeam {
+  id: number;
+  name: string;
+}
+
+export interface LeadUser {
+  id: number;
+  name: string;
+  email: string;
+}
+
 export interface Lead {
   id: number;
   active: boolean;
@@ -28,6 +39,10 @@ export interface Lead {
   assigned_to_user_id: number | null,
   team_id: number | null,
   picture_avatar_url?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+  team?: LeadTeam | null;
+  assigned_to_user?: LeadUser | null;
 }
 export interface LeadDetailed extends Lead, Metadata {
   field_values: LeadFieldValueDetailed[];

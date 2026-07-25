@@ -6,7 +6,8 @@ import { useDragAndDrop } from "src/hooks/useDragAndDrop"
 import type { LeadField } from "src/types/leadFields"
 import type { Lead } from "src/types/leads"
 import { Link } from "react-router-dom"
-import { Stack, Typography, ButtonGroup, Badge } from "@mui/material"
+import { Stack, Typography, ButtonGroup } from "@mui/material"
+import FilterAltOffIcon from '@mui/icons-material/FilterAltOff'
 import { LeadBoardPresentation } from "./board/LeadBoardPresentation"
 
 interface LeadListContentProps {
@@ -34,14 +35,15 @@ interface LeadListContentProps {
     presentationMode: string,
     workspaceId?: number,
     campaignId?: number | string,
-    filters: unknown[]
+    filters: unknown[],
+    onClearFilters?: () => void,
 }
 
 /**
  * Wrapper del contenido, realiza la lógica de selectedColumns, y elige el modo de vista deseado.
  */
 export const LeadListContent = memo(({ leads, leadFields, selectedFieldIds, activeFilters = 0, modalProps, orderProps, handleSelectedFieldIds,
-    selectCheckboxProps, presentationMode, workspaceId, campaignId, filters }: LeadListContentProps) => {
+    selectCheckboxProps, presentationMode, workspaceId, campaignId, filters, onClearFilters }: LeadListContentProps) => {
 
     //Filtra los objetos LeadField para seguir el orden del arreglo de ids.
     const selectedColumns = useMemo(() => {
@@ -68,17 +70,21 @@ export const LeadListContent = memo(({ leads, leadFields, selectedFieldIds, acti
                 <Typography variant="h3">No hay leads para presentar</Typography>
                 <Typography variant="h4">Agrega un lead nuevo{activeFilters > 0 && " o revisa los filtros activos"}</Typography>
             </Stack>
-            <ButtonGroup >
+            <ButtonGroup>
                 <CommonButton actionType="CREATE" color="primary" component={Link} to={`/leads/new?workspace=${workspaceId}&campaign=${campaignId}`}>
                     Agregar Lead
                 </CommonButton>
-                {activeFilters > 0 &&
-                    <Badge badgeContent={activeFilters} color="success">
-                        <CommonButton actionType="FILTER" color="secondary" onClick={() => modalProps.handleOpen("lead_filters")}>
-                            Aplicar Filtros
-                        </CommonButton>
-                    </Badge>
-                }
+                {activeFilters > 0 && onClearFilters && (
+                    <CommonButton
+                        actionType="NONE"
+                        color="secondary"
+                        variant="outlined"
+                        onClick={onClearFilters}
+                        startIcon={<FilterAltOffIcon />}
+                    >
+                        Limpiar filtros
+                    </CommonButton>
+                )}
             </ButtonGroup>
         </Stack>
     )
