@@ -9,6 +9,8 @@ import { InlineColorPickerButton } from 'src/components/ui/forms/ColorPicker'
 import { createTag, getTags } from './LeadTagService'
 import type { LeadTag } from 'src/types/orgProperties'
 import { updateLeadTags } from 'src/features/lead/leadService'
+import { Can } from 'src/app/Can'
+import { useUserContext } from 'src/stores/UserContext'
 
 //Color por defecto del picker cuando el usuario todavía no eligió ninguno (un gris azulado neutro,
 //para no confundirse con los colores "primary"/"secondary" que ya usa el resto de la app).
@@ -19,6 +21,9 @@ const DEFAULT_TAG_COLOR = "#64748B"
 const SECTION_LABEL_SX = { fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: ".04em" }
 
 export const LeadTags = ({ lead, updateLeadInfo }: { lead: LeadDetailed, updateLeadInfo: (lead: LeadDetailed) => void }) => {
+
+    const { hasPermission } = useUserContext()
+    const canUpdateLead = hasPermission("lead:update")
 
     //Cache local de las etiquetas ya creadas en la organización, para poder reutilizar una etiqueta
     //existente (por nombre) en vez de crear una duplicada, y para ofrecerlas como sugerencias
@@ -47,6 +52,7 @@ export const LeadTags = ({ lead, updateLeadInfo }: { lead: LeadDetailed, updateL
 
     /** Saca un tag puntual del lead (no borra la etiqueta en sí, solo la desasigna) */
     const handleUnassignTag = (tagToRemove: LeadTag) => {
+        if (!canUpdateLead) return
         const newTagIds = lead.tags.filter(tag => tag.id !== tagToRemove.id).map(tag => tag.id)
         return updateLeadTags(newTagIds, lead.id)
             .then(res => handleLeadTagUpdate(res.tags))
@@ -88,10 +94,12 @@ export const LeadTags = ({ lead, updateLeadInfo }: { lead: LeadDetailed, updateL
             <Stack direction="row" spacing={.75} useFlexGap sx={{ flexWrap: "wrap", alignItems: "center", width: "100%" }}>
                 {lead.tags.map(tag =>
                     <CustomChip key={`lead-${tag.id}`} size="small" chipColor={tag.color} defaultColor="secondary"
-                        label={tag.name} onDelete={() => handleUnassignTag(tag)} />
+                        label={tag.name} onDelete={canUpdateLead ? () => handleUnassignTag(tag) : undefined} />
                 )}
-                <InlineTagAdder tagList={availableTags} onCreateOrAssign={handleCreateOrAssign}
-                    onSelectExisting={handleAssignExisting} disabled={loadingTags} />
+                <Can permission="lead:update">
+                    <InlineTagAdder tagList={availableTags} onCreateOrAssign={handleCreateOrAssign}
+                        onSelectExisting={handleAssignExisting} disabled={loadingTags} />
+                </Can>
             </Stack>
         </Stack>
     )

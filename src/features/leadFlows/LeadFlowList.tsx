@@ -18,6 +18,7 @@ import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { OrderSearchMenu } from 'shared/ui/lists/OrderMenu'
 import { useUserContext } from 'src/stores/UserContext'
 import { NoItemsMessage } from 'src/components/ui/lists/NoItemsMessage'
+import { Can } from 'src/app/Can'
 
 const ORDER_FLOW_FIELDS = [
     { name: "name", label: "Orden Alfabético" },
@@ -53,9 +54,11 @@ export const LeadFlowList = () => {
         <Stack spacing={2}>
             <Stack spacing={2} direction="row" useFlexGap sx={{ alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>
                 {(flows?.items && flows.items.length > 0) &&
-                    <CommonButton actionType="CREATE" component={Link} to="/lead-flow-editor" >
-                        Abrir Editor
-                    </CommonButton>}
+                    <Can permission="lead_flow:update">
+                        <CommonButton actionType="CREATE" component={Link} to="/lead-flow-editor" >
+                            Abrir Editor
+                        </CommonButton>
+                    </Can>}
                 <OrderSearchMenu searchOptions={SEARCH_FLOW_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_FLOW_FIELDS} handleOrderChange={handleOrderChange} />
             </Stack>
             <LoadingScreenWrapper loading={loading}>
@@ -67,7 +70,9 @@ export const LeadFlowList = () => {
                     :
                     <NoItemsMessage search={fetchParams.search}
                         emptyFetchMessage="No se han encontrado flujos de estado...">
-                        <CommonButton actionType="CREATE" onClick={() => nav("/lead-flow-editor")} variant="contained">Abrir Editor</CommonButton>
+                        <Can permission="lead_flow:update">
+                            <CommonButton actionType="CREATE" onClick={() => nav("/lead-flow-editor")} variant="contained">Abrir Editor</CommonButton>
+                        </Can>
                     </NoItemsMessage>
                 }
             </LoadingScreenWrapper>
@@ -104,11 +109,15 @@ export const LeadFlowListData = ({ flows, updateList }: { flows: LeadFlowDetaile
                     <Grid key={`flow-${idx}`} size="grow" sx={{ minWidth: "15rem", minHeight: "100%" }}>
                         <CustomListItem disablePadding sx={{ height: "100%" }} secondaryAction={
                             <Stack direction="row" sx={{ alignItems: "center" }}>
-                                <CommonIconButton actionType='MODIFY' title="Editar" tooltipSize="small" size="small"
-                                    component={Link} to={`/lead-flow-editor/${flow.id}`} />
-                                <CommonIconButton actionType={flow.active ? "DISABLE" : "ENABLE"} title={flow.active ? "Deshabilitar" : "Habilitar"}
-                                    tooltipSize="small" size="small" color={flow.active ? "error" : "success"}
-                                    onClick={() => setDisableFlow(flow)} />
+                                <Can permission="lead_flow:update">
+                                    <CommonIconButton actionType='MODIFY' title="Editar" tooltipSize="small" size="small"
+                                        component={Link} to={`/lead-flow-editor/${flow.id}`} />
+                                </Can>
+                                <Can permission={flow.active ? "lead_flow:delete" : "lead_flow:update"}>
+                                    <CommonIconButton actionType={flow.active ? "DISABLE" : "ENABLE"} title={flow.active ? "Deshabilitar" : "Habilitar"}
+                                        tooltipSize="small" size="small" color={flow.active ? "error" : "success"}
+                                        onClick={() => setDisableFlow(flow)} />
+                                </Can>
                             </Stack>}>
                             <ListItemButton component={Link} to={`/lead-flow-editor/${flow.id}`} sx={{ height: "100%" }} >
                                 <ListItemText sx={{ mr: 4 }} primary={

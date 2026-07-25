@@ -4,8 +4,8 @@ import { DisableConfirmDialog } from 'shared/ui/feedback/ConfirmationDialog'
 import { GenericSidebar } from 'shared/layout/container/GenericSidebar'
 import PaginationComponent from 'shared/ui/lists/PaginationComponent'
 import LoadingScreenWrapper from 'shared/ui/feedback/LoadingScreen'
-import { ResponsiveListItem } from 'shared/ui/lists/CustomListItem'
 import { OrderSearchMenu } from 'shared/ui/lists/OrderMenu'
+import { ResponsiveListItem } from 'shared/ui/lists/CustomListItem'
 import CommonButton from 'shared/ui/buttons/CommonButton'
 import { EnabledIcon } from 'shared/ui/lists/Icons'
 import { useOrderSeachList } from 'src/hooks/useOrderSearchLists'
@@ -17,6 +17,7 @@ import type { Paginable } from 'src/types/shared'
 import { disableNomenclatorItem, enableNomenclatorItem, getNomenclatorItems } from './nomenclatorService'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { useUserContext } from 'src/stores/UserContext'
+import { Can } from 'src/app/Can'
 import { ButtonGroup, Grid, List, ListItemText, Stack, Typography } from '@mui/material'
 import { NoItemsMessage } from 'src/components/ui/lists/NoItemsMessage'
 
@@ -31,7 +32,7 @@ const SEARCH_NOM_ITEM_FIELDS = [
 
 export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorDetailed }) => {
 
-    const { activeOrg } = useUserContext()
+    const { activeOrg, hasPermission } = useUserContext()
 
     const [nomenclatorItems, setNomenclatorItems] = useState<Paginable<NomenclatorItemDetailed> | null>(null)
 
@@ -130,9 +131,11 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
                     <Typography variant="h3">Opciones de Nomenclador</Typography>
                     <ButtonGroup variant="outlined" sx={{ marginLeft: "auto" }} >
                         {nomenclatorItems && nomenclatorItems.items?.length > 0 && !isBlocked &&
-                            <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_NOM", null) }} size="small" onlyTooltip>
-                                Agregar
-                            </CommonButton>
+                            <Can permission="nomenclator_item:create">
+                                <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_NOM", null) }} size="small" onlyTooltip>
+                                    Agregar
+                                </CommonButton>
+                            </Can>
                         }
                     </ButtonGroup>
                 </Stack>
@@ -145,10 +148,10 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
                                     <Grid size={{ xs: 12, sm: 6 }} key={nom.id}>
                                         <ResponsiveListItem disablePadding
                                             actions={[
-                                                { template: "MODIFY", onClick: () => handleSidebar("UPDATE_NOM", nom) },
-                                                { template: nom.active ? "DISABLE" : "ENABLE", onClick: () => handleDeletingItem(nom) },
+                                                { template: "MODIFY", onClick: () => handleSidebar("UPDATE_NOM", nom), permission: "nomenclator_item:update" },
+                                                { template: nom.active ? "DISABLE" : "ENABLE", onClick: () => handleDeletingItem(nom), permission: nom.active ? "nomenclator_item:delete" : "nomenclator_item:update" },
                                             ]}
-                                            onClick={() => !isBlocked && handleSidebar("UPDATE_NOM", nom)}>
+                                            onClick={() => !isBlocked && hasPermission("nomenclator_item:update") && handleSidebar("UPDATE_NOM", nom)}>
                                             <ListItemText
                                                 primary={
                                                     <Stack spacing={.5} direction="row" sx={{ alignItems: "center" }}>
@@ -173,7 +176,10 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
                         :
                         <NoItemsMessage search={fetchParams.search} emptyFetchMessage="No se han encontrado opciones en este nomenclador..." >
                             {!isBlocked &&
-                                <CommonButton actionType='CREATE' onClick={() => { handleSidebar("CREATE_NOM", null) }} variant="contained">Agregar</CommonButton>}
+                                <Can permission="nomenclator_item:create">
+                                    <CommonButton actionType='CREATE' onClick={() => { handleSidebar("CREATE_NOM", null) }} variant="contained">Agregar</CommonButton>
+                                </Can>
+                            }
                         </NoItemsMessage>
                     }
                     <PaginationComponent {...pageComponentProps} />

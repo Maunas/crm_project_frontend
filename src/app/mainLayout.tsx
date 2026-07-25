@@ -13,9 +13,11 @@ export default function MainLayout() {
         if (!isRestoring && !user) nav('/login', { replace: true })
     }, [user, isRestoring, nav])
 
-    // Si el usuario no tiene ninguna org (y ya terminaron de cargar) -> onboarding
+    // Si el usuario no tiene ninguna org (y ya terminaron de cargar) -> onboarding.
+    // No aplica a superusuarios: ellos siempre tienen el Panel Global (organización id=1) como "hogar",
+    // no necesitan crear ni que los inviten a una organización propia.
     useEffect(() => {
-        if (!isRestoring && !loadingOrgs && user && orgHeaderList.length === 0) {
+        if (!isRestoring && !loadingOrgs && user && !user.is_superuser && orgHeaderList.length === 0) {
             nav('/onboarding', { replace: true })
         }
     }, [user, isRestoring, loadingOrgs, orgHeaderList, nav])

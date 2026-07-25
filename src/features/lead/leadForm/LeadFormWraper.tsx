@@ -192,6 +192,7 @@ export const SimulateLeadFormModal = ({ campaign, leadFields, onCancel, modalPro
 
 export const UpdateLeadFormPage = () => {
 
+    const { hasPermission } = useUserContext()
     const { id } = useParams()
     const [lead, setLead] = useState<LeadDetailed | null>(null)
     const nav = useNavigate()
@@ -248,7 +249,7 @@ export const UpdateLeadFormPage = () => {
                             <ButtonGroup sx={{ alignSelf: "end" }}>
                                 <CommonButton actionType="CLOSE" variant="outlined" color="error" loading={btnLoading}
                                     component={Link} to={`/leads/${lead.id}`}>Cancelar</CommonButton>
-                                {lead.campaign_id &&
+                                {lead.campaign_id && hasPermission("lead:update") &&
                                     <CommonButton actionType="MODIFY" variant="contained" loading={btnLoading}
                                         type="submit" form={`update-lead-${lead.id}`}>Guardar</CommonButton>
                                 }

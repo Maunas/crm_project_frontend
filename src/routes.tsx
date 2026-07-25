@@ -1,6 +1,6 @@
 import { CreateLeadFormPage, UpdateLeadFormPage } from "features/lead/leadForm/LeadFormWraper";
 import { OrganizationList } from "features/organizations/OrganizationList";
-import OrgProperties from "./features/orgProperties/orgPropertiesList";
+import OrgProperties, { LEAD_PROPERTIES } from "./features/orgProperties/orgPropertiesList";
 import { AutomationList } from "features/fieldAutomation/AutomationList";
 import { AutomationPage } from "features/fieldAutomation/AutomationPage";
 import { NomenclatorList } from "features/nomenclators/NomenclatorList";
@@ -23,6 +23,7 @@ import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import { ImportLeadsPage } from "./features/lead/ImportLeadsPage";
 import { SystemAuditList } from "./features/audit/SystemAuditLogs";
 import { TeamsPage } from "./features/teams/TeamsPage";
+import { RequirePermission } from "./app/RequirePermission";
 
 // Muestra GlobalDashboard para Panel Global (id=1), OrgDashboard para el resto
 function DashboardRouter() {
@@ -60,24 +61,24 @@ export const router = createBrowserRouter([
                 path: "/leads",
                 Component: Outlet,
                 children: [
-                    { path: "/leads/", Component: LeadListPage },
-                    { path: "/leads/new", Component: CreateLeadFormPage },
-                    { path: "/leads/modify/:id", Component: UpdateLeadFormPage },
-                    { path: "/leads/:id", Component: LeadDetailsLayout },
+                    { path: "/leads/", element: <RequirePermission permission="lead:view"><LeadListPage /></RequirePermission> },
+                    { path: "/leads/new", element: <RequirePermission permission="lead:create"><CreateLeadFormPage /></RequirePermission> },
+                    { path: "/leads/modify/:id", element: <RequirePermission permission="lead:update"><UpdateLeadFormPage /></RequirePermission> },
+                    { path: "/leads/:id", element: <RequirePermission permission="lead:view"><LeadDetailsLayout /></RequirePermission> },
                 ]
             },
-            { path: "/leads/import", Component: ImportLeadsPage },
-            { path: "/campaigns/", Component: WorkspaceList },
-            { path: "/teams/", Component: TeamsPage },
-            { path: "/nomenclators/", Component: NomenclatorList },
-            { path: "/audit-logs/", Component: SystemAuditList },
-            { path: "/organizations/", Component: OrganizationList },
-            { path: "/automations/", Component: AutomationList },
-            { path: "/automations/:id", Component: AutomationPage },
-            { path: "/campaigns/:id", Component: CampaignDetails },
-            { path: "/search", Component: SearchResultsList },
-            { path: "/org-properties/", Component: OrgProperties },
-            { path: "/lead-flow-editor/:id?", Component: LeadFlowEditor },
+            { path: "/teams/", element: <RequirePermission permission="team:view"><TeamsPage /></RequirePermission> },
+            { path: "/leads/import", element: <RequirePermission permission="lead:create"><ImportLeadsPage /></RequirePermission> },
+            { path: "/campaigns/", element: <RequirePermission permission="workspace:view"><WorkspaceList /></RequirePermission> },
+            { path: "/nomenclators/", element: <RequirePermission permission="nomenclator:view"><NomenclatorList /></RequirePermission> },
+            { path: "/audit-logs/", element: <RequirePermission permission="system_audit_log:view"><SystemAuditList /></RequirePermission> },
+            { path: "/organizations/", element: <RequirePermission permission="organization:view"><OrganizationList /></RequirePermission> },
+            { path: "/automations/", element: <RequirePermission permission="field_automation:view"><AutomationList /></RequirePermission> },
+            { path: "/automations/:id", element: <RequirePermission permission="field_automation:view"><AutomationPage /></RequirePermission> },
+            { path: "/campaigns/:id", element: <RequirePermission permission="campaign:view"><CampaignDetails /></RequirePermission> },
+            { path: "/search", element: <RequirePermission permission="lead:view"><SearchResultsList /></RequirePermission> },
+            { path: "/org-properties/", element: <RequirePermission permission={LEAD_PROPERTIES.map(prop => prop.permission)}><OrgProperties /></RequirePermission> },
+            { path: "/lead-flow-editor/:id?", element: <RequirePermission permission="lead_flow:view"><LeadFlowEditor /></RequirePermission> },
             { path: "/profile", element: <ProfilePage /> },
             { path: "*", Component: NotFound },
         ]

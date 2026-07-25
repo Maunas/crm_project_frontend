@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { LeadComments } from './LeadComments';
 import { LeadAuditList } from './LeadAudit';
+import { useUserContext } from 'src/stores/UserContext';
 import { Box, Stack, Tab, Tabs, Typography } from '@mui/material'
 import type { LeadDetailed } from 'src/types/leads';
 
@@ -29,23 +30,31 @@ function CustomTabPanel(props: TabPanelProps) {
 
 export const LeadActivities = ({ lead, reloadAudit }: { lead: LeadDetailed, reloadAudit: number }) => {
 
-  const [openTab, setOpenTab] = useState<number>(0)
+  const { hasPermission } = useUserContext()
+  const canViewComments = hasPermission("lead_comment:view")
+  const canViewAudit = hasPermission("lead_activity_history:view")
+
+  const [openTab, setOpenTab] = useState<number>(canViewComments ? 0 : 1)
 
   return (
     <Stack sx={{ height: "100%" }} spacing={3}>
       <Typography variant="h2">Actividades</Typography>
       <Stack sx={{ height: "100%" }} spacing={2}>
         <Tabs value={openTab} onChange={(_, val) => { setOpenTab(val) }} aria-label="activities tabs">
-          <Tab label="Comentarios" id="tab-comments" />
-          <Tab label="Auditoría" id="tab-audit" />
+          {canViewComments && <Tab value={0} label="Comentarios" id="tab-comments" />}
+          {canViewAudit && <Tab value={1} label="Auditoría" id="tab-audit" />}
         </Tabs>
         <Box sx={{ height: "100%" }}>
-          <CustomTabPanel value={openTab} index={0}>
-            <LeadComments leadId={lead.id} />
-          </CustomTabPanel>
-          <CustomTabPanel value={openTab} index={1}>
-            <LeadAuditList lead={lead} reloadAudit={reloadAudit} />
-          </CustomTabPanel>
+          {canViewComments &&
+            <CustomTabPanel value={openTab} index={0}>
+              <LeadComments leadId={lead.id} />
+            </CustomTabPanel>
+          }
+          {canViewAudit &&
+            <CustomTabPanel value={openTab} index={1}>
+              <LeadAuditList lead={lead} reloadAudit={reloadAudit} />
+            </CustomTabPanel>
+          }
         </Box>
       </Stack>
     </Stack>

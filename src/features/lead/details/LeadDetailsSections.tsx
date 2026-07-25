@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState, type FocusEvent, type KeyboardEvent, type ReactNode } from "react"
 import { useForm } from "react-hook-form"
 import { getUpdatedLead, getValue, LeadFormFieldType, useFieldCascade, type PartialFormProps } from "./LeadPartialUpdate"
+import { useEffect, useMemo, useRef, useState, type FocusEvent, type KeyboardEvent, type ReactNode } from "react"
 import { BoolValue, DateValue, ListValues, ModalValue, NumberValue, StringValue } from "../shared/LeadValueComponents"
 import { LeadFieldTypeAvatar } from "features/leadFields/LeadFieldTypeIcon"
 import { CommonIconButton } from "shared/ui/buttons/CommonIconButton"
@@ -342,7 +342,6 @@ const InlineFieldEdit = ({ fieldValue, lead, updateLeadInfo, children, editing, 
     //abiertos al mismo tiempo.
     useEffect(() => {
         if (editing) focusFirstInput()
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [editing])
 
     //Para DATE/DATE_TIME, el valor que devuelve el input (vía setValueAs de LeadFormDate) queda en un

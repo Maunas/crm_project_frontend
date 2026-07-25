@@ -20,6 +20,7 @@ import type { Paginable } from 'src/types/shared'
 import { disableWorkspace, enableWorkspace, getWorkspace, getWorkspaces } from './workspaceServices'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback';
 import { useUserContext } from 'src/stores/UserContext';
+import { Can } from 'src/app/Can';
 import { useSearchParams } from 'react-router-dom';
 import { List, ListItemText, Stack, Typography } from '@mui/material'
 
@@ -139,9 +140,11 @@ export const WorkspaceList = () => {
                 <Stack spacing={2} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
                     <Typography variant="h1">Espacios de Trabajo</Typography>
                     {workspaces && workspaces?.items.length > 0 &&
-                        <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_WSP", null)} sx={{ marginLeft: "auto" }} onlyTooltip>
-                            Agregar
-                        </CommonButton>
+                        <Can permission="workspace:create">
+                            <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_WSP", null)} sx={{ marginLeft: "auto" }} onlyTooltip>
+                                Agregar
+                            </CommonButton>
+                        </Can>
                     }
                 </Stack>
                 <OrderSearchMenu searchOptions={SEARCH_WSP_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_WSP_FIELDS} handleOrderChange={handleOrderChange} />
@@ -153,11 +156,11 @@ export const WorkspaceList = () => {
                                 {workspaces?.items.map(wsp =>
                                     <ResponsiveListItem key={`wsp-${wsp.id}`} isSelected={wsp.id === selectedEntity?.id} disablePadding
                                         onClick={() => handleSidebar("DETAILS_WSP", wsp)}
-                                    actions={[
-                                        { template: "DETAILS", onClick: () => handleSidebar("DETAILS_WSP", wsp) },
-                                        { actionType: "LIST", label: "Ver Leads", onClick: () => handleSidebar("UPDATE_WSP", wsp) },
-                                        { template: wsp.active ? "DISABLE" : "ENABLE", onClick: () => handleDeletingWsp(wsp) },
-                                    ]}>
+                                        actions={[
+                                            { template: "DETAILS", onClick: () => handleSidebar("DETAILS_WSP", wsp) },
+                                            { actionType: "LIST", label: "Ver Leads", onClick: () => handleSidebar("UPDATE_WSP", wsp), permission: "workspace:update" },
+                                            { template: wsp.active ? "DISABLE" : "ENABLE", onClick: () => handleDeletingWsp(wsp), permission: wsp.active ? "workspace:delete" : "workspace:update" },
+                                        ]}>
                                         <ListItemText sx={{ mr: 7 }} primary={
                                             <Stack spacing={1} direction="row">
                                                 <EnabledIcon active={wsp.active} />

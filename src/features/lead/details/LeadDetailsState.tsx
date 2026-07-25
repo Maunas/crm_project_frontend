@@ -21,6 +21,7 @@ import CancelIcon from '@mui/icons-material/Cancel'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import { Can } from 'src/app/Can'
 
 interface LeadDetailsState {
     lead: LeadDetailed,
@@ -172,7 +173,9 @@ const FlowStateChips = ({ currentState, nextStates, onSelectState }: FlowStateCh
 
     return (
         <Stack direction="row" spacing={.75} useFlexGap sx={{ flexWrap: "wrap", alignItems: "center" }}>
-            {backwardStates.map(state => renderStateChip(state, "back"))}
+            <Can permission="lead:update">
+                {backwardStates.map(state => renderStateChip(state, "back"))}
+            </Can>
             <CustomChip chipColor={currentColor}
                 icon={getCategoryIcon(currentState.category, { fontSize: "inherit" }) ?? undefined}
                 label={currentState.name}
@@ -180,7 +183,9 @@ const FlowStateChips = ({ currentState, nextStates, onSelectState }: FlowStateCh
                     fontWeight: 700,
                     boxShadow: `0 0 0 3px ${theme.alpha(currentShades.MAIN, .35)}`,
                 }} />
-            {forwardStates.map(state => renderStateChip(state, "forward"))}
+            <Can permission="lead:update">
+                {forwardStates.map(state => renderStateChip(state, "forward"))}
+            </Can>
         </Stack>
     )
 }

@@ -8,6 +8,7 @@ import type { NomenclatorDetailed } from "src/types/nomenclators"
 import { useUserContext } from "src/stores/UserContext"
 import { Link as RouterLink } from "react-router-dom"
 import { ButtonGroup, Divider, Link, Stack, Typography } from "@mui/material"
+import { Can } from "src/app/Can"
 
 interface NomenclatorDetailsProps {
     nomenclator: NomenclatorDetailed | null,
@@ -28,10 +29,14 @@ export const NomenclatorDetails = ({ nomenclator, closeSidebar, handleSidebar, h
                 <ButtonGroup>
                     <CommonButton onClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
                     {(nomenclator.organization_id !== 1 || user?.is_superuser) &&
-                        <HandleActiveButton active={nomenclator.active} handleActive={() => handleActive(nomenclator)} />
+                        <Can permission={nomenclator.active ? "nomenclator:delete" : "nomenclator:update"}>
+                            <HandleActiveButton active={nomenclator.active} handleActive={() => handleActive(nomenclator)} />
+                        </Can>
                     }
                     {(nomenclator.organization_id !== 1 || user?.is_superuser) &&
-                        <CommonButton onClick={() => handleSidebar("UPDATE_NOM", nomenclator)} actionType="MODIFY" >Modificar</CommonButton>
+                        <Can permission="nomenclator:update">
+                            <CommonButton onClick={() => handleSidebar("UPDATE_NOM", nomenclator)} actionType="MODIFY" >Modificar</CommonButton>
+                        </Can>
                     }
                 </ButtonGroup>
             }>

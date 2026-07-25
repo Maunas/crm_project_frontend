@@ -9,6 +9,7 @@ import { Link } from "react-router-dom"
 import { Stack, Typography, ButtonGroup } from "@mui/material"
 import FilterAltOffIcon from '@mui/icons-material/FilterAltOff'
 import { LeadBoardPresentation } from "./board/LeadBoardPresentation"
+import { Can } from "src/app/Can"
 
 interface LeadListContentProps {
     leads: Lead[],
@@ -71,9 +72,11 @@ export const LeadListContent = memo(({ leads, leadFields, selectedFieldIds, acti
                 <Typography variant="h4">Agrega un lead nuevo{activeFilters > 0 && " o revisa los filtros activos"}</Typography>
             </Stack>
             <ButtonGroup>
-                <CommonButton actionType="CREATE" color="primary" component={Link} to={`/leads/new?workspace=${workspaceId}&campaign=${campaignId}`}>
-                    Agregar Lead
-                </CommonButton>
+                <Can permission="lead:create">
+                    <CommonButton actionType="CREATE" color="primary" component={Link} to={`/leads/new?workspace=${workspaceId}&campaign=${campaignId}`}>
+                        Agregar Lead
+                    </CommonButton>
+                </Can>
                 {activeFilters > 0 && onClearFilters && (
                     <CommonButton
                         actionType="NONE"

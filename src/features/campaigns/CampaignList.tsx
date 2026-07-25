@@ -17,6 +17,7 @@ import { showCommonErrorToast, showToast } from "src/utils/feedback"
 import { Link } from "react-router-dom"
 import { Grid, ListItemText, Stack, Typography } from "@mui/material"
 import { useCallback } from "react"
+import { Can } from "src/app/Can"
 
 const ORDER_CMP_FIELDS = [
     { name: "name", label: "Orden Alfabético" },
@@ -74,15 +75,16 @@ export const CampaignList = ({ workspace, handleSidebar, closeSidebar }: Campaig
         }
     }, [fetchLoading, fetchPage, closeSidebar, pageSize, workspace.id])
 
-
     return (
         <Stack spacing={2}>
             <Stack spacing={1} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
                 <Typography variant="h3">Lista de Campañas</Typography>
                 {campaigns && campaigns?.items.length > 0 &&
-                    <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_CMP", workspace)} sx={{ marginLeft: "auto" }} size="small" onlyTooltip>
-                        Agregar
-                    </CommonButton>
+                    <Can permission="campaign:create">
+                        <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_CMP", workspace)} sx={{ marginLeft: "auto" }} size="small" onlyTooltip>
+                            Agregar
+                        </CommonButton>
+                    </Can>
                 }
             </Stack>
             <OrderSearchMenu searchOptions={SEARCH_CMP_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_CMP_FIELDS} handleOrderChange={handleOrderChange} />
@@ -95,7 +97,9 @@ export const CampaignList = ({ workspace, handleSidebar, closeSidebar }: Campaig
                     :
                     <NoItemsMessage search={fetchParams.search}
                         emptyFetchMessage="No se han encontrado campañas para este espacio de trabajo...">
-                        <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_CMP", workspace)} variant="contained">Agregar</CommonButton>
+                        <Can permission="campaign:create">
+                            <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_CMP", workspace)} variant="contained">Agregar</CommonButton>
+                        </Can>
                     </NoItemsMessage>
                 }
             </LoadingScreenWrapper>
@@ -121,9 +125,12 @@ export const CampaignListData = ({ campaigns, handleActiveCampaign }: CampaignLi
                                 { template: "DETAILS", component: Link, to: `/campaigns/${cmp.id}` },
                                 {
                                     actionType: "LIST", label: "Ver Leads", component: Link,
-                                    to: `/leads?workspace=${cmp.workspace_id}&campaign=${cmp.id}`
+                                    to: `/leads?workspace=${cmp.workspace_id}&campaign=${cmp.id}`, permission: "lead:view"
                                 },
-                                { template: cmp.active ? "DISABLE" : "ENABLE", onClick: () => setDeletingCmp(cmp) },
+                                {
+                                    template: cmp.active ? "DISABLE" : "ENABLE", onClick: () => setDeletingCmp(cmp),
+                                    permission: cmp.active ? "campaign:delete" : "campaign:update"
+                                },
                             ]
                         }>
                         <ListItemText sx={{ mr: 7 }} primary={

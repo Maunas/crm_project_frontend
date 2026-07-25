@@ -16,6 +16,7 @@ import type { OrganizationDetailed } from 'src/types/campaigns'
 import { disableOrganization, enableOrganization, getOrganization, getOrganizations } from './organizationServices'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { useUserContext } from 'src/stores/UserContext'
+import { Can } from 'src/app/Can'
 import { useSearchParams } from 'react-router-dom'
 import { List, ListItemText, Stack, Typography } from '@mui/material'
 
@@ -128,9 +129,11 @@ export const OrganizationList = () => {
                 <Stack spacing={2} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
                     <Typography variant="h1">Organizaciones</Typography>
                     {organizations && organizations?.length > 0 &&
-                        <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_ORG", null)} sx={{ marginLeft: "auto" }} onlyTooltip>
-                            Agregar
-                        </CommonButton>
+                        <Can permission="organization:create">
+                            <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_ORG", null)} sx={{ marginLeft: "auto" }} onlyTooltip>
+                                Agregar
+                            </CommonButton>
+                        </Can>
                     }
                 </Stack>
                 <OrderSearchMenu searchOptions={SEARCH_ORG_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_ORG_FIELDS} handleOrderChange={handleOrderChange} />
@@ -142,9 +145,9 @@ export const OrganizationList = () => {
                                     onClick={() => handleSidebar("DETAILS_ORG", org)}
                                     actions={[
                                         { template: "DETAILS", onClick: () => handleSidebar("DETAILS_ORG", org) },
-                                        { template: "MODIFY", onClick: () => handleSidebar("UPDATE_ORG", org) },
+                                        { template: "MODIFY", onClick: () => handleSidebar("UPDATE_ORG", org), permission: 'organization:update' },
                                         activeOrg?.id !== org.id &&
-                                        { template: org.active ? "DISABLE" : "ENABLE", onClick: () => setDeletingOrg(org) },
+                                        { template: org.active ? "DISABLE" : "ENABLE", onClick: () => setDeletingOrg(org), permission: org.active ? 'organization:delete' : 'organization:update' },
                                         activeOrg?.id !== org.id && org.active &&
                                         { actionType: "CHECK", label: "Seleccionar Activa", color: "info", onClick: () => handleActiveOrg(org) },
                                     ]}>
@@ -163,9 +166,11 @@ export const OrganizationList = () => {
                         </List>
                         :
                         <NoItemsMessage search={fetchParams.search} emptyFetchMessage="No se han encontrado organizaciones...">
-                            <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_ORG", null)} variant="contained">
-                                Agregar
-                            </CommonButton>
+                            <Can permission="organization:create">
+                                <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_ORG", null)} variant="contained">
+                                    Agregar
+                                </CommonButton>
+                            </Can>
                         </NoItemsMessage>
                     }
                 </LoadingScreenWrapper>

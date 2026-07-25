@@ -17,6 +17,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import { formatDate, formatUserFullName } from "src/utils/formatters"
 import { UserAvatar } from "shared/ui/details/UserAvatar"
 import { useUserContext } from "src/stores/UserContext"
+import { Can } from "src/app/Can"
 
 const SEARCH_COMMENTS_FIELDS = [
     { name: "content", label: "Contenido" },
@@ -123,7 +124,9 @@ export const LeadComments = ({ leadId }: { leadId: number }) => {
             />
             <LoadingScreenWrapper loading={loading}>
                 <Stack spacing={3}>
-                    <CreateCommentWrapper leadId={leadId} onCreate={onCreateComment} />
+                    <Can permission="lead_comment:create">
+                        <CreateCommentWrapper leadId={leadId} onCreate={onCreateComment} />
+                    </Can>
                     <Stack spacing={2}>
                         {comments?.items.map(com =>
                             com.id !== selectedCommentId ? (
@@ -155,20 +158,6 @@ interface CommentInstanceProps {
     children: ReactNode
 }
 
-/**
- * Restyle "moderno y minimalista" (según la referencia que pasó el usuario, un .rar de una versión
- * previa de la app): antes era una tarjeta con borde de color a la izquierda + franjas de
- * header/footer separadas; ahora es una burbuja simple con el avatar del autor al costado, como
- * una lista de chat. El avatar SIEMPRE usa el color propio de `UserAvatar` (hash del nombre,
- * `nameToColor`), igual que en el resto de la app.
- * El color propio del comentario (`comment.color`) ya NO se muestra acá: el usuario lo probó
- * (primero tiñendo el avatar, después el contorno de la burbuja) y decidió que no le encontraba
- * utilidad real y quedaba raro visualmente. La burbuja ahora es siempre neutra (`Paper variant="outlined"`
- * sin overrides). El campo sigue existiendo en el backend por si se le encuentra un uso más adelante,
- * simplemente dejó de leerse acá.
- * `comment.updated_by` solo se setea cuando el comentario pasó por un PUT real (nunca en la
- * creación), así que sirve como señal directa de "fue editado" sin tener que comparar fechas.
- */
 export const CommentInstance = ({ comment, title, onEdit, onDelete, children }: CommentInstanceProps) => {
 
     const author = comment?.updater ?? comment?.creator ?? null
@@ -196,14 +185,18 @@ export const CommentInstance = ({ comment, title, onEdit, onDelete, children }: 
                     {(onEdit || onDelete) &&
                         <Stack direction="row" sx={{ flexShrink: 0, ml: 1 }}>
                             {onEdit &&
-                                <IconButton aria-label="edit" size="small" onClick={onEdit} sx={{ color: "text.secondary" }}>
-                                    <EditIcon fontSize="small" />
-                                </IconButton>
+                                <Can permission="lead_comment:update">
+                                    <IconButton aria-label="edit" size="small" onClick={onEdit} sx={{ color: "text.secondary" }}>
+                                        <EditIcon fontSize="small" />
+                                    </IconButton>
+                                </Can>
                             }
                             {onDelete &&
-                                <IconButton aria-label="delete" size="small" onClick={onDelete} sx={{ color: "text.secondary" }}>
-                                    <CloseIcon fontSize="small" />
-                                </IconButton>
+                                <Can permission="lead_comment:delete">
+                                    <IconButton aria-label="delete" size="small" onClick={onDelete} sx={{ color: "text.secondary" }}>
+                                        <CloseIcon fontSize="small" />
+                                    </IconButton>
+                                </Can>
                             }
                         </Stack>
                     }

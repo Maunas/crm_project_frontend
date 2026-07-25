@@ -35,6 +35,7 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
 import ViewListIcon from '@mui/icons-material/ViewList'
+import { Can } from 'src/app/Can'
 
 const DEFAULT_N_OF_FIELDS = 6
 // MUI AppBar toolbar height (desktop) = 64px; m: -3 cancels parent p: 3 entirely
@@ -397,12 +398,14 @@ export const LeadListPage = () => {
                                     </Tooltip>
                                 )}
                                 {areThereLeads && (
-                                    <Button variant="contained" size="small"
-                                        component={RouterLink}
-                                        to={`/leads/new?workspace=${workspaceId}&campaign=${campaignId}`}
-                                        startIcon={<AddIcon sx={{ fontSize: '16px !important' }} />}>
-                                        Nuevo Lead
-                                    </Button>
+                                    <Can permission="lead:create">
+                                        <Button variant="contained" size="small"
+                                            component={RouterLink}
+                                            to={`/leads/new?workspace=${workspaceId}&campaign=${campaignId}`}
+                                            startIcon={<AddIcon sx={{ fontSize: '16px !important' }} />}>
+                                            Nuevo Lead
+                                        </Button>
+                                    </Can>
                                 )}
                             </>
                         )}

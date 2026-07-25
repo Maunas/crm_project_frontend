@@ -16,6 +16,7 @@ import type { Paginable } from 'src/types/shared'
 import { disableNomenclator, enableNomenclator, getNomenclator, getNomenclators } from './nomenclatorService'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { useUserContext } from 'src/stores/UserContext'
+import { Can } from 'src/app/Can'
 import { useSearchParams } from 'react-router-dom'
 import { Grid, List, ListItemText, Stack, Typography } from '@mui/material'
 import { useOrderSeachList } from 'src/hooks/useOrderSearchLists'
@@ -132,10 +133,12 @@ export const NomenclatorList = () => {
                 <Stack direction="row" useFlexGap spacing={2} sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
                     <Typography variant="h1">Nomencladores</Typography>
                     {nomenclators && nomenclators.items?.length > 0 &&
-                        <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_NOM", null) }}
-                            sx={{ marginLeft: "auto" }} onlyTooltip>
-                            Agregar
-                        </CommonButton>
+                        <Can permission="nomenclator:create">
+                            <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_NOM", null) }}
+                                sx={{ marginLeft: "auto" }} onlyTooltip>
+                                Agregar
+                            </CommonButton>
+                        </Can>
                     }
                 </Stack>
                 <OrderSearchMenu searchOptions={SEARCH_NOM_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_NOM_FIELDS} handleOrderChange={handleOrderChange} />
@@ -152,8 +155,8 @@ export const NomenclatorList = () => {
                                                     onClick={() => handleSidebar("DETAILS_NOM", nom)}
                                                     actions={[
                                                         { template: "DETAILS", onClick: () => handleSidebar("DETAILS_NOM", nom) },
-                                                        !isBlocked && { template: "MODIFY", onClick: () => handleSidebar("UPDATE_NOM", nom) },
-                                                        !isBlocked && { template: nom.active ? "DISABLE" : "ENABLE", onClick: () => handleDeletingNom(nom) },
+                                                        !isBlocked && { template: "MODIFY", onClick: () => handleSidebar("UPDATE_NOM", nom), permission: "nomenclator:update" },
+                                                        !isBlocked && { template: nom.active ? "DISABLE" : "ENABLE", onClick: () => handleDeletingNom(nom), permission: nom.active ? "nomenclator:delete" : "nomenclator:update" },
                                                     ]}>
                                                     <ListItemText primary={
                                                         <Stack spacing={.5} direction="row" sx={{ alignItems: "center" }}>
@@ -179,9 +182,11 @@ export const NomenclatorList = () => {
                                 </List>
                                 :
                                 <NoItemsMessage search={fetchParams.search} emptyFetchMessage="No se han encontrado nomencladores...">
-                                    <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_NOM", null) }} variant="contained">
-                                        Agregar
-                                    </CommonButton>
+                                    <Can permission="nomenclator:create">
+                                        <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_NOM", null) }} variant="contained">
+                                            Agregar
+                                        </CommonButton>
+                                    </Can>
                                 </NoItemsMessage>
                         }
                         <PaginationComponent {...pageComponentProps} />

@@ -8,6 +8,7 @@ import { ButtonGroup, Divider, Stack, Typography } from "@mui/material"
 import { SidebarContentWrapper } from "src/components/layout/container/GenericSidebar"
 import ACTION_ICONS from "src/components/ui/buttons/ActionIcons"
 import { EnabledIcon } from "src/components/ui/lists/Icons"
+import { Can } from "src/app/Can"
 
 interface DetailsProps {
     entity: OrganizationDetailed | null,
@@ -30,9 +31,13 @@ const OrganizationDetails = ({ entity, closeSidebar, handleSidebar, handleActive
                 <ButtonGroup>
                     <CommonButton onClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
                     {activeOrg?.id !== entity.id &&
-                        <HandleActiveButton active={entity.active} handleActive={() => handleActive(entity)} />
+                        <Can permission={entity.active ? "organization:delete" : "organization:update"}>
+                            <HandleActiveButton active={entity.active} handleActive={() => handleActive(entity)} />
+                        </Can>
                     }
-                    <CommonButton onClick={() => handleSidebar("UPDATE_ORG", entity)} actionType="MODIFY" >Modificar</CommonButton>
+                    <Can permission="organization:update">
+                        <CommonButton onClick={() => handleSidebar("UPDATE_ORG", entity)} actionType="MODIFY" >Modificar</CommonButton>
+                    </Can>
                 </ButtonGroup>
             }>
 

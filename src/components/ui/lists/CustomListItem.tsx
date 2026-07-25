@@ -5,6 +5,8 @@ import type { ColorTypes } from 'src/types/mui-theme.d'
 import { IconButton, ListItem, ListItemAvatar, ListItemButton, ListItemIcon, ListItemText, Menu, MenuItem, Paper, Stack, useMediaQuery, type ListItemOwnProps } from '@mui/material'
 import { alpha, styled } from '@mui/material/styles'
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import { Can } from 'src/app/Can'
+import { useUserContext } from 'src/stores/UserContext'
 
 /**
  * Solo muestra los secondaryAction si se está haciendo hover.
@@ -66,15 +68,28 @@ interface ResponsiveListItemProps extends ListItemOwnProps {
  * Solo muestra los secondaryAction si se está haciendo hover.
  */
 export const ResponsiveListItem = ({ size = "small", actions, children, onClick, component, to, ...props }: ResponsiveListItemProps) => {
+    const { hasPermission } = useUserContext()
     const isTouchDevice = useMediaQuery('(pointer: coarse)')
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
     const menuButton = useRef(null)
-    const showMenu = isTouchDevice && actions.length > 1
 
     const processedActions = useMemo(() =>
         buildActions(...actions)
         , [actions])
+
+    const visibleActions = useMemo(() => {
+        // Si alguna acción no especifica permiso, no filtrar (comportamiento actual)
+        const allHavePermission = processedActions.length > 0 && processedActions.every(a => a.permission)
+        if (!allHavePermission) return processedActions
+        return processedActions.filter(a => {
+            const permissions = Array.isArray(a.permission) ? a.permission : [a.permission]
+            return permissions.some(hasPermission)
+        })
+    }, [processedActions, hasPermission])
+
+    const showMenu = isTouchDevice && visibleActions.length > 1
+    const hasVisibleActions = visibleActions.length > 0
 
     const handleItemClick = () => {
         if (showMenu) return { onClick: () => setAnchorEl(menuButton.current) } //Si es responsive, muestra menú
@@ -84,22 +99,27 @@ export const ResponsiveListItem = ({ size = "small", actions, children, onClick,
     }
     return <CustomListItem sx={{ height: "100%" }}
         alwaysShowSecondary={isTouchDevice} {...props}
-        secondaryAction={showMenu ?
-            <>
-                <IconButton size={size} ref={menuButton} onClick={e => setAnchorEl(e.currentTarget)} sx={{ mr: -1 }}>
-                    <MoreVertIcon fontSize={size} />
-                </IconButton>
-                <ListActionMenu actions={processedActions} anchorEl={anchorEl} closeMenu={() => setAnchorEl(null)} />
-            </>
-            :
-            <Stack direction="row" sx={{ mr: -1 }}>
-                {processedActions.map(action => (
-                    <CommonIconButton actionType={action.actionType} key={action.label} title={action.label}
-                        onClick={action.onClick} component={action.component} to={action.to} color={action.color ?? "action"} size={size} tooltipSize={size} />
-                ))}
-            </Stack>}>
+        secondaryAction={!hasVisibleActions ? undefined :
+            (showMenu ?
+                <>
+                    <IconButton size={size} ref={menuButton} onClick={e => setAnchorEl(e.currentTarget)} sx={{ mr: -1 }}>
+                        <MoreVertIcon fontSize={size} />
+                    </IconButton>
+                    <ListActionMenu actions={visibleActions} anchorEl={anchorEl} closeMenu={() => setAnchorEl(null)} />
+                </>
+                :
+                <Stack direction="row" sx={{ mr: -1 }}>
+                    {visibleActions.map(action => (
+                        <Can permission={action.permission}>
+                            <CommonIconButton actionType={action.actionType} key={action.label} title={action.label}
+                                onClick={action.onClick} component={action.component} to={action.to} color={action.color ?? "action"} size={size} tooltipSize={size} />
+                        </Can>
+                    ))}
+                </Stack>
+            )
+        }>
         <ListItemButton {...handleItemClick()}
-            sx={{ height: "100%", "&&": { pr: showMenu ? 5 : processedActions.length * 3 + 2 } }} >
+            sx={{ height: "100%", "&&": { pr: showMenu ? 5 : visibleActions.length * 3 + 2 } }} >
             {children}
         </ListItemButton>
     </CustomListItem>
@@ -116,7 +136,8 @@ export interface ListItemAction extends ListItemActionView {
     onClick?: () => void
     component?: React.ElementType,
     to?: string,
-    template?: keyof typeof ACTION_TEMPLATES
+    template?: keyof typeof ACTION_TEMPLATES,
+    permission?: string | string[]
 }
 
 const ACTION_TEMPLATES = {
@@ -163,18 +184,20 @@ export const ListActionMenu = ({ actions, anchorEl, closeMenu }: ActionGroupProp
                     horizontal: 'right',
                 }}>
                 {actions.map(action => (
-                    <MenuItem key={action.label} dense
-                        onClick={() => {
-                            if (action.onClick) action.onClick()
-                            closeMenu()
-                        }}
-                        {...(action.component ? { component: action.component, to: action.to } : {})}
-                    >
-                        <ListItemIcon color={action.color ?? "action"} >
-                            <CommonIcon actionType={action.actionType} color={action.color ?? "action"} />
-                        </ListItemIcon>
-                        <ListItemText>{action.label}</ListItemText>
-                    </MenuItem>
+                    <Can permission={action.permission}>
+                        <MenuItem key={action.label} dense
+                            onClick={() => {
+                                if (action.onClick) action.onClick()
+                                closeMenu()
+                            }}
+                            {...(action.component ? { component: action.component, to: action.to } : {})}
+                        >
+                            <ListItemIcon color={action.color ?? "action"} >
+                                <CommonIcon actionType={action.actionType} color={action.color ?? "action"} />
+                            </ListItemIcon>
+                            <ListItemText>{action.label}</ListItemText>
+                        </MenuItem>
+                    </Can>
                 ))}
             </Menu>
         </>

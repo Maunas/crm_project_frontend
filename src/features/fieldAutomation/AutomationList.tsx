@@ -20,6 +20,7 @@ import { ChipTooltip } from 'src/components/ui/details/ChipTooltip';
 import { DisableConfirmDialog } from 'src/components/ui/feedback/ConfirmationDialog';
 import { useOrderSeachList } from 'src/hooks/useOrderSearchLists';
 import { OrderSearchMenu } from 'src/components/ui/lists/OrderMenu';
+import { Can } from 'src/app/Can';
 
 const ORDER_AUTO_FIELDS = [
   { name: "name", label: "Orden Alfabético" },
@@ -129,16 +130,18 @@ export const AutomationList = () => {
                   size="small" sx={{ minWidth: 200, maxWidth: 250 }} />
               } />
           </Stack>
-          <CommonButton
-            actionType='CREATE'
-            onlyTooltip
-            disabled={!isCampaignSelected}
-            component={Link}
-            to={`/automations/create?campaign=${selectedCampaignId}`}
-            sx={{ ml: "auto" }}
-          >
-            Nueva Automatización
-          </CommonButton>
+          <Can permission="field_automation:create">
+            <CommonButton
+              actionType='CREATE'
+              onlyTooltip
+              disabled={!isCampaignSelected}
+              component={Link}
+              to={`/automations/create?campaign=${selectedCampaignId}`}
+              sx={{ ml: "auto" }}
+            >
+              Nueva Automatización
+            </CommonButton>
+          </Can>
         </Stack>
 
         <Stack spacing={2}>
@@ -158,9 +161,19 @@ export const AutomationList = () => {
                           onClick={() => navigate(`/automations/${auto.id}?campaign=${selectedCampaignId}`)}
                           actions={[
                             { template: "DETAILS", component: Link, to: `/automations/${auto.id}?campaign=${selectedCampaignId}` },
-                            { template: "MODIFY", component: Link, to: `/automations/${auto.id}?campaign=${selectedCampaignId}&edit=true` },
-                            { actionType: "DUPLICATE", label: "Duplicar", component: Link, to: `/automations/create?campaign=${selectedCampaignId}&duplicate_from=${auto.id}` },
-                            { template: "DELETE", onClick: () => setDeletingAuto(auto) },
+                            {
+                              template: "MODIFY", component: Link, to: `/automations/${auto.id}?campaign=${selectedCampaignId}&edit=true`,
+                              permission: "field_automation:update"
+                            },
+                            {
+                              actionType: "DUPLICATE", label: "Duplicar", component: Link,
+                              to: `/automations/create?campaign=${selectedCampaignId}&duplicate_from=${auto.id}`,
+                              permission: "field_automation:create"
+                            },
+                            {
+                              template: "DELETE", onClick: () => setDeletingAuto(auto),
+                              permission: "field_automation:delete"
+                            },
                           ]}>
                           <ListItemText
                             primary={
