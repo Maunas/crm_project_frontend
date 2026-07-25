@@ -199,7 +199,7 @@ export const CampaignForm = ({ existingCmp, workspaceId, submit, onCancel }: Cam
                             <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
                                 <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                                     <ControlledAutocomplete
-                                        control={control} label="Flujo de Estados"
+                                        control={control} label="Ciclo de Vida"
                                         name="lead_flow_id" options={flowsWithOptions}
                                         getOptionLabel={option => option.name!} getOptionKey={option => `${option.id}`}
                                         returnField="id" errorMessage={errors?.lead_flow_id?.message} required
@@ -260,7 +260,7 @@ export const CampaignForm = ({ existingCmp, workspaceId, submit, onCancel }: Cam
                                     />
                                 </Box>
                                 <ChipTooltip color="info"
-                                    title="Indica con qué flujo de estados (ciclo de vida) va a trabajar la campaña.">
+                                    title="Indica con qué ciclo de vida (flujo de estados) va a trabajar la campaña.">
                                     <InfoOutlinedIcon fontSize="small" color="disabled" />
                                 </ChipTooltip>
                             </Stack>

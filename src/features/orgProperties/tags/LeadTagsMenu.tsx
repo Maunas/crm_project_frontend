@@ -16,7 +16,7 @@ import { useUserContext } from 'src/stores/UserContext'
 //para no confundirse con los colores "primary"/"secondary" que ya usa el resto de la app).
 const DEFAULT_TAG_COLOR = "#64748B"
 
-//Mismo estilo que SECTION_LABEL_SX de LeadDetailsState.tsx (Estado de Contacto/Flujo), para que el
+//Mismo estilo que SECTION_LABEL_SX de LeadDetailsState.tsx (Estado/Etapa), para que el
 //título "Etiquetas" quede visualmente igual a esos otros títulos de sección.
 const SECTION_LABEL_SX = { fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: ".04em" }
 

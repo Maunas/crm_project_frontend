@@ -87,7 +87,7 @@ export const ContactStateList = () => {
                     </Stack>
                     :
                     <NoItemsMessage search={fetchParams.search}
-                        emptyFetchMessage="No se han encontrado estados de contacto...">
+                        emptyFetchMessage="No se han encontrado estados...">
                         <Can permission="lead_contact_state:create">
                             <CommonButton actionType="CREATE" variant="contained"
                                 onClick={() => setEditingState(undefined)}>Agregar</CommonButton>

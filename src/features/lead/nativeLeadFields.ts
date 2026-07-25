@@ -22,8 +22,8 @@ const base = {
  * Se inyectan en la lista de leadFields para filtros y columnas de tabla.
  */
 export const NATIVE_LEAD_FIELDS: LeadField[] = [
-    { ...base, id: -1, name: 'Estado de contacto',    field_type_code: 'NATIVE_ID', field_subtype_code: null, field_type: NATIVE_TYPE, nativeKey: 'contact_state_id'     },
-    { ...base, id: -2, name: 'Estado del flujo',       field_type_code: 'NATIVE_ID', field_subtype_code: null, field_type: NATIVE_TYPE, nativeKey: 'current_state_id'      },
+    { ...base, id: -1, name: 'Estado',                 field_type_code: 'NATIVE_ID', field_subtype_code: null, field_type: NATIVE_TYPE, nativeKey: 'contact_state_id'     },
+    { ...base, id: -2, name: 'Etapa',                  field_type_code: 'NATIVE_ID', field_subtype_code: null, field_type: NATIVE_TYPE, nativeKey: 'current_state_id'      },
     { ...base, id: -3, name: 'Equipo',                 field_type_code: 'NATIVE_ID', field_subtype_code: null, field_type: NATIVE_TYPE, nativeKey: 'team_id'               },
     { ...base, id: -4, name: 'Asignado a',             field_type_code: 'NATIVE_ID', field_subtype_code: null, field_type: NATIVE_TYPE, nativeKey: 'assigned_to_user_id'   },
     { ...base, id: -5, name: 'Fecha de creación',      field_type_code: 'DATE',      field_subtype_code: 'DATE_ONLY', field_type: DATE_TYPE,  nativeKey: 'created_at'           },

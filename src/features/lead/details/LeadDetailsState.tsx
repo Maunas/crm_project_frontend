@@ -78,7 +78,7 @@ export const LeadDetailsState = ({ lead, contactState, flowState, updateLeadInfo
         <Stack spacing={2} sx={{ width: "100%" }}>
             <Stack spacing={.5}>
                 <Typography variant="caption" color="text.secondary" sx={SECTION_LABEL_SX}>
-                    Estado de Flujo
+                    Etapa del Ciclo de Vida
                 </Typography>
                 <FlowStateChips currentState={flowState} nextStates={nextFlowStates}
                     onSelectState={(state, anchor) => { setStepperTarget(state); setStepperAnchor(anchor) }} />
@@ -91,7 +91,7 @@ export const LeadDetailsState = ({ lead, contactState, flowState, updateLeadInfo
                     transformOrigin={{ vertical: 'top', horizontal: 'center' }}
                 >
                     {stepperTarget &&
-                        <StateChangeList key={stepperTarget.id} title="Actualizar Estado de Flujo" leadId={lead.id}
+                        <StateChangeList key={stepperTarget.id} title="Actualizar Etapa" leadId={lead.id}
                             options={[]} initialSelected={stepperTarget}
                             onClose={closeStepperPopover} onChange={handleFlowChange} submit={changeFlowState} />
                     }
@@ -100,7 +100,7 @@ export const LeadDetailsState = ({ lead, contactState, flowState, updateLeadInfo
 
             <Stack spacing={.5} sx={{ alignItems: "start" }}>
                 <Typography variant="caption" color="text.secondary" sx={SECTION_LABEL_SX}>
-                    Estado de Contacto
+                    Estado
                 </Typography>
                 <CustomChip chipColor={contactState.color}
                     onClick={(contactStates.length > 0 && canUpdateLead) ? (e => setContactAnchor(e.currentTarget)) : undefined}
@@ -120,7 +120,7 @@ export const LeadDetailsState = ({ lead, contactState, flowState, updateLeadInfo
                         horizontal: 'left',
                     }}
                 >
-                    <StateChangeList title="Actualizar Estado de Contacto" leadId={lead.id} options={contactStates}
+                    <StateChangeList title="Actualizar Estado" leadId={lead.id} options={contactStates}
                         onClose={() => setContactAnchor(null)} onChange={handleContactChange} submit={changeContactState} />
                 </Popover>
             </Stack>
@@ -214,9 +214,9 @@ interface StateChangeListProps {
 }
 
 /**
- * Lista de posibles próximos estados (de flujo o de contacto). Al elegir uno, en vez de
+ * Lista de posibles próximos estados (de etapa o de contacto). Al elegir uno, en vez de
  * cambiar al toque, muestra un campo de notas opcional antes de confirmar el cambio.
- * Si se abre con `initialSelected` (ej. desde el camino de estados de flujo, donde el usuario
+ * Si se abre con `initialSelected` (ej. desde el camino de etapas, donde el usuario
  * ya clickeó un estado puntual) salta directo a la confirmación con notas, sin mostrar lista.
  */
 const StateChangeList = ({ title, leadId, options, initialSelected = null, onClose, onChange, submit }: StateChangeListProps) => {

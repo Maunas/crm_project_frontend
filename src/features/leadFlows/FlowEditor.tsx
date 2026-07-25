@@ -42,7 +42,7 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
   const [isLocked, setIsLocked] = useState(false)
 
   // Sin permiso de edición, el editor se comporta como si estuviera siempre bloqueado
-  // (no se puede agregar/editar/borrar estados ni transiciones, ni guardar).
+  // (no se puede agregar/editar/borrar etapas ni transiciones, ni guardar).
   const { hasPermission } = useUserContext()
   const canEdit = hasPermission("lead_flow:update")
   const locked = isLocked || !canEdit
@@ -141,7 +141,7 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
 
     const { category, isInitial } = JSON.parse(dataStr);
     if (isInitial && states.some(s => s.is_initial)) {
-      showToast("Solo puede haber un estado inicial", "error")
+      showToast("Solo puede haber una etapa inicial", "error")
       return;
     }
 
@@ -155,7 +155,7 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
 
     const newState: FlowEditorState = {
       tempId: uuidv4(),
-      name: isInitial ? 'Inicial' : 'Nuevo Estado',
+      name: isInitial ? 'Inicial' : 'Nueva Etapa',
       category,
       is_initial: isInitial,
       color: isInitial ? DEFAULT_STATE_COLORS.INITIAL :
@@ -189,7 +189,7 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
     else {
       const newState: FlowEditorState = {
         tempId: uuidv4(),
-        name: stateData.name ?? (stateData.is_initial ? 'Inicial' : 'Nuevo Estado'),
+        name: stateData.name ?? (stateData.is_initial ? 'Inicial' : 'Nueva Etapa'),
         category: stateData.category ?? "OPEN",
         is_initial: stateData.is_initial ?? false,
         color: stateData.color ?? DEFAULT_STATE_COLORS.OPEN,
@@ -267,19 +267,19 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
 
   const handleSaveFlow = async (flowName: string, flowDescription: string) => {
     if (!canEdit) return
-    if (!flowName.trim()) { showToast("Debe ingresar un nombre para el flujo", "error"); return }
+    if (!flowName.trim()) { showToast("Debe ingresar un nombre para el ciclo de vida", "error"); return }
     const initialStates = states.filter(s => s.is_initial);
-    if (initialStates.length !== 1) { showToast("Debe haber exactamente un estado inicial", "error"); return }
+    if (initialStates.length !== 1) { showToast("Debe haber exactamente una etapa inicial", "error"); return }
     try {
       await onSave(flowName, flowDescription, states, transitions);
-      showToast(`Flujo "${flowName}" guardado con éxito`)
+      showToast(`Ciclo de Vida "${flowName}" guardado con éxito`)
       return
     } catch (error) {
       const errorMsgBody = error as SimpleErrorBody
       console.error("Error del servidor:", errorMsgBody.response?.data);
 
       const data = errorMsgBody.response?.data;
-      let finalMessage = 'Error al guardar el flujo';
+      let finalMessage = 'Error al guardar el ciclo de vida';
 
       if (data?.detail) {
         if (Array.isArray(data.detail)) {

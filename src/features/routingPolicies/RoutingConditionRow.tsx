@@ -295,9 +295,9 @@ const RoutingConditionValueInput = ({ condition, onUpdate, nativeField, selected
     // ── Nativos: estado actual (ID interno) ────────────────────────────────
     if (nativeField === "current_state_id") {
         return (
-            <TextField size="small" type="number" label="ID del estado" disabled={readOnly}
+            <TextField size="small" type="number" label="ID de la etapa" disabled={readOnly}
                 value={condition.value_str ?? ""} onChange={e => onUpdate({ ...condition, value_str: e.target.value })}
-                helperText="ID interno del estado del flujo" sx={{ minWidth: 160 }} />
+                helperText="ID interno de la etapa" sx={{ minWidth: 160 }} />
         )
     }
     // ── Nativos: fechas ─────────────────────────────────────────────────────

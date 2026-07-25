@@ -20,7 +20,7 @@ const CATEGORY_ITEMS: { category: StateCategory; icon: React.ReactNode; descript
   {
     category: 'OPEN',
     icon: <CircleIcon sx={{ fontSize: 20, color: DEFAULT_STATE_COLORS.OPEN }} />,
-    description: 'Estado intermedio del flujo',
+    description: 'Etapa intermedia del ciclo de vida',
   },
   {
     category: 'WON',
@@ -68,10 +68,10 @@ export function Sidebar({ onAddState, hasInitialState, isLocked = false }: Sideb
           {/* Header */}
           <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
             <Typography variant="h3" component="h2" sx={{ mb: 0.5 }}>
-              Estados
+              Etapas
             </Typography>
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-              Arrastra para agregar al flujo
+              Arrastra para agregar al ciclo de vida
             </Typography>
           </Box>
 
@@ -80,7 +80,7 @@ export function Sidebar({ onAddState, hasInitialState, isLocked = false }: Sideb
             {canCreateInitial && (
               <>
                 <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, mb: 1, display: 'block' }}>
-                  ESTADO INICIAL
+                  ETAPA INICIAL
                 </Typography>
                 <Paper elevation={0} draggable
                   onDragStart={(e) => handleDragStart(e, 'OPEN', true)}
@@ -153,7 +153,7 @@ export function Sidebar({ onAddState, hasInitialState, isLocked = false }: Sideb
               variant="contained"
               onClick={() => handleOpen("create-state")}
             >
-              Crear Estado
+              Crear Etapa
             </CommonButton>
           </Box>
         </Stack>

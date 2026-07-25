@@ -69,7 +69,7 @@ export const LeadFlowList = () => {
                     </Stack>
                     :
                     <NoItemsMessage search={fetchParams.search}
-                        emptyFetchMessage="No se han encontrado flujos de estado...">
+                        emptyFetchMessage="No se han encontrado ciclos de vida...">
                         <Can permission="lead_flow:update">
                             <CommonButton actionType="CREATE" onClick={() => nav("/lead-flow-editor")} variant="contained">Abrir Editor</CommonButton>
                         </Can>
@@ -88,15 +88,15 @@ export const LeadFlowListData = ({ flows, updateList }: { flows: LeadFlowDetaile
         if (!isActive) {
             return enableLeadFlow(id)
                 .then(() => {
-                    showToast("Flujo habilitado correctamente.", "success")
+                    showToast("Ciclo de Vida habilitado correctamente.", "success")
                     updateList()
                 })
                 .catch(e => { showCommonErrorToast(e) })
         }
         return deleteLeadFlow(id)
             .then(res => {
-                if (res.action === "disabled") showToast("Flujo deshabilitado correctamente.", "success")
-                else showToast("Flujo eliminado permanentemente.", "success")
+                if (res.action === "disabled") showToast("Ciclo de Vida deshabilitado correctamente.", "success")
+                else showToast("Ciclo de Vida eliminado permanentemente.", "success")
                 updateList()
             })
             .catch(e => { showCommonErrorToast(e) })
@@ -133,7 +133,7 @@ export const LeadFlowListData = ({ flows, updateList }: { flows: LeadFlowDetaile
                 )}
             </Grid >
             {disableFlow &&
-                <DisableConfirmDialog idModal='conf-delete-flow' entity={disableFlow} clearEntity={() => setDisableFlow(null)} entityTypeName="el flujo"
+                <DisableConfirmDialog idModal='conf-delete-flow' entity={disableFlow} clearEntity={() => setDisableFlow(null)} entityTypeName="el ciclo de vida"
                     onConfirm={() => handleEnableDisable(disableFlow?.id, disableFlow?.active)} />
             }
         </>
