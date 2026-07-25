@@ -22,6 +22,7 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { Can } from 'src/app/Can'
+import { useUserContext } from 'src/stores/UserContext'
 
 interface LeadDetailsState {
     lead: LeadDetailed,
@@ -33,6 +34,12 @@ interface LeadDetailsState {
 const SECTION_LABEL_SX = { fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: ".04em" }
 
 export const LeadDetailsState = ({ lead, contactState, flowState, updateLeadInfo }: LeadDetailsState) => {
+
+    //Mismo permiso que exige el backend en POST /leads/{id}/change_contact_state y /change_state
+    //("lead:update", ver lead_controller.py) — se usa acá en vez de <Can> porque el chip siempre
+    //debe mostrar el estado actual, solo se gatea la posibilidad de cambiarlo.
+    const { hasPermission } = useUserContext()
+    const canUpdateLead = hasPermission("lead:update")
 
     const [nextFlowStates, setNextFlowStates] = useState<LeadState[]>([])
     const [contactStates, setContactStates] = useState<LeadContactState[]>([])
@@ -96,11 +103,11 @@ export const LeadDetailsState = ({ lead, contactState, flowState, updateLeadInfo
                     Estado de Contacto
                 </Typography>
                 <CustomChip chipColor={contactState.color}
-                    onClick={contactStates.length > 0 ? (e => setContactAnchor(e.currentTarget)) : undefined}
+                    onClick={(contactStates.length > 0 && canUpdateLead) ? (e => setContactAnchor(e.currentTarget)) : undefined}
                     label={
                         <Stack direction="row" spacing={.25} sx={{ alignItems: "center" }}>
                             <span>{contactState.name}</span>
-                            {contactStates.length > 0 && <ArrowDropDownIcon fontSize="inherit" />}
+                            {contactStates.length > 0 && canUpdateLead && <ArrowDropDownIcon fontSize="inherit" />}
                         </Stack>
                     } />
                 <Popover

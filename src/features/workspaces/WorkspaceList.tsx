@@ -174,9 +174,11 @@ export const WorkspaceList = () => {
                             : <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
                                 <NoItemsMessage search={fetchParams.search}
                                     emptyFetchMessage="No se han encontrado espacios de trabajo...">
-                                    <CommonButton actionType='CREATE' onClick={() => handleSidebar("CREATE_WSP", null)} variant="contained">
-                                        Agregar
-                                    </CommonButton>
+                                    <Can permission="workspace:create">
+                                        <CommonButton actionType='CREATE' onClick={() => handleSidebar("CREATE_WSP", null)} variant="contained">
+                                            Agregar
+                                        </CommonButton>
+                                    </Can>
                                 </NoItemsMessage>
                             </Stack>
                         }

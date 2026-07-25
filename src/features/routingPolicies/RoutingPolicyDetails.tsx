@@ -13,6 +13,7 @@ import { getTeams } from "src/features/teams/teamServices"
 import { getCampaigns } from "src/features/campaigns/campaignServices"
 import { getLeadFields } from "src/features/leadFields/leadFieldServices"
 import { ButtonGroup, Chip, Divider, Stack, Typography } from "@mui/material"
+import { Can } from "src/app/Can"
 
 interface RoutingPolicyDetailsProps {
     policy: LeadRoutingPolicyDetailed | null,
@@ -47,11 +48,17 @@ export const RoutingPolicyDetails = ({ policy, closeSidebar, handleSidebar, hand
             actions={
                 <ButtonGroup>
                     <CommonButton onClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
-                    <HandleActiveButton active={policy.active} handleActive={() => handleToggleActive(policy)} />
-                    <CommonButton onClick={() => handleSidebar("UPDATE_POLICY", policy)} actionType="MODIFY" >Modificar</CommonButton>
-                    <CommonButton onClick={() => handleDeleteForever(policy)} actionType="DISABLE" color="error" variant="outlined">
-                        Eliminar definitivamente
-                    </CommonButton>
+                    <Can permission={policy.active ? "lead_routing_policy:delete" : "lead_routing_policy:update"}>
+                        <HandleActiveButton active={policy.active} handleActive={() => handleToggleActive(policy)} />
+                    </Can>
+                    <Can permission="lead_routing_policy:update">
+                        <CommonButton onClick={() => handleSidebar("UPDATE_POLICY", policy)} actionType="MODIFY" >Modificar</CommonButton>
+                    </Can>
+                    <Can permission="lead_routing_policy:delete">
+                        <CommonButton onClick={() => handleDeleteForever(policy)} actionType="DISABLE" color="error" variant="outlined">
+                            Eliminar definitivamente
+                        </CommonButton>
+                    </Can>
                 </ButtonGroup>
             }>
             <Stack spacing={2}>

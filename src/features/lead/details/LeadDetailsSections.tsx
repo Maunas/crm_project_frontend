@@ -23,6 +23,7 @@ import GenericPaper from "src/components/layout/container/GenericPaper"
 import { ColoredAccordionSummary } from "src/components/layout/container/ColoredHeaders"
 import { updateFieldSection } from "../../orgProperties/fieldSections/fieldSectionsServices"
 import { stopPropagationEvent } from "src/utils/lists"
+import { useUserContext } from "src/stores/UserContext"
 
 interface LeadFieldSectionsProps {
     lead: LeadDetailed,
@@ -33,6 +34,11 @@ export const LeadFieldSections = ({ lead, updateLeadInfo }: LeadFieldSectionsPro
 
     //Para datos que necesitan un modal
     const { modalProps } = useModal()
+
+    //Renombrar una sección modifica LeadFieldSection (PUT /lead_field_sections/{id}), no el lead en
+    //sí — el permiso correspondiente es "lead_field_section:update", no "lead:update".
+    const { hasPermission } = useUserContext()
+    const canRenameSection = hasPermission("lead_field_section:update")
 
     //Filtra los campos habilitados, ordenados por order. Antes también exigía tener un valor cargado,
     //lo que ocultaba por completo los campos vacíos y no dejaba forma de completarlos (la edición
@@ -135,7 +141,9 @@ export const LeadFieldSections = ({ lead, updateLeadInfo }: LeadFieldSectionsPro
                                 //cerrándose de paso. El resto del encabezado sigue plegando/desplegando
                                 //con un clic normal.
                                 onClick={stopPropagationEvent()}
-                                onDoubleClick={stopPropagationEvent(() => startEditingSectionName(section.id, section.name))}>
+                                onDoubleClick={canRenameSection
+                                    ? stopPropagationEvent(() => startEditingSectionName(section.id, section.name))
+                                    : stopPropagationEvent()}>
                                 {section.name}
                             </Typography>
                         )}
@@ -178,6 +186,9 @@ type LeadFieldProps = {
 // En secciones se recuperan los datos desde fieldValue
 export const LeadFieldContent = (props: LeadFieldProps) => {
 
+    const { hasPermission } = useUserContext()
+    const canUpdateLead = hasPermission("lead:update")
+
     const isSectionInfo = "fieldValue" in props
 
     const fieldValue = isSectionInfo ? props.fieldValue : undefined
@@ -202,9 +213,10 @@ export const LeadFieldContent = (props: LeadFieldProps) => {
     const hasRestrictedRelatedLead = typeCode === "LEAD" && Array.isArray(leads) && leads.some(l => l.restricted)
 
     //Todos los tipos de campo son editables inline, salvo los calculados (no los carga el usuario),
-    //los que el propio campo marcó como no visibles/editables (is_visible), y los LEAD con algún
-    //valor restringido (ver arriba).
-    const isInlineEditable = Boolean(fieldValue && lead && updateLeadInfo &&
+    //los que el propio campo marcó como no visibles/editables (is_visible), los LEAD con algún
+    //valor restringido (ver arriba), y si el usuario no tiene permiso "lead:update" (mismo permiso
+    //que exige el backend en PUT /leads/{id}).
+    const isInlineEditable = Boolean(fieldValue && lead && updateLeadInfo && canUpdateLead &&
         typeCode !== "CALCULATED" && fieldValue.field.is_visible && !hasRestrictedRelatedLead)
 
     const component = (code?: string) => {

@@ -8,6 +8,7 @@ import { EnabledIcon } from "shared/ui/lists/Icons"
 import type { TeamDetailed } from "src/types/teams"
 import { Link as RouterLink } from "react-router-dom"
 import { ButtonGroup, Chip, Divider, Stack, Typography } from "@mui/material"
+import { Can } from "src/app/Can"
 
 interface TeamDetailsProps {
     team: TeamDetailed | null,
@@ -25,8 +26,12 @@ export const TeamDetails = ({ team, closeSidebar, handleSidebar, handleActive }:
             actions={
                 <ButtonGroup>
                     <CommonButton onClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
-                    <HandleActiveButton active={team.active} handleActive={() => handleActive(team)} />
-                    <CommonButton onClick={() => handleSidebar("UPDATE_TEAM", team)} actionType="MODIFY" >Modificar</CommonButton>
+                    <Can permission={team.active ? "team:delete" : "team:update"}>
+                        <HandleActiveButton active={team.active} handleActive={() => handleActive(team)} />
+                    </Can>
+                    <Can permission="team:update">
+                        <CommonButton onClick={() => handleSidebar("UPDATE_TEAM", team)} actionType="MODIFY" >Modificar</CommonButton>
+                    </Can>
                 </ButtonGroup>
             }>
             <Stack spacing={2}>

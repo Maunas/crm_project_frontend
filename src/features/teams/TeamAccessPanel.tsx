@@ -15,6 +15,8 @@ import { getCampaigns } from 'src/features/campaigns/campaignServices'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { useForm } from 'react-hook-form'
 import { Chip, Divider, Stack, Typography } from '@mui/material'
+import { Can } from 'src/app/Can'
+import { useUserContext } from 'src/stores/UserContext'
 
 interface TeamAccessPanelProps {
     team: TeamDetailed
@@ -40,6 +42,9 @@ const WorkspaceAccessSection = ({ team }: TeamAccessPanelProps) => {
     const [workspaces, setWorkspaces] = useState<Workspace[]>([])
     const [loading, setLoading] = useState(false)
     const [removing, setRemoving] = useState<TeamWorkspaceAccessDetailed | null>(null)
+
+    const { hasPermission } = useUserContext()
+    const canDeleteAccess = hasPermission("team_workspace_access:delete")
 
     const fetchAccess = useCallback(() => {
         setLoading(true)
@@ -87,20 +92,23 @@ const WorkspaceAccessSection = ({ team }: TeamAccessPanelProps) => {
             <LoadingScreenWrapper loading={loading}>
                 <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: "wrap" }}>
                     {access.length > 0 ? access.map(item =>
-                        <Chip key={item.id} label={getName(item.workspace_id)} onDelete={() => setRemoving(item)} />
+                        <Chip key={item.id} label={getName(item.workspace_id)}
+                            onDelete={canDeleteAccess ? () => setRemoving(item) : undefined} />
                     ) : (
                         <Typography variant="body2" color="textSecondary">Este equipo no tiene acceso a ningún espacio de trabajo específico.</Typography>
                     )}
                 </Stack>
                 {availableWorkspaces.length > 0 &&
-                    <form onSubmit={handleSubmit(onSubmit)}>
-                        <Stack direction="row" spacing={1} sx={{ alignItems: "center", mt: 1 }}>
-                            <ControlledAutocomplete control={control} name="workspace_id" label="Agregar espacio de trabajo"
-                                options={availableWorkspaces} size="small"
-                                getOptionLabel={option => option.name ?? ""} getOptionKey={option => `${option.id}`} returnField="id" />
-                            <CommonButton actionType="CREATE" type="submit" size="small" onlyTooltip>Agregar</CommonButton>
-                        </Stack>
-                    </form>
+                    <Can permission="team_workspace_access:create">
+                        <form onSubmit={handleSubmit(onSubmit)}>
+                            <Stack direction="row" spacing={1} sx={{ alignItems: "center", mt: 1 }}>
+                                <ControlledAutocomplete control={control} name="workspace_id" label="Agregar espacio de trabajo"
+                                    options={availableWorkspaces} size="small"
+                                    getOptionLabel={option => option.name ?? ""} getOptionKey={option => `${option.id}`} returnField="id" />
+                                <CommonButton actionType="CREATE" type="submit" size="small" onlyTooltip>Agregar</CommonButton>
+                            </Stack>
+                        </form>
+                    </Can>
                 }
             </LoadingScreenWrapper>
             <DisableConfirmDialog entity={removing} clearEntity={() => setRemoving(null)} idModal='remove-workspace-access'
@@ -119,6 +127,9 @@ const CampaignAccessSection = ({ team }: TeamAccessPanelProps) => {
     const [campaigns, setCampaigns] = useState<Campaign[]>([])
     const [loading, setLoading] = useState(false)
     const [removing, setRemoving] = useState<TeamCampaignAccessDetailed | null>(null)
+
+    const { hasPermission } = useUserContext()
+    const canDeleteAccess = hasPermission("team_campaign_access:delete")
 
     const fetchAccess = useCallback(() => {
         setLoading(true)
@@ -166,20 +177,23 @@ const CampaignAccessSection = ({ team }: TeamAccessPanelProps) => {
             <LoadingScreenWrapper loading={loading}>
                 <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: "wrap" }}>
                     {access.length > 0 ? access.map(item =>
-                        <Chip key={item.id} label={getName(item.campaign_id)} onDelete={() => setRemoving(item)} />
+                        <Chip key={item.id} label={getName(item.campaign_id)}
+                            onDelete={canDeleteAccess ? () => setRemoving(item) : undefined} />
                     ) : (
                         <Typography variant="body2" color="textSecondary">Este equipo no tiene acceso a ninguna campaña específica.</Typography>
                     )}
                 </Stack>
                 {availableCampaigns.length > 0 &&
-                    <form onSubmit={handleSubmit(onSubmit)}>
-                        <Stack direction="row" spacing={1} sx={{ alignItems: "center", mt: 1 }}>
-                            <ControlledAutocomplete control={control} name="campaign_id" label="Agregar campaña"
-                                options={availableCampaigns} size="small"
-                                getOptionLabel={option => option.name ?? ""} getOptionKey={option => `${option.id}`} returnField="id" />
-                            <CommonButton actionType="CREATE" type="submit" size="small" onlyTooltip>Agregar</CommonButton>
-                        </Stack>
-                    </form>
+                    <Can permission="team_campaign_access:create">
+                        <form onSubmit={handleSubmit(onSubmit)}>
+                            <Stack direction="row" spacing={1} sx={{ alignItems: "center", mt: 1 }}>
+                                <ControlledAutocomplete control={control} name="campaign_id" label="Agregar campaña"
+                                    options={availableCampaigns} size="small"
+                                    getOptionLabel={option => option.name ?? ""} getOptionKey={option => `${option.id}`} returnField="id" />
+                                <CommonButton actionType="CREATE" type="submit" size="small" onlyTooltip>Agregar</CommonButton>
+                            </Stack>
+                        </form>
+                    </Can>
                 }
             </LoadingScreenWrapper>
             <DisableConfirmDialog entity={removing} clearEntity={() => setRemoving(null)} idModal='remove-campaign-access'

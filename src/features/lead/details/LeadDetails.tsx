@@ -257,12 +257,18 @@ export const LeadInfo = ({ lead, leadTitle, leadSubtitle, handleActive, updateLe
     //desplegable que ya usa ResponsiveListItem en su modo táctil).
     const [actionsAnchor, setActionsAnchor] = useState<HTMLElement | null>(null)
     const titleActions: ListItemAction[] = [
-        ...(onOpenTitleConfig ? [{ actionType: "RENAME", label: "Configurar título", onClick: onOpenTitleConfig } as ListItemAction] : []),
+        ...(onOpenTitleConfig ? [{
+            actionType: "RENAME", label: "Configurar título", onClick: onOpenTitleConfig,
+            permission: "lead_field:update",
+        } as ListItemAction] : []),
         {
             actionType: lead.active ? "DISABLE" : "ENABLE",
             label: lead.active ? "Eliminar" : "Restaurar",
             onClick: () => handleActive(lead),
             color: lead.active ? "error" : "success",
+            //Mismo criterio que el backend: deshabilitar (soft/hard delete) exige "lead:delete";
+            //restaurar (reactivar) exige "lead:update" (ver base_controller.py, acción "active" -> "update").
+            permission: lead.active ? "lead:delete" : "lead:update",
         },
     ]
 
