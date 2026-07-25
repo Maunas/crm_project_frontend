@@ -6,6 +6,7 @@ import type { CampaignDetailed, WorkspaceDetailed } from "src/types/campaigns"
 import { Stack, Typography, ButtonGroup, Divider } from "@mui/material"
 import { SidebarContentWrapper } from "src/components/layout/container/GenericSidebar"
 import { EnabledIcon } from "src/components/ui/lists/Icons"
+import { Can } from "src/app/Can"
 
 interface WorkspaceDetailsProps {
     entity: WorkspaceDetailed | null,
@@ -22,8 +23,12 @@ export const WorkspaceDetails = ({ entity, closeSidebar, handleSidebar, handleAc
             actions={
                 <ButtonGroup>
                     <CommonButton onClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
-                    <HandleActiveButton active={entity.active} handleActive={() => handleActive(entity)} />
-                    <CommonButton onClick={() => handleSidebar("UPDATE_WSP", entity)} actionType="MODIFY" >Modificar</CommonButton>
+                    <Can permission={entity.active ? "workspace:delete" : "workspace:update"}>
+                        <HandleActiveButton active={entity.active} handleActive={() => handleActive(entity)} />
+                    </Can>
+                    <Can permission="workspace:update">
+                        <CommonButton onClick={() => handleSidebar("UPDATE_WSP", entity)} actionType="MODIFY" >Modificar</CommonButton>
+                    </Can>
                 </ButtonGroup>
             }>
             <Stack spacing={2} >

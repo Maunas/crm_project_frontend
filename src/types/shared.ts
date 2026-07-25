@@ -2,7 +2,6 @@ import type { Path } from "react-hook-form";
 import type { Lead } from "./leads";
 import type { Campaign, Workspace } from "./campaigns";
 import type { Nomenclator, NomenclatorItem } from "./nomenclators";
-import type { UserData } from "./users";
 
 export interface DisableableEntity {
   active?: boolean,
@@ -28,19 +27,21 @@ export interface Metadata {
   active: boolean;
   created_by: number;
   updated_by?: number;
-  creator: UserData;
-  updater?: UserData | null;
+  creator?: Creator | null;
+  updater?: Updater | null;
 }
 
 export interface Creator {
   id: number;
   name: string | null;
+  last_name?: string | null;
   email: string | null;
 }
 
 export interface Updater {
   id: number;
   name: string | null;
+  last_name?: string | null;
   email: string | null;
 }
 
@@ -76,6 +77,7 @@ export interface CampaignParams extends ListParams {
 }
 export interface LeadListParams extends ListParams {
   campaign_id?: number
+  query?: string
 }
 export interface LeadFlowParams extends ListParams {
   organization_id?: number
@@ -156,9 +158,9 @@ export interface SearchResults {
 }
 
 export interface LeadFilter {
-  "field_id"?: number,
+  "field_id"?: number | string,
   "operator"?: string,
-  "value"?: string | number | boolean
+  "value"?: string | number | boolean | number[]
 }
 
 export interface Dictionary {
@@ -179,7 +181,7 @@ export interface DictionaryItem {
 
 export type DateFormat = "dateTime" | "dateTimeLong" | "date" | "dateLong" | "time" | "custom"
 
-export type OptionWithAction<T> = ((T & { isAction: boolean }) | { id: string, name: string, isAction: boolean })
+export type OptionWithAction<T> = (T & { isAction?: undefined }) | { id: string, name: string, isAction: boolean }
 
 export interface AutomationCompatibility {
   "field_type": {

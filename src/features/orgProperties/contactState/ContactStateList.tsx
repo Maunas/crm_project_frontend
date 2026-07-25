@@ -18,6 +18,8 @@ import { OrderSearchMenu } from 'shared/ui/lists/OrderMenu'
 import type { LeadContactStateDetailed } from 'src/types/orgProperties'
 import { disableLeadContactState, enableLeadContactState, getLeadContactStates } from './contactStatesServices'
 import { NoItemsMessage } from 'src/components/ui/lists/NoItemsMessage'
+import { Can } from 'src/app/Can'
+import { useUserContext } from 'src/stores/UserContext'
 
 const ORDER_STATE_FIELDS = [
     { name: "name", label: "Orden Alfabético" },
@@ -68,10 +70,10 @@ export const ContactStateList = () => {
         <Stack spacing={2}>
             <Stack spacing={2} direction="row" useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
                 {(states?.items && states.items.length > 0) &&
-                    <CommonButton actionType="CREATE" variant="contained"
-                        onClick={() => setEditingState(undefined)}>
-                        Agregar
-                    </CommonButton>}
+                    <Can permission="lead_contact_state:create">
+                        <CommonButton actionType="CREATE" variant="contained" sx={{ alignSelf: "start" }}
+                            onClick={() => setEditingState(undefined)}>Agregar</CommonButton>
+                    </Can>}
                 <OrderSearchMenu searchOptions={SEARCH_STATE_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_STATE_FIELDS} handleOrderChange={handleOrderChange} />
             </Stack>
 
@@ -86,13 +88,15 @@ export const ContactStateList = () => {
                     :
                     <NoItemsMessage search={fetchParams.search}
                         emptyFetchMessage="No se han encontrado estados de contacto...">
-                        <CommonButton actionType="CREATE" variant="contained"
-                            onClick={() => setEditingState(undefined)}>Agregar</CommonButton>
+                        <Can permission="lead_contact_state:create">
+                            <CommonButton actionType="CREATE" variant="contained"
+                                onClick={() => setEditingState(undefined)}>Agregar</CommonButton>
+                        </Can>
                     </NoItemsMessage>
                 }
             </LoadingScreenWrapper >
             {editingState !== null &&
-                <>
+                <Can permission="lead_contact_state:update">
                     <Divider />
                     <GenericPaper elevation={4} sx={{ px: 3, py: 2 }}>
                         <Stack spacing={2}>
@@ -100,7 +104,7 @@ export const ContactStateList = () => {
                                 onClose={() => setEditingState(null)} onSubmit={updateList} />
                         </Stack>
                     </GenericPaper>
-                </>
+                </Can>
             }
         </Stack>
     )
@@ -113,6 +117,8 @@ interface ContactStateListDataProps {
 }
 
 export const ContactStateListData = ({ states, toggleUpdate, updateList }: ContactStateListDataProps) => {
+
+    const { hasPermission } = useUserContext()
 
     const [disableState, setDisableState] = useState<LeadContactStateDetailed | null>(null)
 
@@ -140,10 +146,16 @@ export const ContactStateListData = ({ states, toggleUpdate, updateList }: Conta
                 {states.map((state, idx) =>
                     <Grid key={`state-${idx}`} size="grow" sx={{ minWidth: "15rem", minHeight: "100%" }}>
                         <ResponsiveListItem disablePadding sx={{ height: "100%" }}
-                            onClick={() => toggleUpdate(state)}
+                            onClick={() => hasPermission("lead_contact_state:update") && toggleUpdate(state)}
                             actions={[
-                                { template: "MODIFY", onClick: () => toggleUpdate(state) },
-                                { template: state.active ? "DISABLE" : "ENABLE", onClick: () => setDisableState(state) },
+                                {
+                                    template: "MODIFY", onClick: () => toggleUpdate(state),
+                                    permission: "lead_contact_state:update"
+                                },
+                                {
+                                    template: state.active ? "DISABLE" : "ENABLE", onClick: () => setDisableState(state),
+                                    permission: state.active ? "lead_contact_state:delete" : "lead_contact_state:update"
+                                },
                             ]}>
                             <ListItemText sx={{ mr: 4 }} primary={
                                 <Stack spacing={1} direction="row" color="inherit" sx={{ width: "100%", alignItems: "center" }}>

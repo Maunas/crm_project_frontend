@@ -11,12 +11,14 @@ import { useOrderSeachList } from 'src/hooks/useOrderSearchLists'
 import { useLoading } from 'src/hooks/useLoading'
 import type { Paginable } from 'src/types/shared'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
+import { Can } from 'src/app/Can'
 import { Divider, Grid, ListItemText, Stack, Typography } from '@mui/material'
 import { OrderSearchMenu } from 'shared/ui/lists/OrderMenu'
 import type { LeadFieldSectionDetailed } from 'src/types/orgProperties'
 import { disableFieldSection, enableFieldSection, getFieldSections } from './fieldSectionsServices'
 import { FieldSectionForm } from './FieldSectionForm'
 import { NoItemsMessage } from 'src/components/ui/lists/NoItemsMessage'
+import { useUserContext } from 'src/stores/UserContext'
 
 const ORDER_SEC_FIELDS = [
     { name: "name", label: "Orden Alfabético" },
@@ -66,9 +68,11 @@ export const FieldSectionList = () => {
         <Stack spacing={2}>
             <Stack spacing={2} direction="row" useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
                 {(sections?.items && sections.items.length > 0) &&
-                    <CommonButton actionType="CREATE" variant="contained" onClick={() => setEditingSection(undefined)}>
-                        Agregar
-                    </CommonButton>
+                    <Can permission="lead_field_section:create">
+                        <CommonButton actionType="CREATE" variant="contained" onClick={() => setEditingSection(undefined)}>
+                            Agregar
+                        </CommonButton>
+                    </Can>
                 }
                 <OrderSearchMenu searchOptions={SEARCH_SEC_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_SEC_FIELDS} handleOrderChange={handleOrderChange} />
             </Stack>
@@ -84,19 +88,21 @@ export const FieldSectionList = () => {
                         :
                         <NoItemsMessage search={fetchParams.search}
                             emptyFetchMessage="No se han encontrado secciones de campo...">
-                            <CommonButton actionType="CREATE" variant="contained"
-                                onClick={() => setEditingSection(undefined)}>Agregar</CommonButton>
+                            <Can permission="lead_field_section:create">
+                                <CommonButton actionType="CREATE" variant="contained"
+                                    onClick={() => setEditingSection(undefined)}>Agregar</CommonButton>
+                            </Can>
                         </NoItemsMessage>
                     }
                 </LoadingScreenWrapper >
                 {editingSection !== null &&
-                    <>
+                    <Can permission="lead_field_section:update">
                         <Divider />
                         <GenericPaper elevation={4} sx={{ px: 3, py: 2 }}>
                             <FieldSectionForm existingSection={editingSection}
                                 onClose={() => setEditingSection(null)} onSubmit={updateList} />
                         </GenericPaper>
-                    </>
+                    </Can>
                 }
             </Stack>
         </Stack>
@@ -110,6 +116,8 @@ interface FieldSectionListDataProps {
 }
 
 const FieldSectionListData = ({ sections, toggleUpdate, updateList }: FieldSectionListDataProps) => {
+
+    const { hasPermission } = useUserContext()
 
     const [disableSection, setDisableSection] = useState<LeadFieldSectionDetailed | null>(null)
 
@@ -137,10 +145,16 @@ const FieldSectionListData = ({ sections, toggleUpdate, updateList }: FieldSecti
                 {sections.map((section, idx) =>
                     <Grid key={`section-${idx}`} size="grow" sx={{ minWidth: "15rem", minHeight: "100%" }}>
                         <ResponsiveListItem disablePadding sx={{ height: "100%" }}
-                            onClick={() => toggleUpdate(section)}
+                            onClick={() => hasPermission("lead_field_section:update") && toggleUpdate(section)}
                             actions={[
-                                { template: "MODIFY", onClick: () => toggleUpdate(section) },
-                                { template: section.active ? "DISABLE" : "ENABLE", onClick: () => setDisableSection(section) },
+                                {
+                                    template: "MODIFY", onClick: () => toggleUpdate(section),
+                                    permission: "lead_field_section:update"
+                                },
+                                {
+                                    template: section.active ? "DISABLE" : "ENABLE", onClick: () => setDisableSection(section),
+                                    permission: section.active ? "lead_field_section:delete" : "lead_field_section:update"
+                                },
                             ]}>
                             <ListItemText sx={{ mr: 4 }} primary={
                                 <Stack spacing={1} direction="row" color="inherit" sx={{ width: "100%", alignItems: "center" }}>

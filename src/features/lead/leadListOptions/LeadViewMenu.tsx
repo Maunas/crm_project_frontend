@@ -21,6 +21,7 @@ import SortIcon from '@mui/icons-material/Sort';
 import EditIcon from '@mui/icons-material/Edit'
 import { useLoading } from 'src/hooks/useLoading';
 import { showToast } from 'src/utils/feedback';
+import { Can } from 'src/app/Can';
 
 interface LeadViewMenuProps {
     saveView: (name: string, visibility: string, existingView?: LeadView) => Promise<unknown>;
@@ -104,8 +105,12 @@ export const LeadViewMenu = ({ saveView, loadView, campaignId }: LeadViewMenuPro
                                 <ListItem key={`list-${view.id}`} disablePadding
                                     secondaryAction={
                                         <Stack direction="row" sx={{ mr: -1 }}>
-                                            <IconButton title="Renombrar" edge="end" size='small' onClick={() => { handleEditView(view) }}><EditIcon fontSize='small' /></IconButton>
-                                            <IconButton title="Eliminar" edge="end" size='small' onClick={() => { handleDelete(view.id) }}><CloseIcon color='error' fontSize='small' /></IconButton>
+                                            <Can permission="lead_view:update">
+                                                <IconButton title="Renombrar" edge="end" size='small' onClick={() => { handleEditView(view) }}><EditIcon fontSize='small' /></IconButton>
+                                            </Can>
+                                            <Can permission="lead_view:delete">
+                                                <IconButton title="Eliminar" edge="end" size='small' onClick={() => { handleDelete(view.id) }}><CloseIcon color='error' fontSize='small' /></IconButton>
+                                            </Can>
                                         </Stack>
                                     }
                                 >
@@ -135,9 +140,11 @@ export const LeadViewMenu = ({ saveView, loadView, campaignId }: LeadViewMenuPro
                         pageComponentProps.totalPages > 1 &&
                         <PaginationComponent {...pageComponentProps} />
                     }
-                    <Box sx={{ px: 2, pb: 2 }}>
-                        <CommonButton actionType="CREATE" variant='text' onClick={() => setViewFormAnchor(menuRef.current)} fullWidth>Crear Vista</CommonButton>
-                    </Box>
+                    <Can permission="lead_view:create">
+                        <Box sx={{ px: 2, pb: 2 }}>
+                            <CommonButton actionType="CREATE" variant='text' onClick={() => setViewFormAnchor(menuRef.current)} fullWidth>Crear Vista</CommonButton>
+                        </Box>
+                    </Can>
                 </Stack >
             </Popover>
             <ViewForm existingView={editView} visibilities={visibilities} formAnchor={viewFormAnchor} handleClose={handleCloseForm} handleCreate={handleCreate} />

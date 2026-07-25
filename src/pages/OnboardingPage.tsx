@@ -129,8 +129,10 @@ export function OnboardingPage() {
         if (!isRestoring && !user) nav("/login", { replace: true })
     }, [user, isRestoring, nav])
 
+    //Si ya tiene una organización propia, o es superusuario (tiene el Panel Global como "hogar" y no
+    //necesita una organización propia), no tiene sentido quedarse acá pidiendo crear/unirse a una.
     useEffect(() => {
-        if (!isRestoring && user && orgHeaderList.length > 0) nav("/", { replace: true })
+        if (!isRestoring && user && (user.is_superuser || orgHeaderList.length > 0)) nav("/", { replace: true })
     }, [user, orgHeaderList.length, isRestoring, nav])
 
     const handleSuccess = async () => {

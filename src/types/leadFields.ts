@@ -54,6 +54,9 @@ export interface LeadFieldPost {
   //Calculated
   calculation_expression?: string | null;
   title_order?: number | null;
+  //Igual que title_order pero para el subtítulo (línea secundaria debajo del título, ej. Cargo +
+  //Empresa). Ver getLeadSubtitleArray en leadUtils.ts.
+  subtitle_order?: number | null;
   //Selector/Checkbox dependiente de otro campo nomenclador de la misma campaña
   depends_on_field_id?: number | null;
 }
@@ -67,10 +70,13 @@ export interface LeadField extends Omit<LeadFieldPost, "lead_field_section_id"> 
   organization_id: number;
   order: number;
   title_order: number | null;
+  subtitle_order: number | null;
   field_type_code: string;
   field_type: LeadFieldType,
   field_subtype: LeadFieldType | null,
   field_template_name: string | null,
+  /** Clave nativa en el modelo Lead (solo para campos del sistema, ej: "contact_state_id") */
+  nativeKey?: string;
 }
 
 export interface LeadFieldDetailed extends LeadField, Metadata {

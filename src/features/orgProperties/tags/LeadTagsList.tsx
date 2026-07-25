@@ -17,6 +17,8 @@ import { deleteTag, getTags } from './LeadTagService'
 import { TagFormSidebarWrapper } from './LeadTagForm'
 import type { LeadTagDetailed } from 'src/types/orgProperties'
 import { NoItemsMessage } from 'src/components/ui/lists/NoItemsMessage'
+import { Can } from 'src/app/Can'
+import { useUserContext } from 'src/stores/UserContext'
 
 const ORDER_TAG_FIELDS = [
     { name: "name", label: "Orden Alfabético" },
@@ -66,9 +68,10 @@ export const LeadTagsList = () => {
         <Stack spacing={2}>
             <Stack spacing={2} direction="row" useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
                 {(tags?.items && tags.items.length > 0) &&
-                    <CommonButton actionType="CREATE" variant="contained" onClick={() => setEditingTag(undefined)}>
-                        Agregar
-                    </CommonButton>}
+                    <Can permission="tag:create">
+                        <CommonButton actionType="CREATE" variant="contained" sx={{ alignSelf: "start" }}
+                            onClick={() => setEditingTag(undefined)}>Agregar</CommonButton>
+                    </Can>}
                 <OrderSearchMenu searchOptions={SEARCH_TAG_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_TAG_FIELDS} handleOrderChange={handleOrderChange} />
             </Stack>
             <Stack spacing={2}>
@@ -83,13 +86,15 @@ export const LeadTagsList = () => {
                         :
                         <NoItemsMessage search={fetchParams.search}
                             emptyFetchMessage="No se han encontrado etiquetas de lead...">
-                            <CommonButton actionType="CREATE" variant="contained"
-                                onClick={() => setEditingTag(undefined)}>Agregar</CommonButton>
+                            <Can permission="tag:create">
+                                <CommonButton actionType="CREATE" variant="contained"
+                                    onClick={() => setEditingTag(undefined)}>Agregar</CommonButton>
+                            </Can>
                         </NoItemsMessage>
                     }
                 </LoadingScreenWrapper >
                 {editingTag !== null &&
-                    <>
+                    <Can>
                         <Divider />
                         <GenericPaper elevation={4} sx={{ px: 3, py: 2 }}>
                             <Stack spacing={2}>
@@ -97,7 +102,7 @@ export const LeadTagsList = () => {
                                     onClose={() => setEditingTag(null)} onSubmit={updateList} />
                             </Stack>
                         </GenericPaper>
-                    </>
+                    </Can>
                 }
             </Stack>
         </Stack>
@@ -111,6 +116,8 @@ interface LeadTagsListDataProps {
 }
 
 export const LeadTagsListData = ({ tags, toggleUpdate, updateList }: LeadTagsListDataProps) => {
+
+    const { hasPermission } = useUserContext()
 
     const [deletingTag, setDeletingTag] = useState<LeadTagDetailed | null>(null)
 
@@ -129,10 +136,10 @@ export const LeadTagsListData = ({ tags, toggleUpdate, updateList }: LeadTagsLis
                 {tags.map((tag, idx) =>
                     <Grid key={`tag-${idx}`} size="grow" sx={{ minWidth: "15rem", minHeight: "100%" }}>
                         <ResponsiveListItem disablePadding sx={{ height: "100%" }}
-                            onClick={() => toggleUpdate(tag)}
+                            onClick={() => hasPermission("tag:update") && toggleUpdate(tag)}
                             actions={[
-                                { template: "MODIFY", onClick: () => toggleUpdate(tag) },
-                                { template: "DELETE", onClick: () => setDeletingTag(tag) },
+                                { template: "MODIFY", onClick: () => toggleUpdate(tag), permission: "tag:update" },
+                                { template: "DELETE", onClick: () => setDeletingTag(tag), permission: "tag:delete" },
                             ]}>
                             <ListItemText sx={{ mr: 4 }} primary={
                                 <Stack spacing={1} direction="row" color="inherit" sx={{ width: "100%", alignItems: "center" }}>

@@ -3,6 +3,8 @@ import { ControlledSwitch, RegisteredTextInput } from 'shared/ui/forms/CustomInp
 import { ControlledAutocomplete } from 'shared/ui/forms/CustomMultipleInputs'
 import { FormErrorMessage } from 'shared/ui/forms/FormFeedback'
 import CommonButton from 'shared/ui/buttons/CommonButton'
+import { Can } from 'src/app/Can'
+import { useUserContext } from 'src/stores/UserContext'
 import { useLoading } from 'src/hooks/useLoading';
 import type { StateCategory } from 'src/types/leadFlow'
 import { DEFAULT_STATE_COLORS } from './leadFlowServices/leadFlowUtils'
@@ -130,6 +132,9 @@ interface HeaderProps {
  */
 export const FlowEditorHeader = ({ initialName, initialDescription, statesLength, handleSaveFlow }: HeaderProps) => {
 
+  const { hasPermission } = useUserContext()
+  const canEdit = hasPermission("lead_flow:update")
+
   const [flowName, setFlowName] = useState<string>('')
   const [flowDescription, setFlowDescription] = useState<string>('')
 
@@ -173,6 +178,7 @@ export const FlowEditorHeader = ({ initialName, initialDescription, statesLength
           value={flowName}
           onChange={(e) => setFlowName(e.target.value)}
           sx={{ flex: 1, minWidth: "10rem" }}
+          disabled={!canEdit}
         />
         <TextField
           size="small"
@@ -180,12 +186,15 @@ export const FlowEditorHeader = ({ initialName, initialDescription, statesLength
           value={flowDescription}
           onChange={(e) => setFlowDescription(e.target.value)}
           sx={{ flex: 2, minWidth: "10rem" }}
+          disabled={!canEdit}
         />
       </Stack>
 
-      <CommonButton actionType={loading ? "LOADING" : "SAVE"} onClick={saveFlowLoad} disabled={loading || statesLength === 0} sx={{ ml: "auto" }}>
-        {loading ? 'Guardando...' : 'Guardar Flujo'}
-      </CommonButton>
+      <Can permission="lead_flow:update">
+        <CommonButton actionType={loading ? "LOADING" : "SAVE"} onClick={saveFlowLoad} disabled={loading || statesLength === 0} sx={{ ml: "auto" }}>
+          {loading ? 'Guardando...' : 'Guardar Flujo'}
+        </CommonButton>
+      </Can>
     </Stack>
   )
 }

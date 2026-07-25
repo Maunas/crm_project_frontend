@@ -17,6 +17,8 @@ import type { CampaignDetailed } from "src/types/campaigns"
 import { disableBulkLeadField, disableLeadField, enableBulkLeadField, enableLeadField, getLeadField, getLeadFields, reorderLeadFields } from "./leadFieldServices"
 import { getLeadFieldsBySectionsIds } from "./leadFieldUtils"
 import { showCommonErrorToast, showToast } from "src/utils/feedback"
+import { Can } from "src/app/Can"
+import { useUserContext } from "src/stores/UserContext"
 import { useSearchParams } from "react-router-dom"
 import { ButtonGroup, Stack, Typography } from "@mui/material"
 
@@ -33,6 +35,8 @@ export interface ReorderFieldsIds {
 }
 
 export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }: LeadFieldTableProps) => {
+
+    const { hasPermission } = useUserContext()
 
     const [leadFields, setLeadFields] = useState<LeadFieldDetailed[] | null>(null)
 
@@ -126,12 +130,23 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
     const [originalFieldsBySectionIds, setOriginalFieldsBySectionIds] = useState<ReorderFieldsIds[]>([])
     const [newFieldsBySectionIds, setNewFieldsBySectionIds] = useState<ReorderFieldsIds[]>([])
 
+    //Secciones desplegadas. Por defecto, todas las secciones aparecen abiertas.
+    const [openSectionIds, setOpenSectionIds] = useState<Set<number>>(new Set())
+
     useEffect(() => {
         const leadFieldsIds = getLeadFieldsBySectionsIds(leadFields)
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setOriginalFieldsBySectionIds(leadFieldsIds)
         setNewFieldsBySectionIds(leadFieldsIds)
+        setOpenSectionIds(new Set(leadFieldsIds.map(section => section.sectId)))
     }, [leadFields])
+
+    const allSectionsExpanded = newFieldsBySectionIds.length > 0
+        && newFieldsBySectionIds.every(section => openSectionIds.has(section.sectId))
+
+    const toggleExpandAll = () => {
+        setOpenSectionIds(allSectionsExpanded ? new Set() : new Set(newFieldsBySectionIds.map(section => section.sectId)))
+    }
 
     const submitReorder = useCallback((updatedfieldsBySectionIds: ReorderFieldsIds[]) => {
         if (!campaign?.id) return
@@ -187,6 +202,16 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
             .catch(e => showCommonErrorToast(e))
     }, [campaign.id, checkedItemsArray, fetchFieldsLoad, removeAllItems])
 
+    //Actualiza el nombre de la sección en todos los LeadField que la referencian, tras renombrarla
+    //desde el doble clic en LeadFieldTableSections (evita tener que refetchear toda la lista).
+    const handleSectionRenamed = useCallback((sectionId: number, newName: string) => {
+        setLeadFields(prev => prev?.map(field =>
+            field.lead_field_section.id === sectionId
+                ? { ...field, lead_field_section: { ...field.lead_field_section, name: newName } }
+                : field
+        ) ?? prev)
+    }, [])
+
     return (
         <Stack spacing={3}>
             <Stack useFlexGap direction="row" spacing={2}
@@ -194,6 +219,12 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
                 <Typography variant="h2">Lista de Campos de Lead</Typography>
                 {leadFields && leadFields.length > 0 &&
                     <ButtonGroup sx={{ marginLeft: "auto" }}>
+                        {!isReordering && newFieldsBySectionIds.length > 1 &&
+                            <CommonButton onClick={toggleExpandAll} color="secondary" variant="outlined"
+                                actionType={allSectionsExpanded ? "CLOSE_LIST" : "OPEN_LIST"} onlyTooltip>
+                                {allSectionsExpanded ? "Plegar Todo" : "Desplegar Todo"}
+                            </CommonButton>
+                        }
                         {!isReordering && campaign &&
                             <SimulateLeadFormModal campaign={campaign} leadFields={leadFields} onCancel={modalProps.handleClose} modalProps={modalProps} />
                         }
@@ -206,17 +237,18 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
                             actionType={isReordering ? "SAVE" : "REORDER"} onlyTooltip>
                             Reordenar
                         </CommonButton>
-                        {!isReordering && checkedItems.size > 0 && areThereInactiveItems &&
+                        {!isReordering && checkedItems.size > 0 && areThereInactiveItems && hasPermission("lead_field:update") &&
                             <CommonButton onClick={() => setBulkDisabling("enable")} actionType="ENABLE" color="success" variant="outlined" onlyTooltip>
                                 Habilitar Seleccionados
                             </CommonButton>}
-                        {!isReordering && checkedItems.size > 0 && areThereActiveItems &&
+                        {!isReordering && checkedItems.size > 0 && areThereActiveItems && hasPermission("lead_field:delete") &&
                             <CommonButton onClick={() => setBulkDisabling("disable")} actionType="DISABLE" color="error" variant="outlined" onlyTooltip>
                                 Deshabilitar Seleccionados
                             </CommonButton>}
-                        {!isReordering && <CommonButton onClick={() => handleSidebar("CREATE_FIELD", null)} actionType="CREATE" onlyTooltip>
-                            Agregar
-                        </CommonButton>}
+                        {!isReordering && hasPermission("lead_field:create") &&
+                            <CommonButton onClick={() => handleSidebar("CREATE_FIELD", null)} actionType="CREATE" onlyTooltip>
+                                Agregar
+                            </CommonButton>}
 
                     </ButtonGroup>
                 }
@@ -224,11 +256,14 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
             <LoadingScreenWrapper loading={fieldsLoading}>
                 {leadFields && newFieldsBySectionIds.length > 0 ?
                     <LeadFieldTableSections isReordering={isReordering} newFieldsBySectionIds={newFieldsBySectionIds} setNewFieldsBySectionIds={setNewFieldsBySectionIds}
-                        handleActive={handleActive} leadFields={leadFields} handleSidebarWrapper={handleSidebarWrapper} {...checkBoxProps} />
+                        handleActive={handleActive} leadFields={leadFields} handleSidebarWrapper={handleSidebarWrapper}
+                        onSectionRenamed={handleSectionRenamed} openSectionIds={openSectionIds} setOpenSectionIds={setOpenSectionIds} {...checkBoxProps} />
                     :
                     <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
                         <Typography variant="h4">No se han encontrado campos para esta campaña...</Typography>
-                        <CommonButton onClick={() => handleSidebar("CREATE_FIELD", null)} actionType="CREATE">Agregar</CommonButton>
+                        <Can permission="lead_field:create">
+                            <CommonButton onClick={() => handleSidebar("CREATE_FIELD", null)} actionType="CREATE">Agregar</CommonButton>
+                        </Can>
                     </Stack>
                 }
             </LoadingScreenWrapper >
