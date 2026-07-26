@@ -74,7 +74,7 @@ export const AutomationList = () => {
   const fetchAutomations = useCallback((fetchPage: number, pageSize: number, selectedCampaignId: number) => {
     return getFieldAutomations({
       detailed: true, page_size: pageSize, page: fetchPage,
-      campaign: selectedCampaignId as number, ...fetchParams
+      campaign_id: selectedCampaignId as number, ...fetchParams
     })
       .then(setAutomations)
       .catch(e => showCommonErrorToast(e, "Error recuperando la lista de automatizaciones."));

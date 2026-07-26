@@ -18,6 +18,7 @@ import { getNomenclatorItems } from 'src/features/nomenclators/nomenclatorServic
 import { getUsersInOrg } from 'src/features/auth/userServices'
 import { getTeams } from 'src/features/teams/teamServices'
 import { getCampaigns } from 'src/features/campaigns/campaignServices'
+import { FieldSelector } from 'src/components/ui/forms/FieldSelector'
 
 interface RoutingConditionRowProps {
     condition: LeadRoutingConditionPost,
@@ -122,21 +123,16 @@ export const RoutingConditionRow = ({ condition, onUpdate, onDelete, isOnly, fie
                     </Select>
                 </FormControl>
             ) : (
-                <FormControl size="small" sx={{ minWidth: 200 }} disabled={!campaignId}>
-                    <InputLabel>Campo</InputLabel>
-                    <Select disabled={readOnly || !campaignId} value={condition.lead_field_id ?? ""} label="Campo"
-                        onChange={e => handleDynamicFieldChange(Number(e.target.value))}>
-                        {allowedFields.map(field => (
-                            <MenuItem key={field.id} value={field.id}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    {field.name}
-                                    <Typography variant="caption" color="text.secondary">({field.field_type_code})</Typography>
-                                </Box>
-                            </MenuItem>
-                        ))}
-                    </Select>
+                <Box sx={{ minWidth: 200 }}>
+                    <FieldSelector
+                        fields={allowedFields}
+                        disabled={readOnly || !campaignId}
+                        disableClearable
+                        value={condition.lead_field_id ?? null}
+                        onChange={(fieldId) => { if (fieldId !== null) handleDynamicFieldChange(fieldId) }}
+                    />
                     {!campaignId && <Typography variant="caption" color="text.secondary">Elegí una campaña para usar campos personalizados.</Typography>}
-                </FormControl>
+                </Box>
             )}
 
             {supportsRange &&

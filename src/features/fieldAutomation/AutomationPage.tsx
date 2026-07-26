@@ -8,6 +8,12 @@ import { getLeadFields } from '../leadFields/leadFieldServices';
 import { getFieldAutomation, createFieldAutomation, updateFieldAutomation } from './AutomationFieldServices';
 import type { FieldAutomationPost, FieldAutomationDetailed } from '../../types/automation';
 import type { LeadField } from '../../types/leadFields';
+import { NATIVE_LEAD_FIELDS, type NativeFieldOptions } from '../lead/nativeLeadFields';
+import { getLeadContactStates } from '../orgProperties/contactState/contactStatesServices';
+import { getLeadFlowStates } from '../leadFlows/leadFlowServices/FlowService';
+import { getTeams } from '../lead/teamService';
+import { getUsersInOrg } from 'src/features/auth/userServices';
+import { getCampaign } from 'src/features/campaigns/campaignServices';
 import { showCommonErrorToast } from 'src/utils/feedback';
 import { useLoading } from 'src/hooks/useLoading';
 import GenericPaper from 'src/components/layout/container/GenericPaper';
@@ -42,6 +48,7 @@ export const AutomationPage = () => {
   const [initialData, setInitialData] = useState<FieldAutomationDetailed | null>(null);
 
   const [fields, setFields] = useState<LeadField[]>([]);
+  const [nativeOptions, setNativeOptions] = useState<NativeFieldOptions>({ contactStates: [], leadStates: [], teams: [], users: [] });
 
   const formSubmitRef = useRef<() => void>(null);
 
@@ -57,9 +64,33 @@ export const AutomationPage = () => {
         })
         .catch(e => showCommonErrorToast(e))
     }
+    // Se agregan los campos nativos del lead (Etapa, Estado, Equipo, Usuario asignado, fechas,
+    // Usuario Creador/Modificación) a los mismos que ya se ofrecen en filtros/columnas de la lista
+    // de leads, para poder usarlos en condiciones/acciones de la automatización.
     await getLeadFields({ detailed: false, only_active: true, campaign_id: campaignId, page_size: 0 })
-      .then(data => setFields(data.items))
+      .then(data => setFields([...NATIVE_LEAD_FIELDS, ...data.items]))
       .catch(e => showCommonErrorToast(e))
+
+    // Opciones reales para los selectores de valor de los campos nativos tipo NATIVE_ID
+    // (mismo patrón que LeadFilters.tsx en la lista de leads).
+    getLeadContactStates({ page_size: 0 })
+      .then(r => setNativeOptions(prev => ({ ...prev, contactStates: r.items })))
+      .catch(e => showCommonErrorToast(e))
+    getTeams({ page_size: 0 })
+      .then(r => setNativeOptions(prev => ({ ...prev, teams: r.items })))
+      .catch(e => showCommonErrorToast(e))
+    getUsersInOrg()
+      .then(users => setNativeOptions(prev => ({ ...prev, users })))
+      .catch(e => showCommonErrorToast(e))
+    if (campaignId) {
+      getCampaign(campaignId)
+        .then(campaign => {
+          if (!campaign.lead_flow_id) return
+          return getLeadFlowStates({ lead_flow_id: campaign.lead_flow_id, page_size: 0 })
+            .then(r => setNativeOptions(prev => ({ ...prev, leadStates: r.items })))
+        })
+        .catch(e => showCommonErrorToast(e))
+    }
   }, [campaignId, id, isDuplicating, duplicateFromId, isEditing])
 
   const { fnWithLoading: initialFetchLoad, loading: initialFetchLoading } = useLoading(initialLoad)
@@ -141,6 +172,7 @@ export const AutomationPage = () => {
             campaignId={campaignId}
             onSave={handleSaveLoad}
             fields={fields}
+            nativeOptions={nativeOptions}
             readOnly={effectiveReadOnly}
             isDuplicating={isDuplicating}
             submitRef={formSubmitRef}

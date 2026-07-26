@@ -37,6 +37,9 @@ interface ControlledACProps<T extends FieldValues, Option>
     //Para agrupar visualmente las opciones (ej: separar los ítems padre según a qué nomenclador padre pertenece cada uno).
     //Requiere que "options" ya venga ordenado/agrupado por este mismo criterio (si no, MUI repite el encabezado).
     groupBy?: (option: Option) => string,
+    //Custom del encabezado de cada grupo (ver groupBy). Si no se pasa, usa el ListSubheader en negrita
+    //por defecto de MUI -- pasar `renderFieldSectionGroup` (FieldSectionHeader.tsx) para selectores de campo.
+    renderGroup?: (params: { key: string | number, group: string, children?: ReactNode }) => ReactNode,
     renderOption?: (props: React.HTMLAttributes<HTMLLIElement> & { key: React.Key }, option: Option) => ReactNode;
     renderValue?: (
         value: Option | Option[],
@@ -47,7 +50,7 @@ interface ControlledACProps<T extends FieldValues, Option>
 export const ControlledAutocomplete = <T extends FieldValues, Option>
     ({ control, name, label, options, getOptionLabel, getOptionKey, returnField = null, renderOption,
         required = false, multiple = false, disabled = false, hidden = false, disableClearable = false,
-        errorMessage = null, autocomplete = "one-time-code", helper, placeholder, size = "medium", renderValue, onChangeBefore, groupBy, ...props }: ControlledACProps<T, Option>) => {
+        errorMessage = null, autocomplete = "one-time-code", helper, placeholder, size = "medium", renderValue, onChangeBefore, groupBy, renderGroup, ...props }: ControlledACProps<T, Option>) => {
 
     const handleChange = (field: ControllerRenderProps<T, Path<T>>, values: Option | Option[] | null) => {
         //Por defecto, si no hay valores devuelve null o []
@@ -89,7 +92,7 @@ export const ControlledAutocomplete = <T extends FieldValues, Option>
         <Controller name={name} control={control} disabled={disabled}
             render={({ field }) => (
                 <Autocomplete {...field} multiple={multiple} hidden={hidden} disableClearable={disableClearable}
-                    options={options ?? []} size={size} groupBy={groupBy}
+                    options={options ?? []} size={size} groupBy={groupBy} renderGroup={renderGroup}
                     onChange={(_, value) => {
                         if (onChangeBefore) onChangeBefore(value)
                         handleChange(field, value)

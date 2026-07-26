@@ -9,6 +9,7 @@ import type { FieldAutomationPost, RuleGroup, FieldAutomationDetailed, Automatio
 import { ConditionBuilder } from './ConditionBuilder';
 import { ActionBuilder } from './ActionBuilder';
 import type { LeadField } from 'src/types/leadFields';
+import type { NativeFieldOptions } from 'src/features/lead/nativeLeadFields';
 import GenericPaper from 'src/components/layout/container/GenericPaper';
 import CustomChip from 'src/components/ui/details/CustomChip';
 import { showCommonErrorToast, showToast } from 'src/utils/feedback';
@@ -58,6 +59,7 @@ interface AutomationFormProps {
   campaignId: number;
   onSave: (data: FieldAutomationPost) => Promise<unknown>;
   fields?: LeadField[];
+  nativeOptions?: NativeFieldOptions;
   readOnly?: boolean;
   isDuplicating?: boolean;
   submitRef?: React.RefObject<(() => void) | null>
@@ -65,7 +67,7 @@ interface AutomationFormProps {
 
 /**Formulario */
 export const AutomationForm: React.FC<AutomationFormProps> = ({ initialData, onSave,
-  campaignId = 1, fields = [], readOnly = false, isDuplicating = false, submitRef = null }) => {
+  campaignId = 1, fields = [], nativeOptions, readOnly = false, isDuplicating = false, submitRef = null }) => {
 
   // INICIALIZACIÓN
   const defaultValues = useMemo(() => {
@@ -385,6 +387,7 @@ export const AutomationForm: React.FC<AutomationFormProps> = ({ initialData, onS
               onChange={handleConditionsChange}
               isRoot
               fields={fields}
+              nativeOptions={nativeOptions}
               readOnly={readOnly}
             />
           </AccordionDetails>
@@ -392,7 +395,7 @@ export const AutomationForm: React.FC<AutomationFormProps> = ({ initialData, onS
 
 
         {/* Actions Section */}
-        <ActionBuilder control={control} register={register} leadFields={fields} readOnly={readOnly} setValue={setValue} />
+        <ActionBuilder control={control} register={register} leadFields={fields} nativeOptions={nativeOptions} readOnly={readOnly} setValue={setValue} />
 
         {/* Preview Section */}
         <Description control={control} conditions={conditions} fields={fields} />

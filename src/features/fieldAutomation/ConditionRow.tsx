@@ -6,6 +6,8 @@ import { getNomenclatorItems } from '../nomenclators/nomenclatorService';
 import type { LeadField } from '../../types/leadFields';
 import type { RuleCondition } from '../../types/automation';
 import type { NomenclatorItem } from '../../types/nomenclators';
+import type { NativeFieldOptions } from 'src/features/lead/nativeLeadFields';
+import { FieldSelector } from 'src/components/ui/forms/FieldSelector';
 
 interface ConditionRowProps {
   condition: RuleCondition;
@@ -13,8 +15,27 @@ interface ConditionRowProps {
   onDelete: () => void;
   isOnly: boolean;
   fields: LeadField[];
+  nativeOptions?: NativeFieldOptions;
   readOnly?: boolean;
 }
+
+// Devuelve las opciones reales {id, label} de un campo nativo tipo NATIVE_ID según su nativeKey
+// (mismo criterio que LeadFilters.tsx en la lista de leads).
+const getNativeIdOptions = (nativeKey: string | undefined, nativeOptions?: NativeFieldOptions): { id: number, label: string }[] => {
+  if (!nativeKey || !nativeOptions) return [];
+  switch (nativeKey) {
+    case 'contact_state_id':
+      return nativeOptions.contactStates.map(s => ({ id: s.id, label: s.name }));
+    case 'current_state_id':
+      return nativeOptions.leadStates.map(s => ({ id: s.id, label: s.name }));
+    case 'team_id':
+      return nativeOptions.teams.map(t => ({ id: t.id, label: t.name }));
+    case 'assigned_to_user_id': case 'created_by': case 'updated_by':
+      return nativeOptions.users.map(u => ({ id: u.id, label: u.name + (u.last_name ? ` ${u.last_name}` : '') }));
+    default:
+      return [];
+  }
+};
 
 const NO_VALUE_OPERATORS: ConditionOperatorEnum[] = [
   ConditionOperatorEnum.IS_EMPTY,
@@ -27,6 +48,7 @@ export const ConditionRow: React.FC<ConditionRowProps> = ({
   onDelete,
   isOnly,
   fields,
+  nativeOptions,
   readOnly = false,
 }) => {
   // 1. FILTRAMOS CAMPOS INVÁLIDOS PARA CONDICIONES (Incluyendo LEAD)
@@ -89,7 +111,7 @@ export const ConditionRow: React.FC<ConditionRowProps> = ({
           ConditionOperatorEnum.EQUALS, ConditionOperatorEnum.NOT_EQUALS,
           ConditionOperatorEnum.IS_EMPTY, ConditionOperatorEnum.IS_NOT_EMPTY,
         ];
-      case 'SELECTOR': case 'CHECKBOX':
+      case 'SELECTOR': case 'CHECKBOX': case 'NATIVE_ID':
         return [
           ConditionOperatorEnum.EQUALS, ConditionOperatorEnum.NOT_EQUALS,
           ConditionOperatorEnum.IS_EMPTY, ConditionOperatorEnum.IS_NOT_EMPTY,
@@ -136,6 +158,24 @@ export const ConditionRow: React.FC<ConditionRowProps> = ({
             </Select>
           </FormControl>
         );
+      case 'NATIVE_ID': {
+        const nativeIdOptions = getNativeIdOptions(selectedField.nativeKey, nativeOptions);
+        return (
+          <FormControl size="small" sx={{ flex: 1, minWidth: 150 }}>
+            <InputLabel>Valor</InputLabel>
+            <Select
+              disabled={readOnly}
+              value={condition.value ?? ''}
+              label="Valor"
+              onChange={(e) => onUpdate({ ...condition, value: e.target.value })}
+            >
+              {nativeIdOptions.map((opt) => (
+                <MenuItem key={opt.id} value={opt.id}>{opt.label}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        );
+      }
       case 'BOOL':
         return (
           <FormControl size="small" sx={{ flex: 1, minWidth: 150 }}>
@@ -238,31 +278,19 @@ export const ConditionRow: React.FC<ConditionRowProps> = ({
     >
       <Chip label="SI" size="small" color="primary" variant="outlined" sx={{ fontWeight: 600 }} />
 
-      <FormControl size="small" sx={{ minWidth: 180 }}>
-        <InputLabel>Campo</InputLabel>
-        <Select
+      <Box sx={{ minWidth: 180 }}>
+        <FieldSelector
+          fields={allowedFields}
           disabled={readOnly}
-          value={condition.field_id ?? ''}
-          label="Campo"
-          onChange={(e) => onUpdate({
+          value={condition.field_id ?? null}
+          onChange={(fieldId) => onUpdate({
             ...condition,
-            field_id: e.target.value as number,
+            field_id: fieldId,
             value: null,
-            operator: getAvailableOperators(allowedFields.find(f => f.id === e.target.value))[0]
+            operator: getAvailableOperators(allowedFields.find(f => f.id === fieldId))[0]
           })}
-        >
-          {allowedFields.map((field) => (
-            <MenuItem key={field.id} value={field.id}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                {field.name}
-                <Typography variant="caption" color="text.secondary">
-                  ({field.field_type.code})
-                </Typography>
-              </Box>
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+        />
+      </Box>
 
       <FormControl size="small" sx={{ minWidth: 160 }}>
         <InputLabel>Operador</InputLabel>
