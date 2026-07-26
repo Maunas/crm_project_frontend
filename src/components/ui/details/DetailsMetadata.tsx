@@ -2,7 +2,7 @@ import { Grid, Stack, Typography } from "@mui/material";
 import type { Metadata } from "src/types/shared";
 import { formatDate, formatUserFullName } from "src/utils/formatters";
 import ACTION_ICONS from "../buttons/ActionIcons";
-import { cloneElement, type ReactNode } from "react";
+import { cloneElement } from "react";
 import { ChipTooltip } from "./ChipTooltip";
 import { UserAvatar } from "./UserAvatar";
 
@@ -17,39 +17,53 @@ export default function DetailsMetadata<T extends Metadata>({ entity }: DetailsM
     return (
         <Stack direction="row" spacing={3} useFlexGap
             sx={{ minWidth: "20rem", justifyContent: "space-between", flexWrap: "wrap" }}>
-            <MetadataItem title="Creado por" name={creatorName} email={entity.creator?.email} date={entity?.created_at} icon={ACTION_ICONS.USER} />
+            <MetadataItem title="Creado por" name={creatorName} email={entity.creator?.email} date={entity?.created_at} />
             {hasModifier &&
-                <MetadataItem title="Modificado por" name={updaterName} email={entity.updater?.email} date={entity?.updated_at} icon={ACTION_ICONS.MODIFY} />
+                <MetadataItem title="Modificado por" name={updaterName} email={entity.updater?.email} date={entity?.updated_at} />
             }
         </Stack>
     );
 }
 
-export const MetadataItem = ({ title, name, email, date }: { title: string, name?: string | null, email?: string | null, date?: string | null, icon?: ReactNode }) => {
+interface MetadataItemProps {
+    title?: string,
+    name?: string | null,
+    email?: string | null,
+    date?: string | null,
+    short?: boolean,
+    noIcon?: boolean,
+    small?: boolean,
+    noHour?: boolean
+}
+
+export const MetadataItem = ({ title, name, email, date, short = false, noIcon = false, small = false, noHour = false }: MetadataItemProps) => {
+
+    const dateFormat = noHour ?
+        (short ? "date" : "dateLong")
+        : (short ? "dateTime" : "dateTimeLong")
+
     return (
         <Stack spacing={.5} sx={{ flexGrow: 1 }}>
-            <Typography variant="caption" color="textSecondary" sx={{ textTransform: "uppercase", fontWeight: 600, letterSpacing: 0.5 }}>
+            {title && !short && <Typography variant="caption" color="textSecondary" sx={{ textTransform: "uppercase", fontWeight: 600, letterSpacing: 0.5 }}>
                 {title}
-            </Typography>
-            <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
-                {name && <UserAvatar name={name} />}
+            </Typography>}
+            <Stack direction="row" spacing={1.5} useFlexGap sx={{ alignItems: "center", justifyContent: "end", flexWrap: "wrap" }}>
+                {name && !noIcon && <UserAvatar name={name} size={small ? 30 : 36} />}
                 <Stack>
                     <ChipTooltip title={email} color="secondary" size="small">
-                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        <Typography variant={small ? "body2" : "body1"} sx={{ fontWeight: 500 }}>
                             {name}
                         </Typography>
                     </ChipTooltip>
                     {date &&
                         <Typography variant="caption" color="textSecondary" sx={{ textTransform: "capitalize" }}>
-                            {formatDate(`${date}`, "dateTimeLong")}
+                            {formatDate(`${date}`, dateFormat)}
                         </Typography>}
                 </Stack>
             </Stack>
         </Stack>
     )
 }
-
-
 
 interface MetadataShortProps {
     metadata: Metadata,

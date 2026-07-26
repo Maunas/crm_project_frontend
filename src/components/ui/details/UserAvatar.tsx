@@ -8,6 +8,7 @@ interface UserAvatarProps {
     size?: number;
     tooltip?: boolean;
     sx?: SxProps<Theme>;
+    noRing?: boolean
 }
 
 /** Genera siempre el mismo color para el mismo nombre (sin guardar nada en el back). */
@@ -26,7 +27,7 @@ function getInitials(name: string): string {
     return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
 }
 
-export const UserAvatar = ({ name, src, size = 36, tooltip = false, sx }: UserAvatarProps) => {
+export const UserAvatar = ({ name, src, size = 36, tooltip = false, noRing = false, sx }: UserAvatarProps) => {
     const color = nameToColor(name);
 
     const avatar = (
@@ -34,7 +35,7 @@ export const UserAvatar = ({ name, src, size = 36, tooltip = false, sx }: UserAv
             color={color}
             src={src}
             variant='circular'
-            ring
+            {...(noRing ? {} : { ring: true })}
             sx={{
                 width: size,
                 height: size,
