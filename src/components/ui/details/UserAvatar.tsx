@@ -9,8 +9,14 @@ interface UserAvatarProps {
     sx?: SxProps<Theme>;
 }
 
-/** Genera siempre el mismo color para el mismo nombre (sin guardar nada en el back). */
-function nameToColor(name: string): string {
+/**
+ * Genera siempre el mismo color para el mismo nombre (sin guardar nada en el back). Saturación y
+ * luminosidad fijas (60%/42%) -- solo varía el matiz (hue) -- así el resultado nunca es un color
+ * demasiado oscuro/negro ni demasiado claro/blanco, sea cual sea el nombre.
+ * Exportado para reusarlo fuera del avatar (ej. distinguir por color al autor de un comentario,
+ * ver `CommentInstance` en `features/lead/activities/LeadComments.tsx`).
+ */
+export function nameToColor(name: string): string {
     let hash = 0;
     for (let i = 0; i < name.length; i++) {
         hash = name.charCodeAt(i) + ((hash << 5) - hash);

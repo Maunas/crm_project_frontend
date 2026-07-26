@@ -11,11 +11,11 @@ import type { LeadComment } from "src/types/leads"
 import type { Paginable } from "src/types/shared"
 import { deleteComment, getComments } from "./leadActivitiesService"
 import { showCommonErrorToast, showToast } from "src/utils/feedback"
-import { Box, IconButton, Paper, Stack, Typography } from "@mui/material"
+import { alpha, Box, IconButton, Paper, Stack, Typography } from "@mui/material"
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
 import { formatDate, formatUserFullName } from "src/utils/formatters"
-import { UserAvatar } from "shared/ui/details/UserAvatar"
+import { UserAvatar, nameToColor } from "shared/ui/details/UserAvatar"
 import { useUserContext } from "src/stores/UserContext"
 import { Can } from "src/app/Can"
 
@@ -164,12 +164,18 @@ export const CommentInstance = ({ comment, title, onEdit, onDelete, children }: 
     const authorName = formatUserFullName(author) ?? "Usuario"
     const dateText = comment ? formatDate(comment.updated_at ?? comment.created_at, "custom", "DD/MM/YYYY HH:mm") : null
     const wasEdited = !!comment?.updated_by
+    // Mismo color por autor en todos sus comentarios (ver UserAvatar/nameToColor). Se usa solo como
+    // acento -- franja izquierda + fondo casi transparente -- para distinguir de un vistazo quién
+    // escribió cada uno sin tocar el color del texto, así nunca afecta la legibilidad.
+    const authorColor = nameToColor(authorName)
 
     return (
         <Box sx={{ display: "flex", gap: 1.5 }}>
             <UserAvatar name={authorName} size={36} sx={{ fontSize: 13 }} />
             <Paper variant="outlined" sx={{
                 flexGrow: 1, minWidth: 0, p: 1.5, borderRadius: 2,
+                borderLeft: 4, borderLeftColor: authorColor,
+                bgcolor: alpha(authorColor, 0.05),
             }}>
                 <Stack direction="row" spacing={1} sx={{ alignItems: "flex-start", justifyContent: "space-between" }}>
                     {title ??
