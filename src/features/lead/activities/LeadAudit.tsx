@@ -20,7 +20,6 @@ import Timeline from '@mui/lab/Timeline';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward"
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
-import WatchLaterIcon from '@mui/icons-material/WatchLater';
 import EditIcon from "@mui/icons-material/Edit"
 import AddIcon from "@mui/icons-material/Add"
 import { NoItemsMessage } from "src/components/ui/lists/NoItemsMessage"
@@ -124,7 +123,7 @@ export const LeadAuditList = ({ lead, reloadAudit }: { lead: LeadDetailed, reloa
                       <Collapse in={idx === showItems} timeout="auto" unmountOnExit>
                         <Divider />
                         {item?.details?.changes &&
-                          <CardContent sx={{ py: 1 }}>
+                          <CardContent sx={{ "&&": { py: 1 } }}>
                             <Stack spacing={1} useFlexGap sx={{ alignItems: "start" }}>
                               {Object.entries(item.details.changes).map(([field_id, change], idx) => {
                                 if (!showMoreItems && idx >= MAX_ITEMS_NUM) return null
@@ -151,7 +150,7 @@ export const LeadAuditList = ({ lead, reloadAudit }: { lead: LeadDetailed, reloa
                           </CardContent>
                         }
                         {item?.details?.to_state_id && item?.details?.from_state_id &&
-                          <CardContent sx={{ py: 1 }}>
+                          <CardContent sx={{ "&&": { py: 1 } }}>
                             <Stack direction="row" useFlexGap spacing={1} sx={{ flexWrap: "wrap", px: 1, alignItems: "center" }}>
                               <Box>
                                 <LeadAuditValue value={item.details.from_state_name ?? item.details.from_state_id}
@@ -166,7 +165,7 @@ export const LeadAuditList = ({ lead, reloadAudit }: { lead: LeadDetailed, reloa
                           </CardContent>
                         }
                         {item.activity_type === "CONTACT_STATE_CHANGED" &&
-                          <CardContent sx={{ py: 1 }}>
+                          <CardContent sx={{ "&&": { py: 1 } }}>
                             <Stack direction="row" useFlexGap spacing={1} sx={{ flexWrap: "wrap", px: 1, alignItems: "center" }}>
                               <Box>
                                 <LeadAuditValue value={item.details.from_contact_state_name ?? item.details.from_contact_state_id ?? null}
@@ -181,7 +180,7 @@ export const LeadAuditList = ({ lead, reloadAudit }: { lead: LeadDetailed, reloa
                           </CardContent>
                         }
                         {item.activity_type === "LEAD_REASSIGNED" &&
-                          <CardContent sx={{ py: 1 }}>
+                          <CardContent sx={{ "&&": { py: 1 } }}>
                             <Stack spacing={1} sx={{ alignItems: "start" }}>
                               {item.details.previous_team_id !== item.details.new_team_id &&
                                 <Stack spacing={1} sx={{ alignItems: "start" }}>
@@ -199,33 +198,34 @@ export const LeadAuditList = ({ lead, reloadAudit }: { lead: LeadDetailed, reloa
                                   </Stack>
                                 </Stack>
                               }
-                              {item.details.previous_user_id !== item.details.new_user_id &&
-                                <Stack spacing={1} sx={{ alignItems: "start" }}>
-                                  <Typography variant="body2" sx={{ fontWeight: "bold" }}>Usuario Asignado:</Typography>
-                                  <Stack direction="row" useFlexGap spacing={1} sx={{ flexWrap: "wrap", px: 1, alignItems: "center" }}>
-                                    <Box>
-                                      <LeadAuditValue value={item.details.previous_user_name ?? item.details.previous_user_id ?? null}
-                                        id={item.id} color="error" size="small" />
-                                    </Box>
-                                    <ArrowForwardIcon fontSize="small" />
-                                    <Box>
-                                      <LeadAuditValue value={item.details.new_user_name ?? item.details.new_user_id ?? null}
-                                        id={item.id} color="success" size="small" />
-                                    </Box>
-                                  </Stack>
-                                </Stack>
-                              }
                             </Stack>
                           </CardContent>
                         }
-                        <Divider />
-                        <CardActions sx={{ py: .5 }}>
-                          <Stack direction="row" spacing={.5} sx={{ alignItems: "center", justifyContent: "end", ml: "auto" }}>
-                            <WatchLaterIcon fontSize="small" />
-                            <MetadataShort metadata={item} noIcon containerProps={{ sx: { marginRight: ".5rem" } }} />
-                          </Stack>
-                        </CardActions>
+                        {item.details.previous_user_id !== item.details.new_user_id &&
+                          <CardContent sx={{ "&&": { py: 1 } }}>
+                            <Stack spacing={1} sx={{ alignItems: "start" }}>
+                              <Typography variant="body2" sx={{ fontWeight: "bold" }}>Usuario Asignado:</Typography>
+                              <Stack direction="row" useFlexGap spacing={1} sx={{ flexWrap: "wrap", px: 1, alignItems: "center" }}>
+                                <Box>
+                                  <LeadAuditValue value={item.details.previous_user_name ?? item.details.previous_user_id ?? null}
+                                    id={item.id} color="error" size="small" />
+                                </Box>
+                                <ArrowForwardIcon fontSize="small" />
+                                <Box>
+                                  <LeadAuditValue value={item.details.new_user_name ?? item.details.new_user_id ?? null}
+                                    id={item.id} color="success" size="small" />
+                                </Box>
+                              </Stack>
+                            </Stack>
+                          </CardContent>
+                        }
                       </Collapse>
+                      <Divider />
+                      <CardActions sx={{ py: .5, px: 1.5 }}>
+                        <Stack direction="row" spacing={.5} sx={{ alignItems: "center", justifyContent: "end", ml: "auto" }}>
+                          <MetadataShort metadata={item} onlyUser containerProps={{ sx: { marginRight: ".5rem" } }} />
+                        </Stack>
+                      </CardActions>
                     </Card>
                   </CustomTimelineItem>
                 )
@@ -237,7 +237,7 @@ export const LeadAuditList = ({ lead, reloadAudit }: { lead: LeadDetailed, reloa
           <NoItemsMessage emptyFetchMessage="No hay datos registrados al momento"
             search={fetchParams.search} genericSearchMsg />
         }
-      </LoadingScreenWrapper>
+      </LoadingScreenWrapper >
     </Stack >
   )
 }

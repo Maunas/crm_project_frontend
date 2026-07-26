@@ -1,10 +1,8 @@
-import { Divider, Grid, Stack, Tooltip, Typography } from "@mui/material";
+import { Grid, Stack, Typography } from "@mui/material";
 import type { Metadata } from "src/types/shared";
 import { formatDate, formatUserFullName } from "src/utils/formatters";
-import PersonIcon from '@mui/icons-material/Person';
-import WatchLaterIcon from '@mui/icons-material/WatchLater';
 import ACTION_ICONS from "../buttons/ActionIcons";
-import type { ReactNode } from "react";
+import { cloneElement, type ReactNode } from "react";
 import { ChipTooltip } from "./ChipTooltip";
 import { UserAvatar } from "./UserAvatar";
 
@@ -17,9 +15,9 @@ export default function DetailsMetadata<T extends Metadata>({ entity }: DetailsM
     const creatorName = entity.creator ? [entity.creator.name, entity.creator.last_name].filter(Boolean).join(" ") : ""
     const updaterName = entity.updater ? [entity.updater.name, entity.updater.last_name].filter(Boolean).join(" ") : ""
     return (
-        <Stack direction="row" spacing={3} useFlexGap divider={<Divider orientation="vertical" flexItem />}
+        <Stack direction="row" spacing={3} useFlexGap
             sx={{ minWidth: "20rem", justifyContent: "space-between", flexWrap: "wrap" }}>
-            <MetadataItem title="Creado por" name={creatorName} email={entity.creator?.email} date={entity?.created_at} icon={ACTION_ICONS.PERSON_OUTLINE} />
+            <MetadataItem title="Creado por" name={creatorName} email={entity.creator?.email} date={entity?.created_at} icon={ACTION_ICONS.USER} />
             {hasModifier &&
                 <MetadataItem title="Modificado por" name={updaterName} email={entity.updater?.email} date={entity?.updated_at} icon={ACTION_ICONS.MODIFY} />
             }
@@ -29,11 +27,11 @@ export default function DetailsMetadata<T extends Metadata>({ entity }: DetailsM
 
 export const MetadataItem = ({ title, name, email, date }: { title: string, name?: string | null, email?: string | null, date?: string | null, icon?: ReactNode }) => {
     return (
-        <Stack spacing={.5} sx={{ flex: 1 }}>
+        <Stack spacing={.5} sx={{ flexGrow: 1 }}>
             <Typography variant="caption" color="textSecondary" sx={{ textTransform: "uppercase", fontWeight: 600, letterSpacing: 0.5 }}>
                 {title}
             </Typography>
-            <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+            <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
                 {name && <UserAvatar name={name} />}
                 <Stack>
                     <ChipTooltip title={email} color="secondary" size="small">
@@ -71,19 +69,18 @@ export const MetadataShort = ({ metadata, onlyUser = false, onlyDate = false, no
     return (
         <Grid spacing={.5} container sx={{ alignItems: "center" }} {...containerProps}>
             {!onlyDate &&
-                <Stack direction="row" spacing={.5}>
-                    {!noIcon && <PersonIcon fontSize="small" />}
-                    <Typography variant="body2" sx={{ fontWeight: "bold" }}>Por</Typography>
-                    <Tooltip title={user?.email ?? ""} disableHoverListener={!user?.email}>
-                        <Typography variant="body2">{userDisplay}</Typography>
-                    </Tooltip>
+                <Stack direction="row" spacing={.5} sx={{ alignItems: "center" }}>
+                    {!noIcon && cloneElement(ACTION_ICONS.USER, { sx: { fontSize: 18 } })}
+                    <ChipTooltip title={user?.email ?? ""} disableHoverListener={!user?.email} size="small">
+                        <Typography variant="caption" sx={{ fontWeight: 500 }}>{userDisplay}</Typography>
+                    </ChipTooltip>
                 </Stack>
             }
-            {(!onlyDate && !onlyUser) && "-"}
+            {!onlyDate && !onlyUser && "-"}
             {!onlyUser &&
-                <Stack direction="row" spacing={.5}>
-                    {!noIcon && <WatchLaterIcon fontSize="small" />}
-                    <Typography variant="body2" sx={{ textTransform: "capitalize" }}>
+                <Stack direction="row" spacing={.5} sx={{ alignItems: "center" }}>
+                    {!noIcon && cloneElement(ACTION_ICONS.TIME, { sx: { fontSize: 18 } })}
+                    <Typography variant="caption" sx={{ textTransform: "capitalize" }}>
                         {formatDate(metadata?.updated_at ?? metadata?.created_at, "dateTimeLong")}
                     </Typography>
                 </Stack>
