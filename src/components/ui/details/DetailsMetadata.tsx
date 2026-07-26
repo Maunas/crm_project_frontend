@@ -10,7 +10,7 @@ interface DetailsMetadataProps<T extends Metadata> {
 
 export default function DetailsMetadata<T extends Metadata>({ entity }: DetailsMetadataProps<T>) {
     const hasModifier = entity?.updater && entity.updated_at !== entity.created_at
-    const creatorName = entity.creator ? [entity.creator.name, entity.creator.last_name].filter(Boolean).join(" ") : ""
+    const creatorName = entity.creator ? [entity.creator.name, entity.creator.last_name].filter(Boolean).join(" ") : "Sistema"
     const updaterName = entity.updater ? [entity.updater.name, entity.updater.last_name].filter(Boolean).join(" ") : ""
     return (
         <Stack direction="row" spacing={3} useFlexGap
@@ -45,7 +45,7 @@ export const MetadataItem = ({ title, name, email, date, short = false, noIcon =
             {title && !short && <Typography variant="caption" color="textSecondary" sx={{ textTransform: "uppercase", fontWeight: 600, letterSpacing: 0.5 }}>
                 {title}
             </Typography>}
-            <Stack direction="row" spacing={1.5} useFlexGap sx={{ alignItems: "center", justifyContent: "end", flexWrap: "wrap" }}>
+            <Stack direction="row" spacing={1.5} useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
                 {name && !noIcon && <UserAvatar name={name} size={small ? 30 : 36} />}
                 <Stack>
                     <ChipTooltip title={email} color="secondary" size="small">

@@ -15,11 +15,11 @@ export const CustomTimelineItem = ({ entity, selected = false, last = false, chi
     const user = entity.creator
 
     const getUserFullName = (user?: Creator | null) => {
-        if (!user) return ""
-        return [user?.name, user?.last_name].filter(Boolean).join(" ")
+        if (!user) return "Sistema"
+        return [user.name, user.last_name].filter(Boolean).join(" ")
     }
 
-    const metadata = { name: user?.name, date: entity.created_at, email: user?.email }
+    const metadata = { name: user?.name ?? "Sistema", date: entity.created_at, email: user?.email ?? "Sistema" }
 
     return (
         <TimelineItem>
