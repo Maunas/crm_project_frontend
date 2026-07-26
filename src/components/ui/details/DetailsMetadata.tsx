@@ -1,8 +1,6 @@
-import { Grid, Stack, Typography } from "@mui/material";
+import { Stack, Typography } from "@mui/material";
 import type { Metadata } from "src/types/shared";
-import { formatDate, formatUserFullName } from "src/utils/formatters";
-import ACTION_ICONS from "../buttons/ActionIcons";
-import { cloneElement } from "react";
+import { formatDate } from "src/utils/formatters";
 import { ChipTooltip } from "./ChipTooltip";
 import { UserAvatar } from "./UserAvatar";
 
@@ -62,43 +60,5 @@ export const MetadataItem = ({ title, name, email, date, short = false, noIcon =
                 </Stack>
             </Stack>
         </Stack>
-    )
-}
-
-interface MetadataShortProps {
-    metadata: Metadata,
-    onlyUser?: boolean,
-    onlyDate?: boolean,
-    noIcon?: boolean,
-    containerProps?: object
-}
-/**
- * Versión de una sola linea.
- * Muestra los datos de la última modificación, o creación si no se ha modificado.
- * */
-export const MetadataShort = ({ metadata, onlyUser = false, onlyDate = false, noIcon = false, containerProps }: MetadataShortProps) => {
-    const user = metadata?.updater ?? metadata?.creator ?? null
-    const userDisplay = formatUserFullName(user) ?? "Sistema"
-
-    return (
-        <Grid spacing={.5} container sx={{ alignItems: "center" }} {...containerProps}>
-            {!onlyDate &&
-                <Stack direction="row" spacing={.5} sx={{ alignItems: "center" }}>
-                    {!noIcon && cloneElement(ACTION_ICONS.USER, { sx: { fontSize: 18 } })}
-                    <ChipTooltip title={user?.email ?? ""} disableHoverListener={!user?.email} size="small">
-                        <Typography variant="caption" sx={{ fontWeight: 500 }}>{userDisplay}</Typography>
-                    </ChipTooltip>
-                </Stack>
-            }
-            {!onlyDate && !onlyUser && "-"}
-            {!onlyUser &&
-                <Stack direction="row" spacing={.5} sx={{ alignItems: "center" }}>
-                    {!noIcon && cloneElement(ACTION_ICONS.TIME, { sx: { fontSize: 18 } })}
-                    <Typography variant="caption" sx={{ textTransform: "capitalize" }}>
-                        {formatDate(metadata?.updated_at ?? metadata?.created_at, "dateTimeLong")}
-                    </Typography>
-                </Stack>
-            }
-        </Grid>
     )
 }
