@@ -21,7 +21,7 @@ import SortIcon from '@mui/icons-material/Sort';
 import EditIcon from '@mui/icons-material/Edit'
 import { useLoading } from 'src/hooks/useLoading';
 import { showToast } from 'src/utils/feedback';
-import { Can } from 'src/app/Can';
+import { Can } from 'src/components/auth/Can';
 
 interface LeadViewMenuProps {
     saveView: (name: string, visibility: string, existingView?: LeadView) => Promise<unknown>;

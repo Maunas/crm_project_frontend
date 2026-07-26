@@ -38,12 +38,8 @@ export interface Creator {
   email: string | null;
 }
 
-export interface Updater {
-  id: number;
-  name: string | null;
-  last_name?: string | null;
-  email: string | null;
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface Updater extends Creator { }
 
 /**
  * Contienen los parámetros permitidos de cada request.

@@ -9,7 +9,7 @@ import { Link } from "react-router-dom"
 import { Stack, Typography, ButtonGroup } from "@mui/material"
 import FilterAltOffIcon from '@mui/icons-material/FilterAltOff'
 import { LeadBoardPresentation } from "./board/LeadBoardPresentation"
-import { Can } from "src/app/Can"
+import { Can } from "src/components/auth/Can"
 
 interface LeadListContentProps {
     leads: Lead[],

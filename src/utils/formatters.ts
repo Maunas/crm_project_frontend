@@ -84,17 +84,20 @@ export const isHex = (color: string) => {
     return hexRegex.test(color)
 }
 
-export const isColorType = (color: string): color is ColorTypes => {
-    return colorTypesArray.includes(color)
+function clamp(value: number, min: number, max: number): number {
+    return Math.max(min, Math.min(max, value))
 }
 
-export function hslStringToHex(hsl: string): string {
+function isHsl(color: string): boolean {
+    return /^hsla?\(\s*\d+\s*,\s*\d+%\s*,\s*\d+%\s*(?:,\s*[\d.]+\s*)?\)$/.test(color)
+}
+export function hslStringToHex(hsl: string): string | null {
     const match = hsl.match(/hsl\(\s*(\d+)\s*,\s*(\d+)%\s*,\s*(\d+)%\s*\)/)
-    if (!match) return "#000000"
+    if (!match) return null
 
-    const h = Number(match[1])
-    const s = Number(match[2]) / 100
-    const l = Number(match[3]) / 100
+    const h = clamp(Number(match[1]), 0, 360)
+    const s = clamp(Number(match[2]), 0, 100) / 100
+    const l = clamp(Number(match[3]), 0, 100) / 100
 
     const c = (1 - Math.abs(2 * l - 1)) * s
     const x = c * (1 - Math.abs(((h / 60) % 2) - 1))
@@ -112,24 +115,53 @@ export function hslStringToHex(hsl: string): string {
     return `#${toHex(r)}${toHex(g)}${toHex(b)}`
 }
 
+function isRgb(color: string): boolean {
+    return /^rgba?\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*(?:,\s*[\d.]+\s*)?\)$/.test(color)
+}
+
+function rgbStringToHex(rgb: string): string | null {
+    const match = rgb.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*[\d.]+\s*)?\)/)
+    if (!match) return null
+    const r = clamp(Number(match[1]), 0, 255)
+    const g = clamp(Number(match[2]), 0, 255)
+    const b = clamp(Number(match[3]), 0, 255)
+    const toHex = (n: number) => Math.round(n).toString(16).padStart(2, "0")
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`
+}
+
+export const isColorType = (color: string): color is ColorTypes => {
+    return colorTypesArray.includes(color)
+}
+
 export const getColorShades = (color: string, theme: Theme): ColorShades => {
-    const isColorHex = isHex(color)
-    if (isColorHex) return {
-        LIGHTER: theme.lighten(color, .6),
-        LIGHT: theme.lighten(color, .3),
-        MAIN: color,
-        DARK: theme.darken(color, .3),
-        DARKER: theme.darken(color, .6)
+    let hex: string | null = null
+
+    if (isHex(color)) {
+        hex = color
+    } else if (isHsl(color)) {
+        hex = hslStringToHex(color)
+    } else if (isRgb(color)) {
+        hex = rgbStringToHex(color)
+    }
+
+    if (hex) {
+        return {
+            LIGHTER: theme.lighten(hex, .6),
+            LIGHT: theme.lighten(hex, .3),
+            MAIN: hex,
+            DARK: theme.darken(hex, .3),
+            DARKER: theme.darken(hex, .6)
+        }
     }
 
     const themeColor = isColorType(color) ? color : "primary"
 
     return {
-        LIGHTER: hslStringToHex(theme.palette[themeColor].lighter),
-        LIGHT: hslStringToHex(theme.palette[themeColor].light),
-        MAIN: hslStringToHex(theme.palette[themeColor].main),
-        DARK: hslStringToHex(theme.palette[themeColor].dark),
-        DARKER: hslStringToHex(theme.palette[themeColor].darker)
+        LIGHTER: hslStringToHex(theme.palette[themeColor].lighter)!,
+        LIGHT: hslStringToHex(theme.palette[themeColor].light)!,
+        MAIN: hslStringToHex(theme.palette[themeColor].main)!,
+        DARK: hslStringToHex(theme.palette[themeColor].dark)!,
+        DARKER: hslStringToHex(theme.palette[themeColor].darker)!
     }
 }
 

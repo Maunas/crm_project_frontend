@@ -1,5 +1,6 @@
-import { Avatar, Tooltip } from '@mui/material';
+import { Tooltip } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material';
+import { CustomAvatar } from './CustomAvatar';
 
 interface UserAvatarProps {
     name: string;
@@ -7,6 +8,7 @@ interface UserAvatarProps {
     size?: number;
     tooltip?: boolean;
     sx?: SxProps<Theme>;
+    noRing?: boolean
 }
 
 /** Genera siempre el mismo color para el mismo nombre (sin guardar nada en el back). */
@@ -25,24 +27,27 @@ function getInitials(name: string): string {
     return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
 }
 
-export const UserAvatar = ({ name, src, size = 36, tooltip = false, sx }: UserAvatarProps) => {
+export const UserAvatar = ({ name, src, size = 36, tooltip = false, noRing = false, sx }: UserAvatarProps) => {
     const color = nameToColor(name);
 
     const avatar = (
-        <Avatar
+        <CustomAvatar
+            color={color}
             src={src}
+            variant='circular'
+            {...(noRing ? {} : { ring: true })}
             sx={{
                 width: size,
                 height: size,
-                bgcolor: color,
                 fontSize: size * 0.38,
                 fontWeight: 700,
                 letterSpacing: 0.5,
                 ...sx,
             }}
+
         >
             {!src && getInitials(name)}
-        </Avatar>
+        </CustomAvatar>
     );
 
     if (tooltip) {

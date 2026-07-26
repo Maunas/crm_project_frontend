@@ -8,7 +8,7 @@ import { ButtonGroup, Divider, Stack, Typography } from "@mui/material"
 import { SidebarContentWrapper } from "src/components/layout/container/GenericSidebar"
 import ACTION_ICONS from "src/components/ui/buttons/ActionIcons"
 import { EnabledIcon } from "src/components/ui/lists/Icons"
-import { Can } from "src/app/Can"
+import { Can } from "src/components/auth/Can"
 
 interface DetailsProps {
     entity: OrganizationDetailed | null,

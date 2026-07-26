@@ -17,7 +17,7 @@ import { showCommonErrorToast, showToast } from "src/utils/feedback"
 import { Link } from "react-router-dom"
 import { Grid, ListItemText, Stack, Typography } from "@mui/material"
 import { useCallback } from "react"
-import { Can } from "src/app/Can"
+import { Can } from "src/components/auth/Can"
 
 const ORDER_CMP_FIELDS = [
     { name: "name", label: "Orden Alfabético" },

@@ -20,7 +20,7 @@ import type { Paginable } from 'src/types/shared'
 import { disableWorkspace, enableWorkspace, getWorkspace, getWorkspaces } from './workspaceServices'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback';
 import { useUserContext } from 'src/stores/UserContext';
-import { Can } from 'src/app/Can';
+import { Can } from 'src/components/auth/Can';
 import { useSearchParams } from 'react-router-dom';
 import { List, ListItemText, Stack, Typography } from '@mui/material'
 

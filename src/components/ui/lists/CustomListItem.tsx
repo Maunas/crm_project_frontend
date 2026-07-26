@@ -5,7 +5,7 @@ import type { ColorTypes } from 'src/types/mui-theme.d'
 import { IconButton, ListItem, ListItemAvatar, ListItemButton, ListItemIcon, ListItemText, Menu, MenuItem, Paper, Stack, useMediaQuery, type ListItemOwnProps } from '@mui/material'
 import { alpha, styled } from '@mui/material/styles'
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import { Can } from 'src/app/Can'
+import { Can } from 'src/components/auth/Can'
 import { useUserContext } from 'src/stores/UserContext'
 
 /**
@@ -110,8 +110,8 @@ export const ResponsiveListItem = ({ size = "small", actions, children, onClick,
                 :
                 <Stack direction="row" sx={{ mr: -1 }}>
                     {visibleActions.map(action => (
-                        <Can permission={action.permission}>
-                            <CommonIconButton actionType={action.actionType} key={action.label} title={action.label}
+                        <Can permission={action.permission} key={action.label}>
+                            <CommonIconButton actionType={action.actionType} title={action.label}
                                 onClick={action.onClick} component={action.component} to={action.to} color={action.color ?? "action"} size={size} tooltipSize={size} />
                         </Can>
                     ))}

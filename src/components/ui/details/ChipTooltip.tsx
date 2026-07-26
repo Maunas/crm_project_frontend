@@ -1,10 +1,10 @@
 import { memo, type ReactElement, type ReactNode } from "react"
 import CustomChip from "./CustomChip"
 import type { ColorTypes } from "src/types/mui-theme.d"
-import { Box, Tooltip, type PopperPlacementType } from "@mui/material"
+import { Box, Tooltip, type PopperPlacementType, type TooltipProps } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 
-interface ChipTooltipProps {
+interface ChipTooltipProps extends TooltipProps {
     show?: boolean,
     boxed?: boolean,
     title: ReactNode,
@@ -14,13 +14,13 @@ interface ChipTooltipProps {
     children: ReactElement,
 }
 
-export const ChipTooltip = memo(({ show = true, boxed = false, title, color = "primary", placement = "top", size = "medium", children }: ChipTooltipProps) => {
+export const ChipTooltip = memo(({ show = true, boxed = false, title, color = "primary", placement = "top", size = "medium", children, ...props }: ChipTooltipProps) => {
 
     const { palette } = useTheme()
 
     if (!show) return children
 
-    return (<Tooltip arrow placement={placement} title={<Box sx={{ fontWeight: 500 }}>{title}</Box>}
+    return (<Tooltip arrow placement={placement} title={<Box sx={{ fontWeight: 500 }} {...props}>{title}</Box>}
         slots={{
             tooltip: (props) =>
                 <CustomChip label={props.children} chipColor={color} size={size} {...props} />

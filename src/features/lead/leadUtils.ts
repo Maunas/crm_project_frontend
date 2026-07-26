@@ -74,7 +74,6 @@ export const createFormDataFromLead = (data: LeadPostForm) => {
             dataValues.push({ field_id: fieldValue.field_id, value: fieldValue.value })
             continue
         }
-        console.log(fieldValue.value)
         //Si es un string, no se ha modificado el file, se envia solo en el cuerpo principal
         if (!fieldValue.value || typeof fieldValue?.value === "string") {
             dataValues.push({ field_id: fieldValue.field_id, value: fieldValue.value })

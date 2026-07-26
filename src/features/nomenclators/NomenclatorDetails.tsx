@@ -8,7 +8,7 @@ import type { NomenclatorDetailed } from "src/types/nomenclators"
 import { useUserContext } from "src/stores/UserContext"
 import { Link as RouterLink } from "react-router-dom"
 import { ButtonGroup, Divider, Link, Stack, Typography } from "@mui/material"
-import { Can } from "src/app/Can"
+import { Can } from "src/components/auth/Can"
 
 interface NomenclatorDetailsProps {
     nomenclator: NomenclatorDetailed | null,

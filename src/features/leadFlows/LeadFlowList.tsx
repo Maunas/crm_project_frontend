@@ -18,7 +18,7 @@ import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { OrderSearchMenu } from 'shared/ui/lists/OrderMenu'
 import { useUserContext } from 'src/stores/UserContext'
 import { NoItemsMessage } from 'src/components/ui/lists/NoItemsMessage'
-import { Can } from 'src/app/Can'
+import { Can } from 'src/components/auth/Can'
 
 const ORDER_FLOW_FIELDS = [
     { name: "name", label: "Orden Alfabético" },

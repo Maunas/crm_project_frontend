@@ -17,7 +17,7 @@ import { ColoredAccordionSummary } from "src/components/layout/container/Colored
 import GenericPaper from "src/components/layout/container/GenericPaper"
 import { updateFieldSection } from "../orgProperties/fieldSections/fieldSectionsServices"
 import { showCommonErrorToast } from "src/utils/feedback"
-import { Can } from "src/app/Can"
+import { Can } from "src/components/auth/Can"
 
 const MIN_FIELDS = 10
 

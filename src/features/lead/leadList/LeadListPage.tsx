@@ -35,7 +35,7 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
 import ViewListIcon from '@mui/icons-material/ViewList'
-import { Can } from 'src/app/Can'
+import { Can } from 'src/components/auth/Can'
 
 const DEFAULT_N_OF_FIELDS = 6
 // MUI AppBar toolbar height (desktop) = 64px; m: -3 cancels parent p: 3 entirely

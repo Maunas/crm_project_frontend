@@ -3,7 +3,6 @@ import { CustomTimelineItem } from "shared/ui/lists/CustomTimelineItem"
 import { CustomListItemAvatar } from "shared/ui/lists/CustomListItem"
 import PaginationComponent from "shared/ui/lists/PaginationComponent"
 import LoadingScreenWrapper from "shared/ui/feedback/LoadingScreen"
-import { MetadataShort } from "shared/ui/details/DetailsMetadata"
 import { OrderSearchMenu } from "shared/ui/lists/OrderMenu"
 import CustomChip from "shared/ui/details/CustomChip"
 import { useOrderSeachList } from "src/hooks/useOrderSearchLists"
@@ -14,18 +13,17 @@ import type { ColorTypes } from "src/types/mui-theme.d"
 import type { Paginable } from "src/types/shared"
 import { getAudit } from "./leadActivitiesService"
 import { showCommonErrorToast } from "src/utils/feedback"
-import { Avatar, Box, Button, Card, CardActionArea, CardActions, CardContent, CardHeader, Collapse, Divider, Stack, Typography } from "@mui/material"
-import { timelineItemClasses } from "@mui/lab/TimelineItem"
+import { Avatar, Box, Button, Card, CardActionArea, CardContent, CardHeader, Collapse, Divider, Stack, Typography } from "@mui/material"
 import Timeline from '@mui/lab/Timeline';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward"
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
-import WatchLaterIcon from '@mui/icons-material/WatchLater';
 import EditIcon from "@mui/icons-material/Edit"
 import AddIcon from "@mui/icons-material/Add"
 import { NoItemsMessage } from "src/components/ui/lists/NoItemsMessage"
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import ContactPageIcon from '@mui/icons-material/ContactPage';
+import { timelineOppositeContentClasses } from "@mui/lab/TimelineOppositeContent"
 
 const MAX_ITEMS_NUM = 3
 
@@ -107,14 +105,13 @@ export const LeadAuditList = ({ lead, reloadAudit }: { lead: LeadDetailed, reloa
           <Stack spacing={2} sx={{ height: "100%" }}>
             <Timeline sx={{
               flexGrow: 1,
-              [`& .${timelineItemClasses.root}:before`]: {
-                flex: 0,
-                padding: 0,
-              },
+              [`& .${timelineOppositeContentClasses.root}`]: {
+                flex: 0.1,
+              }
             }}>
               {audit?.items.map((item, idx) => {
                 return (
-                  <CustomTimelineItem selected={idx === showItems} last={idx === audit.items.length - 1} key={item.id}>
+                  <CustomTimelineItem entity={item} selected={idx === showItems} last={idx === audit.items.length - 1} key={item.id}>
                     <Card raised>
                       <CardActionArea onClick={() => handleShowItems(idx)} title="Ver detalle">
                         <LeadAuditHeader activityType={item.activity_type}
@@ -124,7 +121,7 @@ export const LeadAuditList = ({ lead, reloadAudit }: { lead: LeadDetailed, reloa
                       <Collapse in={idx === showItems} timeout="auto" unmountOnExit>
                         <Divider />
                         {item?.details?.changes &&
-                          <CardContent sx={{ py: 1 }}>
+                          <CardContent sx={{ "&&": { py: 1 } }}>
                             <Stack spacing={1} useFlexGap sx={{ alignItems: "start" }}>
                               {Object.entries(item.details.changes).map(([field_id, change], idx) => {
                                 if (!showMoreItems && idx >= MAX_ITEMS_NUM) return null
@@ -151,7 +148,7 @@ export const LeadAuditList = ({ lead, reloadAudit }: { lead: LeadDetailed, reloa
                           </CardContent>
                         }
                         {item?.details?.to_state_id && item?.details?.from_state_id &&
-                          <CardContent sx={{ py: 1 }}>
+                          <CardContent sx={{ "&&": { py: 1 } }}>
                             <Stack direction="row" useFlexGap spacing={1} sx={{ flexWrap: "wrap", px: 1, alignItems: "center" }}>
                               <Box>
                                 <LeadAuditValue value={item.details.from_state_name ?? item.details.from_state_id}
@@ -166,7 +163,7 @@ export const LeadAuditList = ({ lead, reloadAudit }: { lead: LeadDetailed, reloa
                           </CardContent>
                         }
                         {item.activity_type === "CONTACT_STATE_CHANGED" &&
-                          <CardContent sx={{ py: 1 }}>
+                          <CardContent sx={{ "&&": { py: 1 } }}>
                             <Stack direction="row" useFlexGap spacing={1} sx={{ flexWrap: "wrap", px: 1, alignItems: "center" }}>
                               <Box>
                                 <LeadAuditValue value={item.details.from_contact_state_name ?? item.details.from_contact_state_id ?? null}
@@ -181,7 +178,7 @@ export const LeadAuditList = ({ lead, reloadAudit }: { lead: LeadDetailed, reloa
                           </CardContent>
                         }
                         {item.activity_type === "LEAD_REASSIGNED" &&
-                          <CardContent sx={{ py: 1 }}>
+                          <CardContent sx={{ "&&": { py: 1 } }}>
                             <Stack spacing={1} sx={{ alignItems: "start" }}>
                               {item.details.previous_team_id !== item.details.new_team_id &&
                                 <Stack spacing={1} sx={{ alignItems: "start" }}>
@@ -199,32 +196,27 @@ export const LeadAuditList = ({ lead, reloadAudit }: { lead: LeadDetailed, reloa
                                   </Stack>
                                 </Stack>
                               }
-                              {item.details.previous_user_id !== item.details.new_user_id &&
-                                <Stack spacing={1} sx={{ alignItems: "start" }}>
-                                  <Typography variant="body2" sx={{ fontWeight: "bold" }}>Usuario Asignado:</Typography>
-                                  <Stack direction="row" useFlexGap spacing={1} sx={{ flexWrap: "wrap", px: 1, alignItems: "center" }}>
-                                    <Box>
-                                      <LeadAuditValue value={item.details.previous_user_name ?? item.details.previous_user_id ?? null}
-                                        id={item.id} color="error" size="small" />
-                                    </Box>
-                                    <ArrowForwardIcon fontSize="small" />
-                                    <Box>
-                                      <LeadAuditValue value={item.details.new_user_name ?? item.details.new_user_id ?? null}
-                                        id={item.id} color="success" size="small" />
-                                    </Box>
-                                  </Stack>
-                                </Stack>
-                              }
                             </Stack>
                           </CardContent>
                         }
-                        <Divider />
-                        <CardActions sx={{ py: .5 }}>
-                          <Stack direction="row" spacing={.5} sx={{ alignItems: "center", justifyContent: "end", ml: "auto" }}>
-                            <WatchLaterIcon fontSize="small" />
-                            <MetadataShort metadata={item} noIcon containerProps={{ sx: { marginRight: ".5rem" } }} />
-                          </Stack>
-                        </CardActions>
+                        {item.details.previous_user_id !== item.details.new_user_id &&
+                          <CardContent sx={{ "&&": { py: 1 } }}>
+                            <Stack spacing={1} sx={{ alignItems: "start" }}>
+                              <Typography variant="body2" sx={{ fontWeight: "bold" }}>Usuario Asignado:</Typography>
+                              <Stack direction="row" useFlexGap spacing={1} sx={{ flexWrap: "wrap", px: 1, alignItems: "center" }}>
+                                <Box>
+                                  <LeadAuditValue value={item.details.previous_user_name ?? item.details.previous_user_id ?? null}
+                                    id={item.id} color="error" size="small" />
+                                </Box>
+                                <ArrowForwardIcon fontSize="small" />
+                                <Box>
+                                  <LeadAuditValue value={item.details.new_user_name ?? item.details.new_user_id ?? null}
+                                    id={item.id} color="success" size="small" />
+                                </Box>
+                              </Stack>
+                            </Stack>
+                          </CardContent>
+                        }
                       </Collapse>
                     </Card>
                   </CustomTimelineItem>
@@ -237,7 +229,7 @@ export const LeadAuditList = ({ lead, reloadAudit }: { lead: LeadDetailed, reloa
           <NoItemsMessage emptyFetchMessage="No hay datos registrados al momento"
             search={fetchParams.search} genericSearchMsg />
         }
-      </LoadingScreenWrapper>
+      </LoadingScreenWrapper >
     </Stack >
   )
 }

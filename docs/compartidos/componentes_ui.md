@@ -6,7 +6,7 @@
 
 ### `ACTION_ICONS` (default export) — `buttons/ActionIcons.tsx`
 Mapa de `ActionType` a iconos de MUI. Tipos disponibles:
-`NONE`, `MODIFY`, `CLOSE`, `CREATE`, `DISABLE`, `ENABLE`, `DETAILS`, `SAVE`, `FILTER`, `OPTIONS`, `SETTINGS`, `RETURN`, `LOGIN`, `SIGNUP`, `LIST`, `CHECK`, `LOADING`, `MINUS`, `REORDER`, `OPEN_LIST`, `CLOSE_LIST`, `DRAG`, `RENAME`, `DUPLICATE`, `AUTOMATE`, `DOWNLOAD`, `IMPORT`, `PARAMETERS`
+`NONE`, `MODIFY`, `CLOSE`, `CREATE`, `DISABLE`, `ENABLE`, `DETAILS`, `SAVE`, `FILTER`, `OPTIONS`, `SETTINGS`, `RETURN`, `LOGIN`, `SIGNUP`, `LIST`, `CHECK`, `LOADING`, `MINUS`, `REORDER`, `OPEN_LIST`, `CLOSE_LIST`, `DRAG`, `RENAME`, `DUPLICATE`, `AUTOMATE`, `DOWNLOAD`, `IMPORT`, `PARAMETERS`, `PERSON_OUTLINE`, `CALENDAR`
 
 ### `CommonButton` (default export) + `CommonAvatar` — `buttons/CommonButton.tsx`
 Botón con ícono automático según `actionType`:
@@ -34,6 +34,33 @@ Botón que alterna entre "Habilitar" y "Deshabilitar" según el estado activo:
 <HandleActiveButton active={item.active} handleActive={() => toggleActive(item)} />
 ```
 - Props: `active`, `handleActive`, `disableColor` (default `"error"`), `enableColor` (default `"success"`), `disableText`, `enableText`
+
+---
+
+## Control de acceso (`auth/`)
+
+Componentes compartidos para control de permisos sobre elementos de UI. Importables desde `shared/auth/` gracias al path alias `shared/* → ./src/components/*`.
+
+### `Can` (default export) — `auth/Can.tsx`
+Renderiza `children` solo si el usuario tiene el permiso indicado en la org activa. Si no hay permiso, no renderiza nada. Si no se pasa `permission`, renderiza siempre.
+
+```tsx
+import { Can } from 'shared/auth/Can'
+<Can permission="lead:create">
+  <CommonButton actionType="CREATE">Agregar lead</CommonButton>
+</Can>
+```
+- `permission`: string (un permiso) o string[] (cualquiera de la lista).
+
+### `RequirePermission` (default export) — `auth/RequirePermission.tsx`
+Igual que `Can` pero para rutas completas: si no tiene permiso, muestra `<Unauthorized />` en vez de `null`. Se usa en `routes.tsx` para proteger wrappers de ruta.
+
+```tsx
+import { RequirePermission } from 'shared/auth/RequirePermission'
+<Route element={<RequirePermission permission="lead:view"><LeadListPage /></RequirePermission>} />
+```
+
+Ambos obtienen `hasPermission` del `UserContext` y soportan el mismo criterio: un único permiso o un array (cualquiera).
 
 ---
 
@@ -216,7 +243,9 @@ Avatar de usuario con iniciales y color generado determinísticamente del nombre
 - Iniciales: primera letra del primer nombre + primera letra del apellido
 
 ### `DetailsMetadata` (default export) + `MetadataShort` — `details/DetailsMetadata.tsx`
-Muestra fechas de creación/última modificación + usuario:
+Componente de metadatos de auditoría (creación/modificación). `DetailsMetadata` versión completa con dos columnas separadas por divider vertical; `MetadataShort` versión de una línea.
+
+`DetailsMetadata` usa iconos `PERSON_OUTLINE` (`BadgeOutlined`) para el creador, `MODIFY` (`Edit`) para el último editor y `CALENDAR` (`CalendarMonth`) para las fechas — todos inline sin avatar circular, con labels en mayúscula pequeña y tipografía refinada para un look profesional y minimalista. La sección "Modificado por" solo se renderiza si `updated_at` difiere de `created_at`.
 ```tsx
 <DetailsMetadata entity={campaign} />
 <MetadataShort metadata={lead} onlyUser />

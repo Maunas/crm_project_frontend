@@ -23,7 +23,7 @@ import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import { ImportLeadsPage } from "./features/lead/ImportLeadsPage";
 import { SystemAuditList } from "./features/audit/SystemAuditLogs";
 import { TeamsPage } from "./features/teams/TeamsPage";
-import { RequirePermission } from "./app/RequirePermission";
+import { RequirePermission } from "./components/auth/RequirePermission";
 
 // Muestra GlobalDashboard para Panel Global (id=1), OrgDashboard para el resto
 function DashboardRouter() {

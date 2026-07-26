@@ -21,7 +21,7 @@ import CancelIcon from '@mui/icons-material/Cancel'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
-import { Can } from 'src/app/Can'
+import { Can } from 'src/components/auth/Can'
 
 interface LeadDetailsState {
     lead: LeadDetailed,
