@@ -3,7 +3,7 @@
 ## Docs transversales
 | Doc | Descripción |
 |---|---|
-| [`convenciones_frontend.md`](convenciones_frontend.md) | Stack tecnológico, entry points, arquitectura, path aliases, patrones comunes, convenciones de código |
+| [`convenciones_frontend.md`](convenciones_frontend.md) | Stack tecnológico, entry points, arquitectura, path aliases, patrones comunes, convenciones de código, **sistema de rutas** |
 
 ## Componentes compartidos (`src/components/`)
 | Doc | Descripción |

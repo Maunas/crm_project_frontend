@@ -19,11 +19,14 @@ import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom'
 import { Typography, ButtonGroup, Link, Breadcrumbs, Stack, Chip } from '@mui/material'
 import { GenericPaperColoredSection } from 'src/components/layout/container/ColoredHeaders'
 import { LeadTitleConfigSidebar } from 'src/features/lead/leadTitleConfig/LeadTitleConfigSidebar'
+import { usePageTitle } from 'src/hooks/usePageTitle'
 
 export const CampaignDetails = () => {
     const { id } = useParams()
     const { hasPermission } = useUserContext()
     const [campaign, setCampaign] = useState<CampaignDetailed | null>(null)
+
+    usePageTitle(campaign && `${campaign.name} | Detalle de Campaña`)
 
     const { sidebarMode, handleSidebar, closeSidebar } = useSidebar<CampaignDetailed>("id")
 

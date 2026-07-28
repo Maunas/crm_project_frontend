@@ -21,7 +21,7 @@ export const RequirePermission = ({ permission, children }: RequirePermissionPro
 
     const { hasPermission } = useUserContext()
 
-    const authorized = !permission
+    const authorized = !permission || permission.length === 0
         || (Array.isArray(permission) ? permission.some(hasPermission) : hasPermission(permission))
 
     if (!authorized) return <Unauthorized />

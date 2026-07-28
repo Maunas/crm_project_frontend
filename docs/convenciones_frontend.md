@@ -16,7 +16,9 @@
 - `src/app/main.tsx` → `ThemeProvider` + `CssBaseline` + `<App />`
 - `src/app/App.tsx` → `UserProvider` + `RouterProvider` + `ToastContainer`
 - `src/app/mainLayout.tsx` → Layout protegido (redirige a `/login` si no hay sesión, a `/onboarding` si no hay orgs)
-- `src/routes.tsx` → Configuración central de rutas con `createBrowserRouter`
+- `src/routing/routes.tsx` → Crea el `BrowserRouter` con `createBrowserRouter`
+- `src/routing/routeList.tsx` → Definición de rutas con metadata (path, título, permiso, ícono, navbar)
+- `src/routing/routeListExports.tsx` → Procesamiento y exports de rutas
 
 ## Path aliases (vite.config.ts / tsconfig.app.json)
 ```ts
@@ -58,6 +60,34 @@ Los tipos compartidos están en `src/types/`. Cada archivo corresponde a un domi
 - Hooks: `useCamelCase.ts`
 - Utilidades: `camelCase.ts`
 - Tipos: `camelCase.ts`
+
+### Sistema de rutas (`src/routing/`)
+
+Las rutas se definen en `routeList.tsx` como un array de objetos con metadata. El sistema aplica permisos automáticamente y genera el navbar a partir de esa metadata.
+
+**Estructura de una ruta:**
+```tsx
+{ path: "/leads/new", title: "Nuevo Lead", element: <CreateLeadFormPage />, permission: "lead:create" }
+```
+
+| Campo | Tipo | Obligatorio | Descripción |
+|---|---|---|---|
+| `path` | `string` | sí | URL de la ruta (relativa a `/`) |
+| `title` | `string` | sí | Nombre legible para navbar y metadata |
+| `element` | `ReactNode` | sí | Componente a renderizar (sin wrapping de permisos) |
+| `permission` | `string \| string[]` | no | Codename(s) del permiso requerido. Si es array, basta con tener cualquiera. Si se omite, cualquier usuario logueado puede acceder |
+| `regularNavbar` | `boolean` | no | Si `true`, aparece en el navbar de org normal |
+| `globalNavbar` | `boolean` | no | Si `true`, aparece en el navbar de Panel Global (org id=1) |
+| `icon` | `ReactNode` | no | Ícono de MUI para el navbar |
+
+**Cómo agregar una ruta nueva:**
+1. Agregar la entrada en `routeList.tsx` (en `LEAD_ROUTES` o `ROUTE_LIST_OUTLET` según el caso)
+2. Si debe verse en el navbar, agregar `regularNavbar: true` o `globalNavbar: true` + `icon: <MiIcon />`
+3. Listo — el sistema aplica `RequirePermission` automáticamente via el `.map()` al final del archivo
+
+**Protección de permisos:** el procesador `ROUTE_LIST_OUTLET_PROCESSED` envuelve cada ruta con `<RequirePermission permission={i.permission}>` automáticamente. No hace falta envolver el `element` manualmente.
+
+**Navbar:** las opciones del sidebar (`Navbar.tsx`) se derivan de los campos `regularNavbar`/`globalNavbar`/`icon`/`permission` de cada ruta. El navbar filtra por permiso: solo muestra las rutas que el usuario tiene derecho a ver.
 
 ## Patrones comunes
 
