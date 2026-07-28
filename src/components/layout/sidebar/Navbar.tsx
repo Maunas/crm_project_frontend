@@ -3,38 +3,8 @@ import { ChipTooltip } from 'shared/ui/details/ChipTooltip';
 import { Link, useLocation } from 'react-router-dom';
 import { List, ListItem, ListItemButton, ListItemIcon, ListItemText, useTheme } from '@mui/material'
 import { alpha } from '@mui/material/styles';
-import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
-import PersonIcon from '@mui/icons-material/Person';
-import StoreIcon from '@mui/icons-material/Store';
-import LabelIcon from '@mui/icons-material/Label';
-import WorkIcon from '@mui/icons-material/Work';
-import TuneIcon from '@mui/icons-material/Tune';
-import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import GroupIcon from '@mui/icons-material/Group';
 import { useUserContext } from 'src/stores/UserContext';
-import { LEAD_PROPERTIES } from 'features/orgProperties/orgPropertiesList';
-
-//"permission" es el codename que hace falta para ver la sección (ver RequirePermission.tsx, mismo mapeo que routes.tsx).
-//Si no tiene "permission", se muestra a cualquier usuario logueado.
-const regularOptions = [
-  { name: "Dashboard", icon: <DashboardIcon />, link: "/dashboard" },
-  { name: "Leads", icon: <PersonIcon />, link: "/leads", permission: "lead:view" },
-  { name: "Campañas", icon: <WorkIcon />, link: "/campaigns", permission: "workspace:view" },
-  { name: "Equipos", icon: <GroupIcon />, link: "/teams", permission: "team:view" },
-  { name: "Organizaciones", icon: <StoreIcon />, link: "/organizations", permission: "organization:view" },
-  { name: "Nomencladores", icon: <LabelIcon />, link: "/nomenclators", permission: "nomenclator:view" },
-  { name: "Propiedades de Organización", icon: <TuneIcon />, link: "/org-properties", permission: LEAD_PROPERTIES.map(prop => prop.permission) },
-  { name: "Automatizaciones", icon: <AutoFixHighIcon />, link: "/automations", permission: "field_automation:view" },
-  { name: "Auditoría de Sistema", icon: <VerifiedUserIcon />, link: "/audit-logs", permission: "system_audit_log:view" }
-]
-
-const globalOptions = [
-  { name: "Dashboard", icon: <DashboardIcon />, link: "/dashboard" },
-  { name: "Organizaciones", icon: <StoreIcon />, link: "/organizations", permission: "organization:view" },
-  { name: "Usuarios", icon: <GroupIcon />, link: "/users", permission: "user:view_all" },
-  { name: "Auditoría de Sistema", icon: <VerifiedUserIcon />, link: "/audit-logs", permission: "system_audit_log:view" }
-]
+import { GLOBAL_NAVBAR, REGULAR_NAVBAR } from 'src/routing/routeListExports';
 
 interface NavbarProps {
   open: boolean
@@ -46,14 +16,14 @@ const Navbar = memo(({ open }: NavbarProps) => {
   const { activeOrg, hasPermission } = useUserContext()
 
   const options = useMemo(() =>
-    (activeOrg?.id === 1 ? globalOptions : regularOptions)
+    (activeOrg?.id === 1 ? GLOBAL_NAVBAR : REGULAR_NAVBAR)
       .filter(op => !op.permission || (Array.isArray(op.permission) ? op.permission.some(hasPermission) : hasPermission(op.permission))),
     [activeOrg, hasPermission]
   )
 
   const activeIdx = useMemo(() =>
     options.findIndex(op =>
-      pathname === op.link || pathname.split("/")[1] === op.link.slice(1)
+      pathname === op.path || pathname.split("/")[1] === op.path.slice(1)
     )
     , [pathname, options])
 
@@ -83,17 +53,14 @@ const Navbar = memo(({ open }: NavbarProps) => {
   return (
     <List>
       {options?.map((item, idx) => (
-        <ChipTooltip key={item.name} placement='right' title={open ? "" : item.name}>
+        <ChipTooltip key={item.title} placement='right' title={open ? "" : item.title}>
           <ListItem disablePadding sx={LIST_ITEM_STYLES[idx]}>
             <ListItemButton
-              component={Link} to={item.link} title={item.name}
-              sx={ITEM_STYLES} >
+              component={Link} to={item.path} sx={ITEM_STYLES} >
               <ListItemIcon sx={ICON_STYLES}>
                 {item.icon}
               </ListItemIcon>
-              <ListItemText
-                primary={item.name} sx={VISIBILITY}
-              />
+              <ListItemText primary={item.title} sx={VISIBILITY} />
             </ListItemButton>
           </ListItem>
         </ChipTooltip>

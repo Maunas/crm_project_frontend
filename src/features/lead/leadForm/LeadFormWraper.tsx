@@ -19,6 +19,7 @@ import ACTION_ICONS from "src/components/ui/buttons/ActionIcons"
 import CommonButton from "src/components/ui/buttons/CommonButton"
 import { GenericPaperColoredSection } from "src/components/layout/container/ColoredHeaders"
 import GenericModal, { ModalContentWrapper } from "src/components/layout/container/GenericModal"
+import { usePageTitle } from "src/hooks/usePageTitle"
 
 /** Wrapper para presentar LeadForm de creación en una página. */
 export const CreateLeadFormPage = () => {
@@ -196,6 +197,8 @@ export const UpdateLeadFormPage = () => {
     const { id } = useParams()
     const [lead, setLead] = useState<LeadDetailed | null>(null)
     const nav = useNavigate()
+
+    usePageTitle(lead && `${getLeadTitleArray(lead).join(" ")} | Editar Lead`)
 
     const [btnLoading, setBtnLoading] = useState(false)
 

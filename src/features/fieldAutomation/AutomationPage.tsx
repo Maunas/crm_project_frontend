@@ -16,6 +16,7 @@ import CustomChip from 'src/components/ui/details/CustomChip';
 import { GenericContainer } from 'src/components/layout/container/GenericContainer';
 import CommonButton from 'src/components/ui/buttons/CommonButton';
 import { CommonIconButton } from 'src/components/ui/buttons/CommonIconButton';
+import { usePageTitle } from 'src/hooks/usePageTitle';
 
 export const AutomationPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -61,6 +62,12 @@ export const AutomationPage = () => {
       .then(data => setFields(data.items))
       .catch(e => showCommonErrorToast(e))
   }, [campaignId, id, isDuplicating, duplicateFromId, isEditing])
+
+  usePageTitle(
+    !isEditing ? "Nueva Automatización"
+      : isDuplicating ? initialData?.name && `${initialData?.name} | Duplicar Automatización`
+        : initialData?.name && `${initialData?.name} | Editar Automatización`
+  )
 
   const { fnWithLoading: initialFetchLoad, loading: initialFetchLoading } = useLoading(initialLoad)
 

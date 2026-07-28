@@ -29,10 +29,12 @@ import { LeadDetailsState } from "./LeadDetailsState.tsx"
 import type { LeadFieldDetailed } from "src/types/leadFields.ts"
 import { UserAvatar } from "shared/ui/details/UserAvatar.tsx"
 import { formatDate } from "src/utils/formatters.ts"
+import { usePageTitle } from "src/hooks/usePageTitle.ts"
 
 export const LeadDetailsLayout = () => {
 
     const { id } = useParams()
+
 
     const numId = useMemo(() => {
         if (id === undefined) return id
@@ -159,6 +161,8 @@ export const LeadDetailsLayout = () => {
             return { ...prevLead, field_values: newFieldValues }
         })
     }
+
+    usePageTitle(leadTitle && `${leadTitle?.join(" ")} | Detalle de Lead`)
 
     //TO DO: Error de id no disponible
     if (numId === undefined) return <p>Id inválido</p>

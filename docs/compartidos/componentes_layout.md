@@ -21,11 +21,16 @@ AppBar superior con menú hamburguesa, barra de búsqueda global (`HeaderSearchB
 - Estilo sticky, elevation 4, sin borde (`data-noborder`)
 
 ### `Navbar` (memo) — `sidebar/Navbar.tsx`
-Lista de navegación del sidebar. Muestra distintas opciones según la org activa:
-- **Org normal** (`activeOrg.id !== 1`): Dashboard, Leads, Campañas, Equipos, Organizaciones, Nomencladores, Propiedades de Org, Automatizaciones, Auditoría
-- **Panel Global** (`activeOrg.id === 1`): Dashboard, Organizaciones, Usuarios, Auditoría
+Lista de navegación del sidebar. Las opciones se definen en `Navbar.tsx` y se derivan de la metadata de las rutas en `routeList.tsx`:
+
+- **Org normal** (`activeOrg.id !== 1`): usa `regularOptions` (rutas con `regularNavbar: true`)
+- **Panel Global** (`activeOrg.id === 1`): usa `globalOptions` (rutas con `globalNavbar: true`)
+- Cada opción tiene `name`, `icon`, `link` y opcionalmente `permission`
+- El navbar filtra por permisos: solo muestra las opciones que el usuario tiene derecho a ver
 - Resalta la opción activa según `location.pathname`
 - Tooltips cuando el sidebar está colapsado (via `ChipTooltip`)
+
+**Para agregar una opción al navbar:** agregar `regularNavbar: true` o `globalNavbar: true` + `icon: <MiIcon />` a la ruta correspondiente en `routeList.tsx`. El navbar la muestra automáticamente si el usuario tiene el permiso indicado.
 
 ### `HeaderMenu` — `sidebar/HeaderMenu.tsx`
 Menú de usuario en la AppBar. Muestra avatar con iniciales, nombre y organization switcher.

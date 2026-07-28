@@ -4,10 +4,13 @@ import LayoutSidebar from 'shared/layout/sidebar/Sidebar';
 import { LeadNavigationProvider } from 'src/features/lead/stores/LeadNavigationContext';
 import { useUserContext } from 'src/stores/UserContext';
 import LoadingScreenWrapper from 'src/components/ui/feedback/LoadingScreen';
+import { usePageTitle } from 'src/hooks/usePageTitle';
 
 export default function MainLayout() {
     const { user, isRestoring, orgHeaderList, loadingOrgs } = useUserContext()
     const nav = useNavigate()
+
+    usePageTitle()
 
     useEffect(() => {
         if (!isRestoring && !user) nav('/login', { replace: true })

@@ -6,6 +6,7 @@ import { mapFlowStates, mapFlowTransitions } from './leadFlowServices/leadFlowUt
 import { useParams } from 'react-router-dom';
 import { Box, CircularProgress } from '@mui/material';
 import { getLeadFlow, getLeadFlowStates, getLeadFlowTransitions, saveLeadFlowGraph } from './leadFlowServices/FlowService';
+import { usePageTitle } from 'src/hooks/usePageTitle';
 
 interface GraphData {
   id?: number | null,
@@ -49,6 +50,10 @@ export const LeadFlowEditor = () => {
       throw error
     }
   }, [editFlowId])
+
+  console.log(initialData)
+
+  usePageTitle(initialData.name && `${initialData.name} | Editor de Flujo`)
 
   const { loading, fnWithLoading } = useLoading(fetchFlow)
 

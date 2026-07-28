@@ -53,14 +53,18 @@ import { Can } from 'shared/auth/Can'
 - `permission`: string (un permiso) o string[] (cualquiera de la lista).
 
 ### `RequirePermission` (default export) — `auth/RequirePermission.tsx`
-Igual que `Can` pero para rutas completas: si no tiene permiso, muestra `<Unauthorized />` en vez de `null`. Se usa en `routes.tsx` para proteger wrappers de ruta.
+Envuelve `children` y los renderiza solo si el usuario tiene el permiso indicado en la org activa. Si no tiene permiso, muestra `<Unauthorized />` en vez de ocultar el contenido.
 
+Se usa **automáticamente** en el sistema de rutas (`routeList.tsx`): el procesador `ROUTE_LIST_OUTLET_PROCESSED` envuelve cada ruta con `<RequirePermission permission={i.permission}>` a partir del campo `permission` de cada entrada. No hace falta usarlo manualmente al definir rutas.
+
+También está disponible para uso directo si se necesita proteger un bloque de UI:
 ```tsx
-import { RequirePermission } from 'shared/auth/RequirePermission'
-<Route element={<RequirePermission permission="lead:view"><LeadListPage /></RequirePermission>} />
+import RequirePermission from 'shared/auth/RequirePermission'
+<RequirePermission permission="lead:create">
+  <CommonButton actionType="CREATE">Agregar lead</CommonButton>
+</RequirePermission>
 ```
-
-Ambos obtienen `hasPermission` del `UserContext` y soportan el mismo criterio: un único permiso o un array (cualquiera).
+- `permission`: string (un permiso) o string[] (cualquiera de la lista).
 
 ---
 
