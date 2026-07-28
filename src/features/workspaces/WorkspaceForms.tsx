@@ -8,7 +8,9 @@ import type { Workspace, WorkspaceDetailed, WorkspacePost } from "src/types/camp
 import { showCommonErrorToast, showToast } from "src/utils/feedback"
 import { setFormErrors } from "src/utils/forms"
 import { useForm } from "react-hook-form"
-import { Typography, Grid, ButtonGroup, Stack } from "@mui/material"
+import { ButtonGroup, Stack } from "@mui/material"
+import { SidebarContentActionsWrapper, SidebarContentWrapper } from "src/components/layout/container/GenericSidebar"
+import ACTION_ICONS from "src/components/ui/buttons/ActionIcons"
 
 interface WorkspaceSidebarProps {
     existingWsp?: WorkspaceDetailed,
@@ -47,7 +49,11 @@ export const WorkspaceFormSidebar = ({ existingWsp, closeSidebar, handleSidebar,
         }
     }, [existingWsp, handleSidebar, updateEntityOnList])
 
-    return <WorkspaceForm existingWsp={existingWsp} submit={submit} onCancel={handleClose} />
+    return <SidebarContentWrapper title={`${existingWsp ? "Modificar" : "Nuevo"} Espacio de Trabajo`}
+        subtitle="Espacios de Trabajo"
+        icon={ACTION_ICONS[existingWsp ? "MODIFY" : "CREATE"]}>
+        <WorkspaceForm existingWsp={existingWsp} submit={submit} onCancel={handleClose} />
+    </SidebarContentWrapper>
 }
 
 interface WorkspaceProps {
@@ -75,26 +81,9 @@ export const WorkspaceForm = ({ existingWsp, submit, onCancel }: WorkspaceProps)
     const { loading, fnWithLoading: submitLoad } = useLoading(onSubmit)
 
     return (
-        <form onSubmit={handleSubmit(submitLoad)}>
-            <Stack spacing={3}>
-                <Typography variant="h1">
-                    {!existingWsp ? "Crear Espacio de Trabajo"
-                        : `Modificar Espacio de Trabajo: ${existingWsp.name}`}
-                </Typography>
-                <Stack spacing={2}>
-                    <Grid container spacing={1} sx={{ justifyContent: "center", alignItems: "center" }}>
-                        <Grid size="grow" sx={{ minWidth: "20rem" }}>
-                            <RegisteredTextInput name="name" register={register} label="Nombre"
-                                required errorMessage={errors.name?.message} />
-                        </Grid>
-                        <Grid size="grow" sx={{ minWidth: "20rem" }}>
-                            <RegisteredTextInput name="description" register={register} label="Descripción"
-                                errorMessage={errors.description?.message} />
-                        </Grid>
-                    </Grid>
-                    {errors?.root &&
-                        <FormErrorMessage >{errors?.root?.message}</FormErrorMessage>
-                    }
+        <form onSubmit={handleSubmit(submitLoad)} style={{ height: "100%" }}>
+            <SidebarContentActionsWrapper
+                actions={
                     <ButtonGroup sx={{ alignSelf: "end" }}>
                         <CommonButton actionType="CLOSE" variant="text" color="error"
                             onClick={onCancel} disabled={loading}>
@@ -105,8 +94,18 @@ export const WorkspaceForm = ({ existingWsp, submit, onCancel }: WorkspaceProps)
                             Guardar
                         </CommonButton>
                     </ButtonGroup>
+                }>
+                <Stack spacing={2}>
+                    <RegisteredTextInput name="name" register={register} label="Nombre"
+                        required errorMessage={errors.name?.message} />
+                    <RegisteredTextInput name="description" register={register} label="Descripción"
+                        errorMessage={errors.description?.message} multiline minRows={2} />
+                    {errors?.root &&
+                        <FormErrorMessage >{errors?.root?.message}</FormErrorMessage>
+                    }
+
                 </Stack>
-            </Stack>
+            </SidebarContentActionsWrapper>
         </form>
     )
 }

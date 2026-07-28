@@ -45,7 +45,7 @@ export const GenericSidebarContent = styled(Box)(
             overflowY: "auto",
             "& .sidebar-content": {
                 flexGrow: 1,
-                padding: "1rem 2rem 1.5rem",
+                padding: "1.5rem 2rem",
                 overflowY: "auto",
                 overflowX: "hidden"
             },

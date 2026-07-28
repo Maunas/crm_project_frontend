@@ -225,9 +225,9 @@ export const PasswordField = <T extends FieldValues>
 
   return (
     <FormControl required={required} error={!!errorMessage} size={size} fullWidth>
-      <InputLabel htmlFor={name} size={size}>{label}</InputLabel>
+      <InputLabel htmlFor={name} size={size} shrink>{label}</InputLabel>
       <OutlinedInput id={name} label={label} size={size}
-        type={showPassword ? "text" : "password"}
+        type={showPassword ? "text" : "password"} placeholder={label}
         error={!!errorMessage} autoComplete={autoComplete} {...register(name)}
         endAdornment={
           <InputAdornment position="end">
@@ -283,7 +283,7 @@ export const RegisteredTextInput = <T extends FieldValues>
 
   return (
     <>
-      <TextField {...register(name, { setValueAs })} label={label ?? name} id={id ?? name} type={type}
+      <TextField {...register(name, { setValueAs })} label={label ?? name} placeholder={label ?? name} id={id ?? name} type={type}
         onChange={e => { register(name).onChange(e); onChange() }}
         required={required} error={!!errorMessage} autoComplete={autoComplete} multiline={multiline}
         fullWidth size={size}
