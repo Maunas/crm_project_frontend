@@ -8,8 +8,9 @@ export const useListPagination = <T,>(list: Paginable<T> | null, pageSize: numbe
   const [refresh, setRefresh] = useState<number>(0)
 
   const handlePage = useCallback((_: React.ChangeEvent<unknown>, value: number) => {
-    setFetchPage(value)
-  }, [])
+    if (!list) return
+    setFetchPage(Math.max(1, Math.min(value, list.total_pages)))
+  }, [list])
 
   const goToPageOne = useCallback(() => {
     if (fetchPage !== 1) return setFetchPage(1)
