@@ -7,14 +7,14 @@ function resolveTitle(pathname: string) {
   const match = ROUTE_LIST_FULL.find(
     (route) => route.path !== "*" && matchPath(route.path, pathname)
   )
-  return match?.title ?? "Página no Disponible"
+  return match?.title
 }
 
 export function usePageTitle(override?: string | null) {
   const { pathname } = useLocation()
 
   useEffect(() => {
-    const title = override ?? resolveTitle(pathname)
+    const title = override ?? resolveTitle(pathname) ?? "CRM"
     document.title = `${title} | ${CRM_TITLE}`
   }, [pathname, override])
 }
