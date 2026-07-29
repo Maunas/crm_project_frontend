@@ -7,7 +7,7 @@ export const useListPagination = <T,>(list: Paginable<T> | null, pageSize: numbe
   //Cuando la página es la misma (goToPageOne), refresh fuerza el cambio
   const [refresh, setRefresh] = useState<number>(0)
 
-  const handlePage = useCallback((_: React.ChangeEvent<unknown>, value: number) => {
+  const handlePage = useCallback((_: unknown, value: number) => {
     if (!list) return
     setFetchPage(Math.max(1, Math.min(value, list.total_pages)))
   }, [list])

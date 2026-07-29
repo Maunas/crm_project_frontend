@@ -7,7 +7,7 @@ interface PaginationComponentProps {
   totalItems: number | undefined,
   currentItems: number | undefined,
   pageSize: number,
-  handlePage: (event: React.ChangeEvent<unknown>, value: number) => void,
+  handlePage: (event: unknown, value: number) => void,
   size?: "small" | "medium"
 }
 const PaginationComponent = memo(({ totalPages, totalItems = 0, currentItems = 0, pageSize, page, handlePage, size = "small" }: PaginationComponentProps) => {
@@ -42,12 +42,17 @@ export default PaginationComponent
 interface PaginationComponentListProps {
   totalPages: number,
   page: number,
-  handlePage: (event: React.ChangeEvent<unknown>, value: number) => void,
+  handlePage: (event: unknown, value: number) => void,
   size?: "small" | "medium"
 }
 export const PaginationComponentList = ({ totalPages, page, handlePage, size }: PaginationComponentListProps) => {
 
   const [manualPage, setManualPage] = useState<boolean>(false)
+
+  const handlePageWrapper = (_: unknown, value: number) => {
+    handlePage(_, value)
+    setManualPage(false)
+  }
 
   return (
     <Pagination
@@ -58,7 +63,7 @@ export const PaginationComponentList = ({ totalPages, page, handlePage, size }: 
       onChange={handlePage}
       size={size}
       renderItem={(item) => {
-        if (item.selected && manualPage) return <PaginationInput value={item.page} handlePage={handlePage} size={size} />
+        if (item.selected && manualPage) return <PaginationInput value={item.page} handlePage={handlePageWrapper} size={size} autofocus />
         if (item.selected) return <PaginationItem {...item} onClick={() => setManualPage(true)} />
         return <PaginationItem {...item} />
       }}
@@ -86,13 +91,14 @@ export const PaginationComponentListAlt = ({ totalPages, page, handlePage, size 
 interface PaginationInputProps {
   value: number | null,
   handlePage: (event: React.ChangeEvent<unknown>, value: number) => void,
-  size?: "small" | "medium"
+  size?: "small" | "medium",
+  autofocus?: boolean
 }
-export const PaginationInput = ({ handlePage, value, size = "medium" }: PaginationInputProps) => {
+export const PaginationInput = ({ handlePage, value, size = "medium", autofocus = false }: PaginationInputProps) => {
   return (
     <FilledInput type="number" defaultValue={value ?? 1} size={size}
       sx={{ minWidth: "2rem", maxWidth: "2.5rem" }}
-      autoFocus
+      autoFocus={autofocus}
       slotProps={{
         input: {
           sx: {
