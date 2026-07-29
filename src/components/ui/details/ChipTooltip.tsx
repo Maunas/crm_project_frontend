@@ -18,7 +18,7 @@ export const ChipTooltip = memo(({ show = true, boxed = false, title, color = "p
 
     const { palette } = useTheme()
 
-    if (!show) return children
+    if (!show || !title) return children
 
     return (<Tooltip arrow placement={placement} title={<Box sx={{ fontWeight: 500 }} {...props}>{title}</Box>}
         slots={{

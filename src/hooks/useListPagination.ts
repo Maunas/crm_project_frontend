@@ -17,8 +17,15 @@ export const useListPagination = <T,>(list: Paginable<T> | null, pageSize: numbe
   }, [fetchPage])
 
   //Componente para asignar rápidamente a PaginationComponent
-  const pageComponentProps = useMemo(() => ({ totalPages: list?.total_pages ?? 0, page: list?.page ?? 1, handlePage })
-    , [list?.total_pages, list?.page, handlePage])
+  const pageComponentProps = useMemo(() => ({
+    totalPages: list?.total_pages ?? 0,
+    page: list?.page ?? 1,
+    totalItems: list?.total,
+    currentItems: list?.items.length,
+    pageSize,
+    handlePage
+  })
+    , [list, pageSize, handlePage])
 
   return {
     fetchPage, pageSize, refresh, goToPageOne, pageComponentProps
