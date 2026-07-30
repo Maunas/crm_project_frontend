@@ -24,10 +24,12 @@ import StoreIcon from '@mui/icons-material/Store';
 import LabelIcon from '@mui/icons-material/Label';
 import WorkIcon from '@mui/icons-material/Work';
 import TuneIcon from '@mui/icons-material/Tune';
-import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
+import FindInPageIcon from '@mui/icons-material/FindInPage';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import GroupIcon from '@mui/icons-material/Group';
+import LockIcon from '@mui/icons-material/Lock';
 import type { ReactNode } from "react";
+import { RoleList } from "src/features/roles/RoleList";
 
 /** Lista de rutas a usar en el sistema. 
  * Automáticamente completa el navbar y acomoda los permisos para su acceso. */
@@ -69,8 +71,9 @@ const ROUTE_LIST_OUTLET: RouteListProps[] = [
     { path: "/organizations/", title: "Organizaciones", element: <OrganizationList />, regularNavbar: true, globalNavbar: true, icon: <StoreIcon />, permission: "organization:view" },
     { path: "/org-properties/", title: "Propiedades de Organización", element: <OrgProperties />, regularNavbar: true, icon: <TuneIcon />, permission: LEAD_PROPERTIES.map(prop => prop.permission) },
     { path: "/lead-flow-editor/:id?", title: "Editor de Flujo", element: <LeadFlowEditor />, permission: "lead_flow:view" },
+    { path: "/roles", title: "Roles y Permisos", element: <RoleList />, permission: "role:view", regularNavbar: true, globalNavbar: true, icon: <LockIcon /> },
     { path: "/teams/", title: "Equipos y Enrutamiento", element: <TeamsPage />, regularNavbar: true, icon: <GroupIcon />, permission: "team:view" },
-    { path: "/audit-logs/", title: "Auditoría de Sistema", element: <SystemAuditList />, regularNavbar: true, globalNavbar: true, icon: <VerifiedUserIcon />, permission: "system_audit_log:view" },
+    { path: "/audit-logs/", title: "Auditoría de Sistema", element: <SystemAuditList />, regularNavbar: true, globalNavbar: true, icon: <FindInPageIcon />, permission: "system_audit_log:view" },
     { path: "/search", title: "Búsqueda", element: <SearchResultsList />, permission: "lead:view" },
     { path: "/profile", title: "Mi Perfil", element: <ProfilePage /> },
 ]

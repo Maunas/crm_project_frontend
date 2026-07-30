@@ -1,3 +1,4 @@
+import type { Permission, Role } from "./roles"
 import type { Metadata } from "./shared"
 
 export interface UserLogin {
@@ -50,17 +51,6 @@ export interface OrganizationAccess extends Metadata {
     permission_objects: Permission[]
 }
 
-export interface Permission {
-    name: string,
-    codename: string,
-}
-
-export interface Role extends Metadata {
-    id: number,
-    name: string,
-    code: string,
-    description: string | null,
-}
 
 // Invitaciones (/auth/invite, /auth/accept-invite)
 export interface InviteRequest {
