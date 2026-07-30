@@ -10,7 +10,7 @@ import { setFormErrors } from "src/utils/forms"
 import { useForm } from "react-hook-form"
 import { ButtonGroup, Stack } from "@mui/material"
 import { SidebarContentActionsWrapper, SidebarContentWrapper } from "src/components/layout/container/GenericSidebar"
-import ACTION_ICONS from "src/components/ui/buttons/ActionIcons"
+import ACTION_ICONS from "shared/ui/icons/ActionIcons"
 
 interface WorkspaceSidebarProps {
     existingWsp?: WorkspaceDetailed,

@@ -8,7 +8,9 @@ import { createOrganization, updateOrganization } from './organizationServices'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { setFormErrors } from "src/utils/forms"
 import { useForm } from 'react-hook-form'
-import { Grid, Typography, ButtonGroup, Stack } from '@mui/material'
+import { ButtonGroup, Stack } from '@mui/material'
+import { SidebarContentActionsWrapper, SidebarContentWrapper } from 'src/components/layout/container/GenericSidebar'
+import ACTION_ICONS from 'shared/ui/icons/ActionIcons'
 
 interface OrganizationSidebarProps {
     existingOrg?: OrganizationDetailed,
@@ -45,7 +47,10 @@ export const OrganizationFormSidebar = ({ existingOrg, closeSidebar, handleSideb
                 .catch(e => showCommonErrorToast(e))
         }
     }, [existingOrg, handleSidebar, updateEntityOnList])
-    return <OrganizationForm existingOrg={existingOrg} submit={submit} onCancel={handleClose} />
+    return <SidebarContentWrapper title={`${existingOrg ? "Modificar" : "Nueva"} Organización`} subtitle="Organizaciones"
+        icon={ACTION_ICONS[existingOrg ? "MODIFY" : "CREATE"]}>
+        <OrganizationForm existingOrg={existingOrg} submit={submit} onCancel={handleClose} />
+    </SidebarContentWrapper>
 }
 
 interface OrganizationProps {
@@ -73,40 +78,28 @@ const OrganizationForm = ({ existingOrg, submit, onCancel }: OrganizationProps) 
     const { loading, fnWithLoading: submitLoad } = useLoading(onSubmit)
 
     return (
-        <form onSubmit={handleSubmit(submitLoad)}>
-            <Stack spacing={3}>
-                <Typography variant="h2">
-                    {!existingOrg ? "Crear Organización" : `Modificar Organización: ${existingOrg.name}`}
-                </Typography>
+        <form onSubmit={handleSubmit(submitLoad)} style={{ height: "100%" }}>
+            <SidebarContentActionsWrapper actions={
+                <ButtonGroup sx={{ alignSelf: "end" }}>
+                    <CommonButton actionType="CLOSE" variant="text" color="error"
+                        onClick={onCancel} disabled={loading}>
+                        Cancelar
+                    </CommonButton>
+                    <CommonButton actionType={existingOrg ? "MODIFY" : "CREATE"}
+                        variant="contained" type="submit" loading={loading}>
+                        Guardar
+                    </CommonButton>
+                </ButtonGroup>
+            }>
                 <Stack spacing={2} sx={{ alignItems: "start" }}>
-                    <Grid container spacing={1} sx={{
-                        width: "100%",
-                        justifyContent: "center",
-                        alignItems: "center",
-                    }}>
-                        <Grid size="grow" sx={{ minWidth: "20rem" }}>
-                            <RegisteredTextInput name="name" register={register} label="Nombre"
-                                required errorMessage={errors.name?.message} />
-                        </Grid>
-                        <Grid size="grow" sx={{ minWidth: "20rem" }}>
-                            <RegisteredTextInput name="description" register={register} label="Descripción"
-                                errorMessage={errors.description?.message} />
-                        </Grid>
-                    </Grid>
+                    <RegisteredTextInput name="name" register={register} label="Nombre"
+                        required errorMessage={errors.name?.message} />
+                    <RegisteredTextInput name="description" register={register} label="Descripción"
+                        errorMessage={errors.description?.message} multiline minRows={2} />
                     {errors?.root &&
                         <FormErrorMessage>{errors?.root?.message}</FormErrorMessage>}
-                    <ButtonGroup sx={{ alignSelf: "end" }}>
-                        <CommonButton actionType="CLOSE" variant="text" color="error"
-                            onClick={onCancel} disabled={loading}>
-                            Cancelar
-                        </CommonButton>
-                        <CommonButton actionType={existingOrg ? "MODIFY" : "CREATE"}
-                            variant="contained" type="submit" loading={loading}>
-                            Guardar
-                        </CommonButton>
-                    </ButtonGroup>
                 </Stack>
-            </Stack>
+            </SidebarContentActionsWrapper>
         </form>
     )
 }

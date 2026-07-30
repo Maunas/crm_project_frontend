@@ -4,10 +4,6 @@
 
 ## Botones (`buttons/`)
 
-### `ACTION_ICONS` (default export) — `buttons/ActionIcons.tsx`
-Mapa de `ActionType` a iconos de MUI. Tipos disponibles:
-`NONE`, `MODIFY`, `CLOSE`, `CREATE`, `DISABLE`, `ENABLE`, `DETAILS`, `SAVE`, `FILTER`, `OPTIONS`, `SETTINGS`, `RETURN`, `LOGIN`, `SIGNUP`, `LIST`, `CHECK`, `LOADING`, `MINUS`, `REORDER`, `OPEN_LIST`, `CLOSE_LIST`, `DRAG`, `RENAME`, `DUPLICATE`, `AUTOMATE`, `DOWNLOAD`, `IMPORT`, `PARAMETERS`, `PERSON_OUTLINE`, `CALENDAR`
-
 ### `CommonButton` (default export) + `CommonAvatar` — `buttons/CommonButton.tsx`
 Botón con ícono automático según `actionType`:
 ```tsx
@@ -29,6 +25,22 @@ IconButton con tooltip incorporado:
 - `CommonIcon` es la versión solo ícono (sin botón)
 
 ### `HandleActiveButton` (default export) — `buttons/HandleActiveButton.tsx`
+
+---
+
+## Íconos (`icons/`)
+
+### `ACTION_ICONS` (default export) — `icons/ActionIcons.tsx`
+Mapa de `ActionType` a iconos de MUI. Tipos disponibles:
+`NONE`, `MODIFY`, `CLOSE`, `CREATE`, `DISABLE`, `ENABLE`, `DETAILS`, `SAVE`, `FILTER`, `OPTIONS`, `SETTINGS`, `RETURN`, `LOGIN`, `SIGNUP`, `LIST`, `CHECK`, `LOADING`, `MINUS`, `REORDER`, `OPEN_LIST`, `CLOSE_LIST`, `DRAG`, `RENAME`, `DUPLICATE`, `AUTOMATE`, `DOWNLOAD`, `IMPORT`, `PARAMETERS`, `USER`, `CALENDAR`, `TIME`
+
+### `ROUTE_ICONS` (default export) — `icons/RouteIcons.tsx`
+Mapa de `RouteType` a iconos de MUI para el navbar. Tipos disponibles:
+`DASHBOARD`, `LEADS`, `CAMPAIGNS`, `NOMENCLATORS`, `AUTOMATIONS`, `ORGANIZATIONS`, `ORG_PROPERTIES`, `ROLES`, `TEAMS`, `AUDIT`
+
+Consumido por `routeList.tsx` para asignar el ícono de cada ruta en el sidebar. Separa la definición de íconos de navegación de la configuración de rutas.
+
+---
 Botón que alterna entre "Habilitar" y "Deshabilitar" según el estado activo:
 ```tsx
 <HandleActiveButton active={item.active} handleActive={() => toggleActive(item)} />

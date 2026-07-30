@@ -10,7 +10,7 @@ import { setFormErrors } from "src/utils/forms"
 import { showToast } from "src/utils/feedback"
 import { useForm } from "react-hook-form"
 import { ButtonGroup, Stack, Typography } from "@mui/material"
-import ACTION_ICONS from "src/components/ui/buttons/ActionIcons"
+import ACTION_ICONS from "shared/ui/icons/ActionIcons"
 
 interface TeamFormSidebarProps {
     existingTeam?: TeamDetailed,

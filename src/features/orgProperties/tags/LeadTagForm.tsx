@@ -10,7 +10,7 @@ import { ButtonGroup, Stack, TextField, Typography } from "@mui/material"
 import { ControlledColorPicker } from "src/components/ui/forms/ColorPicker"
 import { createTag, updateTag } from "./LeadTagService"
 import { CustomAvatar } from "src/components/ui/details/CustomAvatar"
-import ACTION_ICONS from "src/components/ui/buttons/ActionIcons"
+import ACTION_ICONS from "shared/ui/icons/ActionIcons"
 
 
 interface TagFormSidebarProps {

@@ -3,7 +3,7 @@ import { ControlledSwitch, RegisteredTextInput } from "shared/ui/forms/CustomInp
 import { ControlledColorPicker } from "shared/ui/forms/ColorPicker"
 import { CustomAvatar } from "shared/ui/details/CustomAvatar"
 import CommonButton from "shared/ui/buttons/CommonButton"
-import ACTION_ICONS from "shared/ui/buttons/ActionIcons"
+import ACTION_ICONS from "shared/ui/icons/ActionIcons"
 import { useLoading } from "src/hooks/useLoading"
 import type { LeadContactStateDetailed, LeadContactStatePost } from "src/types/orgProperties"
 import { setFormErrors } from "src/utils/forms"

@@ -4,7 +4,7 @@ import { ControlledAutocomplete, ControlledRadio } from "shared/ui/forms/CustomM
 import { ControlledCheckbox, ControlledTextInput } from "shared/ui/forms/CustomInputs";
 import { FormErrorMessage } from "shared/ui/forms/FormFeedback";
 import CommonButton from "shared/ui/buttons/CommonButton";
-import ACTION_ICONS from "shared/ui/buttons/ActionIcons";
+import ACTION_ICONS from "shared/ui/icons/ActionIcons";
 import { useLoading } from "src/hooks/useLoading";
 import type { InputMaskTemplate, LeadFieldDetailed, LeadFieldPost, LeadFieldTemplate, LeadFieldTypeDetailed } from "src/types/leadFields";
 import type { Campaign, CampaignDetailed } from "src/types/campaigns";

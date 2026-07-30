@@ -6,7 +6,7 @@ import { useUserContext } from "src/stores/UserContext"
 import { Link } from "react-router-dom"
 import { ButtonGroup, Divider, Stack, Typography } from "@mui/material"
 import { SidebarContentWrapper } from "src/components/layout/container/GenericSidebar"
-import ACTION_ICONS from "src/components/ui/buttons/ActionIcons"
+import ACTION_ICONS from "shared/ui/icons/ActionIcons"
 import { EnabledIcon } from "src/components/ui/lists/Icons"
 import { Can } from "src/components/auth/Can"
 

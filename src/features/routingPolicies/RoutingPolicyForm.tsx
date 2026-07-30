@@ -22,7 +22,7 @@ import { showToast } from "src/utils/feedback"
 import { useFieldArray, useForm, useWatch } from "react-hook-form"
 import { Box, Button, ButtonGroup, Divider, Stack, Typography } from "@mui/material"
 import AddIcon from "@mui/icons-material/Add"
-import ACTION_ICONS from "src/components/ui/buttons/ActionIcons"
+import ACTION_ICONS from "shared/ui/icons/ActionIcons"
 
 const emptyCondition = (position: number): LeadRoutingConditionPost => ({
     position, native_field: NATIVE_FIELDS[0], lead_field_id: null,
