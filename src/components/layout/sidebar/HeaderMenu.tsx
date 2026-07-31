@@ -1,10 +1,9 @@
 import React, { memo, useState } from 'react'
-import MaterialUISwitch from './ThemeSlider';
 import { useUserContext } from 'src/stores/UserContext';
 import { Link, useNavigate } from 'react-router-dom';
-import { Box, Button, Divider, FormControlLabel, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Stack, Typography } from '@mui/material'
+import { Box, Button, Divider, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Stack, Typography } from '@mui/material'
 import { UserAvatar } from 'src/components/ui/details/UserAvatar'
-import { useColorScheme, useTheme } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 import { AccountCircle, Check, Close, PersonOutlined, PersonAddOutlined } from '@mui/icons-material';
 import MoreIcon from '@mui/icons-material/More';
 import LoadingScreenWrapper from 'src/components/ui/feedback/LoadingScreen';
@@ -68,13 +67,9 @@ const HeaderMenu = memo(() => {
         removeSavedAccount(userId).catch(err => showCommonErrorToast(err, "No se pudo quitar la cuenta."))
     }
 
-    const { setMode } = useColorScheme();
+
     const { palette } = useTheme();
 
-    const handleMode = (darkMode: boolean) => {
-        if (darkMode) return setMode("dark")
-        else setMode("light")
-    }
 
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -149,13 +144,6 @@ const HeaderMenu = memo(() => {
                 }
             </LoadingScreenWrapper>
             <Divider />
-            <MenuItem>
-                <FormControlLabel sx={{ width: "9rem" }}
-                    control={<MaterialUISwitch checked={palette.mode === "dark"}
-                        onChange={(_, checked) => handleMode(checked)} />}
-                    label={palette.mode === "dark" ? "Modo Oscuro" : "Modo Claro"}
-                />
-            </MenuItem>
             <MenuItem dense component={Link} to="/profile" onClick={handleMenuClose}>
                 <ListItemIcon><PersonOutlined fontSize="small" /></ListItemIcon>
                 <ListItemText>Mi perfil</ListItemText>
