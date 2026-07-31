@@ -64,9 +64,9 @@ export const ColorPickerMenu = <T extends FieldValues>({ field, theme, size, row
         <>
             <Button fullWidth={!row} sx={{
                 flexGrow: "1",
-                minWidth: size === "small" ? "4rem" : "6rem",
+                minWidth: size === "small" ? "5rem" : "6rem",
                 maxWidth: size === "small" ? "9rem" : "15rem",
-                height: size === "small" ? "1.5rem" : "2rem", p: "2px",
+                height: size === "small" ? "1.7rem" : "2rem", p: "2px",
                 border: `2px solid ${paletteColor.LIGHT}`,
                 borderRadius: ".5rem",
             }}
@@ -127,8 +127,8 @@ export const ColorPickerButton = <T extends FieldValues>({ field, size, colorNam
             }}>
             <CircleIcon sx={{
                 color: paletteColor.MAIN,
-                width: size === "small" ? "1.1rem" : " 1.5rem",
-                height: size === "small" ? "1.1rem" : " 1.5rem",
+                width: size === "small" ? "1.2rem" : " 1.5rem",
+                height: size === "small" ? "1.2rem" : " 1.5rem",
                 borderRadius: "50%",
                 border: field.value === colorName ? `2px solid ${paletteColor.LIGHTER}` : ""
             }} />
@@ -171,7 +171,7 @@ export const InlineColorPickerButton = ({ color, onChange, onOpenChange, ariaLab
             <IconButton size="small" sx={{ p: "2px" }} aria-label={ariaLabel}
                 onMouseDown={e => e.preventDefault()} onClick={handleOpen}>
                 <CircleIcon sx={{
-                    color, fontSize: "1.1rem", borderRadius: "50%",
+                    color, fontSize: "1.2rem", borderRadius: "50%",
                     border: "1px solid", borderColor: "divider"
                 }} />
             </IconButton>

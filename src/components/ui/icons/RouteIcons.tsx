@@ -1,7 +1,7 @@
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PersonIcon from '@mui/icons-material/Person';
 import WorkIcon from '@mui/icons-material/Work';
-import LabelIcon from '@mui/icons-material/Label';
+import LabelImportantIcon from '@mui/icons-material/LabelImportant';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import StoreIcon from '@mui/icons-material/Store';
 import TuneIcon from '@mui/icons-material/Tune';
@@ -18,7 +18,7 @@ const ROUTE_ICONS = {
     LEADFIELD: <EditNoteIcon />,
     CAMPAIGNS: <CampaignIcon />,
     WORKSPACES: <WorkIcon />,
-    NOMENCLATORS: <LabelIcon />,
+    NOMENCLATORS: <LabelImportantIcon />,
     AUTOMATIONS: <AutoFixHighIcon />,
     ORGANIZATIONS: <StoreIcon />,
     ORG_PROPERTIES: <TuneIcon />,

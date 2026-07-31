@@ -60,7 +60,7 @@ const Navbar = memo(({ open }: NavbarProps) => {
               <ListItemIcon sx={ICON_STYLES}>
                 {item.icon}
               </ListItemIcon>
-              <ListItemText primary={item.title} sx={VISIBILITY} />
+              <ListItemText primary={item.navTitle ?? item.title} sx={VISIBILITY} />
             </ListItemButton>
           </ListItem>
         </ChipTooltip>

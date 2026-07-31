@@ -96,7 +96,7 @@ export const LeadTagsList = () => {
                 {editingTag !== null &&
                     <Can>
                         <Divider />
-                        <GenericPaper elevation={4} sx={{ px: 3, py: 2 }}>
+                        <GenericPaper elevation={2} sx={{ px: 3, py: 2 }}>
                             <Stack spacing={2}>
                                 <TagFormSidebarWrapper existingTag={editingTag}
                                     onClose={() => setEditingTag(null)} onSubmit={updateList} />
