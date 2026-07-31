@@ -18,16 +18,9 @@ import { TeamsPage } from "src/features/teams/TeamsPage";
 import { WorkspaceList } from "src/features/workspaces/WorkspaceList";
 import { ProfilePage } from "src/pages/ProfilePage";
 import { useUserContext } from "src/stores/UserContext";
-import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
-import PersonIcon from '@mui/icons-material/Person';
-import StoreIcon from '@mui/icons-material/Store';
-import LabelIcon from '@mui/icons-material/Label';
-import WorkIcon from '@mui/icons-material/Work';
-import TuneIcon from '@mui/icons-material/Tune';
-import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import GroupIcon from '@mui/icons-material/Group';
+import ROUTE_ICONS from "shared/ui/icons/RouteIcons";
 import type { ReactNode } from "react";
+import { RoleList } from "src/features/roles/RoleList";
 
 /** Lista de rutas a usar en el sistema. 
  * Automáticamente completa el navbar y acomoda los permisos para su acceso. */
@@ -50,7 +43,7 @@ function DashboardRouter() {
 }
 
 const LEAD_ROUTES: RouteListProps[] = [
-    { path: "/leads/", title: "Leads", element: <LeadListPage />, regularNavbar: true, icon: <PersonIcon />, permission: "lead:view" },
+    { path: "/leads/", title: "Leads", element: <LeadListPage />, regularNavbar: true, icon: ROUTE_ICONS.LEADS, permission: "lead:view" },
     { path: "/leads/new", title: "Nuevo Lead", element: <CreateLeadFormPage />, permission: "lead:create" },
     { path: "/leads/modify/:id", title: "Modificar Lead", element: <UpdateLeadFormPage />, permission: "lead:update" },
     { path: "/leads/:id", title: "Detalle de Lead", element: <LeadDetailsLayout />, permission: "lead:view" },
@@ -59,18 +52,19 @@ const LEAD_ROUTES: RouteListProps[] = [
 
 /** Lista de rutas que se muestran con Navbar */
 const ROUTE_LIST_OUTLET: RouteListProps[] = [
-    { path: "/dashboard", title: "Dashboard", element: <DashboardRouter />, regularNavbar: true, globalNavbar: true, icon: <DashboardIcon /> },
+    { path: "/dashboard", title: "Dashboard", element: <DashboardRouter />, regularNavbar: true, globalNavbar: true, icon: ROUTE_ICONS.DASHBOARD },
     ...LEAD_ROUTES,
-    { path: "/campaigns/", title: "Campañas", element: <WorkspaceList />, regularNavbar: true, icon: <WorkIcon />, permission: "workspace:view" },
+    { path: "/campaigns/", title: "Campañas", element: <WorkspaceList />, regularNavbar: true, icon: ROUTE_ICONS.CAMPAIGNS, permission: "workspace:view" },
     { path: "/campaigns/:id", title: "Detalle de Campaña", element: <CampaignDetails />, permission: "campaign:view" },
-    { path: "/nomenclators/", title: "Nomencladores", element: <NomenclatorList />, regularNavbar: true, icon: <LabelIcon />, permission: "nomenclator:view" },
-    { path: "/automations/", title: "Automatizaciones", element: <AutomationList />, regularNavbar: true, icon: <AutoFixHighIcon />, permission: "field_automation:view" },
+    { path: "/nomenclators/", title: "Nomencladores", element: <NomenclatorList />, regularNavbar: true, icon: ROUTE_ICONS.NOMENCLATORS, permission: "nomenclator:view" },
+    { path: "/automations/", title: "Automatizaciones", element: <AutomationList />, regularNavbar: true, icon: ROUTE_ICONS.AUTOMATIONS, permission: "field_automation:view" },
     { path: "/automations/:id", title: "Detalle de Automatización", element: <AutomationPage />, permission: "field_automation:view" },
-    { path: "/organizations/", title: "Organizaciones", element: <OrganizationList />, regularNavbar: true, globalNavbar: true, icon: <StoreIcon />, permission: "organization:view" },
-    { path: "/org-properties/", title: "Propiedades de Organización", element: <OrgProperties />, regularNavbar: true, icon: <TuneIcon />, permission: LEAD_PROPERTIES.map(prop => prop.permission) },
+    { path: "/organizations/", title: "Organizaciones", element: <OrganizationList />, regularNavbar: true, globalNavbar: true, icon: ROUTE_ICONS.ORGANIZATIONS, permission: "organization:view" },
+    { path: "/org-properties/", title: "Propiedades de Organización", element: <OrgProperties />, regularNavbar: true, icon: ROUTE_ICONS.ORG_PROPERTIES, permission: LEAD_PROPERTIES.map(prop => prop.permission) },
     { path: "/lead-flow-editor/:id?", title: "Editor de Flujo", element: <LeadFlowEditor />, permission: "lead_flow:view" },
-    { path: "/teams/", title: "Equipos y Enrutamiento", element: <TeamsPage />, regularNavbar: true, icon: <GroupIcon />, permission: "team:view" },
-    { path: "/audit-logs/", title: "Auditoría de Sistema", element: <SystemAuditList />, regularNavbar: true, globalNavbar: true, icon: <VerifiedUserIcon />, permission: "system_audit_log:view" },
+    { path: "/roles", title: "Roles y Permisos", element: <RoleList />, permission: "role:view", regularNavbar: true, globalNavbar: true, icon: ROUTE_ICONS.ROLES },
+    { path: "/teams/", title: "Equipos y Enrutamiento", element: <TeamsPage />, regularNavbar: true, icon: ROUTE_ICONS.TEAMS, permission: "team:view" },
+    { path: "/audit-logs/", title: "Auditoría de Sistema", element: <SystemAuditList />, regularNavbar: true, globalNavbar: true, icon: ROUTE_ICONS.AUDIT, permission: "system_audit_log:view" },
     { path: "/search", title: "Búsqueda", element: <SearchResultsList />, permission: "lead:view" },
     { path: "/profile", title: "Mi Perfil", element: <ProfilePage /> },
 ]

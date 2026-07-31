@@ -3,7 +3,6 @@ import { SidebarContentWrapper } from "shared/layout/container/GenericContainer"
 import HandleActiveButton from "shared/ui/buttons/HandleActiveButton"
 import DetailsMetadata from "shared/ui/details/DetailsMetadata"
 import CommonButton from "shared/ui/buttons/CommonButton"
-import { EnabledIcon } from "shared/ui/lists/Icons"
 import { RoutingConditionRow } from "./RoutingConditionRow"
 import type { LeadRoutingPolicyDetailed } from "src/types/routing"
 import type { Team } from "src/types/teams"
@@ -13,6 +12,7 @@ import { getTeams } from "src/features/teams/teamServices"
 import { getCampaigns } from "src/features/campaigns/campaignServices"
 import { getLeadFields } from "src/features/leadFields/leadFieldServices"
 import { ButtonGroup, Chip, Divider, Stack, Typography } from "@mui/material"
+import ROUTE_ICONS from "src/components/ui/icons/RouteIcons"
 
 interface RoutingPolicyDetailsProps {
     policy: LeadRoutingPolicyDetailed | null,
@@ -35,14 +35,14 @@ export const RoutingPolicyDetails = ({ policy, closeSidebar, handleSidebar, hand
             getCampaigns({ only_active: false, page_size: 0 }).then(res => setCampaign(res.items.find(c => c.id === policy.campaign_id) ?? null))
             getLeadFields({ campaign_id: policy.campaign_id, only_active: false, page_size: 0 }).then(res => setLeadFields(res.items))
         } else {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setCampaign(null)
             setLeadFields([])
         }
     }, [policy])
 
     if (policy) return (
-        <SidebarContentWrapper title={policy.name} icon={<EnabledIcon active={policy.active} isAvatar />}
-            iconColor={policy.active ? "success" : "error"}
+        <SidebarContentWrapper title={policy.name} icon={ROUTE_ICONS.ROUTING} active={policy.active}
             subtitle="Política de Enrutamiento"
             actions={
                 <ButtonGroup>

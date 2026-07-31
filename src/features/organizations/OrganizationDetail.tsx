@@ -6,9 +6,8 @@ import { useUserContext } from "src/stores/UserContext"
 import { Link } from "react-router-dom"
 import { ButtonGroup, Divider, Stack, Typography } from "@mui/material"
 import { SidebarContentWrapper } from "src/components/layout/container/GenericSidebar"
-import ACTION_ICONS from "src/components/ui/buttons/ActionIcons"
-import { EnabledIcon } from "src/components/ui/lists/Icons"
 import { Can } from "src/components/auth/Can"
+import ROUTE_ICONS from "src/components/ui/icons/RouteIcons"
 
 interface DetailsProps {
     entity: OrganizationDetailed | null,
@@ -25,8 +24,9 @@ const OrganizationDetails = ({ entity, closeSidebar, handleSidebar, handleActive
 
     return (
         <SidebarContentWrapper title={entity.name} subtitle="Organización"
-            icon={isOrgActive ? ACTION_ICONS.CHECK : <EnabledIcon active={entity.active} isAvatar />}
-            iconColor={isOrgActive ? "info" : entity.active ? "success" : "error"}
+            active={entity.active} icon={ROUTE_ICONS.ORGANIZATIONS}
+            ringColor={isOrgActive ? "info" : undefined} iconColor={isOrgActive ? "info" : undefined}
+            avatarTooltip={isOrgActive ? "Activo" : undefined}
             actions={
                 <ButtonGroup>
                     <CommonButton onClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>

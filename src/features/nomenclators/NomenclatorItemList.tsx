@@ -38,7 +38,7 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
 
     const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<NomenclatorItemDetailed>()
 
-    const { fetchPage, pageSize, pageComponentProps } = useListPagination(nomenclatorItems, 16)
+    const { fetchPage, pageSize, pageComponentProps } = useListPagination(nomenclatorItems, 14)
 
     const { fetchParams, handleSearchChange, handleOrderChange } = useOrderSeachList()
 

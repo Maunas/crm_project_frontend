@@ -166,8 +166,8 @@ export interface Dictionary {
   "lead_states_categories"?: DictionaryItem[],
   "lead_view_visibilities"?: DictionaryItem[],
   "automation_compatibility_matrix"?: AutomationCompatibility[],
-  "entities"?: DictionaryItem[],
-  "system_audit_log_actions"?: DictionaryItem[],
+  "entities"?: Record<string, string>,
+  "system_audit_log_actions"?: Record<string, string>,
 }
 
 export interface DictionaryItem {
@@ -180,7 +180,7 @@ export type DateFormat = "dateTime" | "dateTimeLong" | "date" | "dateLong" | "ti
 export type OptionWithAction<T> = (T & { isAction?: undefined }) | { id: string, name: string, isAction: boolean }
 
 export interface AutomationCompatibility {
-  "field_type": {
+  [field_type: string]: {
     "operators": string[],
     "actions": string[],
   }

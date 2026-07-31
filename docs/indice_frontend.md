@@ -9,7 +9,7 @@
 | Doc | Descripción |
 |---|---|
 | [`compartidos/componentes_layout.md`](compartidos/componentes_layout.md) | Sidebar/Header/Navbar, GenericContainer, GenericPaper, GenericModal, GenericSidebar, ColoredHeaders |
-| [`compartidos/componentes_ui.md`](compartidos/componentes_ui.md) | Botones, control de acceso (Can/RequirePermission), formularios controlados, detalles/chips, feedback (diálogos), listas/tablas, modales |
+| [`compartidos/componentes_ui.md`](compartidos/componentes_ui.md) | Botones, íconos (ActionIcons + RouteIcons), control de acceso (Can/RequirePermission), formularios controlados, detalles/chips, feedback (diálogos), listas/tablas, modales |
 
 ## Hooks y utilidades
 | Doc | Descripción |
@@ -21,6 +21,7 @@
 | Doc | Descripción |
 |---|---|
 | [`features/autenticacion.md`](features/autenticacion.md) | LoginForm, SignupForm, userServices |
+| [`features/roles_y_permisos.md`](features/roles_y_permisos.md) | RoleList, RoleForms, RoleDetails |
 | [`features/lead.md`](features/lead.md) | Módulo más grande: listado (tabla+board), formulario, detalle, actividades, comentarios, filtros, vistas, título configurable |
 | [`features/campanas_y_workspaces.md`](features/campanas_y_workspaces.md) | Campaigns + Workspaces (CRUD, detalle, formularios) |
 | [`features/nomencladores.md`](features/nomencladores.md) | NomenclatorList, NomenclatorDetails, NomenclatorForm, NomenclatorItemList, NomenclatorItemForm |

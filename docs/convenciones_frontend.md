@@ -78,11 +78,11 @@ Las rutas se definen en `routeList.tsx` como un array de objetos con metadata. E
 | `permission` | `string \| string[]` | no | Codename(s) del permiso requerido. Si es array, basta con tener cualquiera. Si se omite, cualquier usuario logueado puede acceder |
 | `regularNavbar` | `boolean` | no | Si `true`, aparece en el navbar de org normal |
 | `globalNavbar` | `boolean` | no | Si `true`, aparece en el navbar de Panel Global (org id=1) |
-| `icon` | `ReactNode` | no | Ícono de MUI para el navbar |
+| `icon` | `ReactNode` | no | Ícono del navbar (usar `ROUTE_ICONS.XXX` de `shared/ui/icons/RouteIcons`) |
 
 **Cómo agregar una ruta nueva:**
 1. Agregar la entrada en `routeList.tsx` (en `LEAD_ROUTES` o `ROUTE_LIST_OUTLET` según el caso)
-2. Si debe verse en el navbar, agregar `regularNavbar: true` o `globalNavbar: true` + `icon: <MiIcon />`
+2. Si debe verse en el navbar, agregar `regularNavbar: true` o `globalNavbar: true` + `icon: ROUTE_ICONS.MI_ICON` (importar `ROUTE_ICONS` de `shared/ui/icons/RouteIcons`)
 3. Listo — el sistema aplica `RequirePermission` automáticamente via el `.map()` al final del archivo
 
 **Protección de permisos:** el procesador `ROUTE_LIST_OUTLET_PROCESSED` envuelve cada ruta con `<RequirePermission permission={i.permission}>` automáticamente. No hace falta envolver el `element` manualmente.

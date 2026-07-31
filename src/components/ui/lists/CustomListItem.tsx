@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
 import { CommonIcon, CommonIconButton } from '../buttons/CommonIconButton'
-import type { ActionType } from '../buttons/ActionIcons'
+import type { ActionType } from '../icons/ActionIcons'
 import type { ColorTypes } from 'src/types/mui-theme.d'
 import { IconButton, ListItem, ListItemAvatar, ListItemButton, ListItemIcon, ListItemText, Menu, MenuItem, Paper, Stack, useMediaQuery, type ListItemOwnProps } from '@mui/material'
 import { alpha, styled } from '@mui/material/styles'

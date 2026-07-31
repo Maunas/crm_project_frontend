@@ -1,5 +1,5 @@
 import { cloneElement, type ComponentProps, type ReactNode } from 'react';
-import ACTION_ICONS, { type ActionType } from './ActionIcons';
+import ACTION_ICONS, { type ActionType } from '../icons/ActionIcons';
 import { ChipTooltip } from '../details/ChipTooltip';
 import type { ColorTypes } from 'src/types/mui-theme.d';
 import { Avatar, Stack, type AvatarProps, Button, type ButtonProps } from '@mui/material'

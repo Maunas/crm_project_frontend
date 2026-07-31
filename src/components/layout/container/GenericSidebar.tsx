@@ -3,7 +3,7 @@ import { GenericSidebarContent, GenericSidebarHeader } from "./ColoredHeaders"
 import GenericPaper from "./GenericPaper"
 import { CommonIconButton } from "shared/ui/buttons/CommonIconButton"
 import { Drawer, Stack, useMediaQuery, useTheme, type DrawerProps, Typography, Box, styled } from "@mui/material"
-import { CustomAvatar } from "src/components/ui/details/CustomAvatar"
+import { CustomAvatar, CustomAvatarEnabled } from "src/components/ui/details/CustomAvatar"
 
 const SidebarPaper = styled(GenericPaper)({ padding: 0 })
 
@@ -59,21 +59,37 @@ export const GenericSidebar = ({ isSidebarOpen = false, closeSidebar, children, 
 interface SidebarContentWrapperProps {
     title?: ReactNode,
     subtitle?: ReactNode,
-    icon?: ReactNode,
     actions?: ReactNode,
     children?: ReactNode,
+    //Header
+    active?: boolean,
+    icon?: ReactNode,
     iconColor?: string
+    ringColor?: string
+    avatarTooltip?: string
 }
 /**Wrapper que le agrega al contenido de un sidebar un header formateado.
  * Si se asigna actions, se muestran en un footer, si no, se deja solo el contenido.
  */
-export const SidebarContentWrapper = ({ title, subtitle, icon, actions, iconColor, children }: SidebarContentWrapperProps) => {
+export const SidebarContentWrapper = ({ title, subtitle, actions, children,
+    active, icon, iconColor, ringColor, avatarTooltip }: SidebarContentWrapperProps) => {
 
+    const headerColor = (
+        active !== undefined ?
+            (ringColor ?? (active ? "success" : "error")) :
+            iconColor
+    )
     return (
         <Stack sx={{ height: "100%" }} useFlexGap>
-            <GenericSidebarHeader color={iconColor} >
+            <GenericSidebarHeader color={headerColor} >
                 <Stack direction="row" spacing={2} sx={{ height: "100%", width: "100%", alignItems: "center" }}>
-                    <CustomAvatar color={iconColor}>{icon}</CustomAvatar>
+                    {active !== undefined ?
+                        <CustomAvatarEnabled active={active}
+                            overrideIcon={icon} overrideColor={iconColor}
+                            overrideRingColor={ringColor} overrideTooltip={avatarTooltip} />
+                        :
+                        <CustomAvatar ring color={iconColor} ringColor={ringColor} tooltipText={avatarTooltip}>{icon}</CustomAvatar>
+                    }
                     <Stack>
                         <Typography variant="subtitle2" color="textSecondary"
                             sx={{ textTransform: "uppercase", fontWeight: "bold" }} >{subtitle}</Typography>

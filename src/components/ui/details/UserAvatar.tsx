@@ -35,6 +35,7 @@ export const UserAvatar = ({ name, src, size = 36, tooltip = false, noRing = fal
             color={color}
             src={src}
             variant='circular'
+            size="small"
             {...(noRing ? {} : { ring: true })}
             sx={{
                 width: size,

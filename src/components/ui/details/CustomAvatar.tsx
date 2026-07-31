@@ -1,12 +1,15 @@
 import { Avatar, styled, type AvatarOwnProps } from '@mui/material'
 import { getColorShades } from 'src/utils/formatters'
+import { ChipTooltip } from './ChipTooltip'
+import type { ReactNode } from 'react'
+import { EnabledIcon } from '../lists/Icons'
 
 const SIZES = {
     small: { avatar: 36, icon: 24 },
     medium: { avatar: 50, icon: 32 }
 }
 
-interface CustomAvatarProps extends AvatarOwnProps {
+interface CustomAvatarRootProps extends AvatarOwnProps {
     color?: string
     ring?: boolean
     ringColor?: string
@@ -15,7 +18,7 @@ interface CustomAvatarProps extends AvatarOwnProps {
 
 const CustomAvatarRoot = styled(Avatar, {
     shouldForwardProp: (prop) => prop !== "color" && prop !== "ring" && prop !== "ringColor" && prop !== "size",
-})<CustomAvatarProps>(
+})<CustomAvatarRootProps>(
     ({ theme, color, size = "medium", ring = false, ringColor }) => {
         const iconColorPalette = getColorShades(color ?? "primary", theme)
         const ringPalette = ringColor ? getColorShades(ringColor, theme) : undefined
@@ -33,15 +36,50 @@ const CustomAvatarRoot = styled(Avatar, {
             })
         },
         ring ? {
-            outlineOffset: "1px",
+            outlineOffset: `${size === "small" ? "1px" : "3px"}`,
             outline: `2px solid ${ringPalette?.MAIN ?? iconColorPalette.MAIN}`,
             ...theme.applyStyles("dark", {
-                outline: `2px solid ${ringPalette?.DARK ?? iconColorPalette.DARK}`,
+                outline: `2px solid ${theme.alpha(ringPalette?.DARK ?? iconColorPalette.DARK, .8)}`,
             })
         } : {}]
     }
 )
 
-export const CustomAvatar = ({ children, ...props }: CustomAvatarProps) => {
-    return <CustomAvatarRoot variant="rounded" {...props}>{children}</CustomAvatarRoot>
+interface CustomAvatarProps extends CustomAvatarRootProps {
+    tooltipText?: string
+}
+export const CustomAvatar = ({ children, tooltipText, ...props }: CustomAvatarProps) => {
+    const tooltipColor = props.ringColor ?? props.color
+
+    if (tooltipText) return (
+        <ChipTooltip title={tooltipText} color={tooltipColor}>
+            <CustomAvatarRoot variant="rounded" {...props}>{children}</CustomAvatarRoot>
+        </ChipTooltip>
+    )
+    else return (
+        <CustomAvatarRoot variant="rounded" {...props}>{children}</CustomAvatarRoot>
+    )
+}
+
+
+interface CustomAvatarEnabledProps extends AvatarOwnProps {
+    active: boolean,
+    size?: "small" | "medium"
+    overrideColor?: string
+    overrideRingColor?: string
+    overrideIcon?: ReactNode
+    overrideTooltip?: string
+}
+export const CustomAvatarEnabled = ({ active, overrideColor, overrideRingColor, overrideIcon, overrideTooltip, ...props }: CustomAvatarEnabledProps) => {
+
+    const color = overrideColor ?? (active ? "success" : "error")
+    const ringColor = overrideRingColor ?? (active ? "success" : "error")
+    const icon = overrideIcon ?? <EnabledIcon active={active} isAvatar noTooltip />
+    const title = overrideTooltip ?? (active ? "Habilitado" : "Deshabilitado")
+
+    return <ChipTooltip color={ringColor} title={title} >
+        <CustomAvatarRoot variant="rounded" color={color} ring ringColor={ringColor} {...props}>
+            {icon}
+        </CustomAvatarRoot>
+    </ChipTooltip>
 }

@@ -9,6 +9,7 @@ import { useUserContext } from "src/stores/UserContext"
 import { Link as RouterLink } from "react-router-dom"
 import { ButtonGroup, Divider, Link, Stack, Typography } from "@mui/material"
 import { Can } from "src/components/auth/Can"
+import ROUTE_ICONS from "src/components/ui/icons/RouteIcons"
 
 interface NomenclatorDetailsProps {
     nomenclator: NomenclatorDetailed | null,
@@ -22,8 +23,7 @@ export const NomenclatorDetails = ({ nomenclator, closeSidebar, handleSidebar, h
     const { user } = useUserContext()
 
     if (nomenclator) return (
-        <SidebarContentWrapper title={nomenclator.name} icon={<EnabledIcon active={nomenclator.active} isAvatar />}
-            iconColor={nomenclator.active ? "success" : "error"}
+        <SidebarContentWrapper title={nomenclator.name} active={nomenclator.active} icon={ROUTE_ICONS.NOMENCLATORS}
             subtitle={nomenclator.organization_id === 1 ? "Nomenclador del Sistema" : "Nomenclador"}
             actions={
                 <ButtonGroup>

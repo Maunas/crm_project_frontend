@@ -14,7 +14,7 @@ export function usePageTitle(override?: string | null) {
   const { pathname } = useLocation()
 
   useEffect(() => {
-    const title = override ?? resolveTitle(pathname) ?? "CRM"
-    document.title = `${title} | ${CRM_TITLE}`
+    const title = override ?? resolveTitle(pathname)
+    document.title = title ? `${title} | ${CRM_TITLE}` : CRM_TITLE
   }, [pathname, override])
 }
