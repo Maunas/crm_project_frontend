@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
-import { NomenclatorItemForm, NomenclatorItemFormInline, NomenclatorItemFormSidebar } from './NomenclatorItemForm'
+import { NomenclatorItemFormInline, NomenclatorItemFormSidebar } from './NomenclatorItemForm'
 import { DisableConfirmDialog } from 'shared/ui/feedback/ConfirmationDialog'
 import { GenericSidebar } from 'shared/layout/container/GenericSidebar'
 import PaginationComponent from 'shared/ui/lists/PaginationComponent'
@@ -18,10 +18,8 @@ import { disableNomenclatorItem, enableNomenclatorItem, getNomenclatorItems } fr
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { useUserContext } from 'src/stores/UserContext'
 import { Can } from 'src/components/auth/Can'
-import { ButtonGroup, Divider, Grid, List, ListItem, ListItemText, Stack, TextField, Typography } from '@mui/material'
+import { ButtonGroup, Grid, List, ListItemText, Stack, Typography } from '@mui/material'
 import { NoItemsMessage } from 'src/components/ui/lists/NoItemsMessage'
-import GenericPaper from 'src/components/layout/container/GenericPaper'
-import { CommonIconButton } from 'src/components/ui/buttons/CommonIconButton'
 
 const ORDER_NOM_ITEM_FIELDS = (hasParent: boolean) => [
     { name: "value", label: "Orden Alfabético" },
@@ -126,7 +124,7 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
 
     const orderOptions = useMemo(() => ORDER_NOM_ITEM_FIELDS(Boolean(nomenclator.parent_nomenclators)), [nomenclator.parent_nomenclators])
 
-    const [editingItem, setEditingItem] = useState<NomenclatorItemDetailed | undefined | null>(null)
+    const [editingItem, setEditingItem] = useState<NomenclatorItemDetailed | null>(null)
 
     const hasParent = nomenclator.parent_nomenclators.length > 0
 
@@ -138,24 +136,13 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
                     <ButtonGroup variant="outlined" sx={{ marginLeft: "auto" }} >
                         {nomenclatorItems && nomenclatorItems.items?.length > 0 && !isBlocked &&
                             <Can permission="nomenclator_item:create">
-                                <CommonButton actionType="CREATE" onClick={() => setEditingItem(undefined)} size="small" onlyTooltip>
+                                <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_NOM")} size="small" onlyTooltip>
                                     Agregar
                                 </CommonButton>
                             </Can>
                         }
                     </ButtonGroup>
                 </Stack>
-                {((editingItem === undefined) || (editingItem && hasParent)) &&
-                    <Can>
-                        <Divider />
-                        <GenericPaper elevation={4} sx={{ px: 1, py: 1 }}>
-                            <Stack spacing={2}>
-                                <NomenclatorItemForm existingNom={editingItem} nomenclator={nomenclator}
-                                    onCancel={() => { setEditingItem(null) }} submit={() => { }} />
-                            </Stack>
-                        </GenericPaper>
-                    </Can>
-                }
                 <OrderSearchMenu searchOptions={SEARCH_NOM_ITEM_FIELDS} handleSearchChange={handleSearchChange} orderOptions={orderOptions} handleOrderChange={handleOrderChange} />
                 <LoadingScreenWrapper loading={loading}>
                     {nomenclatorItems && nomenclatorItems.items?.length > 0 ?
@@ -169,10 +156,10 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
                                             :
                                             <ResponsiveListItem disablePadding
                                                 actions={[
-                                                    { template: "MODIFY", onClick: () => setEditingItem(item), permission: "nomenclator_item:update" },
+                                                    { template: "MODIFY", onClick: () => !hasParent ? setEditingItem(item) : handleSidebar("UPDATE_NOM", item), permission: "nomenclator_item:update" },
                                                     { template: item.active ? "DISABLE" : "ENABLE", onClick: () => handleDeletingItem(item), permission: item.active ? "nomenclator_item:delete" : "nomenclator_item:update" },
                                                 ]}
-                                                onClick={() => !isBlocked && hasPermission("nomenclator_item:update") && setEditingItem(item)}>
+                                                onClick={() => !isBlocked && hasPermission("nomenclator_item:update") && (!hasParent ? setEditingItem(item) : handleSidebar("UPDATE_NOM", item))}>
                                                 <ListItemText
                                                     primary={
                                                         <Stack spacing={.5} direction="row" sx={{ alignItems: "center" }}>
@@ -198,7 +185,7 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
                         <NoItemsMessage search={fetchParams.search} emptyFetchMessage="No se han encontrado opciones en este nomenclador..." >
                             {!isBlocked &&
                                 <Can permission="nomenclator_item:create">
-                                    <CommonButton actionType='CREATE' onClick={() => setEditingItem(undefined)} variant="contained">Agregar</CommonButton>
+                                    <CommonButton actionType='CREATE' onClick={() => handleSidebar("CREATE_NOM")} variant="contained">Agregar</CommonButton>
                                 </Can>
                             }
                         </NoItemsMessage>
