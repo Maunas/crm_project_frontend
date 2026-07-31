@@ -9,13 +9,13 @@ import { CustomListItem } from 'shared/ui/lists/CustomListItem';
 import DetailsMetadata from 'shared/ui/details/DetailsMetadata';
 import CommonButton from 'shared/ui/buttons/CommonButton';
 import CustomChip from 'shared/ui/details/CustomChip';
-import { EnabledIcon } from 'shared/ui/lists/Icons';
 import { CodeBox } from 'shared/ui/details/CodeBox';
 import type { LeadFieldDetailed } from 'src/types/leadFields'
 import { disableLeadField, enableLeadField } from './leadFieldServices';
 import { showCommonErrorToast, showToast } from 'src/utils/feedback';
 import { Link as RouterLink } from 'react-router-dom'
 import { Stack, Typography, Divider, Link, ButtonGroup, Paper, ListItemText } from '@mui/material'
+import ROUTE_ICONS from 'src/components/ui/icons/RouteIcons';
 
 interface LeadFieldDetailProps {
     leadField: LeadFieldDetailed,
@@ -67,8 +67,7 @@ export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeS
 
     return (
         <SidebarContentWrapper subtitle={campaignName}
-            title={<span>{leadField.name}</span>} icon={<EnabledIcon active={leadField.active} isAvatar />}
-            iconColor={leadField.active ? "success" : "error"}
+            title={<span>{leadField.name}</span>} active={leadField.active} icon={ROUTE_ICONS.LEADFIELD}
             actions={
                 <ButtonGroup sx={{ ml: "auto" }}>
                     <CommonButton onClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>

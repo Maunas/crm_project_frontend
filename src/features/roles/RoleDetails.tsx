@@ -2,7 +2,6 @@ import { SidebarContentWrapper } from "shared/layout/container/GenericSidebar"
 import HandleActiveButton from "shared/ui/buttons/HandleActiveButton"
 import DetailsMetadata from "shared/ui/details/DetailsMetadata"
 import CommonButton from "shared/ui/buttons/CommonButton"
-import { EnabledIcon } from "shared/ui/lists/Icons"
 import type { Permission, RoleDetailed } from "src/types/roles"
 import { Can } from "src/components/auth/Can"
 import { Accordion, AccordionDetails, AccordionSummary, Box, ButtonGroup, Divider, Stack, Typography } from "@mui/material"
@@ -11,6 +10,7 @@ import CustomChip from "src/components/ui/details/CustomChip"
 import { getDictionaries } from "src/services/generalService"
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { NoItemsMessage } from "src/components/ui/lists/NoItemsMessage"
+import ROUTE_ICONS from "src/components/ui/icons/RouteIcons"
 
 interface RoleDetailsProps {
     role: RoleDetailed | null,
@@ -22,8 +22,7 @@ interface RoleDetailsProps {
 export const RoleDetails = ({ role, closeSidebar, handleSidebar, handleActive }: RoleDetailsProps) => {
 
     if (role) return (
-        <SidebarContentWrapper title={role.name} icon={<EnabledIcon active={role.active} isAvatar />}
-            iconColor={role.active ? "success" : "error"}
+        <SidebarContentWrapper title={role.name} icon={ROUTE_ICONS.ROLES} active={role.active}
             subtitle="Roles y Permisos"
             actions={
                 <ButtonGroup>

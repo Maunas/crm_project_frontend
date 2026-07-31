@@ -5,8 +5,8 @@ import HandleActiveButton from "shared/ui/buttons/HandleActiveButton"
 import type { CampaignDetailed, WorkspaceDetailed } from "src/types/campaigns"
 import { Stack, Typography, ButtonGroup, Divider } from "@mui/material"
 import { SidebarContentWrapper } from "src/components/layout/container/GenericSidebar"
-import { EnabledIcon } from "src/components/ui/lists/Icons"
 import { Can } from "src/components/auth/Can"
+import ROUTE_ICONS from "src/components/ui/icons/RouteIcons"
 
 interface WorkspaceDetailsProps {
     entity: WorkspaceDetailed | null,
@@ -19,7 +19,7 @@ export const WorkspaceDetails = ({ entity, closeSidebar, handleSidebar, handleAc
 
     if (entity) return (
         <SidebarContentWrapper title={entity.name} subtitle="Espacio de Trabajo"
-            icon={<EnabledIcon active={entity.active} isAvatar />} iconColor={entity.active ? "success" : "error"}
+            active={entity.active} iconColor="primary" icon={ROUTE_ICONS.WORKSPACES}
             actions={
                 <ButtonGroup>
                     <CommonButton onClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>

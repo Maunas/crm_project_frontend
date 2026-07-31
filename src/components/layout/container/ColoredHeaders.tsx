@@ -25,6 +25,7 @@ export const GenericSidebarHeader = styled(Box)(
                 minHeight: "6rem",
                 flexShrink: 0,
                 padding: "1rem",
+                paddingLeft: "1.5rem",
                 paddingRight: "4rem",
                 backgroundColor: theme.alpha(theme.palette.background.default, .5),
                 backgroundImage: gradient.light,

@@ -4,10 +4,10 @@ import { SidebarContentWrapper } from "shared/layout/container/GenericContainer"
 import HandleActiveButton from "shared/ui/buttons/HandleActiveButton"
 import DetailsMetadata from "shared/ui/details/DetailsMetadata"
 import CommonButton from "shared/ui/buttons/CommonButton"
-import { EnabledIcon } from "shared/ui/lists/Icons"
 import type { TeamDetailed } from "src/types/teams"
 import { Link as RouterLink } from "react-router-dom"
 import { ButtonGroup, Chip, Divider, Stack, Typography } from "@mui/material"
+import ROUTE_ICONS from "src/components/ui/icons/RouteIcons"
 
 interface TeamDetailsProps {
     team: TeamDetailed | null,
@@ -19,8 +19,7 @@ interface TeamDetailsProps {
 export const TeamDetails = ({ team, closeSidebar, handleSidebar, handleActive }: TeamDetailsProps) => {
 
     if (team) return (
-        <SidebarContentWrapper title={team.name} icon={<EnabledIcon active={team.active} isAvatar />}
-            iconColor={team.active ? "success" : "error"}
+        <SidebarContentWrapper title={team.name} icon={ROUTE_ICONS.TEAMS} active={team.active}
             subtitle="Equipos de Usuario"
             actions={
                 <ButtonGroup>

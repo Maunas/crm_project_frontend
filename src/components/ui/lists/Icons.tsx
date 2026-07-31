@@ -11,10 +11,11 @@ interface IconProps {
     falseTooltip?: string,
     size?: "small" | "medium",
     isAvatar?: boolean
+    noTooltip?: boolean
 }
-export const EnabledIcon = memo(({ active = false, trueTooltip = "Habilitado", isAvatar = false, falseTooltip = "Deshabilitado", size = "medium" }: IconProps) => {
+export const EnabledIcon = memo(({ active = false, trueTooltip = "Habilitado", isAvatar = false, falseTooltip = "Deshabilitado", size = "medium", noTooltip = false }: IconProps) => {
 
-    return (
+    if (!noTooltip) return (
         <ChipTooltip title={active ? trueTooltip : falseTooltip}
             color={active ? "success" : "error"} size={size} boxed>
             <>
@@ -30,5 +31,19 @@ export const EnabledIcon = memo(({ active = false, trueTooltip = "Habilitado", i
                     )}
             </>
         </ChipTooltip>
+    )
+    else return (
+        <>
+            {isAvatar &&
+                (active
+                    ? <CheckIcon color="inherit" fontSize={size} />
+                    : <CloseIcon color="inherit" fontSize={size} />
+                )}
+            {!isAvatar &&
+                (active
+                    ? <CheckCircleOutlinedIcon color="success" fontSize={size} />
+                    : <HighlightOffIcon color="error" fontSize={size} />
+                )}
+        </>
     )
 })

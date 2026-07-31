@@ -8,17 +8,23 @@ import TuneIcon from '@mui/icons-material/Tune';
 import LockIcon from '@mui/icons-material/Lock';
 import GroupIcon from '@mui/icons-material/Group';
 import FindInPageIcon from '@mui/icons-material/FindInPage';
+import CampaignIcon from '@mui/icons-material/Campaign';
+import EditNoteIcon from '@mui/icons-material/EditNote';
+import VpnKeyIcon from '@mui/icons-material/VpnKey';
 
 const ROUTE_ICONS = {
     DASHBOARD: <DashboardIcon />,
     LEADS: <PersonIcon />,
-    CAMPAIGNS: <WorkIcon />,
+    LEADFIELD: <EditNoteIcon />,
+    CAMPAIGNS: <CampaignIcon />,
+    WORKSPACES: <WorkIcon />,
     NOMENCLATORS: <LabelIcon />,
     AUTOMATIONS: <AutoFixHighIcon />,
     ORGANIZATIONS: <StoreIcon />,
     ORG_PROPERTIES: <TuneIcon />,
     ROLES: <LockIcon />,
     TEAMS: <GroupIcon />,
+    ROUTING: <VpnKeyIcon />,
     AUDIT: <FindInPageIcon />,
 }
 
