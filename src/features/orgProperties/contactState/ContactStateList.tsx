@@ -36,7 +36,7 @@ export const ContactStateList = () => {
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(states)
 
-    const { fetchParams, handleSearchChange, handleOrderChange } = useOrderSeachList()
+    const { fetchParams, changeHandlers } = useOrderSeachList()
 
     const fetchStates = useCallback((fetchPage: number, pageSize: number) => {
         return getLeadContactStates({
@@ -74,7 +74,7 @@ export const ContactStateList = () => {
                         <CommonButton actionType="CREATE" variant="contained" sx={{ alignSelf: "start" }}
                             onClick={() => setEditingState(undefined)}>Agregar</CommonButton>
                     </Can>}
-                <OrderSearchMenu searchOptions={SEARCH_STATE_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_STATE_FIELDS} handleOrderChange={handleOrderChange} />
+                <OrderSearchMenu searchOptions={SEARCH_STATE_FIELDS} orderOptions={ORDER_STATE_FIELDS} {...changeHandlers} />
             </Stack>
 
             <LoadingScreenWrapper loading={loading}>

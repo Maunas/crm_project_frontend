@@ -34,7 +34,7 @@ export const FieldSectionList = () => {
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(sections)
 
-    const { fetchParams, handleSearchChange, handleOrderChange } = useOrderSeachList()
+    const { fetchParams, changeHandlers } = useOrderSeachList()
 
     const fetchSections = useCallback((fetchPage: number, pageSize: number) => {
         return getFieldSections({
@@ -74,7 +74,7 @@ export const FieldSectionList = () => {
                         </CommonButton>
                     </Can>
                 }
-                <OrderSearchMenu searchOptions={SEARCH_SEC_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_SEC_FIELDS} handleOrderChange={handleOrderChange} />
+                <OrderSearchMenu searchOptions={SEARCH_SEC_FIELDS} orderOptions={ORDER_SEC_FIELDS} {...changeHandlers} />
             </Stack>
             <Stack spacing={2}>
                 <LoadingScreenWrapper loading={loading}>

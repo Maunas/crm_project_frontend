@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react"
+import { useCallback, useEffect, useState, type ReactNode } from "react"
 import { CreateCommentWrapper, UpdateCommentFromNote } from "./LeadCommentForm"
 import { DisableConfirmDialog } from "src/components/ui/feedback/ConfirmationDialog"
 import PaginationComponent from "shared/ui/lists/PaginationComponent"
@@ -23,11 +23,6 @@ const SEARCH_COMMENTS_FIELDS = [
     { name: "content", label: "Contenido" },
 ]
 
-const SEARCH_BY_UPDATER_DEFAULT = [
-    ...SEARCH_COMMENTS_FIELDS,
-    { name: "updater_name", label: "Escritor", searchOptions: [] },
-]
-
 const ORDER_COMMENTS_FIELDS = [
     { name: "updated_by", label: "Escritor" },
 ]
@@ -36,17 +31,17 @@ export const LeadComments = ({ leadId }: { leadId: number }) => {
     const [comments, setComments] = useState<Paginable<LeadComment> | null>(null)
     const [selectedCommentId, setSelectedCommentId] = useState<number | null>(null)
     const { fetchPage, pageSize, pageComponentProps, goToPageOne } = useListPagination(comments, 12)
-    const { fetchParams, handleOrderChange, handleSearchChange } = useOrderSeachList()
+    const { fetchParams, changeHandlers } = useOrderSeachList()
 
-    const onOrderChange = useCallback((orderBy?: string, asc?: boolean, onlyActive?: boolean) => {
-        handleOrderChange(orderBy, asc, onlyActive)
+    const onOrderChange = useCallback((orderBy?: string, asc?: boolean) => {
+        changeHandlers.handleOrderChange(orderBy, asc)
         goToPageOne()
-    }, [handleOrderChange, goToPageOne])
+    }, [changeHandlers, goToPageOne])
 
     const onSearchChange = useCallback((search?: string, searchField?: string) => {
-        handleSearchChange(search, searchField)
+        changeHandlers.handleSearchChange(search, searchField)
         goToPageOne()
-    }, [handleSearchChange, goToPageOne])
+    }, [changeHandlers, goToPageOne])
 
     // Mismo criterio que el backend (LeadCommentService._assert_can_modify_comment): solo el
     // autor del comentario, el owner de la organización o un superadmin pueden editarlo/eliminarlo.
@@ -94,32 +89,13 @@ export const LeadComments = ({ leadId }: { leadId: number }) => {
 
     const [deletingCom, setDeletingCom] = useState<LeadComment | null>(null)
 
-    const searchOptions = useMemo(() => {
-        if (!comments || comments?.items.length === 0) return SEARCH_BY_UPDATER_DEFAULT
-        const users = new Map()
-        //Busca a los usuarios que han escrito comentarios
-        comments?.items.forEach((comment) => {
-            const updater = comment.updater ?? comment.creator
-            if (updater && !users.has(updater.id)) {
-                users.set(updater.id, updater.name)
-            }
-        })
-        return [
-            ...SEARCH_COMMENTS_FIELDS,
-            {
-                name: "updater_name", label: "Escritor",
-                searchOptions: Array.from(users.values())
-                    .map((name) => ({ value: name, label: name }))
-            }
-        ]
-    }, [comments])
-
     return (
         <Stack spacing={2} sx={{ height: "100%" }}>
             <OrderSearchMenu
-                searchOptions={searchOptions}
-                handleSearchChange={onSearchChange}
+                searchOptions={SEARCH_COMMENTS_FIELDS}
                 orderOptions={ORDER_COMMENTS_FIELDS}
+                {...changeHandlers}
+                handleSearchChange={onSearchChange}
                 handleOrderChange={onOrderChange}
             />
             <LoadingScreenWrapper loading={loading}>

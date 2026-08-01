@@ -53,7 +53,7 @@ export const AutomationList = () => {
 
   const isCampaignSelected = selectedCampaignId !== -1
 
-  const { fetchParams, handleSearchChange, handleOrderChange } = useOrderSeachList(DEFAULT_FIELDS)
+  const { fetchParams, changeHandlers } = useOrderSeachList(DEFAULT_FIELDS)
 
   const { fetchPage, pageSize, refresh, pageComponentProps } = useListPagination(automations);
 
@@ -151,7 +151,7 @@ export const AutomationList = () => {
             </Typography>
             :
             <>
-              <OrderSearchMenu searchOptions={SEARCH_AUTO_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_AUTO_FIELDS} handleOrderChange={handleOrderChange} defaultValues={DEFAULT_FIELDS} />
+              <OrderSearchMenu searchOptions={SEARCH_AUTO_FIELDS} orderOptions={ORDER_AUTO_FIELDS} {...changeHandlers} defaultValues={DEFAULT_FIELDS} />
               <LoadingScreenWrapper loading={autoLoading}>
                 {automations?.items && automations.items.length > 0 ? (
                   <>

@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { NomenclatorFormSidebar } from './NomenclatorForm'
 import { NomenclatorDetails } from './NomenclatorDetails'
 import { ResponsiveListItem } from 'shared/ui/lists/CustomListItem'
@@ -11,7 +11,7 @@ import { EnabledIcon } from 'shared/ui/lists/Icons'
 import { useListPagination } from 'src/hooks/useListPagination'
 import { useSidebar } from 'src/hooks/useSidebar'
 import { useLoading } from 'src/hooks/useLoading'
-import type { NomenclatorDetailed } from 'src/types/nomenclators'
+import type { Nomenclator, NomenclatorDetailed } from 'src/types/nomenclators'
 import type { Paginable } from 'src/types/shared'
 import { disableNomenclator, enableNomenclator, getNomenclator, getNomenclators } from './nomenclatorService'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
@@ -44,12 +44,19 @@ export const NomenclatorList = () => {
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(nomenclators)
 
-    const { fetchParams, handleSearchChange, handleOrderChange } = useOrderSeachList()
+    const { fetchParams, changeHandlers } = useOrderSeachList()
 
     const fetchNom = useCallback((fetchPage: number, pageSize: number) => {
         return getNomenclators({ detailed: true, page: fetchPage, page_size: pageSize, ...fetchParams })
             .then(setNomenclators)
     }, [fetchParams])
+
+    const [nomenclatorsFull, setNomenclatorsFull] = useState<Nomenclator[]>([])
+
+    useEffect(() => {
+        getNomenclators({ detailed: false, page_size: 0 })
+            .then(res => setNomenclatorsFull(res.items))
+    }, [])
 
     const { loading, fnWithLoading: fetchNomLoad } = useLoading(fetchNom)
 
@@ -123,6 +130,10 @@ export const NomenclatorList = () => {
         setDeletingNom(deletingNom)
     }
 
+    const filterOptions = useMemo(() => [
+        { label: "Ítem Padre", value: "parent_nomenclator_id", options: nomenclatorsFull?.map(nom => ({ label: `${nom.name}`, value: `${nom.id}` })) }
+    ], [nomenclatorsFull])
+
     return (
         <ContainerWithSidebar isSidebarOpen={Boolean(sidebarMode)} closeSidebar={closeSidebar} sidebarComponent={
             <NomenclatorSidebar mode={sidebarMode} entity={selectedEntity} handleSidebar={handleSidebar}
@@ -141,7 +152,7 @@ export const NomenclatorList = () => {
                         </Can>
                     }
                 </Stack>
-                <OrderSearchMenu searchOptions={SEARCH_NOM_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_NOM_FIELDS} handleOrderChange={handleOrderChange} />
+                <OrderSearchMenu searchOptions={SEARCH_NOM_FIELDS} orderOptions={ORDER_NOM_FIELDS} filterOptions={filterOptions} {...changeHandlers} />
                 <LoadingScreenWrapper loading={loading}>
                     <Stack spacing={2}>
                         {

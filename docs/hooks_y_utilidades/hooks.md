@@ -115,10 +115,11 @@ const { orderBy, ascending, handleOrderList, orderProps } = useOrderList(fetchDa
 ## `useOrderSearchList`
 Combina estado de búsqueda + ordenamiento + filtro de activos:
 ```tsx
-const { fetchParams, handleOrderChange, handleSearchChange } = useOrderSearchList(defaultValues)
+const { fetchParams, changeHandlers } = useOrderSearchList(defaultValues)
 
 // fetchParams = { order_by, ascending, search, search_fields, only_active }
+// changeHandlers = { handleOrderChange, handleSearchChange, handleFilterChange, filterParams }
 // Pasar a OrderSearchMenu:
-<OrderSearchMenu handleSearchChange={handleSearchChange} handleOrderChange={handleOrderChange} />
+<OrderSearchMenu {...changeHandlers} />
 ```
 - `defaultValues` opcional: `{ order_by, ascending, search, search_fields, only_active }`

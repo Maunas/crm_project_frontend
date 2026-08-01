@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { CustomTimelineItem } from "shared/ui/lists/CustomTimelineItem"
-import { CustomListItemAvatar } from "shared/ui/lists/CustomListItem"
 import PaginationComponent from "shared/ui/lists/PaginationComponent"
 import LoadingScreenWrapper from "shared/ui/feedback/LoadingScreen"
 import { OrderSearchMenu } from "shared/ui/lists/OrderMenu"
@@ -13,7 +12,7 @@ import type { ColorTypes } from "src/types/mui-theme.d"
 import type { Paginable } from "src/types/shared"
 import { getAudit } from "./leadActivitiesService"
 import { showCommonErrorToast } from "src/utils/feedback"
-import { Avatar, Box, Button, Card, CardActionArea, CardContent, CardHeader, Collapse, Divider, Stack, Typography } from "@mui/material"
+import { Box, Button, Card, CardActionArea, CardContent, CardHeader, Collapse, Divider, ListItemAvatar, Stack, Typography } from "@mui/material"
 import Timeline from '@mui/lab/Timeline';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward"
@@ -24,6 +23,7 @@ import { NoItemsMessage } from "src/components/ui/lists/NoItemsMessage"
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import ContactPageIcon from '@mui/icons-material/ContactPage';
 import { timelineOppositeContentClasses } from "@mui/lab/TimelineOppositeContent"
+import { CustomAvatar } from "src/components/ui/details/CustomAvatar"
 
 const MAX_ITEMS_NUM = 3
 
@@ -48,17 +48,17 @@ export const LeadAuditList = ({ lead, reloadAudit }: { lead: LeadDetailed, reloa
   const [audit, setAudit] = useState<Paginable<LeadAudit> | null>(null)
 
   const { fetchPage, pageSize, pageComponentProps, goToPageOne } = useListPagination(audit, 8)
-  const { fetchParams, handleOrderChange, handleSearchChange } = useOrderSeachList()
+  const { fetchParams, changeHandlers } = useOrderSeachList()
 
-  const onOrderChange = useCallback((orderBy?: string, asc?: boolean, onlyActive?: boolean) => {
-    handleOrderChange(orderBy, asc, onlyActive)
+  const onOrderChange = useCallback((orderBy?: string, asc?: boolean) => {
+    changeHandlers.handleOrderChange(orderBy, asc)
     goToPageOne()
-  }, [handleOrderChange, goToPageOne])
+  }, [changeHandlers, goToPageOne])
 
   const onSearchChange = useCallback((search?: string, searchField?: string) => {
-    handleSearchChange(search, searchField)
+    changeHandlers.handleSearchChange(search, searchField)
     goToPageOne()
-  }, [handleSearchChange, goToPageOne])
+  }, [changeHandlers, goToPageOne])
 
   const fetchAuditList = useCallback((leadId: number, fetchPage: number, pageSize: number) => {
     return getAudit({ lead_id: leadId, page: fetchPage, page_size: pageSize, ...fetchParams })
@@ -96,9 +96,11 @@ export const LeadAuditList = ({ lead, reloadAudit }: { lead: LeadDetailed, reloa
     <Stack spacing={2} sx={{ height: "100%" }}>
       <OrderSearchMenu
         searchOptions={SEARCH_AUDIT_FIELDS}
-        handleSearchChange={onSearchChange}
         orderOptions={ORDER_AUDIT_FIELDS}
+        {...changeHandlers}
+        handleSearchChange={onSearchChange}
         handleOrderChange={onOrderChange}
+        noActive noUpdater
       />
       <LoadingScreenWrapper loading={loading}>
         {audit?.items && audit?.items.length > 0 ?
@@ -249,11 +251,11 @@ const LeadAuditHeader = ({ activityType, message }: { activityType?: keyof typeo
 
   return (
     <CardHeader sx={{ py: 1 }}
-      avatar={<CustomListItemAvatar color={activityInfo?.color} >
-        <Avatar variant="rounded" sx={{ height: "2rem", width: "2rem", mx: "auto" }}>
+      avatar={<ListItemAvatar >
+        <CustomAvatar color={activityInfo?.color} size="small" variant="rounded" sx={{ height: "2rem", width: "2rem", mx: "auto" }}>
           {activityInfo?.icon}
-        </Avatar>
-      </CustomListItemAvatar>}
+        </CustomAvatar>
+      </ListItemAvatar>}
       title={<Typography variant="body2" sx={{ fontWeight: 600 }}>
         {activityInfo.label}
       </Typography>}

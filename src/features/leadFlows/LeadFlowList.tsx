@@ -38,7 +38,7 @@ export const LeadFlowList = () => {
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(flows, 12)
 
-    const { fetchParams, handleSearchChange, handleOrderChange } = useOrderSeachList()
+    const { fetchParams, changeHandlers } = useOrderSeachList()
 
     const fetchFlows = useCallback((fetchPage: number, pageSize: number) => getLeadFlows({
         page: fetchPage || 1, page_size: pageSize, detailed: true, ...fetchParams
@@ -59,7 +59,7 @@ export const LeadFlowList = () => {
                             Abrir Editor
                         </CommonButton>
                     </Can>}
-                <OrderSearchMenu searchOptions={SEARCH_FLOW_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_FLOW_FIELDS} handleOrderChange={handleOrderChange} />
+                <OrderSearchMenu searchOptions={SEARCH_FLOW_FIELDS} orderOptions={ORDER_FLOW_FIELDS} {...changeHandlers} />
             </Stack>
             <LoadingScreenWrapper loading={loading}>
                 {(flows?.items && flows.items.length > 0) ?

@@ -41,10 +41,10 @@ export const TagFormSidebarWrapper = ({ existingTag, onClose, onSubmit }: TagFor
     }, [existingTag, onClose, onSubmit])
 
     return (
-        <Stack spacing={2}>
+        <Stack spacing={1.5}>
             <Stack spacing={2} direction="row" sx={{ alignItems: "center" }}>
-                <CustomAvatar size="small" color={color}>{ACTION_ICONS[existingTag ? "MODIFY" : "CREATE"]}</CustomAvatar>
-                <Typography variant="h3">{existingTag ? `Modificar Etiqueta "${existingTag.name}"` : "Crear Etiqueta"}</Typography>
+                <CustomAvatar sx={{ height: "2rem", width: "2rem" }} size="small" color={color} ring>{ACTION_ICONS[existingTag ? "MODIFY" : "CREATE"]}</CustomAvatar>
+                <Typography variant="body1" sx={{ fontWeight: 500 }}>{existingTag ? `Modificar Etiqueta "${existingTag.name}"` : "Crear Etiqueta"}</Typography>
             </Stack>
             <LeadTagForm existingTag={existingTag} onCancel={onClose} onSubmit={onPostTag} setColor={setColor} />
         </Stack>
@@ -89,14 +89,16 @@ const LeadTagForm = ({ existingTag, onCancel, onSubmit, popover = false, setColo
 
     return (
         <form onSubmit={handleSubmit(postLoad)} style={{ minWidth: "15rem" }}>
-            <Stack spacing={2}>
-                <Stack spacing={1}>
-                    <TextField id="tag-name" label="Nombre" size={popover ? "small" : "medium"} {...register("name")} />
-                    {errors?.name?.message && <FormErrorMessage>{errors?.name?.message}</FormErrorMessage>}
+            <Stack spacing={1}>
+                <Stack direction="row" spacing={2} useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
+                    <Stack spacing={1} sx={{ flexGrow: 1 }}>
+                        <TextField id="tag-name" label="Nombre" size="small" {...register("name")} />
+                        {errors?.name?.message && <FormErrorMessage>{errors?.name?.message}</FormErrorMessage>}
+                    </Stack>
+                    <ControlledColorPicker control={control} name="color" size="small" row
+                        onBeforeChange={(color) => setColor ? setColor(color) : undefined} />
                 </Stack>
-                <ControlledColorPicker control={control} name="color" size={popover ? "small" : "medium"} row
-                    onBeforeChange={(color) => setColor ? setColor(color) : undefined} />
-                <ButtonGroup fullWidth={popover} sx={{ alignSelf: "end" }}>
+                <ButtonGroup fullWidth={popover} size="small" sx={{ alignSelf: "end" }}>
                     <CommonButton actionType="CLOSE" variant="outlined" color="error" onClick={handleCancel} disabled={loading}>
                         Cancelar
                     </CommonButton>

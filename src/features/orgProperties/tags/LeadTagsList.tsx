@@ -34,7 +34,7 @@ export const LeadTagsList = () => {
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(tags)
 
-    const { fetchParams, handleSearchChange, handleOrderChange } = useOrderSeachList()
+    const { fetchParams, changeHandlers } = useOrderSeachList()
 
     const fetchTags = useCallback((fetchPage: number, pageSize: number) => {
         return getTags({
@@ -66,14 +66,14 @@ export const LeadTagsList = () => {
 
     return (
         <Stack spacing={2}>
-            <Stack spacing={2} direction="row" useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
+            <OrderSearchMenu searchOptions={SEARCH_TAG_FIELDS} orderOptions={ORDER_TAG_FIELDS}
+                {...changeHandlers}>
                 {(tags?.items && tags.items.length > 0) &&
                     <Can permission="tag:create">
-                        <CommonButton actionType="CREATE" variant="contained" sx={{ alignSelf: "start" }}
+                        <CommonButton actionType="CREATE" variant="contained"
                             onClick={() => setEditingTag(undefined)}>Agregar</CommonButton>
                     </Can>}
-                <OrderSearchMenu searchOptions={SEARCH_TAG_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_TAG_FIELDS} handleOrderChange={handleOrderChange} />
-            </Stack>
+            </OrderSearchMenu>
             <Stack spacing={2}>
                 <LoadingScreenWrapper loading={loading}>
                     {(tags?.items && tags.items.length > 0) ?
@@ -96,7 +96,7 @@ export const LeadTagsList = () => {
                 {editingTag !== null &&
                     <Can>
                         <Divider />
-                        <GenericPaper elevation={4} sx={{ px: 3, py: 2 }}>
+                        <GenericPaper elevation={2} sx={{ px: 3, py: 2 }}>
                             <Stack spacing={2}>
                                 <TagFormSidebarWrapper existingTag={editingTag}
                                     onClose={() => setEditingTag(null)} onSubmit={updateList} />

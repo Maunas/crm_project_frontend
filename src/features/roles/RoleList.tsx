@@ -45,7 +45,7 @@ export const RoleList = () => {
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(roles)
 
-    const { fetchParams, handleSearchChange, handleOrderChange } = useOrderSeachList()
+    const { fetchParams, changeHandlers } = useOrderSeachList()
 
     const fetchRoles = useCallback((fetchPage: number, pageSize: number) => {
         return getRoles({ detailed: true, page: fetchPage, page_size: pageSize, ...fetchParams })
@@ -141,7 +141,7 @@ export const RoleList = () => {
                         </Can>
                     }
                 </Stack>
-                <OrderSearchMenu searchOptions={SEARCH_ROLE_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_ROLE_FIELDS} handleOrderChange={handleOrderChange} />
+                <OrderSearchMenu searchOptions={SEARCH_ROLE_FIELDS} orderOptions={ORDER_ROLE_FIELDS} {...changeHandlers} />
                 <LoadingScreenWrapper loading={loading}>
                     <Stack spacing={2}>
                         {

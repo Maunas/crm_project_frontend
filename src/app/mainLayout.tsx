@@ -5,6 +5,7 @@ import { LeadNavigationProvider } from 'src/features/lead/stores/LeadNavigationC
 import { useUserContext } from 'src/stores/UserContext';
 import LoadingScreenWrapper from 'src/components/ui/feedback/LoadingScreen';
 import { usePageTitle } from 'src/hooks/usePageTitle';
+import { tokenStore } from 'src/lib/tokenStore';
 
 export default function MainLayout() {
     const { user, isRestoring, orgHeaderList, loadingOrgs } = useUserContext()
@@ -24,6 +25,12 @@ export default function MainLayout() {
             nav('/onboarding', { replace: true })
         }
     }, [user, isRestoring, loadingOrgs, orgHeaderList, nav])
+
+    useEffect(() => {
+        if (import.meta.env.DEV) {
+            console.info(tokenStore.getAccessToken())
+        }
+    }, [])
 
     if (isRestoring) return (
         <LoadingScreenWrapper loading sx={{ height: "100vh" }} />

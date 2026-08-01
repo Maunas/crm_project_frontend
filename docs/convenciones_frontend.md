@@ -149,10 +149,10 @@ showCommonErrorToast(error, "Error al guardar")
 Usar `useListPagination`, `useOrderSearchList`, y los componentes `PaginationComponent`, `SearchInput`, `OrderMenu`, `OrderSearchMenu`:
 ```tsx
 const { fetchPage, pageSize, goToPageOne, pageComponentProps } = useListPagination(list)
-const { fetchParams, handleOrderChange, handleSearchChange } = useOrderSearchList()
+const { fetchParams, changeHandlers } = useOrderSearchList()
 // fetch({ page: fetchPage, page_size: pageSize, ...fetchParams })
 // ...
-<OrderSearchMenu handleSearchChange={handleSearchChange} handleOrderChange={handleOrderChange} />
+<OrderSearchMenu {...changeHandlers} />
 <PaginationComponent {...pageComponentProps} />
 ```
 

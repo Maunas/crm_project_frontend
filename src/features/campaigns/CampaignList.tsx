@@ -39,7 +39,7 @@ export const CampaignList = ({ workspace, handleSidebar, closeSidebar }: Campaig
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(campaigns, 12)
 
-    const { fetchParams, handleSearchChange, handleOrderChange } = useOrderSeachList()
+    const { fetchParams, changeHandlers } = useOrderSeachList()
 
     const fetchCampaigns = useCallback((workspaceId: number, page: number, pageSize: number) => {
         return getCampaigns({ workspace_id: workspaceId, detailed: true, page: page || 1, page_size: pageSize, ...fetchParams })
@@ -87,7 +87,7 @@ export const CampaignList = ({ workspace, handleSidebar, closeSidebar }: Campaig
                     </Can>
                 }
             </Stack>
-            <OrderSearchMenu searchOptions={SEARCH_CMP_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_CMP_FIELDS} handleOrderChange={handleOrderChange} />
+            <OrderSearchMenu searchOptions={SEARCH_CMP_FIELDS} orderOptions={ORDER_CMP_FIELDS} {...changeHandlers} />
             <LoadingScreenWrapper loading={loading}>
                 {(campaigns?.items && campaigns.items.length > 0) ?
                     <>

@@ -41,7 +41,7 @@ export const TeamList = () => {
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(teams)
 
-    const { fetchParams, handleSearchChange, handleOrderChange } = useOrderSeachList()
+    const { fetchParams, changeHandlers } = useOrderSeachList()
 
     const fetchTeams = useCallback((fetchPage: number, pageSize: number) => {
         return getTeams({ detailed: true, page: fetchPage, page_size: pageSize, ...fetchParams })
@@ -133,7 +133,7 @@ export const TeamList = () => {
                         </CommonButton>
                     }
                 </Stack>
-                <OrderSearchMenu searchOptions={SEARCH_TEAM_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_TEAM_FIELDS} handleOrderChange={handleOrderChange} />
+                <OrderSearchMenu searchOptions={SEARCH_TEAM_FIELDS} orderOptions={ORDER_TEAM_FIELDS} {...changeHandlers} />
                 <LoadingScreenWrapper loading={loading}>
                     <Stack spacing={2}>
                         {

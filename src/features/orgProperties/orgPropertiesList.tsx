@@ -1,13 +1,13 @@
 import { useMemo, type ReactNode } from 'react';
 import { LeadFlowList } from '../leadFlows/LeadFlowList';
-import { CustomListItem, CustomListItemAvatar } from 'shared/ui/lists/CustomListItem';
+import { CustomListItem } from 'shared/ui/lists/CustomListItem';
 import ContainerWithSidebar from 'shared/layout/container/GenericContainer';
 import { SidebarContentWrapper } from 'shared/layout/container/GenericSidebar';
 import { CommonIconButton } from 'shared/ui/buttons/CommonIconButton';
 import { useSidebar } from 'src/hooks/useSidebar';
 import type { ColorTypes } from 'src/types/mui-theme.d';
 import { useSearchParams } from 'react-router-dom';
-import { Avatar, List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material';
+import { List, ListItemAvatar, ListItemButton, ListItemText, Stack, Typography } from '@mui/material';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import ViewColumnIcon from '@mui/icons-material/ViewColumn';
 import { ContactStateList } from './contactState/ContactStateList';
@@ -17,6 +17,7 @@ import FolderCopyIcon from '@mui/icons-material/FolderCopy';
 import { LeadTagsList } from './tags/LeadTagsList';
 import { FieldSectionList } from './fieldSections/FieldSectionList';
 import { useUserContext } from 'src/stores/UserContext';
+import { CustomAvatar } from 'src/components/ui/details/CustomAvatar';
 
 export interface OrgPropertiesItem {
     label: string,
@@ -90,9 +91,11 @@ const OrgProperties = () => {
                                 </Stack>
                             }>
                                 <ListItemButton onClick={() => { handleSidebar(`${prop.id}`, prop) }} >
-                                    <CustomListItemAvatar color={prop.color}><Avatar variant="rounded" >
-                                        {prop.icon}
-                                    </Avatar></CustomListItemAvatar>
+                                    <ListItemAvatar>
+                                        <CustomAvatar size="small" color={prop.color} ring={prop.id === selectedEntity?.id} variant="rounded" >
+                                            {prop.icon}
+                                        </CustomAvatar>
+                                    </ListItemAvatar>
                                     <ListItemText primary={
                                         <Stack spacing={1} direction="row">
                                             <Typography sx={{ fontWeight: "bold" }}>{prop.label}</Typography>

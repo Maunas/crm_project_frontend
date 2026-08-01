@@ -39,7 +39,7 @@ export const OrganizationList = () => {
 
     const [organizations, setOrganizations] = useState<OrganizationDetailed[]>([])
 
-    const { fetchParams, handleSearchChange, handleOrderChange } = useOrderSeachList()
+    const { fetchParams, changeHandlers } = useOrderSeachList()
 
     const fetchOrganizations = useCallback(async () => {
         return getOrganizations({ detailed: true, page_size: 0, ...fetchParams })
@@ -136,7 +136,7 @@ export const OrganizationList = () => {
                         </Can>
                     }
                 </Stack>
-                <OrderSearchMenu searchOptions={SEARCH_ORG_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_ORG_FIELDS} handleOrderChange={handleOrderChange} />
+                <OrderSearchMenu searchOptions={SEARCH_ORG_FIELDS} orderOptions={ORDER_ORG_FIELDS} {...changeHandlers} />
                 <LoadingScreenWrapper loading={loading}>
                     {organizations && organizations?.length > 0 ?
                         <List>

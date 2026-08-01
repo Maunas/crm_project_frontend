@@ -2,7 +2,7 @@ import { type ReactNode } from "react"
 import { GenericSidebarContent, GenericSidebarHeader } from "./ColoredHeaders"
 import GenericPaper from "./GenericPaper"
 import { CommonIconButton } from "shared/ui/buttons/CommonIconButton"
-import { Drawer, Stack, useMediaQuery, useTheme, type DrawerProps, Typography, Box, styled } from "@mui/material"
+import { Drawer, Stack, useMediaQuery, useTheme, type DrawerProps, Typography, Box, styled, type StackProps } from "@mui/material"
 import { CustomAvatar, CustomAvatarEnabled } from "src/components/ui/details/CustomAvatar"
 
 const SidebarPaper = styled(GenericPaper)({ padding: 0 })
@@ -107,17 +107,26 @@ export const SidebarContentWrapper = ({ title, subtitle, actions, children,
         </Stack >
     )
 }
+
+interface SidebarContentActionsWrapperProps extends StackProps {
+    actions?: ReactNode,
+    unstyled?: boolean,
+    children: ReactNode
+}
+
 /**Contenedor que permite formatear el contenido solo de un Sidebar, sin el header.
  * Sirve como un contenedor utilizable incluso fuera de un sidebar, ya que no afecta el contenido.
+ * @param unstyled fuerza que no se muestre el estilo común. Ejemplo: formulario reutilizable para sidebar, y fuera del mismo
+ * Caso: NomenclatorItemForm, para reutilizar el formulario como inline, sin perder el estilo de sidebar
  */
-export const SidebarContentActionsWrapper = ({ actions, children }: { actions?: ReactNode, children: ReactNode }) => {
+export const SidebarContentActionsWrapper = ({ actions, unstyled = false, children, ...props }: SidebarContentActionsWrapperProps) => {
     return (
-        <Stack sx={{ height: "100%" }}>
-            <Box className="sidebar-content">
+        <Stack sx={{ height: "100%" }} {...props}>
+            <Box className={!unstyled ? "sidebar-content" : undefined}>
                 {children}
             </Box>
             {actions &&
-                <Box className="sidebar-footer">{actions}</Box>}
+                <Box className={!unstyled ? "sidebar-footer" : undefined}>{actions}</Box>}
         </Stack>
     )
 }

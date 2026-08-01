@@ -42,7 +42,7 @@ export const TeamMemberList = ({ team }: TeamMemberListProps) => {
     const [editingMember, setEditingMember] = useState<TeamMemberDetailed | undefined>(undefined)
     const [removingMember, setRemovingMember] = useState<TeamMemberDetailed | null>(null)
 
-    const { fetchParams, handleSearchChange, handleOrderChange } = useOrderSeachList()
+    const { fetchParams, changeHandlers } = useOrderSeachList()
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(members, 10)
 
@@ -94,7 +94,7 @@ export const TeamMemberList = ({ team }: TeamMemberListProps) => {
                     </CommonButton>
                 </ButtonGroup>
             </Stack>
-            <OrderSearchMenu searchOptions={SEARCH_NOM_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_NOM_FIELDS} handleOrderChange={handleOrderChange} />
+            <OrderSearchMenu searchOptions={SEARCH_NOM_FIELDS} orderOptions={ORDER_NOM_FIELDS} {...changeHandlers} />
             <LoadingScreenWrapper loading={loading}>
                 {members && members.items?.length > 0 ?
                     <List dense>
