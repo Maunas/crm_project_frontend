@@ -378,9 +378,6 @@ ListItem responsivo: hover actions en desktop, menú contextual en táctil:
 - `buildActions()` filtra valores falsy y completa templates (`DETAILS`, `MODIFY`, `ENABLE`, `DISABLE`, `DELETE`)
 - En táctil (pointer: coarse) con más de 1 acción, muestra `MoreVertIcon` que abre `Menu`
 
-### `CustomListItemAvatar` (styled) — `lists/CustomListItem.tsx`
-ListItemAvatar con color del theme.
-
 ### `SelectableTableRow` (memo, styled) — `lists/CustomTableRow.tsx`
 TableRow con hover pointer y acciones ocultas que aparecen en hover:
 ```tsx

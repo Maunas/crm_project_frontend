@@ -1,9 +1,10 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, type ReactNode } from 'react'
 import CommonButton from '../buttons/CommonButton'
-import { Box, Divider, List, ListItemButton, ListItemIcon, ListSubheader, Popover, Stack } from '@mui/material';
+import { ButtonGroup, Collapse, Divider, List, ListItemButton, ListItemIcon, ListSubheader, Popover, Stack } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import { SearchInput } from '../forms/SearchInput';
 import type { OrderParams, OrderSearchParams } from 'src/types/shared';
+import { FilterMenu } from './FilterMenu';
 
 interface OrderMenuProps {
     id?: string,
@@ -127,19 +128,38 @@ interface OrderSearchProps {
         name: string;
         label: string;
     }[],
+    handleFilterChange: (filters: Record<string, string>) => void,
+    filterOptions?: Record<string, string>,
     size?: "small" | "medium",
     defaultValues?: OrderSearchParams
     hiddenSelector?: boolean,
-    noFilterActive?: boolean
+    noFilterActive?: boolean,
+    children?: ReactNode
 }
 
-export const OrderSearchMenu = ({ searchOptions = [], handleSearchChange, orderOptions = [], handleOrderChange, size = "small", defaultValues, hiddenSelector = false, noFilterActive = false }: OrderSearchProps) => {
+export const OrderSearchMenu = ({
+    searchOptions = [], handleSearchChange, orderOptions = [], handleOrderChange, filterOptions = {}, handleFilterChange,
+    size = "small", defaultValues, hiddenSelector = false, noFilterActive = false, children }: OrderSearchProps) => {
+
+    const [openFilters, setOpenFilters] = useState<boolean>(false)
+
     return (
-        <Stack direction="row" spacing={2} useFlexGap sx={{ alignItems: "center", justifyContent: "end", justifySelf: "end", ml: "auto", flexWrap: "wrap", py: 1 }}>
-            <SearchInput onSearch={handleSearchChange} id='nom-item-search' options={searchOptions} size={size} defaultValues={defaultValues} hiddenSelector={hiddenSelector} />
-            <Box>
-                <OrderMenu onOrderChange={handleOrderChange} id='nom-item-order-menu' options={orderOptions} noFilterActive={noFilterActive} defaultValues={defaultValues} />
-            </Box>
-        </Stack>
+        <Stack>
+            <Stack direction="row" spacing={2} useFlexGap sx={{ width: "100%", alignItems: "center", flexWrap: "wrap" }}>
+                {children}
+                <Stack direction="row" spacing={2} useFlexGap sx={{ alignItems: "center", justifyContent: "end", justifySelf: "end", ml: "auto", flexWrap: "wrap", py: 1 }}>
+                    <SearchInput onSearch={handleSearchChange} id='nom-item-search' options={searchOptions} size={size} defaultValues={defaultValues} hiddenSelector={hiddenSelector} />
+                    <ButtonGroup>
+                        <OrderMenu onOrderChange={handleOrderChange} id='nom-item-order-menu' options={orderOptions} noFilterActive={noFilterActive} defaultValues={defaultValues} />
+                        <CommonButton actionType='FILTER' onlyTooltip color="secondary" variant='outlined' onClick={() => setOpenFilters(prev => !prev)}>
+                            Filtros Avanzados
+                        </CommonButton>
+                    </ButtonGroup>
+                </Stack>
+            </Stack>
+            <Collapse in={openFilters} timeout={200}>
+                <FilterMenu existingFilters={filterOptions} onSubmit={handleFilterChange} />
+            </Collapse>
+        </Stack >
     )
 }

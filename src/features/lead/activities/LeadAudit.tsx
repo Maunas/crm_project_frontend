@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { CustomTimelineItem } from "shared/ui/lists/CustomTimelineItem"
-import { CustomListItemAvatar } from "shared/ui/lists/CustomListItem"
 import PaginationComponent from "shared/ui/lists/PaginationComponent"
 import LoadingScreenWrapper from "shared/ui/feedback/LoadingScreen"
 import { OrderSearchMenu } from "shared/ui/lists/OrderMenu"
@@ -13,7 +12,7 @@ import type { ColorTypes } from "src/types/mui-theme.d"
 import type { Paginable } from "src/types/shared"
 import { getAudit } from "./leadActivitiesService"
 import { showCommonErrorToast } from "src/utils/feedback"
-import { Avatar, Box, Button, Card, CardActionArea, CardContent, CardHeader, Collapse, Divider, Stack, Typography } from "@mui/material"
+import { Box, Button, Card, CardActionArea, CardContent, CardHeader, Collapse, Divider, ListItemAvatar, Stack, Typography } from "@mui/material"
 import Timeline from '@mui/lab/Timeline';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward"
@@ -24,6 +23,7 @@ import { NoItemsMessage } from "src/components/ui/lists/NoItemsMessage"
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import ContactPageIcon from '@mui/icons-material/ContactPage';
 import { timelineOppositeContentClasses } from "@mui/lab/TimelineOppositeContent"
+import { CustomAvatar } from "src/components/ui/details/CustomAvatar"
 
 const MAX_ITEMS_NUM = 3
 
@@ -249,11 +249,11 @@ const LeadAuditHeader = ({ activityType, message }: { activityType?: keyof typeo
 
   return (
     <CardHeader sx={{ py: 1 }}
-      avatar={<CustomListItemAvatar color={activityInfo?.color} >
-        <Avatar variant="rounded" sx={{ height: "2rem", width: "2rem", mx: "auto" }}>
+      avatar={<ListItemAvatar >
+        <CustomAvatar color={activityInfo?.color} variant="rounded" sx={{ height: "2rem", width: "2rem", mx: "auto" }}>
           {activityInfo?.icon}
-        </Avatar>
-      </CustomListItemAvatar>}
+        </CustomAvatar>
+      </ListItemAvatar>}
       title={<Typography variant="body2" sx={{ fontWeight: 600 }}>
         {activityInfo.label}
       </Typography>}

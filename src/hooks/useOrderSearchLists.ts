@@ -15,6 +15,8 @@ export const useOrderSeachList = (
 
     const [orderParams, setOrderParams] = useState<OrderParams>({ order_by: defOrderBy, ascending: defAsc })
     const [searchParams, setSearchParams] = useState<SearchParams>({ search: defSearch, search_fields: defFields })
+    const [filterParams, setFilterParams] = useState<Record<string, string>>({})
+
     const [onlyActive, setOnlyActive] = useState<boolean>(defOnlyAct ?? false)
 
 
@@ -29,12 +31,17 @@ export const useOrderSeachList = (
         else setSearchParams({ search, search_fields: searchField })
     }, [])
 
+    const handleFilterChange = useCallback((newFilters: Record<string, string>) => {
+        setFilterParams(newFilters)
+    }, [])
+
     const fetchParams = useMemo(() => (
         {
             ...orderParams,
             ...searchParams,
+            ...filterParams,
             only_active: onlyActive
-        }), [orderParams, searchParams, onlyActive])
+        }), [orderParams, searchParams, onlyActive, filterParams])
 
-    return ({ fetchParams, handleOrderChange, handleSearchChange })
+    return ({ fetchParams, handleOrderChange, handleSearchChange, handleFilterChange })
 }

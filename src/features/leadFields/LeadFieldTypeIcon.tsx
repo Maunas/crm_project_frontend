@@ -1,7 +1,6 @@
 import { cloneElement, useMemo, type JSX } from 'react';
-import { CustomListItemAvatar } from '../../components/ui/lists/CustomListItem';
 import type { ColorTypes } from '../../types/mui-theme.d';
-import { Avatar, InputAdornment, type InputAdornmentProps } from '@mui/material';
+import { InputAdornment, ListItemAvatar, type InputAdornmentProps } from '@mui/material';
 import HttpsIcon from '@mui/icons-material/Https';
 import CodeOutlinedIcon from '@mui/icons-material/CodeOutlined';
 import ExploreOutlinedIcon from '@mui/icons-material/ExploreOutlined';
@@ -30,6 +29,7 @@ import CreditCardOutlinedIcon from '@mui/icons-material/CreditCardOutlined';
 import DriveFileRenameOutlineSharpIcon from '@mui/icons-material/DriveFileRenameOutlineSharp';
 import TodayOutlinedIcon from '@mui/icons-material/TodayOutlined';
 import PercentOutlinedIcon from '@mui/icons-material/PercentOutlined';
+import { CustomAvatar } from 'src/components/ui/details/CustomAvatar';
 
 type TypeIconItem = {
     color: ColorTypes,
@@ -129,11 +129,11 @@ export const LeadFieldTypeAvatar = ({ typeCode, subtypeCode }: { typeCode?: stri
         getTypeIconAndColor(typeCode, subtypeCode)
         , [typeCode, subtypeCode])
 
-    return <CustomListItemAvatar color={icon.color}>
-        <Avatar variant="rounded" sx={{ height: "2rem", width: "2rem", mx: "auto" }}>
+    return <ListItemAvatar>
+        <CustomAvatar color={icon.color} variant="rounded" size="small" sx={{ height: "2rem", width: "2rem", mx: "auto" }}>
             {icon.component}
-        </Avatar>
-    </CustomListItemAvatar>
+        </CustomAvatar>
+    </ListItemAvatar>
 }
 
 interface LeadFieldInputIconProps extends InputAdornmentProps {
