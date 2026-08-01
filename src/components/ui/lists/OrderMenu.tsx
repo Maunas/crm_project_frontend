@@ -1,4 +1,4 @@
-import React, { useMemo, useState, type ReactNode } from 'react'
+import React, { useId, useMemo, useState, type ReactNode } from 'react'
 import CommonButton from '../buttons/CommonButton'
 import { ButtonGroup, Collapse, Divider, List, ListItemButton, ListItemIcon, ListSubheader, Popover, Stack } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
@@ -129,7 +129,12 @@ interface OrderSearchProps {
         label: string;
     }[],
     handleFilterChange: (filters: Record<string, string>) => void,
-    filterOptions?: Record<string, string>,
+    filterOptions?: {
+        label: string;
+        value: string;
+        options: { label: string, value: string }[];
+    }[],
+    existingFilters?: Record<string, string>,
     size?: "small" | "medium",
     defaultValues?: OrderSearchParams
     hiddenSelector?: boolean,
@@ -138,19 +143,23 @@ interface OrderSearchProps {
 }
 
 export const OrderSearchMenu = ({
-    searchOptions = [], handleSearchChange, orderOptions = [], handleOrderChange, filterOptions = {}, handleFilterChange,
+    searchOptions = [], handleSearchChange, orderOptions = [], handleOrderChange, filterOptions = [], existingFilters = {}, handleFilterChange,
     size = "small", defaultValues, hiddenSelector = false, noFilterActive = false, children }: OrderSearchProps) => {
 
     const [openFilters, setOpenFilters] = useState<boolean>(false)
+
+    //Id único por instancia para evitar ids HTML duplicados cuando hay dos OrderSearchMenu montados a la vez
+    //(ej. lista principal + sidebar de detalles en NomenclatorItemList).
+    const searchId = useId()
 
     return (
         <Stack>
             <Stack direction="row" spacing={2} useFlexGap sx={{ width: "100%", alignItems: "center", flexWrap: "wrap" }}>
                 {children}
                 <Stack direction="row" spacing={2} useFlexGap sx={{ alignItems: "center", justifyContent: "end", justifySelf: "end", ml: "auto", flexWrap: "wrap", py: 1 }}>
-                    <SearchInput onSearch={handleSearchChange} id='nom-item-search' options={searchOptions} size={size} defaultValues={defaultValues} hiddenSelector={hiddenSelector} />
+                    <SearchInput onSearch={handleSearchChange} id={`${searchId}-search`} options={searchOptions} size={size} defaultValues={defaultValues} hiddenSelector={hiddenSelector} />
                     <ButtonGroup>
-                        <OrderMenu onOrderChange={handleOrderChange} id='nom-item-order-menu' options={orderOptions} noFilterActive={noFilterActive} defaultValues={defaultValues} />
+                        <OrderMenu onOrderChange={handleOrderChange} id={`${searchId}-order-menu`} options={orderOptions} noFilterActive={noFilterActive} defaultValues={defaultValues} />
                         <CommonButton actionType='FILTER' onlyTooltip color="secondary" variant='outlined' onClick={() => setOpenFilters(prev => !prev)}>
                             Filtros Avanzados
                         </CommonButton>
@@ -158,7 +167,7 @@ export const OrderSearchMenu = ({
                 </Stack>
             </Stack>
             <Collapse in={openFilters} timeout={200}>
-                <FilterMenu existingFilters={filterOptions} onSubmit={handleFilterChange} />
+                <FilterMenu existingFilters={existingFilters} filterOptions={filterOptions} onSubmit={handleFilterChange} />
             </Collapse>
         </Stack >
     )

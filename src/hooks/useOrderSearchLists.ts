@@ -43,5 +43,10 @@ export const useOrderSeachList = (
             only_active: onlyActive
         }), [orderParams, searchParams, onlyActive, filterParams])
 
-    return ({ fetchParams, handleOrderChange, handleSearchChange, handleFilterChange })
+    return ({
+        fetchParams, handleOrderChange, handleSearchChange, handleFilterChange, filterParams,
+        changeHandlers: {
+            handleOrderChange, handleSearchChange, handleFilterChange
+        }
+    })
 }

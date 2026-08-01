@@ -30,17 +30,19 @@ const SEARCH_NOM_ITEM_FIELDS = [
     { name: "value", label: "Valor" },
 ]
 
+
 export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorDetailed }) => {
 
     const { activeOrg, hasPermission } = useUserContext()
 
     const [nomenclatorItems, setNomenclatorItems] = useState<Paginable<NomenclatorItemDetailed> | null>(null)
+    const [parentNomenclatorItems, setParentNomenclatorItems] = useState<{ label: string, value: string }[]>([])
 
     const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<NomenclatorItemDetailed>()
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(nomenclatorItems, 12)
 
-    const { fetchParams, handleSearchChange, handleOrderChange } = useOrderSeachList()
+    const { fetchParams, changeHandlers, filterParams } = useOrderSeachList()
 
     const fetchNomItems = useCallback((fetchPage: number, pageSize: number, nomId: number) => {
         return getNomenclatorItems({ detailed: true, page: fetchPage, page_size: pageSize, nomenclator_id: nomId, ...fetchParams })
@@ -55,6 +57,18 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
         fetchNomLoad(fetchPage, pageSize, nomenclator.id)
     }, [fetchNomLoad, fetchPage, pageSize, activeOrg, nomenclator])
 
+
+    useEffect(() => {
+        if (!nomenclator) return
+        Promise.all(nomenclator.parent_nomenclators.map(parent => {
+            return getNomenclatorItems({ detailed: false, only_active: false, nomenclator_id: parent.id })
+                .then(res => res.items)
+        })
+        ).then(res => setParentNomenclatorItems(
+            res.flat()
+                .map(item => ({ value: `${item.id}`, label: `${item.value}` }))
+        ))
+    }, [nomenclator])
 
     const updateEntityOnList = useCallback((entity: NomenclatorItemDetailed | null, mode: string) => {
         switch (mode) {
@@ -122,11 +136,16 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
 
     const isBlocked = !nomenclator.organization_id && activeOrg?.id !== 0
 
+    const hasParent = nomenclator.parent_nomenclators.length > 0
+
     const orderOptions = useMemo(() => ORDER_NOM_ITEM_FIELDS(Boolean(nomenclator.parent_nomenclators)), [nomenclator.parent_nomenclators])
+
+    const filterOptions = useMemo(() => hasParent ? [
+        { label: "Ítem Padre", value: "parent_item_id", options: parentNomenclatorItems }
+    ] : [], [parentNomenclatorItems, hasParent])
 
     const [editingItem, setEditingItem] = useState<NomenclatorItemDetailed | null>(null)
 
-    const hasParent = nomenclator.parent_nomenclators.length > 0
 
     return (
         <>
@@ -143,7 +162,8 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
                         }
                     </ButtonGroup>
                 </Stack>
-                <OrderSearchMenu searchOptions={SEARCH_NOM_ITEM_FIELDS} handleSearchChange={handleSearchChange} orderOptions={orderOptions} handleOrderChange={handleOrderChange} />
+                <OrderSearchMenu searchOptions={SEARCH_NOM_ITEM_FIELDS} orderOptions={orderOptions}
+                    filterOptions={filterOptions} existingFilters={filterParams}                    {...changeHandlers} />
                 <LoadingScreenWrapper loading={loading}>
                     {nomenclatorItems && nomenclatorItems.items?.length > 0 ?
                         <List dense>
