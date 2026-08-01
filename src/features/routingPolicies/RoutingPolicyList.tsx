@@ -57,7 +57,7 @@ export const RoutingPolicyList = () => {
 
     const { sidebarMode, selectedEntity, handleSidebar, closeSidebar } = useSidebar<LeadRoutingPolicyDetailed>("id", params, setParams, getRoutingPolicy, "DETAILS_POLICY")
 
-    const { fetchParams, handleSearchChange, handleOrderChange } = useOrderSeachList()
+    const { fetchParams, changeHandlers } = useOrderSeachList()
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(policies, PAGE_SIZE)
 
@@ -189,7 +189,7 @@ export const RoutingPolicyList = () => {
                         <CustomChip label={`Equipo: ${teamName ?? teamFilterId}`} onDelete={clearTeamFilter} chipColor="primary" />
                     }
                 </Stack>
-                <OrderSearchMenu searchOptions={SEARCH_ROUTE_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_ROUTE_FIELDS} handleOrderChange={handleOrderChange} />
+                <OrderSearchMenu searchOptions={SEARCH_ROUTE_FIELDS} orderOptions={ORDER_ROUTE_FIELDS} {...changeHandlers} />
                 <LoadingScreenWrapper loading={loading}>
                     <Stack spacing={2}>
                         {

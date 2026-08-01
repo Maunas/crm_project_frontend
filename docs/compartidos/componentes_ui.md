@@ -408,9 +408,8 @@ Menú emergente para ordenar listas:
 ### `OrderSearchMenu` — `lists/OrderMenu.tsx`
 Combinación de `SearchInput` + `OrderMenu` en un mismo row:
 ```tsx
-<OrderSearchMenu handleSearchChange={handleSearchChange}
+<OrderSearchMenu {...changeHandlers}
   searchOptions={searchOptions}
-  handleOrderChange={handleOrderChange}
   orderOptions={orderOptions} size="small" />
 ```
 

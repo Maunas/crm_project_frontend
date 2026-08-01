@@ -42,7 +42,7 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(nomenclatorItems, 12)
 
-    const { fetchParams, changeHandlers, filterParams } = useOrderSeachList()
+    const { fetchParams, changeHandlers } = useOrderSeachList()
 
     const fetchNomItems = useCallback((fetchPage: number, pageSize: number, nomId: number) => {
         return getNomenclatorItems({ detailed: true, page: fetchPage, page_size: pageSize, nomenclator_id: nomId, ...fetchParams })
@@ -163,7 +163,7 @@ export const NomenclatorItemList = ({ nomenclator }: { nomenclator: NomenclatorD
                     </ButtonGroup>
                 </Stack>
                 <OrderSearchMenu searchOptions={SEARCH_NOM_ITEM_FIELDS} orderOptions={orderOptions}
-                    filterOptions={filterOptions} existingFilters={filterParams}                    {...changeHandlers} />
+                    filterOptions={filterOptions} {...changeHandlers} />
                 <LoadingScreenWrapper loading={loading}>
                     {nomenclatorItems && nomenclatorItems.items?.length > 0 ?
                         <List dense>

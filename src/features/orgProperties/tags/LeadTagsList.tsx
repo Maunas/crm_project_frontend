@@ -34,7 +34,7 @@ export const LeadTagsList = () => {
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(tags)
 
-    const { fetchParams, changeHandlers, filterParams } = useOrderSeachList()
+    const { fetchParams, changeHandlers } = useOrderSeachList()
 
     const fetchTags = useCallback((fetchPage: number, pageSize: number) => {
         return getTags({
@@ -67,7 +67,6 @@ export const LeadTagsList = () => {
     return (
         <Stack spacing={2}>
             <OrderSearchMenu searchOptions={SEARCH_TAG_FIELDS} orderOptions={ORDER_TAG_FIELDS}
-                existingFilters={filterParams}
                 {...changeHandlers}>
                 {(tags?.items && tags.items.length > 0) &&
                     <Can permission="tag:create">

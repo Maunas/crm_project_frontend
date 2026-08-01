@@ -43,7 +43,7 @@ export const WorkspaceList = () => {
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(workspaces)
 
-    const { fetchParams, handleSearchChange, handleOrderChange } = useOrderSeachList()
+    const { fetchParams, changeHandlers } = useOrderSeachList()
 
     const { activeOrg } = useUserContext()
 
@@ -147,7 +147,7 @@ export const WorkspaceList = () => {
                         </Can>
                     }
                 </Stack>
-                <OrderSearchMenu searchOptions={SEARCH_WSP_FIELDS} handleSearchChange={handleSearchChange} orderOptions={ORDER_WSP_FIELDS} handleOrderChange={handleOrderChange} />
+                <OrderSearchMenu searchOptions={SEARCH_WSP_FIELDS} orderOptions={ORDER_WSP_FIELDS} {...changeHandlers} />
 
                 <LoadingScreenWrapper loading={loading}>
                     <Stack spacing={2}>

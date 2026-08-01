@@ -48,17 +48,17 @@ export const LeadAuditList = ({ lead, reloadAudit }: { lead: LeadDetailed, reloa
   const [audit, setAudit] = useState<Paginable<LeadAudit> | null>(null)
 
   const { fetchPage, pageSize, pageComponentProps, goToPageOne } = useListPagination(audit, 8)
-  const { fetchParams, handleOrderChange, handleSearchChange } = useOrderSeachList()
+  const { fetchParams, changeHandlers } = useOrderSeachList()
 
-  const onOrderChange = useCallback((orderBy?: string, asc?: boolean, onlyActive?: boolean) => {
-    handleOrderChange(orderBy, asc, onlyActive)
+  const onOrderChange = useCallback((orderBy?: string, asc?: boolean) => {
+    changeHandlers.handleOrderChange(orderBy, asc)
     goToPageOne()
-  }, [handleOrderChange, goToPageOne])
+  }, [changeHandlers, goToPageOne])
 
   const onSearchChange = useCallback((search?: string, searchField?: string) => {
-    handleSearchChange(search, searchField)
+    changeHandlers.handleSearchChange(search, searchField)
     goToPageOne()
-  }, [handleSearchChange, goToPageOne])
+  }, [changeHandlers, goToPageOne])
 
   const fetchAuditList = useCallback((leadId: number, fetchPage: number, pageSize: number) => {
     return getAudit({ lead_id: leadId, page: fetchPage, page_size: pageSize, ...fetchParams })
@@ -96,9 +96,11 @@ export const LeadAuditList = ({ lead, reloadAudit }: { lead: LeadDetailed, reloa
     <Stack spacing={2} sx={{ height: "100%" }}>
       <OrderSearchMenu
         searchOptions={SEARCH_AUDIT_FIELDS}
-        handleSearchChange={onSearchChange}
         orderOptions={ORDER_AUDIT_FIELDS}
+        {...changeHandlers}
+        handleSearchChange={onSearchChange}
         handleOrderChange={onOrderChange}
+        noActive noUpdater
       />
       <LoadingScreenWrapper loading={loading}>
         {audit?.items && audit?.items.length > 0 ?
@@ -250,7 +252,7 @@ const LeadAuditHeader = ({ activityType, message }: { activityType?: keyof typeo
   return (
     <CardHeader sx={{ py: 1 }}
       avatar={<ListItemAvatar >
-        <CustomAvatar color={activityInfo?.color} variant="rounded" sx={{ height: "2rem", width: "2rem", mx: "auto" }}>
+        <CustomAvatar color={activityInfo?.color} size="small" variant="rounded" sx={{ height: "2rem", width: "2rem", mx: "auto" }}>
           {activityInfo?.icon}
         </CustomAvatar>
       </ListItemAvatar>}
