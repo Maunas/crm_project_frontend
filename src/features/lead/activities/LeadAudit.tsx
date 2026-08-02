@@ -12,7 +12,7 @@ import type { ColorTypes } from "src/types/mui-theme.d"
 import type { Paginable } from "src/types/shared"
 import { getAudit } from "./leadActivitiesService"
 import { showCommonErrorToast } from "src/utils/feedback"
-import { Box, Button, Card, CardActionArea, CardContent, CardHeader, Collapse, Divider, ListItemAvatar, Stack, Typography } from "@mui/material"
+import { Box, Button, Card, CardActionArea, CardContent, CardHeader, Divider, ListItemAvatar, Stack, Typography } from "@mui/material"
 import Timeline from '@mui/lab/Timeline';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward"
@@ -83,12 +83,10 @@ export const LeadAuditList = ({ lead, reloadAudit }: { lead: LeadDetailed, reloa
   }, [reloadAudit])
 
 
-  const [showItems, setShowItems] = useState<number>(0)
 
   const [showMoreItems, setShowMoreItems] = useState<boolean>(false)
 
-  const handleShowItems = (idx: number) => {
-    setShowItems(idx)
+  const handleShowItems = () => {
     setShowMoreItems(false)
   }
 
@@ -113,113 +111,111 @@ export const LeadAuditList = ({ lead, reloadAudit }: { lead: LeadDetailed, reloa
             }}>
               {audit?.items.map((item, idx) => {
                 return (
-                  <CustomTimelineItem entity={item} selected={idx === showItems} last={idx === audit.items.length - 1} key={item.id}>
+                  <CustomTimelineItem entity={item} selected last={idx === audit.items.length - 1} key={item.id}>
                     <Card raised>
-                      <CardActionArea onClick={() => handleShowItems(idx)} title="Ver detalle">
+                      <CardActionArea onClick={handleShowItems} title="Ver detalle">
                         <LeadAuditHeader activityType={item.activity_type}
                           message={item.details.message ?? item.details.notes ??
                             (item.details?.changes && `${Object.values(item.details?.changes ?? {}).length} cambios`)} />
                       </CardActionArea>
-                      <Collapse in={idx === showItems} timeout="auto" unmountOnExit>
-                        <Divider />
-                        {item?.details?.changes &&
-                          <CardContent sx={{ "&&": { py: 1 } }}>
-                            <Stack spacing={1} useFlexGap sx={{ alignItems: "start" }}>
-                              {Object.entries(item.details.changes).map(([field_id, change], idx) => {
-                                if (!showMoreItems && idx >= MAX_ITEMS_NUM) return null
+                      <Divider />
+                      {item?.details?.changes &&
+                        <CardContent sx={{ "&&": { py: 1 } }}>
+                          <Stack spacing={1} useFlexGap sx={{ alignItems: "start" }}>
+                            {Object.entries(item.details.changes).map(([field_id, change], idx) => {
+                              if (!showMoreItems && idx >= MAX_ITEMS_NUM) return null
 
-                                return (
-                                  <Stack spacing={1} key={`audit-${item.id}-${field_id}`} sx={{ alignItems: "start" }}>
-                                    <Typography variant="body2" sx={{ fontWeight: "bold" }}>{change.field_name}:</Typography>
-                                    <Stack direction="row" useFlexGap spacing={1} sx={{ flexWrap: "wrap", px: 1, alignItems: "center" }}>
-                                      <Box>
-                                        <LeadAuditValue value={change.old_value} id={item.id} color="error" size="small" fieldName={change.field_name} />
-                                      </Box>
-                                      <ArrowForwardIcon fontSize="small" />
-                                      <Box>
-                                        <LeadAuditValue value={change.new_value} id={item.id} color="success" size="small" fieldName={change.field_name} />
-                                      </Box>
-                                    </Stack>
-                                  </Stack>
-                                )
-                              })}
-                              {!showMoreItems && Object.values(item.details.changes)?.length > MAX_ITEMS_NUM &&
-                                <Button sx={{ mx: "auto" }} onClick={() => setShowMoreItems(true)}>Ver más</Button>
-                              }
-                            </Stack>
-                          </CardContent>
-                        }
-                        {item?.details?.to_state_id && item?.details?.from_state_id &&
-                          <CardContent sx={{ "&&": { py: 1 } }}>
-                            <Stack direction="row" useFlexGap spacing={1} sx={{ flexWrap: "wrap", px: 1, alignItems: "center" }}>
-                              <Box>
-                                <LeadAuditValue value={item.details.from_state_name ?? item.details.from_state_id}
-                                  id={item.id} color={item.details.from_state_color ?? "secondary"} size="small" />
-                              </Box>
-                              <ArrowForwardIcon fontSize="small" />
-                              <Box>
-                                <LeadAuditValue value={item.details.to_state_name ?? item.details.to_state_id}
-                                  id={item.id} color={item.details.to_state_color ?? "primary"} size="small" />
-                              </Box>
-                            </Stack>
-                          </CardContent>
-                        }
-                        {item.activity_type === "CONTACT_STATE_CHANGED" &&
-                          <CardContent sx={{ "&&": { py: 1 } }}>
-                            <Stack direction="row" useFlexGap spacing={1} sx={{ flexWrap: "wrap", px: 1, alignItems: "center" }}>
-                              <Box>
-                                <LeadAuditValue value={item.details.from_contact_state_name ?? item.details.from_contact_state_id ?? null}
-                                  id={item.id} color={item.details.from_contact_state_color ?? "secondary"} size="small" />
-                              </Box>
-                              <ArrowForwardIcon fontSize="small" />
-                              <Box>
-                                <LeadAuditValue value={item.details.to_contact_state_name ?? item.details.to_contact_state_id}
-                                  id={item.id} color={item.details.to_contact_state_color ?? "primary"} size="small" />
-                              </Box>
-                            </Stack>
-                          </CardContent>
-                        }
-                        {item.activity_type === "LEAD_REASSIGNED" &&
-                          <CardContent sx={{ "&&": { py: 1 } }}>
-                            <Stack spacing={1} sx={{ alignItems: "start" }}>
-                              {item.details.previous_team_id !== item.details.new_team_id &&
-                                <Stack spacing={1} sx={{ alignItems: "start" }}>
-                                  <Typography variant="body2" sx={{ fontWeight: "bold" }}>Equipo:</Typography>
+                              return (
+                                <Stack spacing={1} key={`audit-${item.id}-${field_id}`} sx={{ alignItems: "start" }}>
+                                  <Typography variant="body2" sx={{ fontWeight: "bold" }}>{change.field_name}:</Typography>
                                   <Stack direction="row" useFlexGap spacing={1} sx={{ flexWrap: "wrap", px: 1, alignItems: "center" }}>
                                     <Box>
-                                      <LeadAuditValue value={item.details.previous_team_name ?? item.details.previous_team_id ?? null}
-                                        id={item.id} color="error" size="small" />
+                                      <LeadAuditValue value={change.old_value} id={item.id} color="error" size="small" fieldName={change.field_name} />
                                     </Box>
                                     <ArrowForwardIcon fontSize="small" />
                                     <Box>
-                                      <LeadAuditValue value={item.details.new_team_name ?? item.details.new_team_id ?? null}
-                                        id={item.id} color="success" size="small" />
+                                      <LeadAuditValue value={change.new_value} id={item.id} color="success" size="small" fieldName={change.field_name} />
                                     </Box>
                                   </Stack>
                                 </Stack>
-                              }
-                            </Stack>
-                          </CardContent>
-                        }
-                        {item.details.previous_user_id !== item.details.new_user_id &&
-                          <CardContent sx={{ "&&": { py: 1 } }}>
-                            <Stack spacing={1} sx={{ alignItems: "start" }}>
-                              <Typography variant="body2" sx={{ fontWeight: "bold" }}>Usuario Asignado:</Typography>
-                              <Stack direction="row" useFlexGap spacing={1} sx={{ flexWrap: "wrap", px: 1, alignItems: "center" }}>
-                                <Box>
-                                  <LeadAuditValue value={item.details.previous_user_name ?? item.details.previous_user_id ?? null}
-                                    id={item.id} color="error" size="small" />
-                                </Box>
-                                <ArrowForwardIcon fontSize="small" />
-                                <Box>
-                                  <LeadAuditValue value={item.details.new_user_name ?? item.details.new_user_id ?? null}
-                                    id={item.id} color="success" size="small" />
-                                </Box>
+                              )
+                            })}
+                            {!showMoreItems && Object.values(item.details.changes)?.length > MAX_ITEMS_NUM &&
+                              <Button sx={{ mx: "auto" }} onClick={() => setShowMoreItems(true)}>Ver más</Button>
+                            }
+                          </Stack>
+                        </CardContent>
+                      }
+                      {item?.details?.to_state_id && item?.details?.from_state_id &&
+                        <CardContent sx={{ "&&": { py: 1 } }}>
+                          <Stack direction="row" useFlexGap spacing={1} sx={{ flexWrap: "wrap", px: 1, alignItems: "center" }}>
+                            <Box>
+                              <LeadAuditValue value={item.details.from_state_name ?? item.details.from_state_id}
+                                id={item.id} color={item.details.from_state_color ?? "secondary"} size="small" />
+                            </Box>
+                            <ArrowForwardIcon fontSize="small" />
+                            <Box>
+                              <LeadAuditValue value={item.details.to_state_name ?? item.details.to_state_id}
+                                id={item.id} color={item.details.to_state_color ?? "primary"} size="small" />
+                            </Box>
+                          </Stack>
+                        </CardContent>
+                      }
+                      {item.activity_type === "CONTACT_STATE_CHANGED" &&
+                        <CardContent sx={{ "&&": { py: 1 } }}>
+                          <Stack direction="row" useFlexGap spacing={1} sx={{ flexWrap: "wrap", px: 1, alignItems: "center" }}>
+                            <Box>
+                              <LeadAuditValue value={item.details.from_contact_state_name ?? item.details.from_contact_state_id ?? null}
+                                id={item.id} color={item.details.from_contact_state_color ?? "secondary"} size="small" />
+                            </Box>
+                            <ArrowForwardIcon fontSize="small" />
+                            <Box>
+                              <LeadAuditValue value={item.details.to_contact_state_name ?? item.details.to_contact_state_id}
+                                id={item.id} color={item.details.to_contact_state_color ?? "primary"} size="small" />
+                            </Box>
+                          </Stack>
+                        </CardContent>
+                      }
+                      {item.activity_type === "LEAD_REASSIGNED" &&
+                        <CardContent sx={{ "&&": { py: 1 } }}>
+                          <Stack spacing={1} sx={{ alignItems: "start" }}>
+                            {item.details.previous_team_id !== item.details.new_team_id &&
+                              <Stack spacing={1} sx={{ alignItems: "start" }}>
+                                <Typography variant="body2" sx={{ fontWeight: "bold" }}>Equipo:</Typography>
+                                <Stack direction="row" useFlexGap spacing={1} sx={{ flexWrap: "wrap", px: 1, alignItems: "center" }}>
+                                  <Box>
+                                    <LeadAuditValue value={item.details.previous_team_name ?? item.details.previous_team_id ?? null}
+                                      id={item.id} color="error" size="small" />
+                                  </Box>
+                                  <ArrowForwardIcon fontSize="small" />
+                                  <Box>
+                                    <LeadAuditValue value={item.details.new_team_name ?? item.details.new_team_id ?? null}
+                                      id={item.id} color="success" size="small" />
+                                  </Box>
+                                </Stack>
                               </Stack>
+                            }
+                          </Stack>
+                        </CardContent>
+                      }
+                      {item.details.previous_user_id !== item.details.new_user_id &&
+                        <CardContent sx={{ "&&": { py: 1 } }}>
+                          <Stack spacing={1} sx={{ alignItems: "start" }}>
+                            <Typography variant="body2" sx={{ fontWeight: "bold" }}>Usuario Asignado:</Typography>
+                            <Stack direction="row" useFlexGap spacing={1} sx={{ flexWrap: "wrap", px: 1, alignItems: "center" }}>
+                              <Box>
+                                <LeadAuditValue value={item.details.previous_user_name ?? item.details.previous_user_id ?? null}
+                                  id={item.id} color="error" size="small" />
+                              </Box>
+                              <ArrowForwardIcon fontSize="small" />
+                              <Box>
+                                <LeadAuditValue value={item.details.new_user_name ?? item.details.new_user_id ?? null}
+                                  id={item.id} color="success" size="small" />
+                              </Box>
                             </Stack>
-                          </CardContent>
-                        }
-                      </Collapse>
+                          </Stack>
+                        </CardContent>
+                      }
                     </Card>
                   </CustomTimelineItem>
                 )

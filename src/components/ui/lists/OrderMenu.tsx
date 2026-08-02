@@ -146,28 +146,35 @@ export const OrderSearchMenu = ({
 
     const activeFilters = Object.values(filterParams).filter(Boolean).length > 0
 
+    const noFilters = noCreator && noUpdater && noActive && noDate && filterOptions.length === 0
+
     return (
         <Stack>
             <Stack direction="row" spacing={2} useFlexGap sx={{ width: "100%", alignItems: "center", flexWrap: "wrap" }}>
                 {children}
                 <Stack direction="row" spacing={2} useFlexGap sx={{ alignItems: "center", justifyContent: "end", justifySelf: "end", ml: "auto", flexWrap: "wrap", py: 1 }}>
                     {searchOptions.length > 0 &&
-                        <SearchInput onSearch={handleSearchChange} id={`${searchId}-search`} options={searchOptions} size={size} defaultValues={defaultValues} hiddenSelector={hiddenSelector} />}
+                        <SearchInput onSearch={handleSearchChange} id={`${searchId}-search`} options={searchOptions} size={size} defaultValues={defaultValues} hiddenSelector={hiddenSelector} />
+                    }
                     <ButtonGroup>
                         <OrderMenu onOrderChange={handleOrderChange} id={`${searchId}-order-menu`} options={orderOptions} defaultValues={defaultValues}
                             noCreator={noCreator} noUpdater={noUpdater} />
-                        <Badge variant="dot" color='success' invisible={!activeFilters} >
-                            <CommonButton actionType='FILTER' onlyTooltip color="secondary" variant='outlined' onClick={() => setOpenFilters(prev => !prev)}>
-                                Filtros Avanzados
-                            </CommonButton>
-                        </Badge>
+                        {!noFilters &&
+                            <Badge variant="dot" color='success' invisible={!activeFilters} >
+                                <CommonButton actionType='FILTER' onlyTooltip color="secondary" variant='outlined' onClick={() => setOpenFilters(prev => !prev)}>
+                                    Filtros Avanzados
+                                </CommonButton>
+                            </Badge>
+                        }
                     </ButtonGroup>
                 </Stack>
             </Stack>
-            <Collapse in={openFilters} timeout={200}>
-                <FilterMenu existingFilters={filterParams} filterOptions={filterOptions} onSubmit={handleFilterChange} onClose={() => setOpenFilters(false)}
-                    noCreator={noCreator} noUpdater={noUpdater} noActive={noActive} noDate={noDate} />
-            </Collapse>
+            {!noFilters &&
+                <Collapse in={openFilters} timeout={200}>
+                    <FilterMenu existingFilters={filterParams} filterOptions={filterOptions} onSubmit={handleFilterChange} onClose={() => setOpenFilters(false)}
+                        noCreator={noCreator} noUpdater={noUpdater} noActive={noActive} noDate={noDate} />
+                </Collapse>
+            }
         </Stack >
     )
 }

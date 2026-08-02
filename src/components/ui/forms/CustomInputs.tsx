@@ -194,16 +194,18 @@ export const ControlledCheckbox = <T extends FieldValues>
 };
 
 export const ControlledSwitch = <T extends FieldValues>
-  ({ control, label, name, required = false, errorMessage, title }: ControlledCheckboxProps<T>) => {
+  ({ control, label, name, required = false, errorMessage, title, size = "medium" }: ControlledCheckboxProps<T>) => {
   return (
-    <FormControl error={!!errorMessage} variant="standard" >
-      <FormLabel error={!!errorMessage}>{title}</FormLabel>
+    <FormControl error={!!errorMessage} variant="standard" sx={{ pl: 1 }}>
+      <FormLabel error={!!errorMessage}>
+        <Typography variant={size === "medium" ? "body1" : "body2"}>{title}</Typography>
+      </FormLabel>
       <FormControlLabel label={label} required={required}
         control={
           <Controller name={name} control={control} defaultValue={false as PathValue<T, Path<T>>}
             render={({ field }) => (
               <Switch {...field}
-                checked={field.value ?? false}
+                checked={field.value ?? false} size={size}
                 onChange={(_, checked) => field.onChange(checked ?? false)}
               />
             )}
