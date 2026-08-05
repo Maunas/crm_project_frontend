@@ -9,12 +9,26 @@ import CommonButton from 'shared/ui/buttons/CommonButton'
 import CustomChip from 'shared/ui/details/CustomChip'
 import { EnabledIcon } from 'shared/ui/lists/Icons'
 import { useListPagination } from 'src/hooks/useListPagination'
+import { useOrderSeachList } from 'src/hooks/useOrderSearchLists'
 import { useLoading } from 'src/hooks/useLoading'
 import type { Paginable } from 'src/types/shared'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { Divider, Grid, ListItemText, Stack, Typography } from '@mui/material'
+import { OrderSearchMenu } from 'shared/ui/lists/OrderMenu'
 import type { LeadContactStateDetailed } from 'src/types/orgProperties'
 import { disableLeadContactState, enableLeadContactState, getLeadContactStates } from './contactStatesServices'
+import { NoItemsMessage } from 'src/components/ui/lists/NoItemsMessage'
+import { Can } from 'src/components/auth/Can'
+import { useUserContext } from 'src/stores/UserContext'
+
+const ORDER_STATE_FIELDS = [
+    { name: "name", label: "Orden Alfabético" },
+    { name: "order", label: "Orden de Presentación" },
+]
+
+const SEARCH_STATE_FIELDS = [
+    { name: "name", label: "Nombre" },
+]
 
 export const ContactStateList = () => {
 
@@ -22,14 +36,15 @@ export const ContactStateList = () => {
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(states)
 
+    const { fetchParams, changeHandlers } = useOrderSeachList()
+
     const fetchStates = useCallback((fetchPage: number, pageSize: number) => {
         return getLeadContactStates({
-            detailed: true, only_active: false,
-            page: fetchPage, page_size: pageSize
+            detailed: true, page: fetchPage, page_size: pageSize, ...fetchParams
         })
             .then(setStates)
             .catch(e => showCommonErrorToast(e, "Error recuperando la lista de estados"))
-    }, [])
+    }, [fetchParams])
 
     const { fnWithLoading: fetchStatesLoad, loading } = useLoading(fetchStates)
 
@@ -53,37 +68,44 @@ export const ContactStateList = () => {
 
     return (
         <Stack spacing={2}>
+            <Stack spacing={2} direction="row" useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
+                {(states?.items && states.items.length > 0) &&
+                    <Can permission="lead_contact_state:create">
+                        <CommonButton actionType="CREATE" variant="contained" sx={{ alignSelf: "start" }}
+                            onClick={() => setEditingState(undefined)}>Agregar</CommonButton>
+                    </Can>}
+                <OrderSearchMenu searchOptions={SEARCH_STATE_FIELDS} orderOptions={ORDER_STATE_FIELDS} {...changeHandlers} />
+            </Stack>
+
             <LoadingScreenWrapper loading={loading}>
-                <Stack spacing={2}>
-                    {(states?.items && states.items.length > 0) ?
-                        <Stack spacing={2}>
-                            <CommonButton actionType="CREATE" variant="contained" sx={{ alignSelf: "start" }}
-                                onClick={() => setEditingState(undefined)}>Agregar</CommonButton>
-                            <ContactStateListData states={states.items}
-                                toggleUpdate={(state: LeadContactStateDetailed) => setEditingState(state)}
-                                updateList={updateList} />
-                            <PaginationComponent {...pageComponentProps} />
-                        </Stack>
-                        :
-                        <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center", height: "30rem" }}>
-                            <Typography variant="h4">No se han encontrado estados de contacto...</Typography>
+                {(states?.items && states.items.length > 0) ?
+                    <Stack spacing={2}>
+                        <ContactStateListData states={states.items}
+                            toggleUpdate={(state: LeadContactStateDetailed) => setEditingState(state)}
+                            updateList={updateList} />
+                        <PaginationComponent {...pageComponentProps} />
+                    </Stack>
+                    :
+                    <NoItemsMessage search={fetchParams.search}
+                        emptyFetchMessage="No se han encontrado estados...">
+                        <Can permission="lead_contact_state:create">
                             <CommonButton actionType="CREATE" variant="contained"
                                 onClick={() => setEditingState(undefined)}>Agregar</CommonButton>
-                        </Stack>
-                    }
-                    {editingState !== null &&
-                        <>
-                            <Divider />
-                            <GenericPaper elevation={4} sx={{ px: 3, py: 2 }}>
-                                <Stack spacing={2}>
-                                    <ContactStateForm existingState={editingState}
-                                        onClose={() => setEditingState(null)} onSubmit={updateList} />
-                                </Stack>
-                            </GenericPaper>
-                        </>
-                    }
-                </Stack>
+                        </Can>
+                    </NoItemsMessage>
+                }
             </LoadingScreenWrapper >
+            {editingState !== null &&
+                <Can permission="lead_contact_state:update">
+                    <Divider />
+                    <GenericPaper elevation={4} sx={{ px: 3, py: 2 }}>
+                        <Stack spacing={2}>
+                            <ContactStateForm existingState={editingState}
+                                onClose={() => setEditingState(null)} onSubmit={updateList} />
+                        </Stack>
+                    </GenericPaper>
+                </Can>
+            }
         </Stack>
     )
 }
@@ -95,6 +117,8 @@ interface ContactStateListDataProps {
 }
 
 export const ContactStateListData = ({ states, toggleUpdate, updateList }: ContactStateListDataProps) => {
+
+    const { hasPermission } = useUserContext()
 
     const [disableState, setDisableState] = useState<LeadContactStateDetailed | null>(null)
 
@@ -122,19 +146,21 @@ export const ContactStateListData = ({ states, toggleUpdate, updateList }: Conta
                 {states.map((state, idx) =>
                     <Grid key={`state-${idx}`} size="grow" sx={{ minWidth: "15rem", minHeight: "100%" }}>
                         <ResponsiveListItem disablePadding sx={{ height: "100%" }}
-                            onClick={() => toggleUpdate(state)}
+                            onClick={() => hasPermission("lead_contact_state:update") && toggleUpdate(state)}
                             actions={[
-                                { actionType: "MODIFY", label: "Editar", onClick: () => toggleUpdate(state) },
                                 {
-                                    actionType: state.active ? "DISABLE" : "ENABLE", color: state.active ? "error" : "success",
-                                    label: state.active ? "Deshabilitar" : "Habilitar",
-                                    onClick: () => setDisableState(state)
-                                }
+                                    template: "MODIFY", onClick: () => toggleUpdate(state),
+                                    permission: "lead_contact_state:update"
+                                },
+                                {
+                                    template: state.active ? "DISABLE" : "ENABLE", onClick: () => setDisableState(state),
+                                    permission: state.active ? "lead_contact_state:delete" : "lead_contact_state:update"
+                                },
                             ]}>
                             <ListItemText sx={{ mr: 4 }} primary={
                                 <Stack spacing={1} direction="row" color="inherit" sx={{ width: "100%", alignItems: "center" }}>
                                     <EnabledIcon active={state.active} />
-                                    <Typography sx={{ fontWeight: "500" }} color="inherit">{state.name}</Typography>
+                                    <Typography color="inherit">{state.name}</Typography>
                                     {state.is_initial &&
                                         <CustomChip chipColor='info' label="Inicial" size="small" />}
                                 </Stack>

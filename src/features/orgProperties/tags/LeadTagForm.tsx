@@ -6,11 +6,11 @@ import type { LeadTag, LeadTagDetailed, LeadTagPost } from "src/types/orgPropert
 import { setFormErrors } from "src/utils/forms"
 import { showToast } from "src/utils/feedback"
 import { useForm } from "react-hook-form"
-import { ButtonGroup, Popover, Stack, TextField, Typography } from "@mui/material"
+import { ButtonGroup, Stack, TextField, Typography } from "@mui/material"
 import { ControlledColorPicker } from "src/components/ui/forms/ColorPicker"
 import { createTag, updateTag } from "./LeadTagService"
 import { CustomAvatar } from "src/components/ui/details/CustomAvatar"
-import ACTION_ICONS from "src/components/ui/buttons/ActionIcons"
+import ACTION_ICONS from "shared/ui/icons/ActionIcons"
 
 
 interface TagFormSidebarProps {
@@ -41,59 +41,13 @@ export const TagFormSidebarWrapper = ({ existingTag, onClose, onSubmit }: TagFor
     }, [existingTag, onClose, onSubmit])
 
     return (
-        <Stack spacing={2}>
+        <Stack spacing={1.5}>
             <Stack spacing={2} direction="row" sx={{ alignItems: "center" }}>
-                <CustomAvatar size="small" color={color}>{ACTION_ICONS[existingTag ? "MODIFY" : "CREATE"]}</CustomAvatar>
-                <Typography variant="h3">{existingTag ? `Modificar Etiqueta "${existingTag.name}"` : "Crear Etiqueta"}</Typography>
+                <CustomAvatar sx={{ height: "2rem", width: "2rem" }} size="small" color={color} ring>{ACTION_ICONS[existingTag ? "MODIFY" : "CREATE"]}</CustomAvatar>
+                <Typography variant="body1" sx={{ fontWeight: 500 }}>{existingTag ? `Modificar Etiqueta "${existingTag.name}"` : "Crear Etiqueta"}</Typography>
             </Stack>
             <LeadTagForm existingTag={existingTag} onCancel={onClose} onSubmit={onPostTag} setColor={setColor} />
         </Stack>
-    )
-}
-
-interface TagFormMenuProps {
-    formAnchor: null | HTMLElement,
-    handleClose: () => void,
-    handleTagsUpdate: (modifiedTag?: LeadTag | undefined) => void,
-    existingTag?: LeadTag | null,
-}
-
-export const TagFormMenuWrapper = ({ existingTag, formAnchor, handleClose, handleTagsUpdate }: TagFormMenuProps) => {
-
-    const onPostTag = (data: LeadTagPost) => {
-        if (existingTag) {
-            return updateTag(data, existingTag.id)
-                .then(res => {
-                    handleTagsUpdate(res)
-                    showToast(`Etiqueta "${res.name}" actualizada con éxito`)
-                    handleClose()
-                })
-        }
-        return createTag(data)
-            .then(res => {
-                handleTagsUpdate()
-                showToast(`Etiqueta "${res.name}" creada con éxito`)
-                handleClose()
-            })
-    }
-
-    return (
-        <Popover disableScrollLock disableAutoFocus id="basic-menu"
-            anchorEl={formAnchor} open={Boolean(formAnchor)} onClose={handleClose}
-            anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-            }}
-            transformOrigin={{
-                vertical: 'top',
-                horizontal: 'left',
-            }}
-        >
-            <Stack spacing={2} sx={{ p: 2 }}>
-                <Typography variant="h4" component="h3">{existingTag ? "Modificar Etiqueta" : "Crear Etiqueta"}</Typography>
-                <LeadTagForm existingTag={existingTag} onCancel={handleClose} onSubmit={onPostTag} popover />
-            </Stack>
-        </Popover >
     )
 }
 
@@ -135,14 +89,16 @@ const LeadTagForm = ({ existingTag, onCancel, onSubmit, popover = false, setColo
 
     return (
         <form onSubmit={handleSubmit(postLoad)} style={{ minWidth: "15rem" }}>
-            <Stack spacing={2}>
-                <Stack spacing={1}>
-                    <TextField id="tag-name" label="Nombre" size={popover ? "small" : "medium"} {...register("name")} />
-                    {errors?.name?.message && <FormErrorMessage>{errors?.name?.message}</FormErrorMessage>}
+            <Stack spacing={1}>
+                <Stack direction="row" spacing={2} useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
+                    <Stack spacing={1} sx={{ flexGrow: 1 }}>
+                        <TextField id="tag-name" label="Nombre" size="small" {...register("name")} />
+                        {errors?.name?.message && <FormErrorMessage>{errors?.name?.message}</FormErrorMessage>}
+                    </Stack>
+                    <ControlledColorPicker control={control} name="color" size="small" row
+                        onBeforeChange={(color) => setColor ? setColor(color) : undefined} />
                 </Stack>
-                <ControlledColorPicker control={control} name="color" size={popover ? "small" : "medium"} row
-                    onBeforeChange={(color) => setColor ? setColor(color) : undefined} />
-                <ButtonGroup fullWidth={popover} sx={{ alignSelf: "end" }}>
+                <ButtonGroup fullWidth={popover} size="small" sx={{ alignSelf: "end" }}>
                     <CommonButton actionType="CLOSE" variant="outlined" color="error" onClick={handleCancel} disabled={loading}>
                         Cancelar
                     </CommonButton>

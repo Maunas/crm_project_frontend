@@ -8,6 +8,7 @@ import { ContentCopy, Close, LinkOutlined } from "@mui/icons-material"
 import { inviteUser } from "src/features/auth/userServices"
 import type { InviteResponse } from "src/types/users"
 import { useUserContext } from "src/stores/UserContext"
+import { getErrorMessage } from "src/lib/axios"
 
 interface Props {
     open: boolean
@@ -36,7 +37,7 @@ export function InviteDialog({ open, onClose }: Props) {
             })
             setInvitation(inv)
         } catch (e: any) {
-            setError(e?.response?.data?.detail ?? "Error al generar la invitacion.")
+            setError(getErrorMessage(e, "Error al generar la invitacion."))
         } finally {
             setLoading(false)
         }

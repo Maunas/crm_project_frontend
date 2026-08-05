@@ -1,11 +1,12 @@
 import { RouterProvider } from 'react-router-dom';
-import { router } from 'src/routes';
 import { UserProvider } from 'src/stores/UserContext';
 import { Bounce, ToastContainer } from 'react-toastify';
 import { useColorScheme } from '@mui/material';
+import { router } from 'src/routing/routes';
 
 function App() {
   const { mode } = useColorScheme();
+
   return (
     <UserProvider>
       <RouterProvider router={router} />

@@ -14,6 +14,7 @@ import 'reactflow/dist/style.css';
 import { Box, Stack } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { showToast } from 'src/utils/feedback';
+import { useUserContext } from 'src/stores/UserContext';
 
 const nodeTypes = { stateNode: StateNode };
 const edgeTypes = { customEdge: CustomEdge };
@@ -40,6 +41,12 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
 
   const [isLocked, setIsLocked] = useState(false)
 
+  // Sin permiso de edición, el editor se comporta como si estuviera siempre bloqueado
+  // (no se puede agregar/editar/borrar etapas ni transiciones, ni guardar).
+  const { hasPermission } = useUserContext()
+  const canEdit = hasPermission("lead_flow:update")
+  const locked = isLocked || !canEdit
+
   const theme = useTheme();
 
   //Efecto para cargar los datos cuando vienen del backend
@@ -64,10 +71,10 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
     setEdges(edges =>
       edges.map(edge => ({
         ...edge,
-        data: { ...edge.data, isLocked },
+        data: { ...edge.data, isLocked: locked },
       }))
     )
-  }, [isLocked, setEdges])
+  }, [locked, setEdges])
 
   // 1. Sincronizar States
   const syncNodesToStates = useCallback((updatedStates: FlowEditorState[]) => {
@@ -80,13 +87,13 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
         category: state.category,
         isInitial: state.is_initial,
         color: state.color,
-        onEdit: () => handleEditState(state),
-        onDelete: () => handleDeleteState(state.tempId),
+        onEdit: locked ? undefined : () => handleEditState(state),
+        onDelete: locked ? undefined : () => handleDeleteState(state.tempId),
       },
     }));
     setNodes(newNodes);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setNodes]);
+  }, [setNodes, locked]);
 
   // 2. Sincronizar Flechas Bidireccionales
   const syncEdgesToTransitions = useCallback((updatedTransitions: FlowEditorTransition[]) => {
@@ -103,7 +110,7 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
         const deleteFirst = existingEdge.data.onDelete;
         existingEdge.data = {
           onDelete: () => { deleteFirst(); handleDeleteTransition(t.tempId); },
-          isLocked
+          isLocked: locked
         };
       } else {
         edgesMap.set(pairId, {
@@ -112,13 +119,13 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
           target: targetId,
           type: 'customEdge',
           markerEnd: { type: MarkerType.ArrowClosed, width: 20, height: 20, color: theme.palette.contrast.lighter },
-          data: { onDelete: () => handleDeleteTransition(t.tempId), isLocked },
+          data: { onDelete: () => handleDeleteTransition(t.tempId), isLocked: locked },
         });
       }
     });
     setEdges(Array.from(edgesMap.values()));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLocked, setEdges, theme.palette.contrast.lighter]);
+  }, [locked, setEdges, theme.palette.contrast.lighter]);
 
   // --- Lógica de Drag & Drop ---
   const onDragOver = useCallback((event: React.DragEvent) => {
@@ -128,12 +135,13 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
 
   const onDrop = useCallback((event: React.DragEvent) => {
     event.preventDefault();
+    if (locked) return;
     const dataStr = event.dataTransfer.getData('application/reactflow');
     if (!dataStr) return;
 
     const { category, isInitial } = JSON.parse(dataStr);
     if (isInitial && states.some(s => s.is_initial)) {
-      showToast("Solo puede haber un estado inicial", "error")
+      showToast("Solo puede haber una etapa inicial", "error")
       return;
     }
 
@@ -147,7 +155,7 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
 
     const newState: FlowEditorState = {
       tempId: uuidv4(),
-      name: isInitial ? 'Inicial' : 'Nuevo Estado',
+      name: isInitial ? 'Inicial' : 'Nueva Etapa',
       category,
       is_initial: isInitial,
       color: isInitial ? DEFAULT_STATE_COLORS.INITIAL :
@@ -162,13 +170,14 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
       return updated;
     });
   },
-    [reactFlowInstance, states, syncNodesToStates]
+    [reactFlowInstance, states, syncNodesToStates, locked]
   );
 
   // --- Operaciones CRUD locales ---
   const handleEditState = (state: FlowEditorState) => setEditingState(state);
 
   const handleSaveState = (stateData: Partial<FlowEditorState>) => {
+    if (locked) return;
     if (editingState) {
       setStates(prev => {
         const updated = prev.map(s => s.tempId === editingState.tempId ? { ...s, ...stateData } : s);
@@ -180,7 +189,7 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
     else {
       const newState: FlowEditorState = {
         tempId: uuidv4(),
-        name: stateData.name ?? (stateData.is_initial ? 'Inicial' : 'Nuevo Estado'),
+        name: stateData.name ?? (stateData.is_initial ? 'Inicial' : 'Nueva Etapa'),
         category: stateData.category ?? "OPEN",
         is_initial: stateData.is_initial ?? false,
         color: stateData.color ?? DEFAULT_STATE_COLORS.OPEN,
@@ -197,6 +206,7 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
   };
 
   const handleDeleteState = (tempId: string) => {
+    if (locked) return;
     setStates(prev => {
       const updated = prev.filter(s => s.tempId !== tempId);
       syncNodesToStates(updated);
@@ -210,6 +220,7 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
   };
 
   const handleDeleteTransition = (tempId: string) => {
+    if (locked) return;
     setTransitions(prev => {
       const updated = prev.filter(t => t.tempId !== tempId);
       syncEdgesToTransitions(updated);
@@ -218,6 +229,7 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
   };
 
   const onConnect = useCallback((connection: Connection) => {
+    if (locked) return;
     const source = connection.source
     const target = connection.target
     if (!source || !target) return;
@@ -240,7 +252,7 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
       return prev
 
     });
-  }, [syncEdgesToTransitions]);
+  }, [syncEdgesToTransitions, locked]);
 
   const onNodesChangeWrapper = useCallback((changes: NodeChange[]) => {
     onNodesChange(changes);
@@ -254,19 +266,20 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
   }, [onNodesChange]);
 
   const handleSaveFlow = async (flowName: string, flowDescription: string) => {
-    if (!flowName.trim()) { showToast("Debe ingresar un nombre para el flujo", "error"); return }
+    if (!canEdit) return
+    if (!flowName.trim()) { showToast("Debe ingresar un nombre para el ciclo de vida", "error"); return }
     const initialStates = states.filter(s => s.is_initial);
-    if (initialStates.length !== 1) { showToast("Debe haber exactamente un estado inicial", "error"); return }
+    if (initialStates.length !== 1) { showToast("Debe haber exactamente una etapa inicial", "error"); return }
     try {
       await onSave(flowName, flowDescription, states, transitions);
-      showToast(`Flujo "${flowName}" guardado con éxito`)
+      showToast(`Ciclo de Vida "${flowName}" guardado con éxito`)
       return
     } catch (error) {
       const errorMsgBody = error as SimpleErrorBody
       console.error("Error del servidor:", errorMsgBody.response?.data);
 
       const data = errorMsgBody.response?.data;
-      let finalMessage = 'Error al guardar el flujo';
+      let finalMessage = 'Error al guardar el ciclo de vida';
 
       if (data?.detail) {
         if (Array.isArray(data.detail)) {
@@ -295,7 +308,7 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
       <Stack direction="row" sx={{ flex: 1 }}>
         {/* Barra lateral de Drag & Drop */}
         <Sidebar
-          isLocked={isLocked}
+          isLocked={locked}
           onAddState={handleSaveState}
           hasInitialState={hasInitialState}
         />
@@ -307,10 +320,11 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
             edges={edges}
             onNodesChange={onNodesChangeWrapper}
             onEdgesChange={onEdgesChange}
-            onConnect={isLocked ? undefined : onConnect}
+            onConnect={locked ? undefined : onConnect}
             onDragOver={onDragOver}
-            nodesConnectable={!isLocked}
-            onDrop={isLocked ? undefined : onDrop}
+            nodesConnectable={!locked}
+            nodesDraggable={!locked}
+            onDrop={locked ? undefined : onDrop}
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
             connectionMode={ConnectionMode.Loose}

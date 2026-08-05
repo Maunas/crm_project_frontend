@@ -1,13 +1,14 @@
 import { NomenclatorItemList } from "./NomenclatorItemList"
-import { SidebarContentWrapper } from "shared/layout/container/GenericContainer"
+import { SidebarContentWrapper } from "shared/layout/container/GenericSidebar"
 import HandleActiveButton from "shared/ui/buttons/HandleActiveButton"
 import DetailsMetadata from "shared/ui/details/DetailsMetadata"
 import CommonButton from "shared/ui/buttons/CommonButton"
-import { EnabledIcon } from "shared/ui/lists/Icons"
 import type { NomenclatorDetailed } from "src/types/nomenclators"
 import { useUserContext } from "src/stores/UserContext"
 import { Link as RouterLink } from "react-router-dom"
 import { ButtonGroup, Divider, Link, Stack, Typography } from "@mui/material"
+import { Can } from "src/components/auth/Can"
+import ROUTE_ICONS from "src/components/ui/icons/RouteIcons"
 
 interface NomenclatorDetailsProps {
     nomenclator: NomenclatorDetailed | null,
@@ -18,29 +19,37 @@ interface NomenclatorDetailsProps {
 
 export const NomenclatorDetails = ({ nomenclator, closeSidebar, handleSidebar, handleActive }: NomenclatorDetailsProps) => {
 
-    const { activeOrg } = useUserContext()
+    const { user } = useUserContext()
 
     if (nomenclator) return (
-        <SidebarContentWrapper title={nomenclator.name} icon={<EnabledIcon active={nomenclator.active} isAvatar />}
-            iconColor={nomenclator.active ? "success" : "error"}
-            subtitle={!nomenclator.organization_id ? "Nomenclador del Sistema" : "Nomenclador"}
+        <SidebarContentWrapper title={nomenclator.name} active={nomenclator.active} icon={ROUTE_ICONS.NOMENCLATORS}
+            subtitle={nomenclator.organization_id === 1 ? "Nomenclador del Sistema" : "Nomenclador"}
             actions={
                 <ButtonGroup>
                     <CommonButton onClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
-                    {(nomenclator.organization_id || activeOrg?.id === 0) &&
-                        <HandleActiveButton active={nomenclator.active} handleActive={() => handleActive(nomenclator)} />
+                    {(nomenclator.organization_id !== 1 || user?.is_superuser) &&
+                        <Can permission={nomenclator.active ? "nomenclator:delete" : "nomenclator:update"}>
+                            <HandleActiveButton active={nomenclator.active} handleActive={() => handleActive(nomenclator)} />
+                        </Can>
                     }
-                    {(nomenclator.organization_id || activeOrg?.id === 0) &&
-                        <CommonButton onClick={() => handleSidebar("UPDATE_NOM", nomenclator)} actionType="MODIFY" >Modificar</CommonButton>
+                    {(nomenclator.organization_id !== 1 || user?.is_superuser) &&
+                        <Can permission="nomenclator:update">
+                            <CommonButton onClick={() => handleSidebar("UPDATE_NOM", nomenclator)} actionType="MODIFY" >Modificar</CommonButton>
+                        </Can>
                     }
                 </ButtonGroup>
             }>
             <Stack spacing={2}>
-                {nomenclator.parent_nomenclator &&
+                {nomenclator.parent_nomenclators && nomenclator.parent_nomenclators.length > 0 &&
                     <Stack spacing={1}>
-                        <Stack spacing={1} direction="row">
-                            <Typography>Depende del nomenclador:</Typography>
-                            <Link component={RouterLink} to={`/nomenclators/${nomenclator.parent_nomenclator.id}`}>{nomenclator.parent_nomenclator.name}</Link>
+                        <Stack spacing={1} direction="row" useFlexGap sx={{ flexWrap: "wrap", alignItems: "center" }}>
+                            <Typography>Depende de:</Typography>
+                            {nomenclator.parent_nomenclators.map((parent, idx) =>
+                                <span key={parent.id}>
+                                    <Link component={RouterLink} to={`/nomenclators/${parent.id}`}>{parent.name}</Link>
+                                    {idx < nomenclator.parent_nomenclators.length - 1 && ", "}
+                                </span>
+                            )}
                         </Stack>
                         <Divider />
                     </Stack>

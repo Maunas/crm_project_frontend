@@ -1,29 +1,29 @@
-import { useEffect, useState } from "react"
-import type { LeadPostForm } from "../leadForm/LeadForm"
-import { LeadFieldTypeAvatar } from "features/leadFields/LeadFieldTypeIcon"
-import { CommonIconButton } from "shared/ui/buttons/CommonIconButton"
-import { CustomListItem } from "shared/ui/lists/CustomListItem"
-import { useLoading } from "src/hooks/useLoading"
+/**
+ * Ojo: este archivo ya NO exporta un componente de edición propio. Antes (`LeadPartialUpdate`)
+ * era el formulario que se abría al clickear el lápiz, con Guardar/Cancelar explícitos. Ahora
+ * TODOS los campos se editan inline (clic sobre el valor + autoguardado al perder foco o Enter,
+ * ver `InlineFieldEdit` en `LeadDetailsSections.tsx`), que reutiliza lo de acá: `getUpdatedLead`,
+ * `getValue`, `LeadFormFieldType` y los tipos `PartialFormValue`/`PartialFormProps`. Se dejan en
+ * este archivo porque son los mismos helpers que ya existían, para no duplicar lógica.
+ */
+import { useEffect, useMemo, useState } from "react"
 import type { LeadFieldDetailed, LeadFieldValueDetailed } from "src/types/leadFields"
 import type { NomenclatorItem } from "src/types/nomenclators"
 import type { Lead, LeadDetailed } from "src/types/leads"
-import { getLeads, updateLead } from "../leadService"
+import { getLeads } from "../leadService"
 import { getNomenclatorItems } from "features/nomenclators/nomenclatorService"
-import { createFormDataFromLead } from "../leadUtils"
-import { setFormErrors } from "src/utils/forms"
 import { getListField } from "src/utils/lists"
-import { showCommonErrorToast, showToast } from "src/utils/feedback"
-import { useForm, type Control, type UseFormRegister } from "react-hook-form"
-import { ListItemText, Stack } from "@mui/material"
-import { getTypeOrSpecialTemplates } from "src/features/leadFields/leadFieldUtils"
-import { LeadFormRelatedLead, LeadFormSelector } from "../shared/LeadFormMultipleFields"
+import { showCommonErrorToast } from "src/utils/feedback"
+import type { Control, Path, UseFormRegister, UseFormSetValue } from "react-hook-form"
+import { DependentLeadFormSelector, LeadFormRelatedLead, LeadFormSelector } from "../shared/LeadFormMultipleFields"
 import { LeadFormBool, LeadFormDate, LeadFormFile, LeadFormNumber, LeadFormText } from "../shared/LeadFormFields"
 
 
 /**
  * Toma el lead viejo y el nuevo, y recorre los leadFields del lead viejo, reemplazando sus valores por los nuevos.
+ * Exportado para reutilizarse también desde la edición inline con autoguardado (ver LeadDetailsSections.tsx).
  */
-const getUpdatedLead = (oldLead: LeadDetailed, newLead: Lead) => {
+export const getUpdatedLead = (oldLead: LeadDetailed, newLead: Lead) => {
 
     const newfieldValuesCopy = [...newLead.field_values].sort((a, b) => b.field.id - a.field.id)
     const oldfieldValuesCopy = [...oldLead.field_values].sort((a, b) => b.field.id - a.field.id)
@@ -39,11 +39,15 @@ const getUpdatedLead = (oldLead: LeadDetailed, newLead: Lead) => {
     return { ...oldLead, field_values: newFieldValues } as LeadDetailed
 }
 
-interface PartialFormProps {
+export interface PartialFormValue {
+    field_id: number,
     value: string | number[] | number | FileList | null
 }
+export interface PartialFormProps {
+    values: PartialFormValue[]
+}
 
-const getValue = (fieldValue: LeadFieldValueDetailed) => {
+export const getValue = (fieldValue: LeadFieldValueDetailed) => {
     if (fieldValue.field.field_type_code === "LEAD") return getListField(fieldValue.related_leads, "id", true) as number[]
     if (["SELECTOR_MULTIPLE", "CHECKBOX_MULTIPLE"].includes(fieldValue?.field?.field_subtype_code ?? ""))
         return getListField(fieldValue.nomenclator_items, "id", true) as number[]
@@ -52,75 +56,38 @@ const getValue = (fieldValue: LeadFieldValueDetailed) => {
     return fieldValue.value
 }
 
-interface LeadPartialUpdateProps {
-    fieldValue: LeadFieldValueDetailed,
-    onClose: (id: number) => void,
-    lead: LeadDetailed,
-    updateLeadInfo: (lead: LeadDetailed, reloadAudits?: boolean) => void
-}
-
-export const LeadPartialUpdate = ({ fieldValue, onClose, lead, updateLeadInfo }: LeadPartialUpdateProps) => {
-
-    const { register, control, setError, handleSubmit, formState: { errors } } = useForm<PartialFormProps>({
-        defaultValues: {
-            value: getValue(fieldValue)
-        }
-    })
-
-    const fieldData = fieldValue.field
-
-    const iconCode = getTypeOrSpecialTemplates(fieldData.field_type_code, fieldData.field_template_code)
-
-    const onSubmit = async (data: PartialFormProps) => {
-        if (!data.value) return
-        const postData: LeadPostForm = {
-            values: [{ field_id: fieldData.id, value: data.value, fieldData: fieldData }],
-        }
-        const formData = createFormDataFromLead(postData)
-        return updateLead(formData, lead.id).then(res => {
-            const newLead = getUpdatedLead(lead, res)
-            if (!newLead) return
-            updateLeadInfo(newLead, true)
-            showToast(`Campo "${fieldData.name}" modificado con éxito.`)
-            onClose(fieldData.id)
-        }).catch((e) => {
-            setFormErrors(e, setError, null, "value", true)
-        })
-    }
-
-    const { fnWithLoading: submitLoad, loading } = useLoading(onSubmit)
-
-    return (
-        <form onSubmit={handleSubmit(submitLoad)}>
-            <CustomListItem disablePadding alwaysShowSecondary secondaryAction={
-                <Stack direction="row">
-                    {!loading && <CommonIconButton title="Cancelar" actionType="CLOSE" onClick={() => onClose(fieldData.id)}
-                        size="small" tooltipSize="small" color="error" />}
-                    <CommonIconButton title="Guardar" actionType="SAVE" type="submit" loading={loading}
-                        size="small" tooltipSize="small" color="primary" />
-                </Stack>
-            }>
-                <LeadFieldTypeAvatar typeCode={iconCode} subtypeCode={fieldData.field_subtype_code} />
-                <ListItemText sx={{ mr: 9 }}>
-                    <LeadFormFieldType register={register} control={control} leadField={fieldData}
-                        size="small" errorMessage={errors?.value?.message} />
-                </ListItemText>
-            </CustomListItem>
-        </form>
+/**
+ * Si `fieldValue` tiene campos "hijos" activos (otro campo cuyo depends_on_field_id apunta a
+ * este), se editan juntos en la misma transacción: si cambia el valor del padre, el valor ya
+ * cargado en el hijo puede dejar de ser válido, así que se muestra también en el mismo grupo de
+ * edición y no se deja guardar sin resolverlo. Solo los campos SELECTOR pueden ser padres/hijos
+ * en esta cascada (ver LeadFieldForm.tsx: "Depende del Campo" solo aparece para SELECTOR).
+ */
+export const useFieldCascade = (fieldValue: LeadFieldValueDetailed, lead: LeadDetailed) => {
+    const dependentFieldValues = useMemo(() =>
+        lead.field_values.filter(fv => fv.field.active && fv.field.depends_on_field_id === fieldValue.field.id),
+        [lead.field_values, fieldValue.field.id]
     )
+    const allFieldValues = useMemo(() => [fieldValue, ...dependentFieldValues], [fieldValue, dependentFieldValues])
+    return { dependentFieldValues, allFieldValues }
 }
 
 interface LeadFormFieldTypeProps {
     register: UseFormRegister<PartialFormProps>,
     control: Control<PartialFormProps>,
+    setValue: UseFormSetValue<PartialFormProps>,
+    name: Path<PartialFormProps>,
     leadField: LeadFieldDetailed,
+    lead: LeadDetailed,
+    //Path del valor del campo padre DENTRO DE ESTE MISMO grupo de edición, cuando el padre se está editando en vivo
+    //junto a este campo (ver useFieldCascade/InlineFieldEdit). Si no viene, este campo depende de un valor ya persistido.
+    liveParentName?: Path<PartialFormProps>,
     errorMessage?: string,
     size?: "small" | "medium"
 }
 
-const LeadFormFieldType = ({ register, control, leadField, errorMessage, size = "medium" }: LeadFormFieldTypeProps) => {
+export const LeadFormFieldType = ({ register, control, setValue, name, leadField, lead, liveParentName, errorMessage, size = "medium" }: LeadFormFieldTypeProps) => {
 
-    const name = "value"
     const label = leadField.name ?? undefined
     const typeCode = leadField.field_type_code
     const subtypeCode = leadField.field_subtype_code ?? undefined
@@ -129,8 +96,29 @@ const LeadFormFieldType = ({ register, control, leadField, errorMessage, size = 
     const [selectors, setSelectors] = useState<NomenclatorItem[] | undefined>(undefined)
     const [relatedLeads, setRelatedLeads] = useState<Lead[] | undefined>(undefined)
 
+    //Si este campo depende de otro que NO se edita en vivo en este mismo mini-form, sus opciones son los hijos del
+    //valor ya persistido en el lead para el campo padre. Si el padre SÍ se edita acá (liveParentName), la cascada
+    //la resuelve directamente DependentLeadFormSelector contra el valor en curso del formulario.
+    const dependentParentItemIds = useMemo(() => {
+        if (!leadField.depends_on_field_id || liveParentName) return null
+        const parentFieldValue = lead.field_values.find(fv => fv.field_id === leadField.depends_on_field_id)
+        return parentFieldValue?.nomenclator_items.map(item => item.id) ?? []
+    }, [leadField.depends_on_field_id, lead.field_values, liveParentName])
+
     useEffect(() => {
+        if (liveParentName) return
         if (leadField?.nomenclator?.id) {
+            if (dependentParentItemIds !== null) {
+                if (dependentParentItemIds.length === 0) { setSelectors([]); return }
+                Promise.all(dependentParentItemIds.map(id =>
+                    getNomenclatorItems({ detailed: false, page_size: 0, parent_item_id: id, only_active: true })
+                )).then(results => {
+                    const merged = new Map<number, NomenclatorItem>()
+                    results.forEach(res => res.items.forEach(item => merged.set(item.id, item)))
+                    setSelectors(Array.from(merged.values()))
+                }).catch(e => showCommonErrorToast(e, `Ocurrio un error buscando las opciones de ${leadField.name}`))
+                return
+            }
             getNomenclatorItems({ detailed: false, page_size: 0, nomenclator_id: leadField.nomenclator.id, only_active: true })
                 .then(res => setSelectors(res.items))
                 .catch(e => showCommonErrorToast(e, `Ocurrio un error buscando las opciones de ${leadField.name}`))
@@ -140,7 +128,9 @@ const LeadFormFieldType = ({ register, control, leadField, errorMessage, size = 
                 .then(res => setRelatedLeads(res.items))
                 .catch(e => showCommonErrorToast(e, `Ocurrio un error buscando los leads de ${leadField.name}`))
         }
-    }, [leadField])
+    }, [leadField, dependentParentItemIds, liveParentName])
+
+    const isDependentBlocked = dependentParentItemIds !== null && dependentParentItemIds.length === 0
 
     switch (typeCode) {
         case "LEAD":
@@ -150,8 +140,14 @@ const LeadFormFieldType = ({ register, control, leadField, errorMessage, size = 
             return (<LeadFormFile control={control} name={name} required={required} size={size}
                 errorMessage={errorMessage} subtype={subtypeCode} />)
         case "SELECTOR":
+            //El padre se edita en vivo junto a este campo: la cascada se resuelve contra el valor EN EL FORMULARIO
+            if (liveParentName) {
+                return (<DependentLeadFormSelector control={control} name={name} parentName={liveParentName} setValue={setValue}
+                    label={label} subtype={subtypeCode} required={required} errorMessage={errorMessage} size={size} />)
+            }
             return (<LeadFormSelector control={control} name={name} options={selectors} size={size}
-                label={label} subtype={subtypeCode} required={required} errorMessage={errorMessage} />)
+                label={label} subtype={subtypeCode} required={required} errorMessage={errorMessage}
+                disabled={isDependentBlocked} helperText={isDependentBlocked ? "El campo del que depende no tiene un valor cargado" : undefined} />)
         case "BOOL":
             return (<LeadFormBool control={control} name={name} label={label} errorMessage={errorMessage} size={size} />)
         case "DATE_TIME": case "DATE":

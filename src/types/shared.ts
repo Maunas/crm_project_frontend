@@ -2,7 +2,6 @@ import type { Path } from "react-hook-form";
 import type { Lead } from "./leads";
 import type { Campaign, Workspace } from "./campaigns";
 import type { Nomenclator, NomenclatorItem } from "./nomenclators";
-import type { UserData } from "./users";
 
 export interface DisableableEntity {
   active?: boolean,
@@ -28,21 +27,19 @@ export interface Metadata {
   active: boolean;
   created_by: number;
   updated_by?: number;
-  creator?: UserData;
-  updater?: UserData | null;
+  creator?: Creator | null;
+  updater?: Updater | null;
 }
 
 export interface Creator {
   id: number;
   name: string | null;
+  last_name?: string | null;
   email: string | null;
 }
 
-export interface Updater {
-  id: number;
-  name: string | null;
-  email: string | null;
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface Updater extends Creator { }
 
 /**
  * Contienen los parámetros permitidos de cada request.
@@ -53,14 +50,20 @@ export interface OrderParams {
   order_by?: number | string | null,
   ascending?: boolean
 }
+export interface SearchParams {
+  search?: string,
+  search_fields?: string
+}
 
-export interface ListParams extends OrderParams {
+export interface OrderSearchParams extends OrderParams, SearchParams {
   only_active?: boolean,
+}
+
+export interface ListParams extends OrderParams, SearchParams {
   detailed?: boolean,
   page?: number,
   page_size?: number,
-  search?: string,
-  search_fields?: string
+  only_active?: boolean,
 }
 export interface WorkspaceParams extends ListParams {
   organization_id?: number
@@ -70,6 +73,7 @@ export interface CampaignParams extends ListParams {
 }
 export interface LeadListParams extends ListParams {
   campaign_id?: number
+  query?: string
 }
 export interface LeadFlowParams extends ListParams {
   organization_id?: number
@@ -150,9 +154,9 @@ export interface SearchResults {
 }
 
 export interface LeadFilter {
-  "field_id"?: number,
+  "field_id"?: number | string,
   "operator"?: string,
-  "value"?: string | number | boolean
+  "value"?: string | number | boolean | number[]
 }
 
 export interface Dictionary {
@@ -162,8 +166,8 @@ export interface Dictionary {
   "lead_states_categories"?: DictionaryItem[],
   "lead_view_visibilities"?: DictionaryItem[],
   "automation_compatibility_matrix"?: AutomationCompatibility[],
-  "entities"?: DictionaryItem[],
-  "system_audit_log_actions"?: DictionaryItem[],
+  "entities"?: Record<string, string>,
+  "system_audit_log_actions"?: Record<string, string>,
 }
 
 export interface DictionaryItem {
@@ -173,10 +177,10 @@ export interface DictionaryItem {
 
 export type DateFormat = "dateTime" | "dateTimeLong" | "date" | "dateLong" | "time" | "custom"
 
-export type OptionWithAction<T> = ((T & { isAction: boolean }) | { id: string, name: string, isAction: boolean })
+export type OptionWithAction<T> = (T & { isAction?: undefined }) | { id: string, name: string, isAction: boolean }
 
 export interface AutomationCompatibility {
-  "field_type": {
+  [field_type: string]: {
     "operators": string[],
     "actions": string[],
   }

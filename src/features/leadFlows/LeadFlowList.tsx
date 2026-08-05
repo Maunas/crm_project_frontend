@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useListPagination } from 'src/hooks/useListPagination'
+import { useOrderSeachList } from 'src/hooks/useOrderSearchLists'
 import type { LeadFlowDetailed } from 'src/types/leadFlow'
 import type { Paginable } from 'src/types/shared'
 import { Grid, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
@@ -14,7 +15,19 @@ import { useLoading } from 'src/hooks/useLoading'
 import LoadingScreenWrapper from 'src/components/ui/feedback/LoadingScreen'
 import { DisableConfirmDialog } from 'src/components/ui/feedback/ConfirmationDialog'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
+import { OrderSearchMenu } from 'shared/ui/lists/OrderMenu'
 import { useUserContext } from 'src/stores/UserContext'
+import { NoItemsMessage } from 'src/components/ui/lists/NoItemsMessage'
+import { Can } from 'src/components/auth/Can'
+
+const ORDER_FLOW_FIELDS = [
+    { name: "name", label: "Orden Alfabético" },
+]
+
+const SEARCH_FLOW_FIELDS = [
+    { name: "name", label: "Nombre" },
+    { name: "description", label: "Descripción" },
+]
 
 export const LeadFlowList = () => {
 
@@ -25,9 +38,11 @@ export const LeadFlowList = () => {
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(flows, 12)
 
+    const { fetchParams, changeHandlers } = useOrderSeachList()
+
     const fetchFlows = useCallback((fetchPage: number, pageSize: number) => getLeadFlows({
-        page: fetchPage || 1, page_size: pageSize, detailed: true, only_active: false
-    }).then(setFlows), [])
+        page: fetchPage || 1, page_size: pageSize, detailed: true, ...fetchParams
+    }).then(setFlows), [fetchParams])
 
     const { fnWithLoading, loading } = useLoading(fetchFlows)
 
@@ -37,11 +52,14 @@ export const LeadFlowList = () => {
 
     return (
         <Stack spacing={2}>
-            <Stack spacing={1} direction="row" useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
+            <Stack spacing={2} direction="row" useFlexGap sx={{ alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>
                 {(flows?.items && flows.items.length > 0) &&
-                    <CommonButton actionType="CREATE" component={Link} to="/lead-flow-editor" >
-                        Abrir Editor
-                    </CommonButton>}
+                    <Can permission="lead_flow:update">
+                        <CommonButton actionType="CREATE" component={Link} to="/lead-flow-editor" >
+                            Abrir Editor
+                        </CommonButton>
+                    </Can>}
+                <OrderSearchMenu searchOptions={SEARCH_FLOW_FIELDS} orderOptions={ORDER_FLOW_FIELDS} {...changeHandlers} />
             </Stack>
             <LoadingScreenWrapper loading={loading}>
                 {(flows?.items && flows.items.length > 0) ?
@@ -50,10 +68,12 @@ export const LeadFlowList = () => {
                         <PaginationComponent {...pageComponentProps} />
                     </Stack>
                     :
-                    <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center", height: "30rem" }}>
-                        <Typography variant="h4">No se han encontrado flujos de estado...</Typography>
-                        <CommonButton actionType="CREATE" onClick={() => nav("/lead-flow-editor")} variant="contained">Abrir Editor</CommonButton>
-                    </Stack>
+                    <NoItemsMessage search={fetchParams.search}
+                        emptyFetchMessage="No se han encontrado ciclos de vida...">
+                        <Can permission="lead_flow:update">
+                            <CommonButton actionType="CREATE" onClick={() => nav("/lead-flow-editor")} variant="contained">Abrir Editor</CommonButton>
+                        </Can>
+                    </NoItemsMessage>
                 }
             </LoadingScreenWrapper>
         </Stack>
@@ -68,15 +88,15 @@ export const LeadFlowListData = ({ flows, updateList }: { flows: LeadFlowDetaile
         if (!isActive) {
             return enableLeadFlow(id)
                 .then(() => {
-                    showToast("Flujo habilitado correctamente.", "success")
+                    showToast("Ciclo de Vida habilitado correctamente.", "success")
                     updateList()
                 })
                 .catch(e => { showCommonErrorToast(e) })
         }
         return deleteLeadFlow(id)
             .then(res => {
-                if (res.action === "disabled") showToast("Flujo deshabilitado correctamente.", "success")
-                else showToast("Flujo eliminado permanentemente.", "success")
+                if (res.action === "disabled") showToast("Ciclo de Vida deshabilitado correctamente.", "success")
+                else showToast("Ciclo de Vida eliminado permanentemente.", "success")
                 updateList()
             })
             .catch(e => { showCommonErrorToast(e) })
@@ -89,17 +109,21 @@ export const LeadFlowListData = ({ flows, updateList }: { flows: LeadFlowDetaile
                     <Grid key={`flow-${idx}`} size="grow" sx={{ minWidth: "15rem", minHeight: "100%" }}>
                         <CustomListItem disablePadding sx={{ height: "100%" }} secondaryAction={
                             <Stack direction="row" sx={{ alignItems: "center" }}>
-                                <CommonIconButton actionType='MODIFY' title="Editar" tooltipSize="small" size="small"
-                                    component={Link} to={`/lead-flow-editor/${flow.id}`} />
-                                <CommonIconButton actionType={flow.active ? "DISABLE" : "ENABLE"} title={flow.active ? "Deshabilitar" : "Habilitar"}
-                                    tooltipSize="small" size="small" color={flow.active ? "error" : "success"}
-                                    onClick={() => setDisableFlow(flow)} />
+                                <Can permission="lead_flow:update">
+                                    <CommonIconButton actionType='MODIFY' title="Editar" tooltipSize="small" size="small"
+                                        component={Link} to={`/lead-flow-editor/${flow.id}`} />
+                                </Can>
+                                <Can permission={flow.active ? "lead_flow:delete" : "lead_flow:update"}>
+                                    <CommonIconButton actionType={flow.active ? "DISABLE" : "ENABLE"} title={flow.active ? "Deshabilitar" : "Habilitar"}
+                                        tooltipSize="small" size="small" color={flow.active ? "error" : "success"}
+                                        onClick={() => setDisableFlow(flow)} />
+                                </Can>
                             </Stack>}>
                             <ListItemButton component={Link} to={`/lead-flow-editor/${flow.id}`} sx={{ height: "100%" }} >
                                 <ListItemText sx={{ mr: 4 }} primary={
                                     <Stack spacing={1} direction="row" color="inherit" sx={{ width: "100%", alignItems: "center" }}>
                                         <EnabledIcon active={flow.active} />
-                                        <Typography sx={{ fontWeight: "bold" }} color="inherit">{flow.name}</Typography>
+                                        <Typography color="inherit">{flow.name}</Typography>
                                     </Stack>
                                 }
                                     secondary={flow.description} />
@@ -109,7 +133,7 @@ export const LeadFlowListData = ({ flows, updateList }: { flows: LeadFlowDetaile
                 )}
             </Grid >
             {disableFlow &&
-                <DisableConfirmDialog idModal='conf-delete-flow' entity={disableFlow} clearEntity={() => setDisableFlow(null)} entityTypeName="el flujo"
+                <DisableConfirmDialog idModal='conf-delete-flow' entity={disableFlow} clearEntity={() => setDisableFlow(null)} entityTypeName="el ciclo de vida"
                     onConfirm={() => handleEnableDisable(disableFlow?.id, disableFlow?.active)} />
             }
         </>

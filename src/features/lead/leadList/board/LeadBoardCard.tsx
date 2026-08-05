@@ -1,11 +1,12 @@
 import { Draggable } from '@hello-pangea/dnd';
-import { Card, Typography, Box, Avatar, Stack, Tooltip, alpha } from '@mui/material'; // Avatar se usa aún para equipo/usuario asignado
+import { Card, Typography, Box, Avatar, Stack, Tooltip, alpha } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import GroupsIcon from '@mui/icons-material/Groups';
 import type { Lead } from 'src/types/leads';
-import { getLeadTitleArray } from '../../leadUtils';
-import CustomChip from 'src/components/ui/details/CustomChip';
-import { UserAvatar } from 'src/components/ui/details/UserAvatar';
+import { getLeadTitleArray, getLeadSubtitleArray } from '../../leadUtils';
+import CustomChip from 'shared/ui/details/CustomChip';
+import { useNavigate } from 'react-router-dom';
+import { UserAvatar } from 'shared/ui/details/UserAvatar';
 
 interface LeadBoardCardProps {
     lead: Lead;
@@ -15,9 +16,14 @@ interface LeadBoardCardProps {
 }
 
 export const LeadBoardCard = ({ lead, index, columnColor, observerRef }: LeadBoardCardProps) => {
+    const navigate = useNavigate();
     const titleArray = getLeadTitleArray(lead);
-    const mainTitle = titleArray[0] || "Sin nombre";
-    const subTitle = titleArray.slice(1).join(" • ");
+    //Antes esto tomaba solo el primer campo del título como "nombre" y dejaba el resto (ej.
+    //Apellido) como subtítulo de relleno, a falta de un subtítulo real. Ahora que existe
+    //subtitle_order (Cargo/Empresa, configurable desde "Configurar título"), el título se muestra
+    //completo y el subtítulo usa ese campo real en su lugar.
+    const mainTitle = titleArray.join(" ") || "Sin nombre";
+    const subTitle = getLeadSubtitleArray(lead).join(" ");
 
     return (
         <Draggable draggableId={String(lead.id)} index={index}>
@@ -30,11 +36,12 @@ export const LeadBoardCard = ({ lead, index, columnColor, observerRef }: LeadBoa
                     {...provided.draggableProps}
                     {...provided.dragHandleProps}
                     elevation={0}
+                    onClick={() => { if (!snapshot.isDragging) navigate(`/leads/${lead.id}`) }}
                     sx={{
                         p: 2,
                         mb: 1.5,
                         borderRadius: 2,
-                        cursor: 'grab',
+                        cursor: snapshot.isDragging ? 'grabbing' : 'pointer',
                         // Fondo sólido para que se distinga claramente del fondo del board
                         backgroundColor: 'background.paper',
                         // Accent border izquierdo con el color de la columna

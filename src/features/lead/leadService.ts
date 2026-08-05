@@ -1,5 +1,6 @@
 import type { BulkDeleteResponse, DeleteResponse, EnableResponse, LeadFilter, LeadListParams, ListParams, Paginable } from "src/types/shared";
 import type { Lead, LeadDetailed, LeadView, LeadViewDetailed, LeadViewPost } from "src/types/leads";
+import type { BulkAssignRequest } from "src/types/teams";
 import axiosCRM from "src/lib/axios";
 
 export const getLeads = async <T extends ListParams>(params?: T)
@@ -140,8 +141,17 @@ export const changeStateLead = async (lead_id: number, state_id: number): Promis
   return response.data;
 };
 
+//Reasignación de equipo/usuario asignado en lotes (ver TeamAccessPanel/bulk actions),
+//Es el único endpoint que puede tocar team_id/assigned_to_user_id, ya que LeadUpdate no los incluye.
+export const bulkAssignLeads = async (body: BulkAssignRequest): Promise<Lead[]> => {
+  const response = await axiosCRM.patch(`leads/bulk-assign`, body);
+  return response.data;
+};
+
 export const changeContactStateLead = async (lead_id: number, state_id: number): Promise<LeadDetailed> => {
-  const body = { "contact_state_id": state_id }
-  const response = await axiosCRM.put(`leads/${lead_id}`, body);
+  // Antes usaba PUT /leads/{id} (el mismo que cualquier campo genérico) y no dejaba
+  // ningún rastro de auditoría. Ahora usa el endpoint dedicado, igual que changeStateLead.
+  const body = { "new_contact_state_id": state_id }
+  const response = await axiosCRM.post(`leads/${lead_id}/change_contact_state`, body);
   return response.data;
 };

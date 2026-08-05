@@ -8,6 +8,7 @@ import { LogicalOperatorEnum, ConditionOperatorEnum, LOGICAL_OPERATOR_LABELS, } 
 import type { RuleGroup, RuleCondition } from '../../types/automation';
 import { ConditionRow } from './ConditionRow';
 import type { LeadField } from '../../types/leadFields';
+import type { NativeFieldOptions } from 'src/features/lead/nativeLeadFields';
 
 interface ConditionBuilderProps {
   group: RuleGroup;
@@ -16,6 +17,7 @@ interface ConditionBuilderProps {
   depth?: number;
   isRoot?: boolean;
   fields?: LeadField[];
+  nativeOptions?: NativeFieldOptions;
   readOnly?: boolean;
 }
 
@@ -43,6 +45,7 @@ export const ConditionBuilder = memo(({
   depth = 0,
   isRoot = false,
   fields = [],
+  nativeOptions,
   readOnly = false,
 }: ConditionBuilderProps) => {
   const handleOperatorChange = (
@@ -164,6 +167,7 @@ export const ConditionBuilder = memo(({
                   onDelete={() => handleDeleteRule(index)}
                   isOnly={group.rules.length === 1 && isRoot}
                   fields={fields}
+                  nativeOptions={nativeOptions}
                   readOnly={readOnly}
                 />
               ) : (
@@ -173,6 +177,7 @@ export const ConditionBuilder = memo(({
                   onDelete={() => handleDeleteRule(index)}
                   depth={depth + 1}
                   fields={fields}
+                  nativeOptions={nativeOptions}
                   readOnly={readOnly}
                 />
               )}

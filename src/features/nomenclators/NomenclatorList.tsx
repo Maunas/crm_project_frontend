@@ -1,7 +1,7 @@
-import { memo, useCallback, useEffect, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { NomenclatorFormSidebar } from './NomenclatorForm'
 import { NomenclatorDetails } from './NomenclatorDetails'
-import { ResponsiveListItem, type ListItemAction } from 'shared/ui/lists/CustomListItem'
+import { ResponsiveListItem } from 'shared/ui/lists/CustomListItem'
 import ContainerWithSidebar from 'shared/layout/container/GenericContainer'
 import { DisableConfirmDialog } from 'src/components/ui/feedback/ConfirmationDialog'
 import PaginationComponent from 'shared/ui/lists/PaginationComponent'
@@ -11,17 +11,30 @@ import { EnabledIcon } from 'shared/ui/lists/Icons'
 import { useListPagination } from 'src/hooks/useListPagination'
 import { useSidebar } from 'src/hooks/useSidebar'
 import { useLoading } from 'src/hooks/useLoading'
-import type { NomenclatorDetailed } from 'src/types/nomenclators'
+import type { Nomenclator, NomenclatorDetailed } from 'src/types/nomenclators'
 import type { Paginable } from 'src/types/shared'
 import { disableNomenclator, enableNomenclator, getNomenclator, getNomenclators } from './nomenclatorService'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { useUserContext } from 'src/stores/UserContext'
+import { Can } from 'src/components/auth/Can'
 import { useSearchParams } from 'react-router-dom'
 import { Grid, List, ListItemText, Stack, Typography } from '@mui/material'
+import { useOrderSeachList } from 'src/hooks/useOrderSearchLists'
+import { OrderSearchMenu } from 'src/components/ui/lists/OrderMenu'
+import { NoItemsMessage } from 'src/components/ui/lists/NoItemsMessage'
+
+const ORDER_NOM_FIELDS = [
+    { name: "name", label: "Orden Alfabético" },
+    { name: "parent_nomenclator_id", label: "Nomenclador padre" },
+]
+
+const SEARCH_NOM_FIELDS = [
+    { name: "name", label: "Nombre" },
+]
 
 export const NomenclatorList = () => {
 
-    const { activeOrg } = useUserContext()
+    const { activeOrg, user } = useUserContext()
 
     const [nomenclators, setNomenclators] = useState<Paginable<NomenclatorDetailed> | null>(null)
 
@@ -31,9 +44,18 @@ export const NomenclatorList = () => {
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(nomenclators)
 
+    const { fetchParams, changeHandlers } = useOrderSeachList()
+
     const fetchNom = useCallback((fetchPage: number, pageSize: number) => {
-        return getNomenclators({ only_active: false, detailed: true, page: fetchPage, page_size: pageSize })
+        return getNomenclators({ detailed: true, page: fetchPage, page_size: pageSize, ...fetchParams })
             .then(setNomenclators)
+    }, [fetchParams])
+
+    const [nomenclatorsFull, setNomenclatorsFull] = useState<Nomenclator[]>([])
+
+    useEffect(() => {
+        getNomenclators({ detailed: false, page_size: 0 })
+            .then(res => setNomenclatorsFull(res.items))
     }, [])
 
     const { loading, fnWithLoading: fetchNomLoad } = useLoading(fetchNom)
@@ -46,7 +68,7 @@ export const NomenclatorList = () => {
     const updateEntityOnList = useCallback((entity: NomenclatorDetailed | null, mode: string) => {
         switch (mode) {
             case "CREATE_NOM": {
-                getNomenclators({ detailed: true, page_size: pageSize, only_active: false, page: nomenclators?.page }).then(setNomenclators)
+                fetchNomLoad(nomenclators?.page, pageSize)
                 break;
             }
             case "UPDATE_NOM": {
@@ -62,11 +84,11 @@ export const NomenclatorList = () => {
             }
             case "DELETE_NOM": {
                 if (selectedEntity && entity?.id === selectedEntity.id) closeSidebar()
-                getNomenclators({ detailed: true, page_size: pageSize, only_active: false, page: nomenclators?.page }).then(setNomenclators)
+                fetchNomLoad(nomenclators?.page, pageSize)
                 break;
             }
         }
-    }, [closeSidebar, nomenclators?.page, pageSize, selectedEntity])
+    }, [closeSidebar, nomenclators?.page, pageSize, selectedEntity, fetchNomLoad])
 
     const handleActive = useCallback(async (nom: NomenclatorDetailed | null) => {
         if (!nom) return
@@ -108,6 +130,10 @@ export const NomenclatorList = () => {
         setDeletingNom(deletingNom)
     }
 
+    const filterOptions = useMemo(() => [
+        { label: "Ítem Padre", value: "parent_nomenclator_id", options: nomenclatorsFull?.map(nom => ({ label: `${nom.name}`, value: `${nom.id}` })) }
+    ], [nomenclatorsFull])
+
     return (
         <ContainerWithSidebar isSidebarOpen={Boolean(sidebarMode)} closeSidebar={closeSidebar} sidebarComponent={
             <NomenclatorSidebar mode={sidebarMode} entity={selectedEntity} handleSidebar={handleSidebar}
@@ -116,14 +142,17 @@ export const NomenclatorList = () => {
         }>
             <Stack>
                 <Stack direction="row" useFlexGap spacing={2} sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
-                    <Typography variant="h1">Lista de Nomencladores</Typography>
+                    <Typography variant="h1">Nomencladores</Typography>
                     {nomenclators && nomenclators.items?.length > 0 &&
-                        <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_NOM", null) }}
-                            sx={{ marginLeft: "auto" }} onlyTooltip>
-                            Agregar
-                        </CommonButton>
+                        <Can permission="nomenclator:create">
+                            <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_NOM", null) }}
+                                sx={{ marginLeft: "auto" }} onlyTooltip>
+                                Agregar
+                            </CommonButton>
+                        </Can>
                     }
                 </Stack>
+                <OrderSearchMenu searchOptions={SEARCH_NOM_FIELDS} orderOptions={ORDER_NOM_FIELDS} filterOptions={filterOptions} {...changeHandlers} />
                 <LoadingScreenWrapper loading={loading}>
                     <Stack spacing={2}>
                         {
@@ -131,33 +160,28 @@ export const NomenclatorList = () => {
                                 <List dense>
                                     <Grid container sx={{ alignItems: "stretch" }}>
                                         {nomenclators.items.map(nom => {
-                                            const isBlocked = !nom.organization_id && activeOrg?.id !== 0
+                                            const isBlocked = nom.organization_id === 1 && !user?.is_superuser
                                             return (<Grid size={{ xs: 12, sm: 12, md: 6, lg: 4 }} key={nom.id}>
                                                 <ResponsiveListItem isSelected={nom.id === selectedEntity?.id} disablePadding
                                                     onClick={() => handleSidebar("DETAILS_NOM", nom)}
                                                     actions={[
-                                                        { actionType: "DETAILS", label: 'Detalle', onClick: () => handleSidebar("DETAILS_NOM", nom) },
-                                                        ...(isBlocked ? [] : [
-                                                            { actionType: "MODIFY", label: 'Modificar', onClick: () => handleSidebar("UPDATE_NOM", nom) },
-                                                            {
-                                                                actionType: (nom.active ? "DISABLE" : "ENABLE"), label: nom.active ? "Deshabilitar" : "Habilitar",
-                                                                color: (nom.active ? "error" : "success"), onClick: () => handleDeletingNom(nom)
-                                                            }
-                                                        ] as ListItemAction[])
+                                                        { template: "DETAILS", onClick: () => handleSidebar("DETAILS_NOM", nom) },
+                                                        !isBlocked && { template: "MODIFY", onClick: () => handleSidebar("UPDATE_NOM", nom), permission: "nomenclator:update" },
+                                                        !isBlocked && { template: nom.active ? "DISABLE" : "ENABLE", onClick: () => handleDeletingNom(nom), permission: nom.active ? "nomenclator:delete" : "nomenclator:update" },
                                                     ]}>
                                                     <ListItemText primary={
                                                         <Stack spacing={.5} direction="row" sx={{ alignItems: "center" }}>
                                                             <EnabledIcon active={nom.active} size="small" />
                                                             <Stack spacing={-.5}>
-                                                                {nom.parent_nomenclator &&
+                                                                {nom.parent_nomenclators && nom.parent_nomenclators.length > 0 &&
                                                                     <Typography variant="caption" color="textSecondary" sx={{ fontWeight: 500, textTransform: "uppercase", wordBreak: "break-word" }}>
-                                                                        {nom.parent_nomenclator.name}
+                                                                        {nom.parent_nomenclators.map(parent => parent.name).join(", ")}
                                                                     </Typography>}
                                                                 <Typography sx={{ fontWeight: 500, wordBreak: "break-word" }}>{nom.name}</Typography>
                                                             </Stack>
                                                         </Stack>
                                                     }
-                                                        secondary={!nom.organization_id &&
+                                                        secondary={nom.organization_id === 1 &&
                                                             <span style={{ fontStyle: "italic" }}>Nomenclador del Sistema</span>
                                                         } />
                                                 </ResponsiveListItem>
@@ -167,12 +191,14 @@ export const NomenclatorList = () => {
                                         )}
                                     </Grid>
                                 </List>
-                                : <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
-                                    <Typography variant="h4">No se han encontrado nomencladores...</Typography>
-                                    <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_NOM", null) }} variant="contained">
-                                        Agregar
-                                    </CommonButton>
-                                </Stack>
+                                :
+                                <NoItemsMessage search={fetchParams.search} emptyFetchMessage="No se han encontrado nomencladores...">
+                                    <Can permission="nomenclator:create">
+                                        <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_NOM", null) }} variant="contained">
+                                            Agregar
+                                        </CommonButton>
+                                    </Can>
+                                </NoItemsMessage>
                         }
                         <PaginationComponent {...pageComponentProps} />
                     </Stack>

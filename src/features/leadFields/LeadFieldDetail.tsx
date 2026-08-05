@@ -1,20 +1,21 @@
 import { useState } from 'react';
+import { useUserContext } from 'src/stores/UserContext';
 import { ValidationList } from '../validations/ValidationList';
 import { getTypeIconAndColor, LeadFieldTypeAvatar } from './LeadFieldTypeIcon';
-import { SidebarContentWrapper } from 'shared/layout/container/GenericContainer';
+import { SidebarContentWrapper } from 'shared/layout/container/GenericSidebar';
 import { DisableConfirmDialog } from 'src/components/ui/feedback/ConfirmationDialog';
 import HandleActiveButton from 'shared/ui/buttons/HandleActiveButton';
 import { CustomListItem } from 'shared/ui/lists/CustomListItem';
 import DetailsMetadata from 'shared/ui/details/DetailsMetadata';
 import CommonButton from 'shared/ui/buttons/CommonButton';
 import CustomChip from 'shared/ui/details/CustomChip';
-import { EnabledIcon } from 'shared/ui/lists/Icons';
 import { CodeBox } from 'shared/ui/details/CodeBox';
 import type { LeadFieldDetailed } from 'src/types/leadFields'
 import { disableLeadField, enableLeadField } from './leadFieldServices';
 import { showCommonErrorToast, showToast } from 'src/utils/feedback';
 import { Link as RouterLink } from 'react-router-dom'
 import { Stack, Typography, Divider, Link, ButtonGroup, Paper, ListItemText } from '@mui/material'
+import ROUTE_ICONS from 'src/components/ui/icons/RouteIcons';
 
 interface LeadFieldDetailProps {
     leadField: LeadFieldDetailed,
@@ -22,10 +23,17 @@ interface LeadFieldDetailProps {
     updateEntity: (mode: string, entity: LeadFieldDetailed) => void,
     closeSidebar: () => void,
     leadFieldListLength?: number,
+    leadFields?: LeadFieldDetailed[] | null,
     campaignName: string
 }
 
-export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeSidebar, campaignName, leadFieldListLength = 0 }: LeadFieldDetailProps) => {
+export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeSidebar, campaignName, leadFieldListLength = 0, leadFields }: LeadFieldDetailProps) => {
+
+    const { hasPermission } = useUserContext()
+
+    const dependsOnField = leadField.depends_on_field_id
+        ? leadFields?.find(field => field.id === leadField.depends_on_field_id)
+        : undefined
 
     const handleActive = async (field: LeadFieldDetailed | null) => {
         if (!field || !field.id) return
@@ -59,15 +67,14 @@ export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeS
 
     return (
         <SidebarContentWrapper subtitle={campaignName}
-            title={<span>{leadField.name}</span>} icon={<EnabledIcon active={leadField.active} isAvatar />}
-            iconColor={leadField.active ? "success" : "error"}
+            title={<span>{leadField.name}</span>} active={leadField.active} icon={ROUTE_ICONS.LEADFIELD}
             actions={
                 <ButtonGroup sx={{ ml: "auto" }}>
                     <CommonButton onClick={closeSidebar} actionType="CLOSE" variant="outlined" >Cerrar</CommonButton>
-                    {leadFieldListLength > 1 && //Si no se separa el condicional arruina el estilo del ButtonGroup
+                    {leadFieldListLength > 1 && hasPermission(leadField.active ? "lead_field:delete" : "lead_field:update") &&
                         <HandleActiveButton active={leadField.active} handleActive={() => setDeletingField(leadField)} />
                     }
-                    {leadFieldListLength > 1 &&
+                    {leadFieldListLength > 1 && hasPermission("lead_field:update") &&
                         <CommonButton onClick={() => handleSidebar("UPDATE_FIELD", leadField)} actionType="MODIFY" >
                             Modificar
                         </CommonButton>
@@ -132,6 +139,12 @@ export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeS
                                         }
                                     </CodeBox>
                                 </Paper>
+                            </Stack>
+                        }
+                        {dependsOnField &&
+                            <Stack spacing={1} sx={{ alignItems: "start" }}>
+                                <Typography variant="body1" sx={{ fontWeight: 500 }}>Depende del Campo</Typography>
+                                <CustomChip chipColor="secondary" label={dependsOnField.name} />
                             </Stack>
                         }
                     </Stack>

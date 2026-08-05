@@ -13,6 +13,26 @@ import { ControlledAutocomplete } from 'src/components/ui/forms/CustomMultipleIn
 import { ChipTooltip } from 'src/components/ui/details/ChipTooltip';
 import { CommonIconButton } from 'src/components/ui/buttons/CommonIconButton';
 import { ControlledNumber, RegisteredDateInput, RegisteredTextInput } from 'src/components/ui/forms/CustomInputs';
+import { WRITABLE_NATIVE_KEYS, type NativeFieldOptions } from 'src/features/lead/nativeLeadFields';
+import { ControlledFieldSelector } from 'src/components/ui/forms/FieldSelector';
+
+// Devuelve las opciones reales {id, label} de un campo nativo tipo NATIVE_ID según su nativeKey
+// (mismo criterio que ConditionRow.tsx/LeadFilters.tsx).
+const getNativeIdOptions = (nativeKey: string | undefined, nativeOptions?: NativeFieldOptions): { id: number, label: string }[] => {
+  if (!nativeKey || !nativeOptions) return [];
+  switch (nativeKey) {
+    case 'contact_state_id':
+      return nativeOptions.contactStates.map(s => ({ id: s.id, label: s.name }));
+    case 'current_state_id':
+      return nativeOptions.leadStates.map(s => ({ id: s.id, label: s.name }));
+    case 'team_id':
+      return nativeOptions.teams.map(t => ({ id: t.id, label: t.name }));
+    case 'assigned_to_user_id': case 'created_by': case 'updated_by':
+      return nativeOptions.users.map(u => ({ id: u.id, label: u.name + (u.last_name ? ` ${u.last_name}` : '') }));
+    default:
+      return [];
+  }
+};
 
 const getActionColor = (type: ActionTypeEnum) => {
   switch (type) {
@@ -31,10 +51,11 @@ interface ActionRowProps {
   isOnly: boolean;
   index: number;
   fields: LeadField[];
+  nativeOptions?: NativeFieldOptions;
   readOnly?: boolean;
 }
 
-export const ActionRow = ({ control, register, onDelete, isOnly, index, fields, readOnly = false, onUpdate }: ActionRowProps) => {
+export const ActionRow = ({ control, register, onDelete, isOnly, index, fields, nativeOptions, readOnly = false, onUpdate }: ActionRowProps) => {
   // 1. FILTRADO DE CAMPOS PARA ACCIONES
   const allowedTargetFields = useMemo(() => {
     const invalidTargetTypes = ['CALCULATED', 'LEAD', 'FILE'];
@@ -43,6 +64,9 @@ export const ActionRow = ({ control, register, onDelete, isOnly, index, fields, 
     return fields.filter(f => {
       if (invalidTargetTypes.includes(f.field_type.code)) return false;
       if (f.field_subtype_code && invalidTargetSubtypes.includes(f.field_subtype_code)) return false;
+      // Campos nativos de solo lectura (Fecha de creación/actualización, Usuario Creador/Modificación).
+      // Se pueden leer en condiciones y usar como origen de "Copiar de otro campo", pero no "setearlos" a mano.
+      if (f.id < 0 && f.nativeKey && !WRITABLE_NATIVE_KEYS.includes(f.nativeKey)) return false;
       return true;
     });
   }, [fields]);
@@ -115,27 +139,19 @@ export const ActionRow = ({ control, register, onDelete, isOnly, index, fields, 
         </Typography>
 
         <Box sx={{ flexGrow: 1 }}>
-          <ControlledAutocomplete
+          <ControlledFieldSelector
             control={control}
             name={`actions.${index}.target_field_id`}
-            options={allowedTargetFields}
+            fields={allowedTargetFields}
             label='Campo destino'
             disabled={readOnly}
             size="small"
-            returnField="id"
-            getOptionKey={op => `${op.id}`} getOptionLabel={op => op.name}
             onChangeBefore={updateTypeValue}
-            renderOption={({ key, ...props }, op) => (
-              <Stack component="li" direction="row" spacing={1} sx={{ alignItems: "center" }} key={key} {...props}>
-                <Typography>{op.name}</Typography>
-                <Typography variant='body2' sx={{ fontStyle: "italic" }}>({op.field_type_code})</Typography>
-              </Stack>
-            )}
           />
         </Box>
 
         <ValueInput control={control} register={register} index={index} currentActionType={currentActionType} onUpdate={onUpdate}
-          targetField={targetField} allowedSourceFields={allowedSourceFields} readOnly={readOnly} />
+          targetField={targetField} allowedSourceFields={allowedSourceFields} nativeOptions={nativeOptions} readOnly={readOnly} />
 
         {!readOnly && (
           <ChipTooltip title={isOnly ? "Debe haber al menos una acción" : "Eliminar acción"} color={isOnly ? "contrast" : "error"}>
@@ -171,11 +187,12 @@ interface ValueInputProps {
   currentActionType: ActionTypeEnum,
   targetField?: LeadField,
   allowedSourceFields: LeadField[],
+  nativeOptions?: NativeFieldOptions,
   readOnly: boolean,
   onUpdate: (name: Path<FieldAutomationPost>, value?: string | number | boolean | null) => void
 }
 
-const ValueInput = ({ control, register, index, currentActionType, targetField, allowedSourceFields, readOnly, onUpdate }: ValueInputProps) => {
+const ValueInput = ({ control, register, index, currentActionType, targetField, allowedSourceFields, nativeOptions, readOnly, onUpdate }: ValueInputProps) => {
 
   /** Obtiene los campos del mismo tipo para duplicar */
   const compatibleFieldsForCopy = useMemo(() => {
@@ -220,21 +237,13 @@ const ValueInput = ({ control, register, index, currentActionType, targetField, 
         <>
           <ArrowForwardIcon sx={{ color: 'text.secondary' }} />
           <Box sx={{ flexGrow: 1 }}>
-            <ControlledAutocomplete
+            <ControlledFieldSelector
               control={control}
               name={`actions.${index}.source_field_id`}
-              options={compatibleFieldsForCopy}
+              fields={compatibleFieldsForCopy}
               label='Campo origen'
               disabled={readOnly}
               size="small"
-              returnField="id"
-              getOptionKey={op => `${op.id}`} getOptionLabel={op => op.name}
-              renderOption={({ key, ...props }, op) => (
-                <Stack component="li" direction="row" spacing={1} sx={{ alignItems: "center" }} key={key} {...props}>
-                  <Typography>{op.name}</Typography>
-                  <Typography variant='body2' sx={{ fontStyle: "italic" }}>({op.field_type_code})</Typography>
-                </Stack>
-              )}
             />
           </Box>
         </>
@@ -293,6 +302,26 @@ const ValueInput = ({ control, register, index, currentActionType, targetField, 
               </Box>
             </>
           );
+        case 'NATIVE_ID': {
+          const nativeIdOptions = getNativeIdOptions(targetField.nativeKey, nativeOptions);
+          return (
+            <>
+              <ArrowForwardIcon sx={{ color: 'text.secondary' }} />
+              <Box sx={{ flexGrow: 1 }}>
+                <ControlledAutocomplete
+                  control={control}
+                  name={`actions.${index}.value`}
+                  options={nativeIdOptions}
+                  label='Valor'
+                  disabled={readOnly}
+                  size="small"
+                  returnField="id"
+                  getOptionKey={op => `${op.id}`} getOptionLabel={op => op.label}
+                />
+              </Box>
+            </>
+          );
+        }
         case 'NUMBER': case 'INT':
           return (
             <>

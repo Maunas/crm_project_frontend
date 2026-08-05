@@ -1,7 +1,7 @@
 import { cloneElement } from "react"
-import type { ActionType } from "./ActionIcons"
+import type { ActionType } from "../icons/ActionIcons"
 import { ChipTooltip } from "../details/ChipTooltip"
-import ACTION_ICONS from "./ActionIcons"
+import ACTION_ICONS from "../icons/ActionIcons"
 import type { ColorTypes } from "src/types/mui-theme.d"
 import { IconButton, type IconButtonProps } from "@mui/material"
 import type { IconProps } from "react-toastify"
@@ -20,7 +20,7 @@ interface CommonIconButtonProps extends Omit<IconButtonProps, "color"> {
 }
 
 export const CommonIconButton = ({ actionType = "NONE", title, color = "action", size = "medium",
-    noTooltip = false, tooltipSize = "medium", border = false, loading = false, ...props }: CommonIconButtonProps) => {
+    noTooltip = false, tooltipSize, border = false, loading = false, ...props }: CommonIconButtonProps) => {
 
     const styleIcon = (actionType: ActionType) => {
         if (actionType === "NONE") return ACTION_ICONS.NONE
@@ -47,7 +47,7 @@ export const CommonIconButton = ({ actionType = "NONE", title, color = "action",
     )
 
     return (
-        <ChipTooltip title={title} color={chipColor} size={tooltipSize}>
+        <ChipTooltip title={title} color={chipColor} size={tooltipSize ?? size} >
             <IconButton edge="end" aria-label={title} size={size} disabled={loading}
                 {...props} sx={{ ...borderStyle, ...props.sx }}>
                 {actionIcon}

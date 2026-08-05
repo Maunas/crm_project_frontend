@@ -1,21 +1,22 @@
-import { useEffect, useMemo, useState } from "react";
-import { SidebarContentWrapper, SidebarContentActionsWrapper } from "shared/layout/container/GenericContainer";
+import { SidebarContentWrapper, SidebarContentActionsWrapper } from "shared/layout/container/GenericSidebar";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ControlledAutocomplete, ControlledRadio } from "shared/ui/forms/CustomMultipleInputs";
 import { ControlledCheckbox, ControlledTextInput } from "shared/ui/forms/CustomInputs";
 import { FormErrorMessage } from "shared/ui/forms/FormFeedback";
 import CommonButton from "shared/ui/buttons/CommonButton";
-import ACTION_ICONS from "shared/ui/buttons/ActionIcons";
+import ACTION_ICONS from "shared/ui/icons/ActionIcons";
 import { useLoading } from "src/hooks/useLoading";
 import type { InputMaskTemplate, LeadFieldDetailed, LeadFieldPost, LeadFieldTemplate, LeadFieldTypeDetailed } from "src/types/leadFields";
 import type { Campaign, CampaignDetailed } from "src/types/campaigns";
-import type { Nomenclator } from "src/types/nomenclators";
+import type { NomenclatorDetailed } from "src/types/nomenclators";
+import type { OptionWithAction } from "src/types/shared";
 import { createLeadField, getFieldTemplates, getFieldTypes, getInputMaskTemplates, updateLeadField } from "./leadFieldServices";
 import { getNomenclators } from "../nomenclators/nomenclatorService";
 import { getCampaigns } from "../campaigns/campaignServices";
 import { getFieldDataByType } from "./leadFieldUtils";
 import { setFormErrors } from "src/utils/forms";
-import { showToast } from "src/utils/feedback";
-import { Grid, FormGroup, Stack, Divider, ButtonGroup } from "@mui/material";
+import { showCommonErrorToast, showToast } from "src/utils/feedback";
+import { Box, Grid, FormGroup, Stack, Divider, ButtonGroup, TextField } from "@mui/material";
 import { Controller, useForm, useWatch, type Control, type FieldErrors, type UseFormGetValues, type UseFormSetValue } from "react-hook-form";
 import { InputAdornment, IconButton } from "@mui/material";
 import { getExcelFormulaTemplates } from "./leadFieldServices";
@@ -23,13 +24,19 @@ import type { ExcelFormulaTemplate } from "src/types/leadFields";
 import { FormulaHelperPanel } from "src/components/ui/modals/FormulaHelperModal";
 import FunctionsIcon from '@mui/icons-material/Functions';
 import { FormControl, InputLabel, OutlinedInput, FormHelperText, } from "@mui/material";
-import { getFieldSections } from "../orgProperties/fieldSections/fieldSectionsServices";
+import { createFieldSection, getFieldSections } from "../orgProperties/fieldSections/fieldSectionsServices";
+import { InlineColorPickerButton } from "src/components/ui/forms/ColorPicker";
 import type { LeadFieldSection } from "src/types/orgProperties";
+
+//Mismo color neutro por defecto que usa el picker de color libre de etiquetas nuevas (LeadTagsMenu.tsx),
+//para que el selector de color de una sección nueva arranque igual en toda la app.
+const DEFAULT_SECTION_COLOR = "#64748B"
 
 
 interface LeadFieldSidebarProps {
   existingLF?: LeadFieldDetailed,
   campaign: CampaignDetailed,
+  leadFields?: LeadFieldDetailed[] | null,
   updateEntityOnList: (entity: LeadFieldDetailed) => void,
   handleSidebar: (
     mode: string,
@@ -38,7 +45,7 @@ interface LeadFieldSidebarProps {
   closeSidebar: () => void,
 }
 //Wrapper de CampaignForm para crear desde un Sidebar
-export const LeadFieldFormSidebar = ({ existingLF, campaign, updateEntityOnList, closeSidebar, handleSidebar }: LeadFieldSidebarProps) => {
+export const LeadFieldFormSidebar = ({ existingLF, campaign, leadFields, updateEntityOnList, closeSidebar, handleSidebar }: LeadFieldSidebarProps) => {
 
   const submit = (data: LeadFieldPost, reset: boolean = false) => {
     const updateInfo = (data: LeadFieldDetailed) => {
@@ -61,7 +68,7 @@ export const LeadFieldFormSidebar = ({ existingLF, campaign, updateEntityOnList,
   return <SidebarContentWrapper subtitle={campaign.name}
     title={existingLF ? `Modificar "${existingLF.name}"` : "Crear Campo"}
     icon={ACTION_ICONS.CREATE}>
-    <LeadFieldForm existingLF={existingLF} campaign={campaign} submit={submit} onCancel={closeSidebar} />
+    <LeadFieldForm existingLF={existingLF} campaign={campaign} leadFields={leadFields} submit={submit} onCancel={closeSidebar} />
   </SidebarContentWrapper>
 }
 
@@ -73,16 +80,17 @@ export interface LeadFieldPostCreation extends LeadFieldPost {
 interface LeadFieldFormProps {
   existingLF?: LeadFieldDetailed,
   campaign: Campaign,
+  leadFields?: LeadFieldDetailed[] | null,
   submit: (data: LeadFieldPost, reset?: boolean) => Promise<void>,
   onCancel: () => void,
 }
-export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFieldFormProps) => {
+export const LeadFieldForm = ({ existingLF, campaign, leadFields, submit, onCancel }: LeadFieldFormProps) => {
 
   const [fieldTemplates, setFieldTemplates] = useState<LeadFieldTemplate[]>([]);
   const [maskTemplates, setMaskTemplates] = useState<InputMaskTemplate[]>([]);
   const [fieldSections, setFieldSections] = useState<LeadFieldSection[]>([]);
   const [fieldTypes, setFieldTypes] = useState<LeadFieldTypeDetailed[]>([]);
-  const [nomenclators, setNomenclators] = useState<Nomenclator[]>([]);
+  const [nomenclators, setNomenclators] = useState<NomenclatorDetailed[]>([]);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [excelFormulas, setExcelFormulas] = useState<ExcelFormulaTemplate[]>([]);
 
@@ -99,7 +107,8 @@ export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFi
 
   useEffect(() => {
     if (!campaign.id) return;
-    getNomenclators({ global_nomenclator: true, campaign_id: campaign.id, page_size: 0 }).then(
+    //Se pide detallado para conocer los nomencladores padre válidos de cada catálogo (feature de campos dependientes)
+    getNomenclators({ global_nomenclator: true, campaign_id: campaign.id, page_size: 0, detailed: true }).then(
       res => setNomenclators(res.items),
     );
   }, [campaign.id]);
@@ -116,6 +125,7 @@ export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFi
       input_mask: existingLF?.input_mask ?? null,
       nomenclator_id: existingLF?.nomenclator?.id ?? null,
       related_campaign_id: existingLF?.related_campaign?.id ?? null,
+      depends_on_field_id: existingLF?.depends_on_field_id ?? null,
       required: existingLF?.required ?? false,
       is_primary: existingLF?.is_primary ?? false,
       is_visible: existingLF?.is_visible ?? true,
@@ -179,7 +189,8 @@ export const LeadFieldForm = ({ existingLF, campaign, submit, onCancel }: LeadFi
           </ButtonGroup>
         }>
         <LeadFieldFormFields templates={fieldTemplates} sections={fieldSections}
-          nomenclators={nomenclators} campaigns={campaigns} types={fieldTypes}
+          addSection={section => setFieldSections(prev => [...prev, section])}
+          nomenclators={nomenclators} campaigns={campaigns} types={fieldTypes} leadFields={leadFields ?? []}
           errors={errors} control={control} maskTemplates={maskTemplates}
           existingLFId={existingLF?.id} formulas={excelFormulas} setValue={setValue} getValues={getValues}
         />
@@ -192,9 +203,11 @@ interface LeadFieldFormFieldsProps {
   templates: LeadFieldTemplate[];
   maskTemplates: InputMaskTemplate[];
   sections: LeadFieldSection[];
+  addSection: (section: LeadFieldSection) => void;
   types: LeadFieldTypeDetailed[];
-  nomenclators: Nomenclator[];
+  nomenclators: NomenclatorDetailed[];
   campaigns: Campaign[];
+  leadFields: LeadFieldDetailed[];
   control: Control<LeadFieldPostCreation>;
   errors: FieldErrors<LeadFieldPostCreation>;
   existingLFId?: number;
@@ -203,10 +216,49 @@ interface LeadFieldFormFieldsProps {
   getValues: UseFormGetValues<LeadFieldPostCreation>;
 }
 
-const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenclators, campaigns,
+const LeadFieldFormFields = ({ templates, maskTemplates, sections, addSection, types, nomenclators, campaigns, leadFields,
   control, existingLFId, errors, formulas, setValue, getValues }: LeadFieldFormFieldsProps) => {
 
   const [openFormulaModal, setOpenFormulaModal] = useState(false);
+
+  //-------------------------------- "+ Agregar nueva sección" en el selector de Sección --------------------------------
+  //Se le agrega al listado de opciones una entrada especial de acción (mismo patrón que "+ Agregar
+  //nuevo flujo..." en CampaignForms.tsx). Al elegirla, en vez de seleccionarse como si fuera una
+  //sección real, el propio selector se reemplaza por un campo de texto + un botón de color libre al
+  //costado (mismo patrón que "Agregar" en LeadTagsMenu.tsx), para crear la sección sin salir del
+  //formulario ni abrir un modal aparte.
+  const sectionsWithOption = useMemo<OptionWithAction<LeadFieldSection>[]>(() => [
+    ...sections,
+    { id: "CREATE_SECTION", name: "+ Agregar nueva sección", isAction: true },
+  ], [sections]);
+
+  const [creatingSection, setCreatingSection] = useState(false);
+  const [newSectionName, setNewSectionName] = useState("");
+  const [newSectionColor, setNewSectionColor] = useState(DEFAULT_SECTION_COLOR);
+  //Mientras el popover del color está abierto hay que ignorar el blur del campo de texto (si no, se
+  //cerraría el campo justo al intentar abrir el selector de color).
+  const [sectionColorPickerOpen, setSectionColorPickerOpen] = useState(false);
+  const newSectionInputRef = useRef<HTMLInputElement>(null);
+
+  const cancelNewSection = () => {
+    setCreatingSection(false);
+    setNewSectionName("");
+    setNewSectionColor(DEFAULT_SECTION_COLOR);
+    setSectionColorPickerOpen(false);
+  };
+
+  const submitNewSection = () => {
+    const trimmed = newSectionName.trim();
+    if (!trimmed) return cancelNewSection();
+    return createFieldSection({ name: trimmed, color: newSectionColor })
+      .then(newSection => {
+        addSection(newSection);
+        setValue("lead_field_section_id", newSection.id, { shouldValidate: true, shouldDirty: true });
+        showToast(`Sección "${newSection.name}" creada con éxito`);
+        cancelNewSection();
+      })
+      .catch(e => showCommonErrorToast(e, "No se ha podido crear la sección"));
+  };
   const creationMethod = useWatch({ name: "creation_method", control });
   const inputMaskMethod = useWatch({ name: "input_mask_method", control });
   const creationMethodRadioOptions = [
@@ -226,6 +278,23 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
     [types, fieldTypeCode],
   );
 
+  const nomenclatorId = useWatch({ name: "nomenclator_id", control });
+  //Campos válidos como "padre" de este: mismo tipo nomenclador, misma campaña, y su catálogo debe ser
+  //un padre válido (M2M) del catálogo elegido en este campo (ver nomencladores.md §8 y campos_personalizados.md §11)
+  const dependsOnFieldOptions = useMemo(() => {
+    const selectedNomenclator = nomenclators.find(nom => nom.id === nomenclatorId)
+    const validParentNomenclatorIds = new Set(selectedNomenclator?.parent_nomenclators?.map(parent => parent.id) ?? [])
+    if (validParentNomenclatorIds.size === 0) return []
+    //leadFields viene del endpoint detallado (GET /lead_fields?detailed=true), que no trae "nomenclator_id"
+    //suelto, solo el objeto anidado "nomenclator" (a diferencia del endpoint simple) — hay que usar field.nomenclator?.id
+    return leadFields.filter(field =>
+      field.id !== existingLFId &&
+      field.field_type_code === "SELECTOR" &&
+      field.nomenclator?.id != null &&
+      validParentNomenclatorIds.has(field.nomenclator.id)
+    )
+  }, [leadFields, nomenclators, nomenclatorId, existingLFId])
+
   return (
     <Stack spacing={2} sx={{ justifyContent: "center" }}>
       <Grid spacing={1} container sx={{ minWidth: "20rem" }}>
@@ -239,17 +308,64 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
           />
         </Grid>
         <Grid size="grow" sx={{ minWidth: "20rem", justifyContent: "center" }} >
-          <ControlledAutocomplete
-            name="lead_field_section_id"
-            label="Sección"
-            control={control}
-            options={sections}
-            returnField="id"
-            getOptionLabel={option => option.name!}
-            getOptionKey={option => `${option.id}`}
-            required
-            errorMessage={errors?.lead_field_section_id?.message}
-          />
+          {creatingSection ? (
+            <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+              <TextField
+                inputRef={newSectionInputRef}
+                autoFocus
+                fullWidth
+                label="Nueva Sección"
+                value={newSectionName}
+                onChange={e => setNewSectionName(e.target.value)}
+                onBlur={() => { if (!sectionColorPickerOpen) submitNewSection() }}
+                onKeyDown={e => {
+                  if (e.key === "Enter") { e.preventDefault(); submitNewSection(); }
+                  if (e.key === "Escape") { e.preventDefault(); cancelNewSection(); }
+                }}
+              />
+              <InlineColorPickerButton color={newSectionColor} onChange={setNewSectionColor}
+                ariaLabel="Elegir color de la nueva sección"
+                onOpenChange={open => {
+                  setSectionColorPickerOpen(open);
+                  //Al cerrar el picker, el foco vuelve al campo de texto para seguir escribiendo el
+                  //nombre de la sección (mismo patrón que el selector de color de etiquetas nuevas).
+                  if (!open) requestAnimationFrame(() => newSectionInputRef.current?.focus());
+                }} />
+            </Stack>
+          ) : (
+            <ControlledAutocomplete
+              name="lead_field_section_id"
+              label="Sección"
+              control={control}
+              options={sectionsWithOption}
+              returnField="id"
+              getOptionLabel={option => option.name!}
+              getOptionKey={option => `${option.id}`}
+              required
+              errorMessage={errors?.lead_field_section_id?.message}
+              renderOption={(props, option) => {
+                const isAction = (option as OptionWithAction<LeadFieldSection>).isAction;
+                return (
+                  <Box component="li" {...props}
+                    onMouseDown={e => { e.preventDefault(); e.stopPropagation(); }}
+                    onClick={e => {
+                      e.stopPropagation(); e.preventDefault();
+                      if (isAction) setCreatingSection(true);
+                      else props.onClick?.(e);
+                    }}
+                    sx={{
+                      display: "flex", alignItems: "center", width: "100%",
+                      ...(isAction && {
+                        color: "primary.main", fontWeight: "bold", borderTop: "1px solid",
+                        borderColor: "divider", mt: 0.5, bgcolor: "action.hover",
+                      }),
+                    }}>
+                    {option.name}
+                  </Box>
+                );
+              }}
+            />
+          )}
         </Grid>
         <Grid size="grow" sx={{ minWidth: "20rem", justifyContent: "center" }} >
           <FormGroup row sx={{ my: .5, mx: 1, justifyContent: "space-evenly" }}>
@@ -462,6 +578,29 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, types, nomenc
                     errorMessage={errors?.input_mask?.message} />
                 </Grid>
               }
+            </Grid>
+          </>)
+      }
+      {
+        //Se muestra en creación y edición (a diferencia del resto de los campos de tipo/subtipo/nomenclador, esta
+        //dependencia sí se puede modificar después de creado el campo, ver campos_personalizados.md §11).
+        //Solo tiene sentido mostrar el selector si hay candidatos válidos como padre.
+        fieldTypeCode === "SELECTOR" && dependsOnFieldOptions.length > 0 && (
+          <>
+            <Divider />
+            <Grid spacing={1} container sx={{ minWidth: "20rem" }}>
+              <Grid size="grow" sx={{ minWidth: "20rem", justifyContent: "center" }} >
+                <ControlledAutocomplete
+                  name="depends_on_field_id"
+                  label="Depende del Campo"
+                  control={control}
+                  options={dependsOnFieldOptions}
+                  returnField="id"
+                  errorMessage={errors?.depends_on_field_id?.message}
+                  getOptionKey={(option) => `${option.id}`}
+                  getOptionLabel={(option) => option.name}
+                />
+              </Grid>
             </Grid>
           </>)
       }

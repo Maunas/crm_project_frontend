@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useUserContext } from 'src/stores/UserContext'
 import { UpdateCampaignFormSidebar } from './CampaignForms'
 import { LeadFieldList } from '../leadFields/LeadFieldList'
 import ContainerWithSidebar from 'shared/layout/container/GenericContainer'
@@ -15,13 +16,17 @@ import type { CampaignDetailed } from 'src/types/campaigns'
 import { disableCampaign, enableCampaign, getCampaign } from './campaignServices'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom'
-import { Typography, ButtonGroup, Link, Breadcrumbs, Stack } from '@mui/material'
+import { Typography, ButtonGroup, Link, Breadcrumbs, Stack, Chip } from '@mui/material'
 import { GenericPaperColoredSection } from 'src/components/layout/container/ColoredHeaders'
 import { LeadTitleConfigSidebar } from 'src/features/lead/leadTitleConfig/LeadTitleConfigSidebar'
+import { usePageTitle } from 'src/hooks/usePageTitle'
 
 export const CampaignDetails = () => {
     const { id } = useParams()
+    const { hasPermission } = useUserContext()
     const [campaign, setCampaign] = useState<CampaignDetailed | null>(null)
+
+    usePageTitle(campaign && `${campaign.name} | Detalle de Campaña`)
 
     const { sidebarMode, handleSidebar, closeSidebar } = useSidebar<CampaignDetailed>("id")
 
@@ -101,22 +106,36 @@ export const CampaignDetails = () => {
                                     <Stack direction="row" spacing={2} useFlexGap sx={{ justifyContent: "space-between", flexWrap: "wrap" }}>
                                         <TitleAndActive active={campaign.active} >
                                             <Stack>
-                                                <Typography variant="h1">{campaign.name}</Typography>
+                                                <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                                                    <Typography variant="h1">{campaign.name}</Typography>
+                                                    <Chip label={campaign.is_public ? "Pública" : "Privada"} size="small"
+                                                        color={campaign.is_public ? "default" : "warning"} variant="outlined" />
+                                                </Stack>
                                                 {campaign.description &&
                                                     <Typography variant="body1" color="textSecondary">{campaign.description}</Typography>}
                                             </Stack>
                                         </TitleAndActive>
                                         <Stack spacing={2} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", ml: "auto" }}>
                                             <ButtonGroup sx={{ marginLeft: "auto" }}>
-                                                <CommonButton component={RouterLink} variant='outlined' to={`/leads?workspace=${campaign.workspace_id}&campaign=${campaign.id}`}
-                                                    actionType="LIST" onlyTooltip color="secondary">Ver Leads</CommonButton>
-                                                <CommonButton onClick={() => setTitleConfigOpen(true)} variant='outlined' color="secondary" actionType="RENAME" onlyTooltip>
-                                                    Configurar título
-                                                </CommonButton>
-                                                <CommonButton component={RouterLink} variant='outlined' color="secondary" to={`/automations/?campaign=${campaign.id}`}
-                                                    actionType="AUTOMATE" onlyTooltip>Automatizaciones</CommonButton>
-                                                <HandleActiveButton active={campaign.active} handleActive={() => setDeletingCmp(campaign)} onlyTooltip />
-                                                <CommonButton onClick={() => handleSidebar("UPDATE_CMP", null)} actionType="MODIFY" onlyTooltip>Modificar</CommonButton>
+                                                {hasPermission("lead:view") &&
+                                                    <CommonButton component={RouterLink} variant='outlined' to={`/leads?workspace=${campaign.workspace_id}&campaign=${campaign.id}`}
+                                                        actionType="LIST" onlyTooltip color="secondary">Ver Leads</CommonButton>
+                                                }
+                                                {hasPermission("lead_field:update") &&
+                                                    <CommonButton onClick={() => setTitleConfigOpen(true)} variant='outlined' color="secondary" actionType="RENAME" onlyTooltip>
+                                                        Configurar título
+                                                    </CommonButton>
+                                                }
+                                                {hasPermission("field_automation:view") &&
+                                                    <CommonButton component={RouterLink} variant='outlined' color="secondary" to={`/automations/?campaign=${campaign.id}`}
+                                                        actionType="AUTOMATE" onlyTooltip>Automatizaciones</CommonButton>
+                                                }
+                                                {hasPermission(campaign.active ? "campaign:delete" : "campaign:update") &&
+                                                    <HandleActiveButton active={campaign.active} handleActive={() => setDeletingCmp(campaign)} onlyTooltip />
+                                                }
+                                                {hasPermission("campaign:update") &&
+                                                    <CommonButton onClick={() => handleSidebar("UPDATE_CMP", null)} actionType="MODIFY" onlyTooltip>Modificar</CommonButton>
+                                                }
                                             </ButtonGroup>
                                         </Stack>
                                     </Stack>

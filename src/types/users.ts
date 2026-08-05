@@ -1,3 +1,4 @@
+import type { Permission, Role } from "./roles"
 import type { Metadata } from "./shared"
 
 export interface UserLogin {
@@ -20,6 +21,15 @@ export interface TokenResponse {
     expires_in: number
 }
 
+// Versión reducida de usuario, usada para selects dentro de una organización (GET /users/in-org/members)
+export interface UserPublic {
+    id: number,
+    name: string,
+    last_name: string | null,
+    email: string,
+    active: boolean,
+}
+
 export interface UserData extends Metadata {
     id: number,
     name: string,
@@ -35,15 +45,12 @@ export interface OrganizationAccess extends Metadata {
     id: number,
     organization_id: number,
     is_owner: boolean,
-    roles: Role[]
+    roles: Role[],
+    // Codenames de todos los permisos que tiene el usuario en esta organización (unión de sus roles).
+    // Viene de GET/PUT /auth/me (UserDetailedResponse), ver backend/AGENTS.md §8.
+    permission_objects: Permission[]
 }
 
-export interface Role extends Metadata {
-    id: number,
-    name: string,
-    code: string,
-    description: string | null,
-}
 
 // Invitaciones (/auth/invite, /auth/accept-invite)
 export interface InviteRequest {
@@ -56,4 +63,9 @@ export interface InviteResponse {
     invite_token: string
     expires_in_hours: number
     message: string
+}
+
+export interface AcceptInviteResponse {
+    message: string
+    organization_id: number
 }

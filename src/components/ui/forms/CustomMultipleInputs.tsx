@@ -11,7 +11,9 @@ interface BasicMultipleInputProps<Option> {
     required?: boolean,
     errorMessage?: string | null,
     size?: "small" | "medium",
-    startAdornment?: InputProps["startAdornment"]
+    startAdornment?: InputProps["startAdornment"],
+    disabled?: boolean,
+    helper?: string,
 }
 
 interface BasicControlFormInput<T extends FieldValues, Option> extends BasicMultipleInputProps<Option> {
@@ -32,6 +34,12 @@ interface ControlledACProps<T extends FieldValues, Option>
     helper?: string,
     placeholder?: string,
     onChangeBefore?: (value?: Option | Option[] | null) => void
+    //Para agrupar visualmente las opciones (ej: separar los ítems padre según a qué nomenclador padre pertenece cada uno).
+    //Requiere que "options" ya venga ordenado/agrupado por este mismo criterio (si no, MUI repite el encabezado).
+    groupBy?: (option: Option) => string,
+    //Custom del encabezado de cada grupo (ver groupBy). Si no se pasa, usa el ListSubheader en negrita por defecto de MUI 
+    //pasar `renderFieldSectionGroup` (FieldSectionHeader.tsx) para selectores de campo.
+    renderGroup?: (params: { key: string | number, group: string, children?: ReactNode }) => ReactNode,
     renderOption?: (props: React.HTMLAttributes<HTMLLIElement> & { key: React.Key }, option: Option) => ReactNode;
     renderValue?: (
         value: Option | Option[],
@@ -42,7 +50,7 @@ interface ControlledACProps<T extends FieldValues, Option>
 export const ControlledAutocomplete = <T extends FieldValues, Option>
     ({ control, name, label, options, getOptionLabel, getOptionKey, returnField = null, renderOption,
         required = false, multiple = false, disabled = false, hidden = false, disableClearable = false,
-        errorMessage = null, autocomplete = "one-time-code", helper, placeholder, size = "medium", renderValue, onChangeBefore, ...props }: ControlledACProps<T, Option>) => {
+        errorMessage = null, autocomplete = "one-time-code", helper, placeholder, size = "medium", renderValue, onChangeBefore, groupBy, renderGroup, ...props }: ControlledACProps<T, Option>) => {
 
     const handleChange = (field: ControllerRenderProps<T, Path<T>>, values: Option | Option[] | null) => {
         //Por defecto, si no hay valores devuelve null o []
@@ -84,7 +92,7 @@ export const ControlledAutocomplete = <T extends FieldValues, Option>
         <Controller name={name} control={control} disabled={disabled}
             render={({ field }) => (
                 <Autocomplete {...field} multiple={multiple} hidden={hidden} disableClearable={disableClearable}
-                    options={options ?? []} size={size}
+                    options={options ?? []} size={size} groupBy={groupBy} renderGroup={renderGroup}
                     onChange={(_, value) => {
                         if (onChangeBefore) onChangeBefore(value)
                         handleChange(field, value)
@@ -180,12 +188,12 @@ interface ControlledRadioProps<T extends FieldValues, Option> extends Omit<Basic
     isReturnInt?: boolean
 }
 export const ControlledRadio = <T extends FieldValues, Option>
-    ({ control, label, name, options, required = false, errorMessage = null, row = true,
+    ({ control, label, name, options, required = false, errorMessage = null, row = true, disabled = false, helper,
         returnField, isReturnInt = false, keyField, getRadioLabel, ...props }: ControlledRadioProps<T, Option>) => {
     return (
         <Controller control={control} name={name} render={({ field }) => {
             return (
-                <FormControl required={required} error={!!errorMessage}>
+                <FormControl required={required} error={!!errorMessage} disabled={disabled}>
                     <FormLabel id={name}>{label}</FormLabel>
                     <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
                         {props.startAdornment}
@@ -197,10 +205,13 @@ export const ControlledRadio = <T extends FieldValues, Option>
                                 options.map(option =>
                                     <FormControlLabel key={`${option[keyField]}`}
                                         value={isReturnInt ? Number(option[returnField]) : option[returnField]}
-                                        control={<Radio />} label={getRadioLabel(option)} />
+                                        control={<Radio disabled={disabled} />} label={getRadioLabel(option)} />
                                 )}
                         </RadioGroup>
                     </Stack>
+                    {helper &&
+                        <FormHelperText>{helper}</FormHelperText>
+                    }
                     {errorMessage &&
                         <FormErrorMessage>{errorMessage}</FormErrorMessage>
                     }
@@ -216,7 +227,7 @@ interface CtrlGroupedCheckboxProps<T extends FieldValues, Option> extends BasicC
     row?: boolean,
 }
 export const ControlledGroupedCheckbox = <T extends FieldValues, Option>
-    ({ control, label, name, options, required = false, errorMessage = null, returnField = null,
+    ({ control, label, name, options, required = false, errorMessage = null, returnField = null, disabled = false, helper,
         row = true, keyField, getCheckboxLabel, ...props }: CtrlGroupedCheckboxProps<T, Option>) => {
 
     return (
@@ -224,7 +235,10 @@ export const ControlledGroupedCheckbox = <T extends FieldValues, Option>
             <>
                 <GroupedCheckbox field={field} label={label} options={options}
                     returnField={returnField} keyField={keyField} getCheckboxLabel={getCheckboxLabel}
-                    row={row} required={required} errorMessage={errorMessage} {...props} />
+                    row={row} required={required} errorMessage={errorMessage} disabled={disabled} {...props} />
+                {helper &&
+                    <FormHelperText>{helper}</FormHelperText>
+                }
                 {errorMessage &&
                     <FormErrorMessage>{errorMessage}</FormErrorMessage>
                 }
@@ -243,7 +257,7 @@ interface GroupedCheckboxProps<T extends FieldValues, Option> extends BasicMulti
 
 //Los checkbox tienen sus campos individualmente. Este componente crea un mapa para devolver los valores como un arreglo.
 const GroupedCheckbox = <T extends FieldValues, Option>
-    ({ field, label, options, required = false, errorMessage = null, returnField = null,
+    ({ field, label, options, required = false, errorMessage = null, returnField = null, disabled = false,
         row = true, keyField, getCheckboxLabel, ...props }: GroupedCheckboxProps<T, Option>) => {
 
     const [checkboxState, setCheckboxState] = useState(() => {
@@ -272,7 +286,7 @@ const GroupedCheckbox = <T extends FieldValues, Option>
     }
 
     return (
-        <FormControl required={required} error={!!errorMessage}>
+        <FormControl required={required} error={!!errorMessage} disabled={disabled}>
             <FormLabel>{label}</FormLabel>
             <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
                 {props.startAdornment}
@@ -281,7 +295,7 @@ const GroupedCheckbox = <T extends FieldValues, Option>
                         <FormControlLabel key={`${option[keyField]}`} label={getCheckboxLabel(option)}
                             control={
                                 <Checkbox checked={checkboxState.has(option?.[keyField])} onChange={(e, value) => handleChange(e, value, option)}
-                                    name={`${option[keyField]}`} />
+                                    name={`${option[keyField]}`} disabled={disabled} />
                             }
                         />)
                     )}

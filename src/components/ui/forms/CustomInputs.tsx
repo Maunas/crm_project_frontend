@@ -194,16 +194,18 @@ export const ControlledCheckbox = <T extends FieldValues>
 };
 
 export const ControlledSwitch = <T extends FieldValues>
-  ({ control, label, name, required = false, errorMessage, title }: ControlledCheckboxProps<T>) => {
+  ({ control, label, name, required = false, errorMessage, title, size = "medium" }: ControlledCheckboxProps<T>) => {
   return (
-    <FormControl error={!!errorMessage} variant="standard" >
-      <FormLabel error={!!errorMessage}>{title}</FormLabel>
+    <FormControl error={!!errorMessage} variant="standard" sx={{ pl: 1 }}>
+      <FormLabel error={!!errorMessage}>
+        <Typography variant={size === "medium" ? "body1" : "body2"}>{title}</Typography>
+      </FormLabel>
       <FormControlLabel label={label} required={required}
         control={
           <Controller name={name} control={control} defaultValue={false as PathValue<T, Path<T>>}
             render={({ field }) => (
               <Switch {...field}
-                checked={field.value ?? false}
+                checked={field.value ?? false} size={size}
                 onChange={(_, checked) => field.onChange(checked ?? false)}
               />
             )}
@@ -225,9 +227,9 @@ export const PasswordField = <T extends FieldValues>
 
   return (
     <FormControl required={required} error={!!errorMessage} size={size} fullWidth>
-      <InputLabel htmlFor={name} size={size}>{label}</InputLabel>
+      <InputLabel htmlFor={name} size={size} shrink>{label}</InputLabel>
       <OutlinedInput id={name} label={label} size={size}
-        type={showPassword ? "text" : "password"}
+        type={showPassword ? "text" : "password"} placeholder={label}
         error={!!errorMessage} autoComplete={autoComplete} {...register(name)}
         endAdornment={
           <InputAdornment position="end">
@@ -283,7 +285,7 @@ export const RegisteredTextInput = <T extends FieldValues>
 
   return (
     <>
-      <TextField {...register(name, { setValueAs })} label={label ?? name} id={id ?? name} type={type}
+      <TextField {...register(name, { setValueAs })} label={label ?? name} placeholder={label ?? name} id={id ?? name} type={type}
         onChange={e => { register(name).onChange(e); onChange() }}
         required={required} error={!!errorMessage} autoComplete={autoComplete} multiline={multiline}
         fullWidth size={size}
@@ -300,6 +302,10 @@ export const RegisteredTextInput = <T extends FieldValues>
                 filter: mode === "dark" ? 'invert(1)' : "none",
               },
             },
+          },
+          inputLabel: {
+            shrink: true,
+            ...slotProps?.inputLabel,
           },
         }}
         {...props}

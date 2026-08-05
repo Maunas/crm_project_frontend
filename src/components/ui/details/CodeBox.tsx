@@ -6,7 +6,7 @@ export const CodeBox = styled(Box)(
             backgroundColor: theme.palette.contrast.main,
             width: "100%",
             textAlign: "center",
-            padding: ".5rem 1rem",
+            padding: ".25rem 1rem",
             fontFamily: '"Source Code Pro", monospace',
             "& *": {
                 color: theme.palette.contrast.contrastText,

@@ -15,10 +15,11 @@ import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { Autocomplete, ButtonGroup, Grid, Stack, TextField, Typography } from "@mui/material"
 import GenericPaper from "src/components/layout/container/GenericPaper"
 import { CustomAvatar } from "src/components/ui/details/CustomAvatar"
-import ACTION_ICONS from "src/components/ui/buttons/ActionIcons"
+import ACTION_ICONS from "shared/ui/icons/ActionIcons"
 import CommonButton from "src/components/ui/buttons/CommonButton"
 import { GenericPaperColoredSection } from "src/components/layout/container/ColoredHeaders"
 import GenericModal, { ModalContentWrapper } from "src/components/layout/container/GenericModal"
+import { usePageTitle } from "src/hooks/usePageTitle"
 
 /** Wrapper para presentar LeadForm de creación en una página. */
 export const CreateLeadFormPage = () => {
@@ -192,9 +193,12 @@ export const SimulateLeadFormModal = ({ campaign, leadFields, onCancel, modalPro
 
 export const UpdateLeadFormPage = () => {
 
+    const { hasPermission } = useUserContext()
     const { id } = useParams()
     const [lead, setLead] = useState<LeadDetailed | null>(null)
     const nav = useNavigate()
+
+    usePageTitle(lead && `${getLeadTitleArray(lead).join(" ")} | Editar Lead`)
 
     const [btnLoading, setBtnLoading] = useState(false)
 
@@ -248,7 +252,7 @@ export const UpdateLeadFormPage = () => {
                             <ButtonGroup sx={{ alignSelf: "end" }}>
                                 <CommonButton actionType="CLOSE" variant="outlined" color="error" loading={btnLoading}
                                     component={Link} to={`/leads/${lead.id}`}>Cancelar</CommonButton>
-                                {lead.campaign_id &&
+                                {lead.campaign_id && hasPermission("lead:update") &&
                                     <CommonButton actionType="MODIFY" variant="contained" loading={btnLoading}
                                         type="submit" form={`update-lead-${lead.id}`}>Guardar</CommonButton>
                                 }

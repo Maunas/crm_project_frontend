@@ -6,6 +6,7 @@ import { mapFlowStates, mapFlowTransitions } from './leadFlowServices/leadFlowUt
 import { useParams } from 'react-router-dom';
 import { Box, CircularProgress } from '@mui/material';
 import { getLeadFlow, getLeadFlowStates, getLeadFlowTransitions, saveLeadFlowGraph } from './leadFlowServices/FlowService';
+import { usePageTitle } from 'src/hooks/usePageTitle';
 
 interface GraphData {
   id?: number | null,
@@ -50,6 +51,10 @@ export const LeadFlowEditor = () => {
     }
   }, [editFlowId])
 
+  console.log(initialData)
+
+  usePageTitle(initialData.name && `${initialData.name} | Editor de Flujo`)
+
   const { loading, fnWithLoading } = useLoading(fetchFlow)
 
   useEffect(() => {
@@ -62,10 +67,10 @@ export const LeadFlowEditor = () => {
     let negativeIdCounter = -1;
     const uuidToBackendIdMap = new Map<string, number>();
 
-    // 2. Preparar Estados
+    // 2. Preparar Etapas
     const statesPayload = states.map(s => {
       let backendId: number;
-      // Si el tempId tiene un guion, es un UUID (nuevo estado)
+      // Si el tempId tiene un guion, es un UUID (nueva etapa)
       if (s.tempId.includes('-')) {
         backendId = negativeIdCounter--;
         uuidToBackendIdMap.set(s.tempId, backendId);

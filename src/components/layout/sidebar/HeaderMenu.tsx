@@ -1,15 +1,16 @@
 import React, { memo, useState } from 'react'
-import MaterialUISwitch from './ThemeSlider';
 import { useUserContext } from 'src/stores/UserContext';
 import { Link, useNavigate } from 'react-router-dom';
-import { Avatar, Box, Button, Divider, FormControlLabel, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Stack, Typography } from '@mui/material'
-import { useColorScheme, useTheme } from '@mui/material/styles';
-import { AccountCircle, Check, PersonOutlined, PersonAddOutlined } from '@mui/icons-material';
+import { Box, Button, Divider, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Stack, Typography } from '@mui/material'
+import { UserAvatar } from 'src/components/ui/details/UserAvatar'
+import { useTheme } from '@mui/material/styles';
+import { AccountCircle, Check, Close, PersonOutlined, PersonAddOutlined } from '@mui/icons-material';
 import MoreIcon from '@mui/icons-material/More';
 import LoadingScreenWrapper from 'src/components/ui/feedback/LoadingScreen';
 import type { UserContextItems } from 'src/stores/UserContext';
 import { InviteDialog } from 'src/features/organizations/InviteDialog';
-import type { Organization } from 'src/types/users';
+import { showCommonErrorToast } from 'src/utils/feedback';
+import type { Organization } from 'src/types/campaigns';
 
 function useRoleLabel(user: UserContextItems["user"], activeOrg: UserContextItems["activeOrg"]) {
     if (!user) return ""
@@ -25,7 +26,7 @@ const HeaderMenu = memo(() => {
     const nav = useNavigate()
     const [inviteOpen, setInviteOpen] = useState(false)
 
-    const { user, logout, activeOrganizations, activeOrg, setActiveOrg, loadingOrgs } = useUserContext()
+    const { user, logout, orgHeaderList, activeOrg, setActiveOrg, loadingOrgs, savedAccounts, switchAccount, removeSavedAccount } = useUserContext()
 
     const fullName = user ? [user.name, user.last_name].filter(Boolean).join(" ") : ""
     const roleLabel = useRoleLabel(user, activeOrg)
@@ -39,7 +40,9 @@ const HeaderMenu = memo(() => {
 
     const handleLogout = async () => {
         await logout()
-        nav("/login")
+        //Si logout() pasó a otra cuenta guardada, esto simplemente refresca la pantalla para esa cuenta;
+        //si no quedaba ninguna, el usuario ya quedó sin sesión y el layout lo manda a /login solo.
+        nav("/dashboard", { replace: true })
     }
 
     const handleOrgSwitch = (org: Organization) => {
@@ -48,13 +51,25 @@ const HeaderMenu = memo(() => {
         handleMenuClose()
     }
 
-    const { setMode } = useColorScheme();
+    const handleAccountSwitch = async (userId: number) => {
+        if (userId === user?.id) { handleMenuClose(); return }
+        handleMenuClose()
+        try {
+            await switchAccount(userId)
+            nav("/dashboard")
+        } catch (e) {
+            showCommonErrorToast(e, "No se pudo cambiar a esa cuenta, iniciá sesión de nuevo.")
+        }
+    }
+
+    const handleRemoveAccount = (e: React.MouseEvent, userId: number) => {
+        e.stopPropagation()
+        removeSavedAccount(userId).catch(err => showCommonErrorToast(err, "No se pudo quitar la cuenta."))
+    }
+
+
     const { palette } = useTheme();
 
-    const handleMode = (darkMode: boolean) => {
-        if (darkMode) return setMode("dark")
-        else setMode("light")
-    }
 
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -89,12 +104,36 @@ const HeaderMenu = memo(() => {
             onClose={handleMenuClose}
         >
             <MenuItem>
+                <ListItemText>Cuentas</ListItemText>
+                <Divider />
+            </MenuItem>
+            {savedAccounts.map(acc => (
+                <MenuItem dense key={acc.userId} onClick={() => handleAccountSwitch(acc.userId)}>
+                    {acc.userId === user?.id &&
+                        <ListItemIcon><Check /></ListItemIcon>
+                    }
+                    <ListItemText inset={acc.userId !== user?.id}
+                        primary={[acc.name, acc.last_name].filter(Boolean).join(" ") || acc.email}
+                        secondary={acc.userId !== user?.id ? acc.email : undefined} />
+                    {acc.userId !== user?.id &&
+                        <IconButton size="small" edge="end" title="Quitar cuenta" onClick={(e) => handleRemoveAccount(e, acc.userId)}>
+                            <Close fontSize="small" />
+                        </IconButton>
+                    }
+                </MenuItem>
+            ))}
+            <MenuItem dense component={Link} to="/login" onClick={handleMenuClose}>
+                <ListItemIcon><PersonAddOutlined fontSize="small" /></ListItemIcon>
+                <ListItemText>Agregar cuenta</ListItemText>
+            </MenuItem>
+            <Divider />
+            <MenuItem>
                 <ListItemText>Organizaciones</ListItemText>
                 <Divider />
             </MenuItem>
             <LoadingScreenWrapper loading={loadingOrgs} sx={{ minWidth: "15rem", height: "10rem" }}>
                 {
-                    activeOrganizations?.map(org => (
+                    orgHeaderList?.map(org => (
                         <MenuItem dense key={org.id} onClick={() => handleOrgSwitch(org)}>
                             {org.id === activeOrg?.id &&
                                 <ListItemIcon><Check /></ListItemIcon>
@@ -105,13 +144,6 @@ const HeaderMenu = memo(() => {
                 }
             </LoadingScreenWrapper>
             <Divider />
-            <MenuItem>
-                <FormControlLabel sx={{ width: "9rem" }}
-                    control={<MaterialUISwitch checked={palette.mode === "dark"}
-                        onChange={(_, checked) => handleMode(checked)} />}
-                    label={palette.mode === "dark" ? "Modo Oscuro" : "Modo Claro"}
-                />
-            </MenuItem>
             <MenuItem dense component={Link} to="/profile" onClick={handleMenuClose}>
                 <ListItemIcon><PersonOutlined fontSize="small" /></ListItemIcon>
                 <ListItemText>Mi perfil</ListItemText>
@@ -145,7 +177,7 @@ const HeaderMenu = memo(() => {
                     aria-haspopup="true"
                     color="inherit"
                 >
-                    <Avatar sx={{ color: palette.secondary.dark, backgroundColor: palette.secondary.light }} />
+                    <UserAvatar name={fullName || user?.email || "?"} />
                 </IconButton>
                 <Stack>
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>{fullName || user?.email}</Typography>
@@ -170,7 +202,7 @@ const HeaderMenu = memo(() => {
                     aria-haspopup="true"
                     onClick={handleProfileMenuOpen}
                 >
-                    <Avatar sx={{ color: palette.secondary.dark, backgroundColor: palette.secondary.light }} />
+                    <UserAvatar name={fullName || user.email} />
                 </IconButton>
             </Box>
             <Box sx={{ display: { xs: 'flex', md: 'none' } }}>

@@ -1,4 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
+import { Can } from 'src/components/auth/Can';
+import { useUserContext } from 'src/stores/UserContext';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Box, Typography, alpha, useTheme, Stack } from '@mui/material';
 import { AutomationForm } from './AutomationForm';
@@ -6,6 +8,12 @@ import { getLeadFields } from '../leadFields/leadFieldServices';
 import { getFieldAutomation, createFieldAutomation, updateFieldAutomation } from './AutomationFieldServices';
 import type { FieldAutomationPost, FieldAutomationDetailed } from '../../types/automation';
 import type { LeadField } from '../../types/leadFields';
+import { NATIVE_LEAD_FIELDS, type NativeFieldOptions } from '../lead/nativeLeadFields';
+import { getLeadContactStates } from '../orgProperties/contactState/contactStatesServices';
+import { getLeadFlowStates } from '../leadFlows/leadFlowServices/FlowService';
+import { getTeams } from '../lead/teamService';
+import { getUsersInOrg } from 'src/features/auth/userServices';
+import { getCampaign } from 'src/features/campaigns/campaignServices';
 import { showCommonErrorToast } from 'src/utils/feedback';
 import { useLoading } from 'src/hooks/useLoading';
 import GenericPaper from 'src/components/layout/container/GenericPaper';
@@ -14,6 +22,7 @@ import CustomChip from 'src/components/ui/details/CustomChip';
 import { GenericContainer } from 'src/components/layout/container/GenericContainer';
 import CommonButton from 'src/components/ui/buttons/CommonButton';
 import { CommonIconButton } from 'src/components/ui/buttons/CommonIconButton';
+import { usePageTitle } from 'src/hooks/usePageTitle';
 
 export const AutomationPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -30,10 +39,17 @@ export const AutomationPage = () => {
   const isEditing = Boolean(id && !isNaN(Number(id)));
   const isDuplicating = Boolean(duplicateFromId);
 
+  // Sin el permiso correspondiente (según se esté creando o editando), el formulario
+  // se fuerza a solo-lectura sin importar el toggle local ni el parámetro "edit" de la URL.
+  const { hasPermission } = useUserContext()
+  const canEdit = isEditing ? hasPermission("field_automation:update") : hasPermission("field_automation:create")
+
   const [readOnly, setReadOnly] = useState(isEditing && searchParams.get('edit') !== 'true');
+  const effectiveReadOnly = readOnly || !canEdit
   const [initialData, setInitialData] = useState<FieldAutomationDetailed | null>(null);
 
   const [fields, setFields] = useState<LeadField[]>([]);
+  const [nativeOptions, setNativeOptions] = useState<NativeFieldOptions>({ contactStates: [], leadStates: [], teams: [], users: [] });
 
   const formSubmitRef = useRef<() => void>(null);
 
@@ -49,10 +65,39 @@ export const AutomationPage = () => {
         })
         .catch(e => showCommonErrorToast(e))
     }
+    // Se agregan los campos nativos del lead a los mismos que ya se ofrecen en filtros/columnas de la lista
+    // de leads, para poder usarlos en condiciones/acciones de la automatización.
     await getLeadFields({ detailed: false, only_active: true, campaign_id: campaignId, page_size: 0 })
-      .then(data => setFields(data.items))
+      .then(data => setFields([...NATIVE_LEAD_FIELDS, ...data.items]))
       .catch(e => showCommonErrorToast(e))
+
+    // Opciones reales para los selectores de valor de los campos nativos tipo NATIVE_ID
+    // (mismo patrón que LeadFilters.tsx en la lista de leads).
+    getLeadContactStates({ page_size: 0 })
+      .then(r => setNativeOptions(prev => ({ ...prev, contactStates: r.items })))
+      .catch(e => showCommonErrorToast(e))
+    getTeams({ page_size: 0 })
+      .then(r => setNativeOptions(prev => ({ ...prev, teams: r.items })))
+      .catch(e => showCommonErrorToast(e))
+    getUsersInOrg()
+      .then(users => setNativeOptions(prev => ({ ...prev, users })))
+      .catch(e => showCommonErrorToast(e))
+    if (campaignId) {
+      getCampaign(campaignId)
+        .then(campaign => {
+          if (!campaign.lead_flow_id) return
+          return getLeadFlowStates({ lead_flow_id: campaign.lead_flow_id, page_size: 0 })
+            .then(r => setNativeOptions(prev => ({ ...prev, leadStates: r.items })))
+        })
+        .catch(e => showCommonErrorToast(e))
+    }
   }, [campaignId, id, isDuplicating, duplicateFromId, isEditing])
+
+  usePageTitle(
+    !isEditing ? "Nueva Automatización"
+      : isDuplicating ? initialData?.name && `${initialData?.name} | Duplicar Automatización`
+        : initialData?.name && `${initialData?.name} | Editar Automatización`
+  )
 
   const { fnWithLoading: initialFetchLoad, loading: initialFetchLoading } = useLoading(initialLoad)
 
@@ -61,6 +106,7 @@ export const AutomationPage = () => {
   }, [initialFetchLoad]);
 
   const handleSaveToApi = async (payload: FieldAutomationPost) => {
+    if (!canEdit) return
     try {
       if (isEditing) await updateFieldAutomation(payload, Number(id));
       else await createFieldAutomation(payload);
@@ -97,22 +143,30 @@ export const AutomationPage = () => {
                 </Typography>
                 {/* Badge de Estado: Se integra aquí el texto de "Modo visualización" */}
                 <CustomChip
-                  label={readOnly ? "Solo Lectura" : isDuplicating ? "Duplicando" : "Editando"}
+                  label={effectiveReadOnly ? "Solo Lectura" : isDuplicating ? "Duplicando" : "Editando"}
                   size="small"
-                  color={readOnly ? "default" : "primary"}
+                  color={effectiveReadOnly ? "default" : "primary"}
                 />
               </Stack>
 
               {/* Derecha: Botones de Acción */}
               <Box sx={{ ml: "auto" }}>
-                {readOnly ? (
-                  <CommonButton actionType='MODIFY' onClick={() => setReadOnly(false)} >
-                    Editar
-                  </CommonButton>
+                {effectiveReadOnly ? (
+                  // El toggle "Editar" solo tiene sentido al editar una automatización existente
+                  // (al crear una nueva, el formulario ya arranca editable si hay permiso de creación).
+                  isEditing && (
+                    <Can permission="field_automation:update">
+                      <CommonButton actionType='MODIFY' onClick={() => setReadOnly(false)} >
+                        Editar
+                      </CommonButton>
+                    </Can>
+                  )
                 ) : (
-                  <CommonButton actionType='SAVE' onClick={() => formSubmitRef.current?.()} loading={saving}>
-                    Guardar
-                  </CommonButton>
+                  <Can permission={isEditing ? "field_automation:update" : "field_automation:create"}>
+                    <CommonButton actionType='SAVE' onClick={() => formSubmitRef.current?.()} loading={saving}>
+                      Guardar
+                    </CommonButton>
+                  </Can>
                 )}
               </Box>
             </Stack>
@@ -124,7 +178,8 @@ export const AutomationPage = () => {
             campaignId={campaignId}
             onSave={handleSaveLoad}
             fields={fields}
-            readOnly={readOnly}
+            nativeOptions={nativeOptions}
+            readOnly={effectiveReadOnly}
             isDuplicating={isDuplicating}
             submitRef={formSubmitRef}
           />

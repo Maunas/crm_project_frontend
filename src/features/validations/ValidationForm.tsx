@@ -11,7 +11,7 @@ import { getValidationDataByType, setValFormErrors } from "./validationUtils";
 import { showToast } from "src/utils/feedback";
 import { useFieldArray, useForm, useWatch, type Control, type FieldErrors, type UseFieldArrayRemove, type UseFormClearErrors, type UseFormGetValues, type UseFormRegister, type UseFormSetValue } from "react-hook-form";
 import { Divider, Grid, Stack, Typography, ButtonGroup } from "@mui/material";
-import { SidebarContentActionsWrapper, SidebarContentWrapper } from "src/components/layout/container/GenericContainer";
+import { SidebarContentActionsWrapper, SidebarContentWrapper } from "src/components/layout/container/GenericSidebar";
 import RuleIcon from '@mui/icons-material/Rule';
 
 export interface FieldValidationListPostInstance extends FieldValidationRulePost {

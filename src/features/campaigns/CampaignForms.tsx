@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { ControlledAutocomplete } from "shared/ui/forms/CustomMultipleInputs"
-import { RegisteredTextInput } from "shared/ui/forms/CustomInputs"
+import { ControlledCheckbox, RegisteredTextInput } from "shared/ui/forms/CustomInputs"
 import { FormErrorMessage } from "shared/ui/forms/FormFeedback"
+import { ChipTooltip } from "shared/ui/details/ChipTooltip"
 import CommonButton from "shared/ui/buttons/CommonButton"
 import { useLoading } from "src/hooks/useLoading"
 import type { CampaignDetailed, CampaignPost, Workspace, WorkspaceDetailed } from "src/types/campaigns"
@@ -12,12 +13,14 @@ import { getWorkspace, getWorkspaces } from "../workspaces/workspaceServices"
 import { getLeadFlows } from "../leadFlows/leadFlowServices/FlowService"
 import { setFormErrors } from "src/utils/forms"
 import { showToast } from "src/utils/feedback"
+import { useUserContext } from "src/stores/UserContext"
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
 import { ButtonGroup, Grid, Stack, Typography, IconButton, Box } from "@mui/material"
 import EditIcon from "@mui/icons-material/Edit"
 import CreateIcon from "@mui/icons-material/Create"
-import { SidebarContentActionsWrapper, SidebarContentWrapper } from "src/components/layout/container/GenericContainer"
+import { SidebarContentActionsWrapper, SidebarContentWrapper } from "src/components/layout/container/GenericSidebar"
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined"
 
 interface UpdateCampaignSidebarProps {
     existingCmp: CampaignDetailed,
@@ -81,6 +84,8 @@ export const CampaignForm = ({ existingCmp, workspaceId, submit, onCancel }: Cam
     const [workspaces, setWorkspaces] = useState<Workspace[] | []>([])
     const [leadFlows, setLeadFlows] = useState<LeadFlow[] | []>([])
     const navigate = useNavigate();
+    const { hasPermission } = useUserContext()
+    const canEditFlow = hasPermission("lead_flow:update")
 
     useEffect(() => {
         getWorkspaces({ only_active: true, page_size: 0 })
@@ -90,14 +95,16 @@ export const CampaignForm = ({ existingCmp, workspaceId, submit, onCancel }: Cam
     useEffect(() => {
         getLeadFlows({ only_active: true, page_size: 0 })
             .then(res => setLeadFlows(res.items))
+            .catch(() => setLeadFlows([]))
     }, [])
     const flowsWithOptions = useMemo<OptionWithAction<LeadFlow>[]>(() => {
+        if (!canEditFlow) return leadFlows as OptionWithAction<LeadFlow>[]
 
         return [
             ...(leadFlows as OptionWithAction<LeadFlow>[]),
             { id: 'CREATE_ACTION', name: ' + Agregar nuevo flujo...', isAction: true }
         ];
-    }, [leadFlows]);
+    }, [leadFlows, canEditFlow]);
 
 
     const defaultValues = useMemo(() => ({
@@ -106,6 +113,7 @@ export const CampaignForm = ({ existingCmp, workspaceId, submit, onCancel }: Cam
         workspace_id: existingCmp?.workspace_id ?? workspaceId ?? undefined,
         lead_flow_id: existingCmp?.lead_flow_id,
         target_audience: existingCmp?.target_audience ?? undefined,
+        is_public: existingCmp?.is_public ?? true,
     }), [existingCmp, workspaceId])
 
     const { register, handleSubmit, reset, control, formState: { errors }, setError, getValues }
@@ -162,80 +170,100 @@ export const CampaignForm = ({ existingCmp, workspaceId, submit, onCancel }: Cam
                         <RegisteredTextInput name="name" register={register} label="Nombre"
                             required errorMessage={errors.name?.message} />
                     </Grid>
-
-                    {!existingCmp &&
-                        <Grid size="grow" sx={{ minWidth: "20rem" }}>
-                            <ControlledAutocomplete control={control} label="Audiencia Objetivo" name="target_audience" options={AUDIENCES}
-                                getOptionLabel={option => option} getOptionKey={option => `${option}`}
-                                errorMessage={errors?.target_audience?.message} />
-                        </Grid>
-                    }
                     <Grid size="grow" sx={{ minWidth: "20rem" }}>
                         <RegisteredTextInput name="description" register={register} label="Descripción"
-                            errorMessage={errors.description?.message} multiline />
+                            errorMessage={errors.description?.message} multiline minRows={3} />
                     </Grid>
                     {!existingCmp &&
                         <Grid size="grow" sx={{ minWidth: "20rem" }}>
-                            <ControlledAutocomplete
-                                control={control} label="Flujo de Estados"
-                                name="lead_flow_id" options={flowsWithOptions}
-                                getOptionLabel={option => option.name!} getOptionKey={option => `${option.id}`}
-                                returnField="id" errorMessage={errors?.lead_flow_id?.message} required
-                                renderOption={(props, option) => {
-                                    // Comprobamos si es nuestra opción inyectada
-                                    const isAction = option.isAction;
-                                    return (
-                                        <Box
-                                            component="li" {...props}
-                                            onMouseDown={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                            }}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                e.preventDefault();
-                                                if (isAction) {
-                                                    handleNavigateToFlow();
-                                                } else {
-                                                    props.onClick?.(e); // Acción: Seleccionar Flujo normal
-                                                }
-                                            }}
-                                            sx={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                width: '100%',
-                                                ...(isAction && {
-                                                    color: 'primary.main',
-                                                    fontWeight: 'bold',
-                                                    borderTop: '1px solid',
-                                                    borderColor: 'divider',
-                                                    mt: 0.5,
-                                                    bgcolor: 'action.hover'
-                                                })
-                                            }}
-                                        >
-                                            <Typography sx={{ flexGrow: 1 }}>
-                                                {option.name}
-                                            </Typography>
-
-                                            {!isAction && (
-                                                <IconButton
-                                                    size="small"
-                                                    onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                            <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                                <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                                    <ControlledAutocomplete control={control} label="Audiencia Objetivo" name="target_audience" options={AUDIENCES}
+                                        getOptionLabel={option => option} getOptionKey={option => `${option}`}
+                                        errorMessage={errors?.target_audience?.message} />
+                                </Box>
+                                <ChipTooltip color="info"
+                                    title="Cuando se indica un valor se crearán automáticamente campos esenciales según la audiencia seleccionada.">
+                                    <InfoOutlinedIcon fontSize="small" color="disabled" />
+                                </ChipTooltip>
+                            </Stack>
+                        </Grid>
+                    }
+                    <Grid size="grow" sx={{ minWidth: "20rem" }}>
+                        <ControlledCheckbox control={control} label="Campaña pública" name="is_public"
+                            tooltip="Si está tildada, cualquier usuario de la organización ve todos los leads de esta campaña, sin importar accesos de equipo. Destildá esta opción para que la visibilidad se limite por equipos."
+                            errorMessage={errors?.is_public?.message} />
+                    </Grid>
+                    {!existingCmp &&
+                        <Grid size="grow" sx={{ minWidth: "20rem" }}>
+                            <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                                <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                                    <ControlledAutocomplete
+                                        control={control} label="Ciclo de Vida"
+                                        name="lead_flow_id" options={flowsWithOptions}
+                                        getOptionLabel={option => option.name!} getOptionKey={option => `${option.id}`}
+                                        returnField="id" errorMessage={errors?.lead_flow_id?.message} required
+                                        renderOption={(props, option) => {
+                                            // Comprobamos si es nuestra opción inyectada
+                                            const isAction = option.isAction;
+                                            return (
+                                                <Box
+                                                    component="li" {...props}
+                                                    onMouseDown={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                    }}
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         e.preventDefault();
-                                                        handleNavigateToFlow(option.id as number);
+                                                        if (isAction) {
+                                                            handleNavigateToFlow();
+                                                        } else {
+                                                            props.onClick?.(e); // Acción: Seleccionar Flujo normal
+                                                        }
                                                     }}
-                                                    sx={{ ml: 1 }}
+                                                    sx={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        width: '100%',
+                                                        ...(isAction && {
+                                                            color: 'primary.main',
+                                                            fontWeight: 'bold',
+                                                            borderTop: '1px solid',
+                                                            borderColor: 'divider',
+                                                            mt: 0.5,
+                                                            bgcolor: 'action.hover'
+                                                        })
+                                                    }}
                                                 >
-                                                    <EditIcon fontSize="small" color="action" />
-                                                </IconButton>
-                                            )}
-                                        </Box>
-                                    );
-                                }}
-                            />
+                                                    <Typography sx={{ flexGrow: 1 }}>
+                                                        {option.name}
+                                                    </Typography>
+
+                                                    {!isAction && canEditFlow && (
+                                                        <IconButton
+                                                            size="small"
+                                                            onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                e.preventDefault();
+                                                                handleNavigateToFlow(option.id as number);
+                                                            }}
+                                                            sx={{ ml: 1 }}
+                                                        >
+                                                            <EditIcon fontSize="small" color="action" />
+                                                        </IconButton>
+                                                    )}
+                                                </Box>
+                                            );
+                                        }}
+                                    />
+                                </Box>
+                                <ChipTooltip color="info"
+                                    title="Indica con qué ciclo de vida (flujo de estados) va a trabajar la campaña.">
+                                    <InfoOutlinedIcon fontSize="small" color="disabled" />
+                                </ChipTooltip>
+                            </Stack>
                         </Grid>}
                     {errors?.root &&
                         <FormErrorMessage>{errors?.root?.message}</FormErrorMessage>}

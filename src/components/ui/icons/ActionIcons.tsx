@@ -25,6 +25,9 @@ import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import DownloadIcon from '@mui/icons-material/Download';
 import UploadIcon from '@mui/icons-material/Upload'
 import TuneIcon from '@mui/icons-material/Tune'
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import ReplayIcon from '@mui/icons-material/Replay';
 
 const ACTION_ICONS = {
     NONE: <></>,
@@ -55,6 +58,10 @@ const ACTION_ICONS = {
     DOWNLOAD: <DownloadIcon sx={{ display: "block" }} />,
     IMPORT: <UploadIcon sx={{ display: "block" }} />,
     PARAMETERS: <TuneIcon sx={{ display: "block" }} />,
+    USER: <PersonIcon sx={{ display: "block" }} />,
+    CALENDAR: <CalendarMonthIcon sx={{ display: "block" }} />,
+    TIME: <AccessTimeIcon sx={{ display: "block" }} />,
+    REPEAT: <ReplayIcon sx={{ display: "block" }} />,
 
 }
 

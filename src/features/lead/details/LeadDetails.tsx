@@ -1,32 +1,48 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react"
 import { LeadFieldSections } from "./LeadDetailsSections"
 import { LeadTags } from "src/features/orgProperties/tags/LeadTagsMenu.tsx"
 import { LeadActivities } from "../activities/LeadActivities"
 import { DisableConfirmDialog } from "src/components/ui/feedback/ConfirmationDialog.tsx"
 import LoadingScreenWrapper from "src/components/ui/feedback/LoadingScreen.tsx"
 import GenericPaper from "shared/layout/container/GenericPaper"
-import TitleAndActive from "shared/ui/details/TitleAndActive"
-import CommonButton from "shared/ui/buttons/CommonButton"
-import { CommonIconButton } from "shared/ui/buttons/CommonIconButton"
+import { ListActionMenu, type ListItemAction } from "shared/ui/lists/CustomListItem"
 import { useLoading } from "src/hooks/useLoading.ts"
-import type { LeadDetailed } from "src/types/leads.ts"
+import type { Lead, LeadDetailed, LeadTeam } from "src/types/leads.ts"
 import type { Campaign } from "src/types/campaigns.ts"
-import { disableLead, enableLead, getLead } from "../leadService.ts"
+import type { BulkAssignRequest } from "src/types/teams.ts"
+import type { UserPublic } from "src/types/users.ts"
+import { bulkAssignLeads, disableLead, enableLead, getLead } from "../leadService.ts"
 import { getCampaign } from "src/features/campaigns/campaignServices.ts"
-import { getLeadTitleArray } from "../leadUtils.ts"
+import { getLeadTitleArray, getLeadSubtitleArray } from "../leadUtils.ts"
 import { LeadTitleConfigSidebar } from "src/features/lead/leadTitleConfig/LeadTitleConfigSidebar"
 import { showCommonErrorToast, showToast } from "src/utils/feedback.ts"
 import { useLeadNavigation } from "../stores/LeadNavigationContext.tsx"
+import { useUserContext } from "src/stores/UserContext"
 import { Link as RouterLink, useNavigate, useParams } from "react-router-dom"
-import { Grid, Typography, ButtonGroup, Stack, Breadcrumbs, Link, Box, CircularProgress, Fab, Slide } from "@mui/material"
+import {
+    Grid, Typography, Stack, Breadcrumbs, Link, Box, CircularProgress, Fab, Slide, Tooltip, Button, IconButton,
+    Autocomplete, TextField, Divider
+} from "@mui/material"
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import MailOutlineIcon from '@mui/icons-material/MailOutlined';
+import CallIcon from '@mui/icons-material/Call';
+import EventIcon from '@mui/icons-material/Event';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { LeadDetailsState } from "./LeadDetailsState.tsx"
 import type { LeadFieldDetailed } from "src/types/leadFields.ts"
+import { UserAvatar } from "shared/ui/details/UserAvatar.tsx"
+import { formatUserFullName } from "src/utils/formatters.ts"
+import { usePageTitle } from "src/hooks/usePageTitle.ts"
+import { getTeams } from "../teamService.ts"
+import { getUsersInOrg } from "src/features/auth/userServices.ts"
+import DetailsMetadata from "src/components/ui/details/DetailsMetadata.tsx"
+import ROUTE_ICONS from "src/components/ui/icons/RouteIcons.tsx"
 
 export const LeadDetailsLayout = () => {
 
     const { id } = useParams()
+
 
     const numId = useMemo(() => {
         if (id === undefined) return id
@@ -123,6 +139,11 @@ export const LeadDetailsLayout = () => {
         return getLeadTitleArray(lead)
     }, [lead])
 
+    const leadSubtitle = useMemo(() => {
+        if (!lead) return null
+        return getLeadSubtitleArray(lead)
+    }, [lead])
+
     //reconoce cambios para actualizar la lista de audit
     const [reloadAudit, setReloadAudit] = useState<number>(0)
 
@@ -148,6 +169,8 @@ export const LeadDetailsLayout = () => {
             return { ...prevLead, field_values: newFieldValues }
         })
     }
+
+    usePageTitle(leadTitle && `${leadTitle?.join(" ")} | Detalle de Lead`)
 
     //TO DO: Error de id no disponible
     if (numId === undefined) return <p>Id inválido</p>
@@ -183,7 +206,7 @@ export const LeadDetailsLayout = () => {
                             {lead &&
                                 <Grid container spacing={2}>
                                     <Grid size="grow" sx={{ minWidth: "20rem", flexGrow: 2 }} >
-                                        <LeadInfo lead={lead} handleActive={() => setIsDeleting(lead)} leadTitle={leadTitle}
+                                        <LeadInfo lead={lead} handleActive={() => setIsDeleting(lead)} leadTitle={leadTitle} leadSubtitle={leadSubtitle}
                                             updateLeadInfo={updateLeadInfo} onOpenTitleConfig={() => setTitleConfigOpen(true)} />
                                     </Grid>
                                     <Grid size="grow" sx={{ minWidth: "22rem", flexGrow: 3 }} component={GenericPaper} >
@@ -221,43 +244,235 @@ interface LeadInfoProps {
     lead: LeadDetailed,
     handleActive: (lead: LeadDetailed) => void,
     leadTitle: (string | undefined)[] | null,
+    //Línea secundaria debajo del título (ej. Cargo + Empresa), configurable desde el mismo panel
+    //de "Configurar título". A diferencia del título, si no hay ningún campo configurado queda
+    //en un arreglo vacío (no "Sin título") y directamente no se muestra nada.
+    leadSubtitle?: (string | undefined)[] | null,
     updateLeadInfo: (lead: LeadDetailed, reloadAudits?: boolean) => void
     onOpenTitleConfig?: () => void
 }
 
-export const LeadInfo = ({ lead, leadTitle, handleActive, updateLeadInfo, onOpenTitleConfig }: LeadInfoProps) => {
+export const LeadInfo = ({ lead, leadTitle, leadSubtitle, handleActive, updateLeadInfo, onOpenTitleConfig }: LeadInfoProps) => {
+
+    const titleText = (leadTitle && leadTitle?.length > 0) ? leadTitle?.join(" ") : "Título no encontrado"
+    const subtitleText = (leadSubtitle && leadSubtitle.length > 0) ? leadSubtitle.join(" ") : null
+
+    //Con variant="h1" fijo, un nombre largo pasaba a varias líneas y quedaba muy pesado visualmente
+    //(y el textOverflow: "ellipsis" que tenía antes no hacía nada sin whiteSpace: nowrap +
+    //overflow: hidden). En vez de truncar el nombre, se achica el variant a medida que crece el
+    //texto, así siempre se ve completo pero proporcional al espacio disponible.
+    const titleVariant = titleText.length > 40 ? "h3" : titleText.length > 20 ? "h2" : "h1"
+
+    //Antes había dos íconos sueltos (lápiz para "Configurar título" + basura/restaurar) junto al
+    //título. Se unificaron en un único botón de "tres puntos" con un menú desplegable, para dejar
+    //lugar a futuras acciones sin volver a amontonar íconos ahí (reutiliza ListActionMenu, el mismo
+    //desplegable que ya usa ResponsiveListItem en su modo táctil).
+    const [actionsAnchor, setActionsAnchor] = useState<HTMLElement | null>(null)
+    const titleActions: ListItemAction[] = [
+        ...(onOpenTitleConfig ? [{
+            actionType: "RENAME", label: "Configurar título", onClick: onOpenTitleConfig,
+            permission: "lead_field:update",
+        } as ListItemAction] : []),
+        {
+            actionType: lead.active ? "DISABLE" : "ENABLE",
+            label: lead.active ? "Eliminar" : "Restaurar",
+            onClick: () => handleActive(lead),
+            color: lead.active ? "error" : "success",
+            //Mismo criterio que el backend: deshabilitar (soft/hard delete) exige "lead:delete";
+            //restaurar (reactivar) exige "lead:update" (ver base_controller.py, acción "active" -> "update").
+            permission: lead.active ? "lead:delete" : "lead:update",
+        },
+    ]
+
     return (
         <Stack spacing={2}>
             <GenericPaper elevation={0}>
                 <Stack spacing={3} sx={{ alignItems: "start" }}>
-                    <Stack spacing={1} sx={{ width: "100%" }}>
-                        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-                            <TitleAndActive active={lead?.active} sx={{ flexGrow: 1 }}>
-                                <Typography sx={{ textOverflow: "ellipsis" }} variant="h1">
-                                    {(leadTitle && leadTitle?.length > 0) ? leadTitle?.join(" ") : "Título no encontrado"}
+                    <Stack direction="row" spacing={2} sx={{ width: "100%", alignItems: "center" }}>
+                        <UserAvatar name={titleText} src={lead.picture_avatar_url || undefined} size={56} />
+                        <Stack spacing={1} sx={{ flexGrow: 1, minWidth: 0 }}>
+                            <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                                <Typography sx={{ wordBreak: "break-word" }} variant={titleVariant}>
+                                    {titleText}
                                 </Typography>
-                            </TitleAndActive>
-                            {onOpenTitleConfig &&
-                                <CommonIconButton actionType="RENAME" title="Configurar título"
-                                    onClick={onOpenTitleConfig} size="small" />
+                                <IconButton size="small" onClick={e => setActionsAnchor(e.currentTarget)}>
+                                    <MoreVertIcon fontSize="small" />
+                                </IconButton>
+                                <ListActionMenu actions={titleActions} anchorEl={actionsAnchor}
+                                    closeMenu={() => setActionsAnchor(null)} />
+                            </Stack>
+                            {subtitleText &&
+                                <Typography variant="body2" color="text.secondary" sx={{ textOverflow: "ellipsis" }}>
+                                    {subtitleText}
+                                </Typography>
                             }
                         </Stack>
                     </Stack>
-                    <ButtonGroup fullWidth>
-                        <CommonButton actionType={lead.active ? "DISABLE" : "ENABLE"} variant="outlined"
-                            color={lead.active ? "error" : "success"} onClick={() => handleActive(lead)}>
-                            {lead.active ? "Eliminar" : "Habilitar"}
-                        </CommonButton>
-                        <CommonButton actionType="MODIFY" variant="contained" color="primary"
-                            component={RouterLink} to={`/leads/modify/${lead?.id}`}>
-                            Modificar
-                        </CommonButton>
-                    </ButtonGroup>
-                    <LeadTags lead={lead} updateLeadInfo={updateLeadInfo} />
+                    <LeadQuickActions />
                     <LeadDetailsState lead={lead} updateLeadInfo={updateLeadInfo} contactState={lead.contact_state} flowState={lead.current_state} />
+                    <LeadTags lead={lead} updateLeadInfo={updateLeadInfo} />
+                    <LeadMetaInfo lead={lead} updateLeadInfo={updateLeadInfo} />
                 </Stack>
             </GenericPaper>
             <LeadFieldSections lead={lead} updateLeadInfo={updateLeadInfo} />
         </Stack>
     )
 }
+
+/**
+ * Botones de acciones rápidas (Correo, Llamar, Reunión). Por ahora son solo visuales,
+ * sin funcionalidad ni datos asociados (a definir más adelante de dónde sale el email/teléfono).
+ */
+const LeadQuickActions = () => {
+    const actions: { label: string, icon: ReactNode }[] = [
+        { label: "Correo", icon: <MailOutlineIcon fontSize="small" /> },
+        { label: "Llamar", icon: <CallIcon fontSize="small" /> },
+        { label: "Reunión", icon: <EventIcon fontSize="small" /> },
+    ]
+    return (
+        <Stack direction="row" spacing={1} sx={{ width: "100%" }}>
+            {actions.map(action =>
+                <Button key={action.label} variant="outlined" color="primary"
+                    fullWidth disabled startIcon={action.icon}>
+                    {action.label}
+                </Button>
+            )}
+        </Stack>
+    )
+}
+
+// Opción genérica para los selectores de Usuario/Equipo asignado. id: null representa
+// "Sin asignar" (para poder desasignar, ver bulk_assign/clear_team/clear_user en el backend).
+interface AssignOption {
+    id: number | null
+    label: string
+}
+const UNASSIGNED_OPTION: AssignOption = { id: null, label: "Sin asignar" }
+
+/**
+ * Meta-datos del lead: propietario (usuario/equipo asignado, editables vía selector), quién lo
+ * creó/modificó, y fechas de creación/última modificación. Layout en 2 columnas: izquierda
+ * (Usuario asignado -> Creado por -> Fecha Creación) y derecha (Equipo asignado -> Modificado por
+ * -> Fecha Modificación), pedido explícitamente por el usuario.
+ * `valueTooltip` (email de creador/modificador) reutiliza el mismo patrón de
+ * `SystemAuditLogs.tsx`/`DetailsMetadata.tsx` (nombre completo visible, email en hover).
+ */
+const LeadMetaInfo = ({ lead, updateLeadInfo }: { lead: LeadDetailed, updateLeadInfo: (lead: LeadDetailed, reloadAudits?: boolean) => void }) => {
+    //Mismo permiso que exige el backend en PATCH /leads/bulk-assign ("lead:update", ver
+    //lead_controller.py) para reasignar equipo/usuario — igual criterio que el resto del detalle
+    //(se muestra siempre el valor actual, solo se gatea la posibilidad de cambiarlo).
+    const { hasPermission } = useUserContext()
+    const canUpdateLead = hasPermission("lead:update")
+
+    const [users, setUsers] = useState<UserPublic[]>([])
+    const [teams, setTeams] = useState<LeadTeam[]>([])
+
+    useEffect(() => {
+        if (!canUpdateLead) return
+        getUsersInOrg().then(setUsers).catch(e => showCommonErrorToast(e, "No se pudieron cargar los usuarios de la organización."))
+        getTeams({ page_size: 0 }).then(res => setTeams(res.items)).catch(e => showCommonErrorToast(e, "No se pudieron cargar los equipos."))
+    }, [canUpdateLead])
+
+    const userOptions = useMemo<AssignOption[]>(() => [
+        UNASSIGNED_OPTION,
+        ...users.map(u => ({ id: u.id, label: formatUserFullName(u) ?? u.email })),
+    ], [users])
+    const teamOptions = useMemo<AssignOption[]>(() => [
+        UNASSIGNED_OPTION,
+        ...teams.map(t => ({ id: t.id, label: t.name })),
+    ], [teams])
+
+    const currentUserOption: AssignOption = lead.assigned_to_user
+        ? { id: lead.assigned_to_user.id, label: formatUserFullName(lead.assigned_to_user) ?? lead.assigned_to_user.email }
+        : UNASSIGNED_OPTION
+    const currentTeamOption: AssignOption = lead.team
+        ? { id: lead.team.id, label: lead.team.name }
+        : UNASSIGNED_OPTION
+
+    const [assigning, setAssigning] = useState(false)
+
+    const handleAssign = useCallback((body: Omit<BulkAssignRequest, "lead_ids">, merge: (updated: Lead) => Partial<LeadDetailed>) => {
+        setAssigning(true)
+        bulkAssignLeads({ lead_ids: [lead.id], ...body })
+            .then(res => {
+                const updated = res[0]
+                //El timeline del lead registra un evento LEAD_REASSIGNED (ver lead_service.bulk_assign),
+                //así que recargamos la pestaña de Auditoría igual que al cambiar etapa/estado.
+                if (updated) updateLeadInfo({ ...lead, ...merge(updated) }, true)
+            })
+            .catch(e => showCommonErrorToast(e))
+            .finally(() => setAssigning(false))
+    }, [lead, updateLeadInfo])
+
+    const handleAssignUser = (option: AssignOption | null) => {
+        if (!option || option.id === currentUserOption.id) return
+        handleAssign(
+            option.id === null ? { clear_user: true } : { target_user_id: option.id },
+            updated => ({ assigned_to_user_id: updated.assigned_to_user_id, assigned_to_user: updated.assigned_to_user }),
+        )
+    }
+
+    const handleAssignTeam = (option: AssignOption | null) => {
+        if (!option || option.id === currentTeamOption.id) return
+        handleAssign(
+            option.id === null ? { clear_team: true } : { target_team_id: option.id },
+            updated => ({ team_id: updated.team_id, team: updated.team }),
+        )
+    }
+
+    return (
+        <Stack spacing={1} sx={{ width: "100%" }}>
+            <Stack direction="row" spacing={2} useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
+                <OwnerSelectRow icon={ROUTE_ICONS.LEADS} title="Usuario asignado"
+                    canEdit={canUpdateLead} options={userOptions} value={currentUserOption}
+                    onChange={handleAssignUser} disabled={assigning} />
+                <OwnerSelectRow icon={ROUTE_ICONS.TEAMS} title="Equipo asignado"
+                    canEdit={canUpdateLead} options={teamOptions} value={currentTeamOption}
+                    onChange={handleAssignTeam} disabled={assigning} />
+            </Stack>
+
+            <Divider sx={{ opacity: .6 }} />
+            <DetailsMetadata entity={lead} />
+        </Stack>
+    )
+}
+
+interface OwnerSelectRowProps {
+    icon: ReactNode
+    title: string
+    canEdit: boolean
+    options: AssignOption[]
+    value: AssignOption
+    onChange: (option: AssignOption | null) => void
+    disabled?: boolean
+}
+
+/**
+ * Fila de "Usuario asignado"/"Equipo asignado": ícono con tooltip (nombre de la fila) + valor.
+ * Si tiene permiso (`lead:update`) el valor es un Autocomplete editable (incluye "Sin asignar"
+ * para desasignar); si no, se muestra el nombre actual como texto simple, igual criterio que el
+ * resto del detalle (siempre visible, solo se gatea la posibilidad de cambiarlo).
+ */
+const OwnerSelectRow = ({ icon, title, canEdit, options, value, onChange, disabled }: OwnerSelectRowProps) => (
+    <Stack direction="row" spacing={1} sx={{ alignItems: "center", flex: 1, maxWidth: "20rem" }}>
+        <Tooltip title={title}>
+            <Box sx={{ display: "flex", color: "text.secondary" }}>{icon}</Box>
+        </Tooltip>
+        {canEdit ? (
+            <Autocomplete
+                size="small"
+                options={options}
+                value={value}
+                disableClearable
+                disabled={disabled}
+                isOptionEqualToValue={(o, v) => o.id === v.id}
+                getOptionLabel={o => o.label}
+                onChange={(_, newValue) => onChange(newValue)}
+                sx={{ minWidth: 160, flexGrow: 1, "& .MuiInputBase-root": { fontSize: "0.8rem" } }}
+                renderInput={params => <TextField {...params} variant="standard" placeholder={title} />}
+            />
+        ) : (
+            <Typography variant="caption" sx={{ fontWeight: 600 }}>{value.label}</Typography>
+        )}
+    </Stack>
+)

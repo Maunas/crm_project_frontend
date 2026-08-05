@@ -2,33 +2,64 @@ import { useCallback, useEffect, useState, type ReactNode } from "react"
 import { CreateCommentWrapper, UpdateCommentFromNote } from "./LeadCommentForm"
 import { DisableConfirmDialog } from "src/components/ui/feedback/ConfirmationDialog"
 import PaginationComponent from "shared/ui/lists/PaginationComponent"
-import { MetadataShort } from "shared/ui/details/DetailsMetadata"
+import { OrderSearchMenu } from "shared/ui/lists/OrderMenu"
 import LoadingScreenWrapper from "src/components/ui/feedback/LoadingScreen"
-import GenericPaper from "shared/layout/container/GenericPaper"
 import { useListPagination } from "src/hooks/useListPagination"
 import { useLoading } from "src/hooks/useLoading"
+import { useOrderSeachList } from "src/hooks/useOrderSearchLists"
 import type { LeadComment } from "src/types/leads"
 import type { Paginable } from "src/types/shared"
 import { deleteComment, getComments } from "./leadActivitiesService"
 import { showCommonErrorToast, showToast } from "src/utils/feedback"
-import { Box, Divider, Grid, IconButton, Paper, Stack, Typography } from "@mui/material"
-import { alpha, styled } from "@mui/material/styles"
+import { alpha, Box, IconButton, Paper, Stack, Typography } from "@mui/material"
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
-import { getColorShades } from "src/utils/formatters"
+import { formatDate, formatUserFullName } from "src/utils/formatters"
+import { UserAvatar, nameToColor } from "shared/ui/details/UserAvatar"
+import { useUserContext } from "src/stores/UserContext"
+import { Can } from "src/components/auth/Can"
 
+const SEARCH_COMMENTS_FIELDS = [
+    { name: "content", label: "Contenido" },
+]
+
+const ORDER_COMMENTS_FIELDS = [
+    { name: "updated_by", label: "Escritor" },
+]
 export const LeadComments = ({ leadId }: { leadId: number }) => {
 
     const [comments, setComments] = useState<Paginable<LeadComment> | null>(null)
     const [selectedCommentId, setSelectedCommentId] = useState<number | null>(null)
-    const { fetchPage, pageSize, pageComponentProps } = useListPagination(comments, 12)
+    const { fetchPage, pageSize, pageComponentProps, goToPageOne } = useListPagination(comments, 12)
+    const { fetchParams, changeHandlers } = useOrderSeachList()
+
+    const onOrderChange = useCallback((orderBy?: string, asc?: boolean) => {
+        changeHandlers.handleOrderChange(orderBy, asc)
+        goToPageOne()
+    }, [changeHandlers, goToPageOne])
+
+    const onSearchChange = useCallback((search?: string, searchField?: string) => {
+        changeHandlers.handleSearchChange(search, searchField)
+        goToPageOne()
+    }, [changeHandlers, goToPageOne])
+
+    // Mismo criterio que el backend (LeadCommentService._assert_can_modify_comment): solo el
+    // autor del comentario, el owner de la organización o un superadmin pueden editarlo/eliminarlo.
+    // Se replica acá para no mostrar los íconos si de todos modos el backend los va a rechazar
+    // con un 403 (evita el papelón de un toast de error al primer clic).
+    const { user, activeOrg } = useUserContext()
+    const isOrgOwner = !!(activeOrg && user?.organizations_access.some(
+        a => a.organization_id === activeOrg.id && a.is_owner
+    ))
+    const canModifyComment = (com: LeadComment) =>
+        !!user && (user.is_superuser || isOrgOwner || com.created_by === user.id)
 
     const fetchComments = useCallback(async (leadId: number, fetchPage: number, pageSize: number) => {
         if (!leadId) return
-        return getComments({ detailed: true, lead_id: leadId, page: fetchPage, page_size: pageSize })
+        return getComments({ detailed: true, lead_id: leadId, page: fetchPage, page_size: pageSize, ...fetchParams })
             .then(setComments)
             .catch(e => showCommonErrorToast(e))
-    }, [])
+    }, [fetchParams])
 
     const { fnWithLoading: fetchComLoad, loading } = useLoading(fetchComments)
 
@@ -39,7 +70,7 @@ export const LeadComments = ({ leadId }: { leadId: number }) => {
     const onDeleteComment = (delId: number) => {
         return deleteComment(delId)
             .then(() => {
-                showToast("Comentario eliminado definitivamente.")
+                showToast("Comentario eliminado.")
                 fetchComments(leadId, fetchPage, pageSize)
             })
             .catch(e => showCommonErrorToast(e, "No se ha podido eliminar el comentario"))
@@ -59,114 +90,102 @@ export const LeadComments = ({ leadId }: { leadId: number }) => {
     const [deletingCom, setDeletingCom] = useState<LeadComment | null>(null)
 
     return (
-        <LoadingScreenWrapper loading={loading}>
-            <Stack spacing={2} sx={{ height: "100%" }}>
-                <Stack spacing={2} component={GenericPaper} elevation={1} sx={{
-                    flexGrow: 1, justifyContent: "space-between", alignItems: "end"
-                }}>
-                    <Grid container spacing={2} sx={{
-                        justifyContent: "end", alignItems: "start", alignContent: "start",
-                        width: "100%", minWidth: "15rem"
-                    }}>
+        <Stack spacing={2} sx={{ height: "100%" }}>
+            <OrderSearchMenu
+                searchOptions={SEARCH_COMMENTS_FIELDS}
+                orderOptions={ORDER_COMMENTS_FIELDS}
+                {...changeHandlers}
+                handleSearchChange={onSearchChange}
+                handleOrderChange={onOrderChange}
+            />
+            <LoadingScreenWrapper loading={loading}>
+                <Stack spacing={3}>
+                    <Can permission="lead_comment:create">
+                        <CreateCommentWrapper leadId={leadId} onCreate={onCreateComment} />
+                    </Can>
+                    <Stack spacing={2}>
                         {comments?.items.map(com =>
-                            <Grid key={com.id} size="grow" sx={{ minWidth: "15rem" }}>
-                                {com.id !== selectedCommentId ? (
-                                    <CommentInstance comment={com} onEdit={() => setSelectedCommentId(com.id)}
-                                        onDelete={() => setDeletingCom(com)} title={<MetadataShort metadata={com} onlyUser />}
-                                        footerContent={<MetadataShort metadata={com} onlyDate containerProps={{ sx: { ml: "auto" } }} />} >
-                                        {com.content}
-                                    </CommentInstance>
-                                )
-                                    : <UpdateCommentFromNote leadId={leadId} existingComment={com} onUpdate={onUpdateCommentList} onClose={() => setSelectedCommentId(null)} />
-                                }
-                            </Grid>
+                            com.id !== selectedCommentId ? (
+                                <CommentInstance key={com.id} comment={com}
+                                    onEdit={canModifyComment(com) ? () => setSelectedCommentId(com.id) : undefined}
+                                    onDelete={canModifyComment(com) ? () => setDeletingCom(com) : undefined}>
+                                    {com.content}
+                                </CommentInstance>
+                            ) : (
+                                <UpdateCommentFromNote key={com.id} leadId={leadId} existingComment={com}
+                                    onUpdate={onUpdateCommentList} onClose={() => setSelectedCommentId(null)} />
+                            )
                         )}
-                    </Grid>
+                    </Stack>
                     <PaginationComponent {...pageComponentProps} />
                 </Stack>
-                <Divider />
-                <CreateCommentWrapper leadId={leadId} onCreate={onCreateComment} />
-            </Stack>
+            </LoadingScreenWrapper>
             <DisableConfirmDialog idModal="del-com" onConfirm={() => onDeleteComment(deletingCom!.id)} entity={deletingCom}
                 clearEntity={() => setDeletingCom(null)} entityTypeName="el comentario" onlyDelete />
-        </LoadingScreenWrapper>
+        </Stack >
     )
 }
 
-const CommentNote = styled(Paper)(({ theme, ...props }) => {
-
-    const colorShades = getColorShades(props.color ?? "secondary", theme)
-
-    return ([{
-        borderRadius: "1rem 1rem 0 1rem",
-        border: `1px solid ${colorShades.DARK}`,
-        overflow: "hidden",
-        color: theme.palette.text.primary,
-        "& .comment-footer, .comment-header": {
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-        },
-        "& .comment-header": {
-            backgroundColor: alpha(colorShades.LIGHT, .5),
-            borderBottom: `1px solid ${colorShades.MAIN}`,
-        },
-        "& .comment-footer": {
-            backgroundColor: alpha(colorShades.LIGHT, .5),
-            borderTop: `1px solid ${colorShades.MAIN}`,
-        },
-        "& .comment-main": {
-            minHeight: "3rem",
-        },
-    },
-    theme.applyStyles('dark', {
-        "& .comment-header": {
-            backgroundColor: alpha(colorShades.DARK, .15),
-            borderBottom: `1px solid ${colorShades.DARK}`,
-        },
-        "& .comment-footer": {
-            backgroundColor: alpha(colorShades.DARK, .15),
-            borderTop: `1px solid ${colorShades.DARK}`,
-        },
-    })
-    ])
-})
-
 interface CommentInstanceProps {
     comment?: LeadComment,
-    color?: string,
-    isCreating?: boolean,
     onEdit?: () => void,
     onDelete?: () => void,
-    footerContent?: ReactNode,
     title?: ReactNode,
     children: ReactNode
 }
 
-export const CommentInstance = ({ comment, title, color, footerContent, onEdit, onDelete, children }: CommentInstanceProps) => {
+export const CommentInstance = ({ comment, title, onEdit, onDelete, children }: CommentInstanceProps) => {
+
+    const author = comment?.updater ?? comment?.creator ?? null
+    const authorName = formatUserFullName(author) ?? "Usuario"
+    const dateText = comment ? formatDate(comment.updated_at ?? comment.created_at, "custom", "DD/MM/YYYY HH:mm") : null
+    const wasEdited = !!comment?.updated_by
+    // Mismo color por autor en todos sus comentarios. Se usa solo para distinguir quién
+    // escribió cada uno sin tocar el color del texto.
+    const authorColor = nameToColor(authorName)
 
     return (
-        <CommentNote color={comment?.color ?? color ?? "secondary"}>
-            <Box className="comment-header" sx={{ px: 2 }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{title}</Typography>
-                <Stack direction="row">
-                    {onEdit && <IconButton aria-label="edit" size="small" onClick={() => onEdit()} color="inherit">
-                        <EditIcon fontSize="small" />
-                    </IconButton>}
-                    {onDelete && <IconButton aria-label="delete" size="small" onClick={() => onDelete()} color="inherit">
-                        <CloseIcon fontSize="small" />
-                    </IconButton>}
+        <Box sx={{ display: "flex", gap: 1.5 }}>
+            <UserAvatar name={authorName} size={36} sx={{ fontSize: 13 }} />
+            <Paper variant="outlined" sx={{
+                flexGrow: 1, minWidth: 0, p: 1.5, borderRadius: 2,
+                borderLeft: 4, borderLeftColor: authorColor,
+                bgcolor: alpha(authorColor, 0.05),
+            }}>
+                <Stack direction="row" spacing={1} sx={{ alignItems: "flex-start", justifyContent: "space-between" }}>
+                    {title ??
+                        <Stack direction="row" spacing={1} useFlexGap sx={{ alignItems: "baseline", flexWrap: "wrap" }}>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{authorName}</Typography>
+                            {dateText &&
+                                <Typography variant="caption" color="text.secondary">
+                                    {dateText}{wasEdited && " (editado)"}
+                                </Typography>
+                            }
+                        </Stack>
+                    }
+                    {(onEdit || onDelete) &&
+                        <Stack direction="row" sx={{ flexShrink: 0, ml: 1 }}>
+                            {onEdit &&
+                                <Can permission="lead_comment:update">
+                                    <IconButton aria-label="edit" size="small" onClick={onEdit} sx={{ color: "text.secondary" }}>
+                                        <EditIcon fontSize="small" />
+                                    </IconButton>
+                                </Can>
+                            }
+                            {onDelete &&
+                                <Can permission="lead_comment:delete">
+                                    <IconButton aria-label="delete" size="small" onClick={onDelete} sx={{ color: "text.secondary" }}>
+                                        <CloseIcon fontSize="small" />
+                                    </IconButton>
+                                </Can>
+                            }
+                        </Stack>
+                    }
                 </Stack>
-            </Box>
-            <Box className="comment-main" sx={{ px: 2, py: 1.5 }}>
-                {children}
-            </Box>
-            {footerContent &&
-                <Box className="comment-footer" sx={{ px: 1, py: .5 }}>
-                    {footerContent}
-                </Box>
-            }
-        </CommentNote>
+                <Typography variant="body2" color="text.primary" component="div" sx={{ mt: .5, whiteSpace: "pre-wrap" }}>
+                    {children}
+                </Typography>
+            </Paper>
+        </Box>
     )
 }

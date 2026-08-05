@@ -2,14 +2,16 @@ import { useCallback, useEffect, useState } from 'react'
 import { WorkspaceFormSidebar } from './WorkspaceForms';
 import { WorkspaceDetails } from './WorkspaceDetails'
 import { CreateCampaignFormSidebar } from 'features/campaigns/CampaignForms';
+import { DisableConfirmDialog } from 'shared/ui/feedback/ConfirmationDialog';
 import ContainerWithSidebar from 'shared/layout/container/GenericContainer';
-import { DisableConfirmDialog } from 'src/components/ui/feedback/ConfirmationDialog';
-import { CommonIconButton } from 'shared/ui/buttons/CommonIconButton';
-import PaginationComponent from 'shared/ui/lists/PaginationComponent'
-import LoadingScreenWrapper from 'src/components/ui/feedback/LoadingScreen';
-import { CustomListItem } from 'shared/ui/lists/CustomListItem';
+import PaginationComponent from 'shared/ui/lists/PaginationComponent';
+import LoadingScreenWrapper from 'shared/ui/feedback/LoadingScreen';
+import { ResponsiveListItem } from 'shared/ui/lists/CustomListItem';
+import { NoItemsMessage } from 'shared/ui/lists/NoItemsMessage';
+import { OrderSearchMenu } from 'shared/ui/lists/OrderMenu';
 import CommonButton from 'shared/ui/buttons/CommonButton';
 import { EnabledIcon } from 'shared/ui/lists/Icons';
+import { useOrderSeachList } from 'src/hooks/useOrderSearchLists';
 import { useListPagination } from 'src/hooks/useListPagination';
 import { useSidebar } from 'src/hooks/useSidebar';
 import { useLoading } from 'src/hooks/useLoading';
@@ -18,8 +20,18 @@ import type { Paginable } from 'src/types/shared'
 import { disableWorkspace, enableWorkspace, getWorkspace, getWorkspaces } from './workspaceServices'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback';
 import { useUserContext } from 'src/stores/UserContext';
+import { Can } from 'src/components/auth/Can';
 import { useSearchParams } from 'react-router-dom';
-import { List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material'
+import { List, ListItemText, Stack, Typography } from '@mui/material'
+
+const ORDER_WSP_FIELDS = [
+    { name: "name", label: "Orden Alfabético" },
+]
+
+const SEARCH_WSP_FIELDS = [
+    { name: "name", label: "Nombre" },
+    { name: "description", label: "Descripción" },
+]
 
 export const WorkspaceList = () => {
 
@@ -31,13 +43,15 @@ export const WorkspaceList = () => {
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(workspaces)
 
+    const { fetchParams, changeHandlers } = useOrderSeachList()
+
     const { activeOrg } = useUserContext()
 
     const fetchWorkspaces = useCallback((fetchPage: number, pageSize: number) => {
-        return getWorkspaces({ detailed: true, page_size: pageSize, only_active: false, page: fetchPage })
+        return getWorkspaces({ detailed: true, page_size: pageSize, page: fetchPage, ...fetchParams })
             .then(setWorkspaces)
             .catch(e => showCommonErrorToast(e))
-    }, [])
+    }, [fetchParams])
 
     const { loading, fnWithLoading: fetchWspLoad } = useLoading(fetchWorkspaces)
 
@@ -122,48 +136,50 @@ export const WorkspaceList = () => {
                     closeSidebar={closeSidebar} updateEntityOnList={updateEntityOnList}
                     handleActive={handleDeletingWsp} />
             }>
-            <Stack spacing={3}>
+            <Stack spacing={2}>
                 <Stack spacing={2} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
-                    <Typography variant="h1">Lista de Espacios de Trabajo</Typography>
+                    <Typography variant="h1">Espacios de Trabajo</Typography>
                     {workspaces && workspaces?.items.length > 0 &&
-                        <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_WSP", null)} sx={{ marginLeft: "auto" }} onlyTooltip>
-                            Agregar
-                        </CommonButton>
+                        <Can permission="workspace:create">
+                            <CommonButton actionType="CREATE" onClick={() => handleSidebar("CREATE_WSP", null)} sx={{ marginLeft: "auto" }} onlyTooltip>
+                                Agregar
+                            </CommonButton>
+                        </Can>
                     }
                 </Stack>
+                <OrderSearchMenu searchOptions={SEARCH_WSP_FIELDS} orderOptions={ORDER_WSP_FIELDS} {...changeHandlers} />
+
                 <LoadingScreenWrapper loading={loading}>
                     <Stack spacing={2}>
                         {workspaces?.items && workspaces?.items?.length > 0 ?
                             <List>
                                 {workspaces?.items.map(wsp =>
-                                    <CustomListItem key={`wsp-${wsp.id}`} isSelected={wsp.id === selectedEntity?.id} disablePadding secondaryAction={
-                                        <Stack direction="row" sx={{ alignItems: "center" }}>
-                                            <CommonIconButton actionType='DETAILS' title="Detalles" tooltipSize="small" size="small"
-                                                onClick={() => { handleSidebar("DETAILS_WSP", wsp) }} />
-                                            <CommonIconButton actionType='MODIFY' title="Modificar" tooltipSize="small" size="small"
-                                                onClick={() => { handleSidebar("UPDATE_WSP", wsp) }} />
-                                            <CommonIconButton actionType={wsp.active ? "DISABLE" : "ENABLE"} tooltipSize="small" size="small"
-                                                title={wsp.active ? "Deshabilitar" : "Habilitar"}
-                                                onClick={() => handleDeletingWsp(wsp)} color={wsp.active ? "error" : "success"} />
-                                        </Stack>
-                                    }>
-                                        <ListItemButton onClick={() => { handleSidebar("DETAILS_WSP", wsp) }} >
-                                            <ListItemText sx={{ mr: 7 }} primary={
-                                                <Stack spacing={1} direction="row">
-                                                    <EnabledIcon active={wsp.active} />
-                                                    <Typography sx={{ fontWeight: "bold" }}>{wsp.name}</Typography>
-                                                </Stack>
-                                            }
-                                                secondary={wsp.description} />
-                                        </ListItemButton>
-                                    </CustomListItem>
+                                    <ResponsiveListItem key={`wsp-${wsp.id}`} isSelected={wsp.id === selectedEntity?.id} disablePadding
+                                        onClick={() => handleSidebar("DETAILS_WSP", wsp)}
+                                        actions={[
+                                            { template: "DETAILS", onClick: () => handleSidebar("DETAILS_WSP", wsp) },
+                                            { actionType: "LIST", label: "Ver Leads", onClick: () => handleSidebar("UPDATE_WSP", wsp), permission: "workspace:update" },
+                                            { template: wsp.active ? "DISABLE" : "ENABLE", onClick: () => handleDeletingWsp(wsp), permission: wsp.active ? "workspace:delete" : "workspace:update" },
+                                        ]}>
+                                        <ListItemText sx={{ mr: 7 }} primary={
+                                            <Stack spacing={1} direction="row">
+                                                <EnabledIcon active={wsp.active} />
+                                                <Typography>{wsp.name}</Typography>
+                                            </Stack>
+                                        }
+                                            secondary={wsp.description} />
+                                    </ResponsiveListItem>
                                 )}
                             </List>
                             : <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
-                                <Typography variant="h4">No se han encontrado espacios de trabajo...</Typography>
-                                <CommonButton actionType='CREATE' onClick={() => handleSidebar("CREATE_WSP", null)} variant="contained">
-                                    Agregar
-                                </CommonButton>
+                                <NoItemsMessage search={fetchParams.search}
+                                    emptyFetchMessage="No se han encontrado espacios de trabajo...">
+                                    <Can permission="workspace:create">
+                                        <CommonButton actionType='CREATE' onClick={() => handleSidebar("CREATE_WSP", null)} variant="contained">
+                                            Agregar
+                                        </CommonButton>
+                                    </Can>
+                                </NoItemsMessage>
                             </Stack>
                         }
                         <PaginationComponent {...pageComponentProps} />
