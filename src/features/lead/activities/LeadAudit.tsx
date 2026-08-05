@@ -30,9 +30,9 @@ const MAX_ITEMS_NUM = 3
 const AUDIT_TYPES = {
   "FIELDS_UPDATED": { icon: <EditIcon />, color: "info", label: "Actualización de datos", value: "FIELDS_UPDATED" },
   "LEAD_CREATED": { icon: <AddIcon />, color: "success", label: "Lead Creado", value: "LEAD_CREATED" },
-  "STATE_CHANGED": { icon: <AccountTreeIcon />, color: "warning", label: "Cambio de Estado", value: "STATE_CHANGED" },
+  "STATE_CHANGED": { icon: <AccountTreeIcon />, color: "warning", label: "Cambio de Etapa", value: "STATE_CHANGED" },
   "LEAD_REASSIGNED": { icon: <SwapHorizIcon />, color: "secondary", label: "Reasignación", value: "LEAD_REASSIGNED" },
-  "CONTACT_STATE_CHANGED": { icon: <ContactPageIcon />, color: "primary", label: "Cambio de Estado de Contacto", value: "CONTACT_STATE_CHANGED" },
+  "CONTACT_STATE_CHANGED": { icon: <ContactPageIcon />, color: "primary", label: "Cambio de Estado", value: "CONTACT_STATE_CHANGED" },
   "DEFAULT": { icon: <InfoOutlinedIcon />, color: "error", label: "Otros", value: "DEFAULT" }
 }
 

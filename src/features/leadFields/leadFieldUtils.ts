@@ -1,6 +1,7 @@
 import type { FieldArrayWithId } from "react-hook-form";
 import type { LeadField, LeadFieldDetailed, LeadFieldPost, LeadFieldsBySection, LeadFieldValue } from "src/types/leadFields";
 import type { LeadPostForm } from "../lead/leadForm/LeadForm";
+import { getNativeFieldSectionName } from "../lead/nativeLeadFields";
 
 /**
  * Organiza los datos de LeadField, para evitar enviar campos incompatibles con el método de creación (template/manual)
@@ -112,6 +113,51 @@ export const getLeadFormFieldsBySections = (fields: FieldArrayWithId<LeadPostFor
     })
     return finalList
 }
+
+export interface FieldSelectorGroup<T> {
+    name: string
+    fields: T[]
+}
+
+type SectionableField = {
+    id: number,
+    lead_field_section?: { name: string } | null
+}
+
+/**
+ * Nombre de la sección con la que se agrupa un campo en un selector (filtros, columnas,
+ * automatizaciones, enrutamiento): para un campo nativo (id negativo) es su sección sintética
+ * (ver `getNativeFieldSectionName` en `nativeLeadFields.ts`); para un campo custom es el nombre de
+ * su `lead_field_section` real. Se usa tanto para armar los grupos "a mano" (Select) como para el
+ * `groupBy` de un Autocomplete (pedido del usuario 2026-07-25, para no repetir el criterio en cada
+ * selector de campo de la app).
+ */
+export const getFieldSelectorGroupName = (field: SectionableField): string =>
+    (field.id < 0 ? getNativeFieldSectionName(field.id) : undefined) ?? field.lead_field_section?.name ?? 'Otros'
+
+/**
+ * Agrupa una lista de campos (nativos + custom mezclados) en secciones contiguas, preservando el
+ * orden relativo dentro de cada sección y el orden de aparición de las secciones (los nativos
+ * quedan primero porque ya vienen primero en la lista de entrada, ver `NATIVE_LEAD_FIELDS`).
+ * Pensado para selectores de "elegir un campo" -- no reemplaza a `getFieldsBySections` (que además
+ * arrastra fieldValues/sectionData completos para la vista de detalle del lead).
+ */
+export const groupFieldsForSelector = <T extends SectionableField>(fields: T[]): FieldSelectorGroup<T>[] => {
+    const groups: FieldSelectorGroup<T>[] = []
+    const indexByName = new Map<string, number>()
+    fields.forEach(field => {
+        const name = getFieldSelectorGroupName(field)
+        if (!indexByName.has(name)) {
+            indexByName.set(name, groups.length)
+            groups.push({ name, fields: [] })
+        }
+        groups[indexByName.get(name)!].fields.push(field)
+    })
+    return groups
+}
+
+/** Aplana los grupos de `groupFieldsForSelector` de vuelta a una lista, ya reordenada por sección (contigua). */
+export const flattenGroupedFields = <T,>(groups: FieldSelectorGroup<T>[]): T[] => groups.flatMap(g => g.fields)
 
 //Separa los fieldValues por sección, devolviendo únicamente sus ids.
 export const getLeadFieldsBySectionsIds = (leadFields: LeadFieldDetailed[] | null) => {

@@ -176,7 +176,7 @@ export function OrgDashboardPage() {
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                 <StatCard label="Leads totales" value={data.total_leads} icon={<LeaderboardOutlined fontSize="small" />} color={palette.primary.main} />
                 <StatCard label="Miembros del equipo" value={data.org_users.length} icon={<PeopleOutlined fontSize="small" />} color="#10b981" />
-                <StatCard label="Estados de flujo" value={data.leads_by_flow_state.length} icon={<TrendingUpOutlined fontSize="small" />} color="#f59e0b" />
+                <StatCard label="Etapas" value={data.leads_by_flow_state.length} icon={<TrendingUpOutlined fontSize="small" />} color="#f59e0b" />
             </Stack>
 
             {/* Main content: actividad | gráficos + equipo */}
@@ -219,13 +219,13 @@ export function OrgDashboardPage() {
                 <Stack spacing={3} sx={{ flex: 1 }}>
                     {/* Flujo */}
                     <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 2 }}>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>Estados del flujo</Typography>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>Etapas</Typography>
                         <DonutChart data={data.leads_by_flow_state} colors={PALETTE_B} />
                     </Paper>
 
                     {/* Contacto */}
                     <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 2 }}>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>Estados de contacto</Typography>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>Estados</Typography>
                         <DonutChart data={data.leads_by_contact_state} colors={PALETTE_A} />
                     </Paper>
 

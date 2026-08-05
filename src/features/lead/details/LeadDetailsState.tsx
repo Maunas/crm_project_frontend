@@ -22,6 +22,7 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { Can } from 'src/components/auth/Can'
+import { useUserContext } from 'src/stores/UserContext'
 
 interface LeadDetailsState {
     lead: LeadDetailed,
@@ -33,6 +34,12 @@ interface LeadDetailsState {
 const SECTION_LABEL_SX = { fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: ".04em" }
 
 export const LeadDetailsState = ({ lead, contactState, flowState, updateLeadInfo }: LeadDetailsState) => {
+
+    //Mismo permiso que exige el backend en POST /leads/{id}/change_contact_state y /change_state
+    //("lead:update", ver lead_controller.py) — se usa acá en vez de <Can> porque el chip siempre
+    //debe mostrar el estado actual, solo se gatea la posibilidad de cambiarlo.
+    const { hasPermission } = useUserContext()
+    const canUpdateLead = hasPermission("lead:update")
 
     const [nextFlowStates, setNextFlowStates] = useState<LeadState[]>([])
     const [contactStates, setContactStates] = useState<LeadContactState[]>([])
@@ -71,7 +78,7 @@ export const LeadDetailsState = ({ lead, contactState, flowState, updateLeadInfo
         <Stack spacing={2} sx={{ width: "100%" }}>
             <Stack spacing={.5}>
                 <Typography variant="caption" color="text.secondary" sx={SECTION_LABEL_SX}>
-                    Estado de Flujo
+                    Etapa del Ciclo de Vida
                 </Typography>
                 <FlowStateChips currentState={flowState} nextStates={nextFlowStates}
                     onSelectState={(state, anchor) => { setStepperTarget(state); setStepperAnchor(anchor) }} />
@@ -84,7 +91,7 @@ export const LeadDetailsState = ({ lead, contactState, flowState, updateLeadInfo
                     transformOrigin={{ vertical: 'top', horizontal: 'center' }}
                 >
                     {stepperTarget &&
-                        <StateChangeList key={stepperTarget.id} title="Actualizar Estado de Flujo" leadId={lead.id}
+                        <StateChangeList key={stepperTarget.id} title="Actualizar Etapa" leadId={lead.id}
                             options={[]} initialSelected={stepperTarget}
                             onClose={closeStepperPopover} onChange={handleFlowChange} submit={changeFlowState} />
                     }
@@ -93,14 +100,14 @@ export const LeadDetailsState = ({ lead, contactState, flowState, updateLeadInfo
 
             <Stack spacing={.5} sx={{ alignItems: "start" }}>
                 <Typography variant="caption" color="text.secondary" sx={SECTION_LABEL_SX}>
-                    Estado de Contacto
+                    Estado
                 </Typography>
                 <CustomChip chipColor={contactState.color}
-                    onClick={contactStates.length > 0 ? (e => setContactAnchor(e.currentTarget)) : undefined}
+                    onClick={(contactStates.length > 0 && canUpdateLead) ? (e => setContactAnchor(e.currentTarget)) : undefined}
                     label={
                         <Stack direction="row" spacing={.25} sx={{ alignItems: "center" }}>
                             <span>{contactState.name}</span>
-                            {contactStates.length > 0 && <ArrowDropDownIcon fontSize="inherit" />}
+                            {contactStates.length > 0 && canUpdateLead && <ArrowDropDownIcon fontSize="inherit" />}
                         </Stack>
                     } />
                 <Popover
@@ -113,7 +120,7 @@ export const LeadDetailsState = ({ lead, contactState, flowState, updateLeadInfo
                         horizontal: 'left',
                     }}
                 >
-                    <StateChangeList title="Actualizar Estado de Contacto" leadId={lead.id} options={contactStates}
+                    <StateChangeList title="Actualizar Estado" leadId={lead.id} options={contactStates}
                         onClose={() => setContactAnchor(null)} onChange={handleContactChange} submit={changeContactState} />
                 </Popover>
             </Stack>
@@ -136,17 +143,9 @@ interface FlowStateChipsProps {
 }
 
 /**
- * Antes esto era una barra de segmentos con el flujo completo (todos los estados posibles, en
- * orden), pero terminaba mostrando de más: la mayoría no son relevantes en un momento dado, y los
- * nombres no entraban en el espacio disponible. Ahora, con más espacio disponible en esta columna
- * (se sacó la sección fija de "Creación de Lead" y se reordenaron los bloques), se muestra
- * directamente el estado actual (resaltado con un halo de su color, como brillaba el segmento
- * activo en la versión anterior) y, a los costados, un chip por cada estado al que se puede pasar
- * desde acá (según las transiciones configuradas en el editor de flujo) — con su nombre visible.
- * Los estados con `order` menor al actual (retroceder en el flujo) se muestran a la IZQUIERDA con
- * flecha hacia atrás; los de `order` mayor (avanzar) se muestran a la DERECHA con flecha hacia
- * adelante. Si el order de alguno es null no hay forma de saber la dirección, así que por defecto
- * se trata como "hacia adelante".
+ * Se muestra directamente el estado actual y, a los costados, un chip por cada estado al que se puede pasar con su nombre visible.
+ * Los estados con `order` menor al actual  se muestran a la IZQUIERDA; los de `order` mayor (avanzar) se muestran a la DERECHA
+ * Si el order de alguno es null, por defecto se trata como "hacia adelante".
  */
 const FlowStateChips = ({ currentState, nextStates, onSelectState }: FlowStateChipsProps) => {
     const theme = useTheme()
@@ -207,9 +206,9 @@ interface StateChangeListProps {
 }
 
 /**
- * Lista de posibles próximos estados (de flujo o de contacto). Al elegir uno, en vez de
+ * Lista de posibles próximos estados (de etapa o de contacto). Al elegir uno, en vez de
  * cambiar al toque, muestra un campo de notas opcional antes de confirmar el cambio.
- * Si se abre con `initialSelected` (ej. desde el camino de estados de flujo, donde el usuario
+ * Si se abre con `initialSelected` (ej. desde el camino de etapas, donde el usuario
  * ya clickeó un estado puntual) salta directo a la confirmación con notas, sin mostrar lista.
  */
 const StateChangeList = ({ title, leadId, options, initialSelected = null, onClose, onChange, submit }: StateChangeListProps) => {

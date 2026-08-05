@@ -17,6 +17,7 @@ import PersonIcon from '@mui/icons-material/Person'
 import { OrderSearchMenu } from 'src/components/ui/lists/OrderMenu'
 import { useOrderSeachList } from 'src/hooks/useOrderSearchLists'
 import { NoItemsMessage } from 'src/components/ui/lists/NoItemsMessage'
+import { Can } from 'src/components/auth/Can'
 
 interface TeamMemberListProps {
     team: TeamDetailed
@@ -89,9 +90,11 @@ export const TeamMemberList = ({ team }: TeamMemberListProps) => {
             <Stack spacing={1} direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
                 <Typography variant="h3">Miembros del Equipo</Typography>
                 <ButtonGroup variant="outlined" sx={{ marginLeft: "auto" }} >
-                    <CommonButton actionType="CREATE" onClick={handleAdd} size="small" onlyTooltip>
-                        Agregar
-                    </CommonButton>
+                    <Can permission="team_member:create">
+                        <CommonButton actionType="CREATE" onClick={handleAdd} size="small" onlyTooltip>
+                            Agregar
+                        </CommonButton>
+                    </Can>
                 </ButtonGroup>
             </Stack>
             <OrderSearchMenu searchOptions={SEARCH_NOM_FIELDS} orderOptions={ORDER_NOM_FIELDS} {...changeHandlers} />
@@ -103,8 +106,8 @@ export const TeamMemberList = ({ team }: TeamMemberListProps) => {
                                 <Grid size={{ xs: 12, sm: 6 }} key={member.id}>
                                     <ResponsiveListItem disablePadding
                                         actions={[
-                                            { actionType: "MODIFY", label: "Modificar rol", onClick: () => handleEdit(member) },
-                                            { actionType: "DISABLE", label: "Quitar del equipo", color: "error", onClick: () => setRemovingMember(member) }
+                                            { actionType: "MODIFY", label: "Modificar rol", onClick: () => handleEdit(member), permission: "team_member:update" },
+                                            { actionType: "DISABLE", label: "Quitar del equipo", color: "error", onClick: () => setRemovingMember(member), permission: "team_member:delete" }
                                         ]}
                                         onClick={() => handleEdit(member)}>
                                         <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", py: .5 }}>
@@ -129,7 +132,9 @@ export const TeamMemberList = ({ team }: TeamMemberListProps) => {
                     :
                     <NoItemsMessage emptyFetchMessage="Este equipo todavía no tiene miembros..."
                         search={fetchParams.search}>
-                        <CommonButton actionType='CREATE' onClick={handleAdd} variant="contained">Agregar</CommonButton>
+                        <Can permission="team_member:create">
+                            <CommonButton actionType='CREATE' onClick={handleAdd} variant="contained">Agregar</CommonButton>
+                        </Can>
                     </NoItemsMessage>
                 }
                 <PaginationComponent {...pageComponentProps} />

@@ -41,7 +41,7 @@ export const getLeadFlowStates = async <T extends FlowStateParams>(params?: T):
     return response.data
 }
 
-/** Obtiene todos los estados de flujo de la organización sin filtrar por flujo */
+/** Obtiene todas las etapas de ciclo de vida de la organización sin filtrar por ciclo de vida */
 export const getLeadStates = async (params?: ListParams): Promise<Paginable<LeadState>> => {
     const response = await axiosCRM.get(`/lead_states`, { params })
     return response.data

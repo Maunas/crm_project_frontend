@@ -62,7 +62,7 @@ const ROUTE_LIST_OUTLET: RouteListProps[] = [
     { path: "/automations/:id", title: "Detalle de Automatización", element: <AutomationPage />, permission: "field_automation:view" },
     { path: "/organizations/", title: "Organizaciones", element: <OrganizationList />, regularNavbar: true, globalNavbar: true, icon: ROUTE_ICONS.ORGANIZATIONS, permission: "organization:view" },
     { path: "/org-properties/", title: "Propiedades de Organización", navTitle: "Propiedades", element: <OrgProperties />, regularNavbar: true, icon: ROUTE_ICONS.ORG_PROPERTIES, permission: LEAD_PROPERTIES.map(prop => prop.permission) },
-    { path: "/lead-flow-editor/:id?", title: "Editor de Flujo", element: <LeadFlowEditor />, permission: "lead_flow:view" },
+    { path: "/lead-flow-editor/:id?", title: "Editor de Ciclo de Vida", element: <LeadFlowEditor />, permission: "lead_flow:view" },
     { path: "/roles", title: "Roles y Permisos", element: <RoleList />, permission: "role:view", regularNavbar: true, globalNavbar: true, icon: ROUTE_ICONS.ROLES },
     { path: "/teams/", title: "Equipos y Enrutamiento", navTitle: "Equipos", element: <TeamsPage />, regularNavbar: true, icon: ROUTE_ICONS.TEAMS, permission: "team:view" },
     { path: "/audit-logs/", title: "Auditoría de Sistema", navTitle: "Auditoría", element: <SystemAuditList />, regularNavbar: true, globalNavbar: true, icon: ROUTE_ICONS.AUDIT, permission: "system_audit_log:view" },

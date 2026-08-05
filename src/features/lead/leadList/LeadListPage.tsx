@@ -5,6 +5,7 @@ import { LeadSidebar } from './LeadSidebar'
 import LeadColumnSelector from '../leadListOptions/LeadColumnSelector'
 import { DisableBulkConfirmDialog } from 'src/components/ui/feedback/ConfirmationDialog'
 import { NATIVE_LEAD_FIELDS } from '../nativeLeadFields'
+import { getFieldSelectorGroupName } from 'src/features/leadFields/leadFieldUtils'
 import { LeadCampaignSelector } from '../leadListOptions/LeadListOptions'
 import PaginationComponent from 'shared/ui/lists/PaginationComponent'
 import LoadingScreenWrapper from 'src/components/ui/feedback/LoadingScreen'
@@ -482,6 +483,7 @@ export const LeadListPage = () => {
                     handleSelectedFieldIds={handleSelectedFieldIds}
                     handleClose={modalProps.handleClose}
                     showField="name"
+                    getGroupName={getFieldSelectorGroupName}
                 />
             </GenericModal>
         </Box>

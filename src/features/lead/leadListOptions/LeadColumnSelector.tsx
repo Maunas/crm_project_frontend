@@ -2,6 +2,7 @@ import * as React from 'react';
 import CommonButton from 'shared/ui/buttons/CommonButton';
 import { Grid, List, Stack, ListItemButton, ListItemIcon, ListItemText, Checkbox, Button, Paper, ButtonGroup, Typography, Box, Fade } from '@mui/material';
 import { alpha, lighten, useTheme } from '@mui/material/styles';
+import { FieldSectionHeader } from 'shared/ui/forms/FieldSectionHeader';
 
 function not(a: readonly number[], b: readonly number[]) {
   return a.filter((value) => !b.includes(value));
@@ -16,11 +17,15 @@ interface LeadColumnSelectorProps<T> {
   selectedFieldIds: number[],
   handleSelectedFieldIds: (ids: number[], closeModal?: boolean) => void,
   handleClose: () => void,
-  showField: keyof T
+  showField: keyof T,
+  //Si se pasa, cada lista muestra un encabezado de sección (línea divisora + título chico) antes del
+  //primer ítem de cada tramo contiguo con el mismo nombre de grupo -- refleja el orden actual de la
+  //lista, no fuerza un reordenamiento (ver getFieldSelectorGroupName en leadFieldUtils.ts).
+  getGroupName?: (item: T) => string,
 }
 
 export default function LeadColumnSelector<T extends { id: number }>
-  ({ originalList, selectedFieldIds, handleSelectedFieldIds, handleClose, showField }: LeadColumnSelectorProps<T>) {
+  ({ originalList, selectedFieldIds, handleSelectedFieldIds, handleClose, showField, getGroupName }: LeadColumnSelectorProps<T>) {
 
   const [checked, setChecked] = React.useState<number[]>([]);
   const [left, setLeft] = React.useState<number[]>(not(originalList.map(f => f.id), selectedFieldIds) ?? []);
@@ -86,7 +91,7 @@ export default function LeadColumnSelector<T extends { id: number }>
         sx={{ justifyContent: 'center', alignItems: 'center', width: "100%" }}
       >
         <Grid size="grow" sx={{ minWidth: "13rem" }}>
-          <CustomList title={"Columnas Disponibles"} listLookup={originalListLookup} showField={showField}
+          <CustomList title={"Columnas Disponibles"} listLookup={originalListLookup} showField={showField} getGroupName={getGroupName}
             checked={checked} globalDraggedIndex={globalDraggedIndex} handleSetDrag={handleSetDrag} handleToggle={handleToggle} isLeft={true}
             list={left} setter={handleSetLeft} contraryList={right} contrarySetter={handleSetRight} />
         </Grid>
@@ -131,7 +136,7 @@ export default function LeadColumnSelector<T extends { id: number }>
           </Stack>
         </Grid>
         <Grid size="grow" sx={{ minWidth: "13rem" }}>
-          <CustomList title={"Columnas a Mostrar"} listLookup={originalListLookup} showField={showField}
+          <CustomList title={"Columnas a Mostrar"} listLookup={originalListLookup} showField={showField} getGroupName={getGroupName}
             checked={checked} globalDraggedIndex={globalDraggedIndex} handleSetDrag={handleSetDrag} handleToggle={handleToggle}
             isLeft={false}
             contraryList={left} contrarySetter={handleSetLeft} list={right} setter={handleSetRight} />
@@ -173,10 +178,11 @@ interface props<T> {
     source: "left" | "right";
   } | null) => void,
   isLeft: boolean
+  getGroupName?: (item: T) => string,
 }
 
 
-const CustomList = <T extends { id: number }>({ title, listLookup, handleToggle, showField, checked, isLeft, list, setter, contraryList, contrarySetter, globalDraggedIndex, handleSetDrag }: props<T>) => {
+const CustomList = <T extends { id: number }>({ title, listLookup, handleToggle, showField, checked, isLeft, list, setter, contraryList, contrarySetter, globalDraggedIndex, handleSetDrag, getGroupName }: props<T>) => {
 
   const { palette } = useTheme()
 
@@ -233,43 +239,63 @@ const CustomList = <T extends { id: number }>({ title, listLookup, handleToggle,
         <List dense component="div" role="list"
           sx={{ overflow: 'auto', padding: 0, marginTop: ".5rem", }}
         >
-          {list.map((value: number, idx) => {
-            const labelId = `transfer-list-item-${value}-label`;
-            const fieldData = listLookup.get(value)
-            const isSelected = globalDraggedIndex?.idx === idx
-            if (!fieldData) return
-            return (
-              <ListItemButton
-                draggable
-                onDragStart={() => handleDragStart(idx)}
-                onDragOver={handleDragOver}
-                onDragEnter={() => handleDragEnter(idx)}
-                onDrop={() => handleDrop(idx)}
-                key={value}
-                role="listitem"
-                onClick={handleToggle(value)}
-                className='column-list-item'
-                sx={{
-                  cursor: globalDraggedIndex !== null ? "grabbing" : "grab",
-                  backgroundColor: isSelected ? `${alpha(palette.background.default, .5)}` : "",
-                  border: isSelected ? `2px solid ${alpha(palette.contrast.light, .5)}` : "",
-                  borderTop: (dragOver === idx && globalDraggedIndex !== null && dragOver < globalDraggedIndex?.idx)
-                    ? `4px solid ${alpha(palette.secondary.main, .6)}` : "",
-                  borderBottom: (dragOver === idx && globalDraggedIndex !== null && dragOver > globalDraggedIndex?.idx)
-                    ? `4px solid ${alpha(palette.secondary.main, .6)}` : "",
-                }}
-              >
-                <ListItemIcon sx={{ pointerEvents: "none" }}>
-                  <Checkbox
-                    checked={checked.includes(value)}
-                    tabIndex={-1}
-                    disableRipple
-                  />
-                </ListItemIcon>
-                <ListItemText id={labelId} primary={`${fieldData?.[showField]}`} sx={{ pointerEvents: "none" }} />
-              </ListItemButton>
-            );
-          })}
+          {(() => {
+            // Encabezado de sección: se muestra antes del primer ítem de cada tramo contiguo con
+            // el mismo grupo, siguiendo el orden ACTUAL de `list` (no se reordena nada acá --
+            // ver `getGroupName` en LeadColumnSelectorProps).
+            let prevGroupName: string | null = null
+            return list.flatMap((value: number, idx) => {
+              const labelId = `transfer-list-item-${value}-label`;
+              const fieldData = listLookup.get(value)
+              const isSelected = globalDraggedIndex?.idx === idx
+              if (!fieldData) return []
+
+              const nodes: React.ReactNode[] = []
+              if (getGroupName) {
+                const groupName = getGroupName(fieldData)
+                if (groupName !== prevGroupName) {
+                  nodes.push(
+                    <FieldSectionHeader key={`__section_${idx}_${groupName}`} name={groupName} first={prevGroupName === null} />
+                  )
+                  // eslint-disable-next-line react-hooks/immutability
+                  prevGroupName = groupName
+                }
+              }
+
+              nodes.push(
+                <ListItemButton
+                  draggable
+                  onDragStart={() => handleDragStart(idx)}
+                  onDragOver={handleDragOver}
+                  onDragEnter={() => handleDragEnter(idx)}
+                  onDrop={() => handleDrop(idx)}
+                  key={value}
+                  role="listitem"
+                  onClick={handleToggle(value)}
+                  className='column-list-item'
+                  sx={{
+                    cursor: globalDraggedIndex !== null ? "grabbing" : "grab",
+                    backgroundColor: isSelected ? `${alpha(palette.background.default, .5)}` : "",
+                    border: isSelected ? `2px solid ${alpha(palette.contrast.light, .5)}` : "",
+                    borderTop: (dragOver === idx && globalDraggedIndex !== null && dragOver < globalDraggedIndex?.idx)
+                      ? `4px solid ${alpha(palette.secondary.main, .6)}` : "",
+                    borderBottom: (dragOver === idx && globalDraggedIndex !== null && dragOver > globalDraggedIndex?.idx)
+                      ? `4px solid ${alpha(palette.secondary.main, .6)}` : "",
+                  }}
+                >
+                  <ListItemIcon sx={{ pointerEvents: "none" }}>
+                    <Checkbox
+                      checked={checked.includes(value)}
+                      tabIndex={-1}
+                      disableRipple
+                    />
+                  </ListItemIcon>
+                  <ListItemText id={labelId} primary={`${fieldData?.[showField]}`} sx={{ pointerEvents: "none" }} />
+                </ListItemButton>
+              );
+              return nodes
+            })
+          })()}
         </List>
         <Box sx={{ flexGrow: 1 }}
           onDragOver={handleDragOver}
