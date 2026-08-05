@@ -30,6 +30,7 @@ import { NoItemsMessage } from 'src/components/ui/lists/NoItemsMessage'
 import { useOrderSeachList } from 'src/hooks/useOrderSearchLists'
 import { OrderSearchMenu } from 'src/components/ui/lists/OrderMenu'
 import CustomChip from 'src/components/ui/details/CustomChip'
+import { Can } from 'src/components/auth/Can'
 
 const PAGE_SIZE = 12
 
@@ -174,10 +175,12 @@ export const RoutingPolicyList = () => {
             <Stack spacing={2}>
                 <Stack direction="row" useFlexGap spacing={2} sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
                     <Typography variant="h1">Políticas de Enrutamiento</Typography>
-                    <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_POLICY", null) }}
-                        sx={{ marginLeft: "auto" }} onlyTooltip>
-                        Agregar
-                    </CommonButton>
+                    <Can permission="lead_routing_policy:create">
+                        <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_POLICY", null) }}
+                            sx={{ marginLeft: "auto" }} onlyTooltip>
+                            Agregar
+                        </CommonButton>
+                    </Can>
                 </Stack>
 
                 <Stack direction="row" spacing={1} useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
@@ -202,12 +205,16 @@ export const RoutingPolicyList = () => {
                                                     onClick={() => handleSidebar("DETAILS_POLICY", policy)}
                                                     actions={[
                                                         { actionType: "DETAILS", label: 'Detalle', onClick: () => handleSidebar("DETAILS_POLICY", policy) },
-                                                        { actionType: "MODIFY", label: 'Modificar', onClick: () => handleSidebar("UPDATE_POLICY", policy) },
+                                                        { actionType: "MODIFY", label: 'Modificar', onClick: () => handleSidebar("UPDATE_POLICY", policy), permission: "lead_routing_policy:update" },
                                                         {
                                                             actionType: (policy.active ? "DISABLE" : "ENABLE"), label: policy.active ? "Deshabilitar" : "Habilitar",
-                                                            color: (policy.active ? "warning" : "success"), onClick: () => setTogglingPolicy(policy)
+                                                            color: (policy.active ? "warning" : "success"), onClick: () => setTogglingPolicy(policy),
+                                                            permission: policy.active ? "lead_routing_policy:delete" : "lead_routing_policy:update",
                                                         },
-                                                        { actionType: "DISABLE", label: "Eliminar definitivamente", color: "error", onClick: () => setDeletingPolicy(policy) },
+                                                        {
+                                                            actionType: "DISABLE", label: "Eliminar definitivamente", color: "error", onClick: () => setDeletingPolicy(policy),
+                                                            permission: "lead_routing_policy:delete",
+                                                        },
                                                     ]}>
                                                     <ListItemText primary={
                                                         <Stack spacing={.5} direction="row" sx={{ alignItems: "center" }}>
@@ -223,9 +230,11 @@ export const RoutingPolicyList = () => {
                                 </List>
                                 :
                                 <NoItemsMessage search={fetchParams.search} emptyFetchMessage="No se han encontrado políticas de enrutamiento...">
-                                    <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_POLICY", null) }} variant="contained">
-                                        Agregar
-                                    </CommonButton>
+                                    <Can permission="lead_routing_policy:create">
+                                        <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_POLICY", null) }} variant="contained">
+                                            Agregar
+                                        </CommonButton>
+                                    </Can>
                                 </NoItemsMessage>
                         }
                         <PaginationComponent {...pageComponentProps} />

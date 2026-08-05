@@ -63,14 +63,14 @@ export interface LeadFieldPost {
 
 export interface LeadField extends Omit<LeadFieldPost, "lead_field_section_id"> {
   id: number;
-  active: boolean;
+  active?: boolean;
   name: string;
   configuration?: string;
   lead_field_section: LeadFieldSection;
   organization_id: number;
   order: number;
   title_order: number | null;
-  subtitle_order: number | null;
+  subtitle_order?: number | null;
   field_type_code: string;
   field_type: LeadFieldType,
   field_subtype: LeadFieldType | null,
@@ -79,7 +79,7 @@ export interface LeadField extends Omit<LeadFieldPost, "lead_field_section_id"> 
   nativeKey?: string;
 }
 
-export interface LeadFieldDetailed extends LeadField, Metadata {
+export interface LeadFieldDetailed extends LeadField, Omit<Metadata, "active"> {
   validation_rules: FieldValidationRule[];
   nomenclator: Nomenclator;
   lead_field_section: LeadFieldSectionDetailed;

@@ -18,6 +18,7 @@ import GenericPaper from "src/components/layout/container/GenericPaper"
 import { updateFieldSection } from "../orgProperties/fieldSections/fieldSectionsServices"
 import { showCommonErrorToast } from "src/utils/feedback"
 import { Can } from "src/components/auth/Can"
+import { useUserContext } from "src/stores/UserContext"
 
 const MIN_FIELDS = 10
 
@@ -42,6 +43,11 @@ export const LeadFieldTableSections = ({ leadFields, newFieldsBySectionIds, setN
 
     const { palette } = useTheme()
     const [showAll, setShowAll] = useState<boolean>(false)
+
+    //Renombrar sección modifica LeadFieldSection (PUT /lead_field_sections/{id}) -> permiso propio,
+    //no "lead_field:update".
+    const { hasPermission } = useUserContext()
+    const canRenameSection = hasPermission("lead_field_section:update")
 
     //-------------------------- Renombrar sección con doble clic sobre su nombre --------------------------
     //Se guarda tanto el id de la sección en edición como el borrador de texto (en vez de mutar
@@ -162,7 +168,7 @@ export const LeadFieldTableSections = ({ leadFields, newFieldsBySectionIds, setN
                                         //abriéndose y cerrándose de paso. El resto del encabezado (fondo,
                                         //checkbox, flecha) sigue plegando/desplegando con un clic normal.
                                         onClick={stopPropagationEvent()}
-                                        onDoubleClick={isReordering ? undefined : stopPropagationEvent(() => startEditingSectionName(section.sectId, section.sectName))}>
+                                        onDoubleClick={(isReordering || !canRenameSection) ? undefined : stopPropagationEvent(() => startEditingSectionName(section.sectId, section.sectName))}>
                                         {section.sectName}
                                     </Typography>
                                 )}

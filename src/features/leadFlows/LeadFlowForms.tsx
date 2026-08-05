@@ -84,7 +84,7 @@ export default function StateForm({ existingState, onClose, onSave, hasInitialSt
   const handleSave = (data: EditorStatePost) => {
     try {
       if (!data.name || !data.name.trim()) throw new Error("El nombre no puede estar vacío.")
-      if (!canSelectInitial && data.is_initial) throw new Error("Ya hay un estado inicial.")
+      if (!canSelectInitial && data.is_initial) throw new Error("Ya hay una etapa inicial.")
       onSave(data)
       onClose()
     } catch (e) {
@@ -96,14 +96,14 @@ export default function StateForm({ existingState, onClose, onSave, hasInitialSt
   return (
     <form onSubmit={handleSubmit(handleSave)}>
       <Stack spacing={3}>
-        <Typography variant='h2' >{isEditing ? 'Editar Estado' : 'Crear Nuevo Estado'}</Typography>
+        <Typography variant='h2' >{isEditing ? 'Editar Etapa' : 'Crear Nueva Etapa'}</Typography>
         <Stack spacing={2} sx={{ alignItems: "start" }}>
           <RegisteredTextInput register={register} name='name' label='Nombre' required />
           <ControlledAutocomplete
             control={control} name="category" options={CATEGORY_OPTIONS} returnField="code" label="Categoría"
             getOptionKey={op => op.code} getOptionLabel={op => op.label} required />
           {canSelectInitial && (
-            <ControlledSwitch control={control} name='is_initial' label="Es estado inicial" />
+            <ControlledSwitch control={control} name='is_initial' label="Es etapa inicial" />
           )}
           <ControlledColorPicker control={control} name="color" sx={{ width: "100%" }} />
           <FormErrorMessage>{errors?.root?.message}</FormErrorMessage>
@@ -167,7 +167,7 @@ export const FlowEditorHeader = ({ initialName, initialDescription, statesLength
           <ArrowBackIcon />
         </IconButton>
         <Typography variant="h2" component="h1" sx={{ fontWeight: "bold" }} color="text.primary">
-          Editor de Flujo
+          Editor de Ciclo de Vida
         </Typography>
       </Stack>
 
@@ -192,7 +192,7 @@ export const FlowEditorHeader = ({ initialName, initialDescription, statesLength
 
       <Can permission="lead_flow:update">
         <CommonButton actionType={loading ? "LOADING" : "SAVE"} onClick={saveFlowLoad} disabled={loading || statesLength === 0} sx={{ ml: "auto" }}>
-          {loading ? 'Guardando...' : 'Guardar Flujo'}
+          {loading ? 'Guardando...' : 'Guardar Ciclo de Vida'}
         </CommonButton>
       </Can>
     </Stack>

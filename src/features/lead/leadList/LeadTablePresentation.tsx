@@ -6,9 +6,10 @@ import { SelectableTableRow } from "shared/ui/lists/CustomTableRow"
 import type { LeadField, LeadFieldValue } from "src/types/leadFields"
 import type { Lead } from "src/types/leads"
 import { useNavigate } from "react-router-dom"
-import { Box, Chip, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, useTheme, Checkbox, TableSortLabel } from "@mui/material"
+import { Box, Chip, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, useTheme, Checkbox, TableSortLabel, Tooltip } from "@mui/material"
 import type { Palette } from "@mui/material/styles"
 import { getTypeIconAndColor } from "../../leadFields/LeadFieldTypeIcon"
+import { formatUserFullName } from "src/utils/formatters"
 
 // Tipos semánticos para los campos nativos (id < 0)
 const NATIVE_KEY_TYPES: Record<string, { type: string; subtype?: string }> = {
@@ -18,6 +19,8 @@ const NATIVE_KEY_TYPES: Record<string, { type: string; subtype?: string }> = {
     assigned_to_user_id: { type: 'LEAD' },
     created_at:          { type: 'DATE' },
     updated_at:          { type: 'DATE' },
+    created_by:          { type: 'LEAD' },
+    updated_by:          { type: 'LEAD' },
 }
 
 const TABLE_SX = {
@@ -346,6 +349,24 @@ const NativeCellValue = memo(({ lead, nativeKey }: { lead: Lead; nativeKey: stri
             return lead.created_at ? <DateValue date={lead.created_at} subtype="DATE" short /> : <>—</>
         case 'updated_at':
             return lead.updated_at ? <DateValue date={lead.updated_at} subtype="DATE" short /> : <>—</>
+        case 'created_by': {
+            const name = formatUserFullName(lead.creator)
+            if (!name) return <>—</>
+            return (
+                <Tooltip title={lead.creator?.email ?? ""} disableHoverListener={!lead.creator?.email}>
+                    <span>{name}</span>
+                </Tooltip>
+            )
+        }
+        case 'updated_by': {
+            const name = formatUserFullName(lead.updater)
+            if (!name) return <>—</>
+            return (
+                <Tooltip title={lead.updater?.email ?? ""} disableHoverListener={!lead.updater?.email}>
+                    <span>{name}</span>
+                </Tooltip>
+            )
+        }
         default:
             return <>—</>
     }

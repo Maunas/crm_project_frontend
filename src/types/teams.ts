@@ -35,6 +35,10 @@ export interface BulkAssignRequest {
   lead_ids: number[];
   target_team_id?: number | null;
   target_user_id?: number | null;
+  //target_team_id/target_user_id en null/undefined significa "no tocar este campo", no "vaciarlo".
+  //Para desasignar hay que mandar clear_team/clear_user en true.
+  clear_team?: boolean;
+  clear_user?: boolean;
 }
 
 // Acceso del equipo a Workspaces

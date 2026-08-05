@@ -30,7 +30,7 @@ export interface OrgPropertiesItem {
     permission: string,
 }
 export const LEAD_PROPERTIES: OrgPropertiesItem[] = [{
-    label: "Flujo de Estados",
+    label: "Ciclo de Vida",
     id: "FLOW",
     icon: <AccountTreeIcon />,
     color: "primary",
@@ -38,7 +38,7 @@ export const LEAD_PROPERTIES: OrgPropertiesItem[] = [{
     permission: "lead_flow:view",
 },
 {
-    label: "Estados de Contacto",
+    label: "Estados",
     id: "CONTACT",
     icon: <ViewColumnIcon />,
     color: "secondary",

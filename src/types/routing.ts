@@ -20,7 +20,7 @@ export const NATIVE_FIELD_LABELS: Record<NativeField, string> = {
   created_at: "Fecha de Creación",
   updated_at: "Fecha de Última Modificación",
   campaign_id: "Campaña",
-  current_state_id: "Estado Actual",
+  current_state_id: "Etapa Actual",
 };
 
 // Campos nativos que solo soportan eq/neq (no rangos)

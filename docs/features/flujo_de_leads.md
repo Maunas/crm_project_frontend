@@ -1,5 +1,7 @@
 # Flujo de leads (`src/features/leadFlows/`)
 
+> **Terminología:** en la UI este módulo se presenta como **"Ciclo de Vida"** (antes "Flujo de Estados"); sus estados se llaman **"Etapas"** (antes "Estados"). El renaming es solo de textos visibles (labels, toasts, tooltips) — no afecta rutas, keys de estado (`current_state_id`, etc.) ni IDs.
+
 ## Estructura
 ```
 leadFlows/

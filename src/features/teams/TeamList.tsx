@@ -20,6 +20,7 @@ import { useSearchParams } from 'react-router-dom'
 import { Grid, List, ListItemText, Stack, Typography } from '@mui/material'
 import { useOrderSeachList } from 'src/hooks/useOrderSearchLists'
 import { OrderSearchMenu } from 'src/components/ui/lists/OrderMenu'
+import { Can } from 'src/components/auth/Can'
 
 const ORDER_TEAM_FIELDS = [
     { name: "name", label: "Orden Alfabético" },
@@ -127,10 +128,12 @@ export const TeamList = () => {
                 <Stack direction="row" useFlexGap sx={{ justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
                     <Typography variant="h1">Equipos</Typography>
                     {teams && teams.items?.length > 0 &&
-                        <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_TEAM", null) }}
-                            sx={{ marginLeft: "auto" }} onlyTooltip>
-                            Agregar
-                        </CommonButton>
+                        <Can permission="team:create">
+                            <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_TEAM", null) }}
+                                sx={{ marginLeft: "auto" }} onlyTooltip>
+                                Agregar
+                            </CommonButton>
+                        </Can>
                     }
                 </Stack>
                 <OrderSearchMenu searchOptions={SEARCH_TEAM_FIELDS} orderOptions={ORDER_TEAM_FIELDS} {...changeHandlers} />
@@ -146,10 +149,11 @@ export const TeamList = () => {
                                                     onClick={() => handleSidebar("DETAILS_TEAM", team)}
                                                     actions={[
                                                         { actionType: "DETAILS", label: 'Detalle', onClick: () => handleSidebar("DETAILS_TEAM", team) },
-                                                        { actionType: "MODIFY", label: 'Modificar', onClick: () => handleSidebar("UPDATE_TEAM", team) },
+                                                        { actionType: "MODIFY", label: 'Modificar', onClick: () => handleSidebar("UPDATE_TEAM", team), permission: "team:update" },
                                                         {
                                                             actionType: (team.active ? "DISABLE" : "ENABLE"), label: team.active ? "Deshabilitar" : "Habilitar",
-                                                            color: (team.active ? "error" : "success"), onClick: () => setDeletingTeam(team)
+                                                            color: (team.active ? "error" : "success"), onClick: () => setDeletingTeam(team),
+                                                            permission: team.active ? "team:delete" : "team:update",
                                                         }
                                                     ]}>
                                                     <ListItemText primary={

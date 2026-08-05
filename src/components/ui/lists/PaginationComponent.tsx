@@ -26,13 +26,6 @@ const PaginationComponent = memo(({ totalPages, totalItems = 0, currentItems = 0
         </Typography>
         <PaginationComponentList totalPages={totalPages} page={page} handlePage={handlePage} size={size} />
       </Stack>
-      <Divider />
-      <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center", px: 1 }}>
-        <Typography variant={size === "small" ? "body2" : "body1"} color="text.secondary">
-          {`Mostrando elementos ${firstElement}-${lastElement} de ${totalItems}`}
-        </Typography>
-        <PaginationComponentListAlt totalPages={totalPages} page={page} handlePage={handlePage} size={size} />
-      </Stack>
     </Stack>
   )
 })
@@ -65,23 +58,6 @@ export const PaginationComponentList = ({ totalPages, page, handlePage, size }: 
       renderItem={(item) => {
         if (item.selected && manualPage) return <PaginationInput value={item.page} handlePage={handlePageWrapper} size={size} autofocus />
         if (item.selected) return <PaginationItem {...item} onClick={() => setManualPage(true)} />
-        return <PaginationItem {...item} />
-      }}
-    />
-  )
-}
-
-export const PaginationComponentListAlt = ({ totalPages, page, handlePage, size }: PaginationComponentListProps) => {
-  return (
-    <Pagination
-      count={totalPages}
-      page={page}
-      shape="rounded"
-      color="primary"
-      onChange={handlePage}
-      size={size}
-      renderItem={(item) => {
-        if (item.selected) return <PaginationInput value={item.page} handlePage={handlePage} size={size} />
         return <PaginationItem {...item} />
       }}
     />

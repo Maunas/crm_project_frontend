@@ -58,7 +58,7 @@ function StateNodeComponent({ id, data, selected }: NodeProps<{ data: StateNodeD
         },
       }}
     >
-      {/* Target handle - top (Oculto en estado inicial) */}
+      {/* Target handle - top (Oculto en etapa inicial) */}
       {!isInitial && (
         <Handle
           type="target"
@@ -90,7 +90,7 @@ function StateNodeComponent({ id, data, selected }: NodeProps<{ data: StateNodeD
         </Box>
       </Box>
 
-      {/* Nombre del Estado */}
+      {/* Nombre de la Etapa */}
       <Box sx={{ px: 2, py: 1.5 }}>
         <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.primary', textAlign: 'center' }}>
           {label}

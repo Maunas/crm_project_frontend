@@ -11,8 +11,12 @@ interface UserAvatarProps {
     noRing?: boolean
 }
 
-/** Genera siempre el mismo color para el mismo nombre (sin guardar nada en el back). */
-function nameToColor(name: string): string {
+/**
+ * Genera siempre el mismo color para el mismo nombre (sin guardar nada en el back). 
+ * Saturación y luminosidad fijas (60%/42%) -- solo varía el matiz.
+ * Exportado para reusarlo fuera del avatar.
+ */
+export function nameToColor(name: string): string {
     let hash = 0;
     for (let i = 0; i < name.length; i++) {
         hash = name.charCodeAt(i) + ((hash << 5) - hash);

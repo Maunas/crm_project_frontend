@@ -67,10 +67,10 @@ export const LeadFlowEditor = () => {
     let negativeIdCounter = -1;
     const uuidToBackendIdMap = new Map<string, number>();
 
-    // 2. Preparar Estados
+    // 2. Preparar Etapas
     const statesPayload = states.map(s => {
       let backendId: number;
-      // Si el tempId tiene un guion, es un UUID (nuevo estado)
+      // Si el tempId tiene un guion, es un UUID (nueva etapa)
       if (s.tempId.includes('-')) {
         backendId = negativeIdCounter--;
         uuidToBackendIdMap.set(s.tempId, backendId);

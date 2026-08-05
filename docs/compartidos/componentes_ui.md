@@ -145,8 +145,38 @@ const options = [{ id: 1, name: "Opción 1" }, { id: 2, name: "Opción 2" }]
   options={options} getOptionLabel={(o) => o.name} getOptionKey={(o) => String(o.id)}
   returnField="id" multiple />
 ```
-- Props clave: `options`, `getOptionLabel`, `getOptionKey`, `returnField` (null para devolver el objeto completo), `multiple`, `disableClearable`, `onChangeBefore`, `renderOption`, `renderValue`
+- Props clave: `options`, `getOptionLabel`, `getOptionKey`, `returnField` (null para devolver el objeto completo), `multiple`, `disableClearable`, `onChangeBefore`, `renderOption`, `renderValue`, `groupBy`, `renderGroup`
+- `groupBy`: agrupa visualmente las opciones (requiere que `options` ya venga agrupada por ese criterio, si no MUI repite el encabezado)
+- `renderGroup`: custom del encabezado de grupo. Para selectores de campo pasar `renderFieldSectionGroup` (ver `FieldSectionHeader` abajo) y así reemplazar el `ListSubheader` en negrita por defecto de MUI
 - Muestra `AutocompleteLoader` (loading spinner) si no hay options y no está disabled
+
+### `GenericSelector` — `forms/GenericSelector.tsx`
+Selector genérico `value`/`onChange` (no depende de react-hook-form), base para selectores especializados:
+```tsx
+<GenericSelector options={options} value={selected} onChange={handleChange}
+  getOptionLabel={(o) => o.label} getOptionKey={(o) => o.id} />
+```
+- `searchable` (default `true`): decide si se renderiza como `Autocomplete` (con buscador) o como `<Select>` simple, sin duplicar lógica
+- `groupBy`: agrupa las opciones en grupos contiguos preservando el orden de aparición (se reordena internamente para no repetir encabezados)
+- `renderGroup`: custom del encabezado de grupo (default `renderFieldSectionGroup` de `FieldSectionHeader.tsx`)
+- `renderOptionContent`: mismo render de cada opción en modo Select y en modo Autocomplete (si no se pasa, usa `getOptionLabel`)
+- Muestra `AutocompleteLoader` si no hay options y no está disabled; `errorMessage` se muestra con `FormErrorMessage`
+
+### `FieldSelector` + `ControlledFieldSelector` — `forms/FieldSelector.tsx`
+Selector especializado en "elegir un campo" de Lead (custom + nativos), agrupado por sección. Los campos nativos (id negativo) se agrupan en secciones sintéticas ("Datos del Lead"/"Creación"/"Modificación"); los custom, por su `lead_field_section` (ver `getFieldSelectorGroupName`/`groupFieldsForSelector` en `leadFieldUtils.ts`):
+```tsx
+<FieldSelector fields={allFields} value={fieldId} onChange={setFieldId} searchable label="Campo" />
+```
+- "Hereda" de `GenericSelector` el toggle `searchable` (Autocomplete vs Select simple)
+- `showTypeCaption` (default `true`): muestra `(TIPO)` en cursiva al lado del nombre — se oculta automáticamente para nativos; pasar `false` para no mostrarlo nunca
+- `onChangeBefore`: se llama con el campo elegido (objeto completo) ANTES de `onChange` — útil para resetear otros campos del form que dependan del tipo del elegido
+- `ControlledFieldSelector` es la versión conectada a react-hook-form (`control`/`name`), para formularios que manejan su estado con RHF (automatizaciones, filtros de la lista de leads)
+
+### `FieldSectionHeader` + `renderFieldSectionGroup` + `renderGroupedMenuItems` — `forms/FieldSectionHeader.tsx`
+Encabezado de sección para selectores que agrupan campos por sección: línea divisora suave + título en letra pequeña. Incluye 3 exports:
+- `FieldSectionHeader` (componente): props `name`, `first` (el primer grupo no lleva línea divisora arriba)
+- `renderFieldSectionGroup`: para pasar como `renderGroup` de un Autocomplete/`ControlledAutocomplete` con `groupBy` — respeta la estructura `<li><header/><ul>` que espera MUI
+- `renderGroupedMenuItems`: para armar los children de un `<Select>` agrupado por sección — intercala un header (no seleccionable) antes de los `MenuItem` de cada grupo
 
 ### `ControlledRadio` — `forms/CustomMultipleInputs.tsx`
 Grupo de radios controlado:
@@ -257,6 +287,7 @@ Avatar de usuario con iniciales y color generado determinísticamente del nombre
 ```
 - Usa función hash para asignar siempre el mismo color al mismo nombre (HLS)
 - Iniciales: primera letra del primer nombre + primera letra del apellido
+- `nameToColor(name)` está **exportado** para reusarlo fuera del avatar (ej. `LeadComments` colorea cada comentario según su autor). Saturación/luminosidad fijas — solo varía el matiz
 
 ### `DetailsMetadata` (default export) + `MetadataShort` — `details/DetailsMetadata.tsx`
 Componente de metadatos de auditoría (creación/modificación). `DetailsMetadata` versión completa con dos columnas separadas por divider vertical; `MetadataShort` versión de una línea.

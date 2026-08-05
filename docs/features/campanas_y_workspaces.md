@@ -20,7 +20,7 @@ Página de detalle de campaña. Ruta: `/campaigns/:id`.
 
 #### `CampaignForm` — `CampaignForms.tsx`
 Formulario de creación/edición de campaña:
-- Nombre, workspace, lead flow
+- Nombre, workspace, ciclo de vida (flujo de leads; label "Ciclo de Vida" tras el renaming)
 - Tipo de audiencia (B2B/B2C) que determina campos por defecto
 - Se abre como sidebar desde `WorkspaceDetails`
 
@@ -58,6 +58,7 @@ Página principal de campañas/workspaces. Ruta: `/campaigns/`.
 - Sidebar de detalle al seleccionar un workspace
 - CRUD de workspaces y campañas desde la misma página
 - Usa `useSidebar` para manejar el panel lateral
+- El botón "Agregar workspace" exige permiso `workspace:create`
 
 #### `WorkspaceDetail` — `WorkspaceDetails.tsx`
 Sidebar de detalle de workspace:

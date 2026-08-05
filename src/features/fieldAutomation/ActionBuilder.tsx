@@ -4,6 +4,7 @@ import { ActionTypeEnum } from 'src/types/automation';
 import type { AutomationAction, FieldAutomationPost } from 'src/types/automation';
 import { ActionRow } from './ActionRow';
 import type { LeadField } from 'src/types/leadFields';
+import type { NativeFieldOptions } from 'src/features/lead/nativeLeadFields';
 import { useFieldArray, type Control, type Path, type UseFormRegister, type UseFormSetValue } from 'react-hook-form';
 import CommonButton from 'src/components/ui/buttons/CommonButton';
 import GenericPaper from 'src/components/layout/container/GenericPaper';
@@ -14,6 +15,7 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 
 interface ActionBuilderProps {
   leadFields: LeadField[];
+  nativeOptions?: NativeFieldOptions;
   readOnly?: boolean;
   control: Control<FieldAutomationPost, unknown, FieldAutomationPost>,
   register: UseFormRegister<FieldAutomationPost>,
@@ -26,7 +28,7 @@ const createEmptyAction = (): AutomationAction => ({
   value: null,
 });
 
-export const ActionBuilder = memo(({ control, register, leadFields, readOnly = false, setValue }: ActionBuilderProps) => {
+export const ActionBuilder = memo(({ control, register, leadFields, nativeOptions, readOnly = false, setValue }: ActionBuilderProps) => {
 
   const { fields, append, remove } = useFieldArray({ name: "actions", control, keyName: "idField" })
 
@@ -91,6 +93,7 @@ export const ActionBuilder = memo(({ control, register, leadFields, readOnly = f
                   isOnly={fields.length === 1}
                   index={index}
                   fields={leadFields}
+                  nativeOptions={nativeOptions}
                   readOnly={readOnly}
                   onUpdate={handleUpdateAction}
                 />

@@ -29,6 +29,7 @@ import type { NomenclatorItem } from 'src/types/nomenclators'
 import { LeadFormBool, LeadFormDate, LeadFormFile, LeadFormNumber, LeadFormText } from '../shared/LeadFormFields'
 import { OPERATORS_BY_LEAD_TYPE } from '../leadUtils'
 import { NATIVE_LEAD_FIELDS } from '../nativeLeadFields'
+import { ControlledFieldSelector } from 'src/components/ui/forms/FieldSelector'
 import { getLeadContactStates } from 'src/features/orgProperties/contactState/contactStatesServices'
 import { getLeadFlowStates } from 'src/features/leadFlows/leadFlowServices/FlowService'
 import { getTeams } from '../teamService'
@@ -37,6 +38,7 @@ import { getCampaign } from 'src/features/campaigns/campaignServices'
 import type { LeadContactState } from 'src/types/orgProperties'
 import type { LeadState } from 'src/types/leadFlow'
 import type { LeadTeam, LeadUser } from 'src/types/leads'
+import { formatUserFullName } from 'src/utils/formatters'
 
 // ── FormFilter: extiende LeadFilter con campos UI para rangos ─────────────────
 interface FormFilter {
@@ -540,6 +542,9 @@ export const LeadFiltersItem = memo(({
                 return (nativeOptions?.teams ?? []).map(t => ({ id: t.id, label: t.name }))
             case 'assigned_to_user_id':
                 return (nativeOptions?.users ?? []).map(u => ({ id: u.id, label: u.name ?? u.email }))
+            case 'created_by':
+            case 'updated_by':
+                return (nativeOptions?.users ?? []).map(u => ({ id: u.id, label: formatUserFullName(u) ?? u.email }))
             default:
                 return []
         }
@@ -639,15 +644,13 @@ export const LeadFiltersItem = memo(({
                     ) : (
                         // Estado expandido: selector de campo
                         <Box sx={{ flex: 1, minWidth: 0, ...XS_INPUT_SX }}>
-                            <ControlledAutocomplete
+                            <ControlledFieldSelector
                                 control={control}
                                 name={`filters.${idx}.field_id`}
-                                options={filteredFields}
-                                getOptionKey={o => `${o.id}`}
-                                getOptionLabel={o => o.name}
-                                returnField="id"
+                                fields={filteredFields}
                                 label="Campo"
                                 size="small"
+                                showTypeCaption={false}
                                 errorMessage={errors.filters?.[idx]?.field_id?.message}
                             />
                         </Box>
@@ -779,9 +782,8 @@ export const LeadFiltersItem = memo(({
                 <Typography variant="body1" sx={{ fontWeight: 600 }}>Filtro N° {idx + 1}</Typography>
                 <Stack direction="row" spacing={.5} useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
                     <Box sx={{ flexGrow: 2, minWidth: "12rem" }}>
-                        <ControlledAutocomplete control={control} name={`filters.${idx}.field_id`}
-                            options={filteredFields} getOptionKey={o => `${o.id}`} getOptionLabel={o => o.name}
-                            returnField="id" label="Campo a Filtrar" size="small"
+                        <ControlledFieldSelector control={control} name={`filters.${idx}.field_id`}
+                            fields={filteredFields} label="Campo a Filtrar" size="small" showTypeCaption={false}
                             errorMessage={errors.filters?.[idx]?.field_id?.message} />
                     </Box>
 

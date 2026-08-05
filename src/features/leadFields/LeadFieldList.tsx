@@ -232,11 +232,13 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
                             color="error" variant="outlined" actionType="CLOSE" onlyTooltip>
                             Cancelar
                         </CommonButton>}
-                        <CommonButton onClick={() => isReordering ? submitReorder(newFieldsBySectionIds) : setIsReordering(true)}
-                            color={isReordering ? "primary" : "secondary"} variant={isReordering ? "contained" : "outlined"}
-                            actionType={isReordering ? "SAVE" : "REORDER"} onlyTooltip>
-                            Reordenar
-                        </CommonButton>
+                        <Can permission={"lead_field:update"}>
+                            <CommonButton onClick={() => isReordering ? submitReorder(newFieldsBySectionIds) : setIsReordering(true)}
+                                color={isReordering ? "primary" : "secondary"} variant={isReordering ? "contained" : "outlined"}
+                                actionType={isReordering ? "SAVE" : "REORDER"} onlyTooltip>
+                                Reordenar
+                            </CommonButton>
+                        </Can>
                         {!isReordering && checkedItems.size > 0 && areThereInactiveItems && hasPermission("lead_field:update") &&
                             <CommonButton onClick={() => setBulkDisabling("enable")} actionType="ENABLE" color="success" variant="outlined" onlyTooltip>
                                 Habilitar Seleccionados
