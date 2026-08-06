@@ -10,9 +10,10 @@ import type { LeadContactState } from 'src/types/orgProperties';
 interface LeadBoardPresentationProps {
     campaignId: number | string;
     activeFilters: unknown[];
+    searchQuery?: string;
 }
 
-export const LeadBoardPresentation = ({ campaignId, activeFilters }: LeadBoardPresentationProps) => {
+export const LeadBoardPresentation = ({ campaignId, activeFilters, searchQuery }: LeadBoardPresentationProps) => {
     const [columns, setColumns] = useState<LeadContactState[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -129,6 +130,7 @@ export const LeadBoardPresentation = ({ campaignId, activeFilters }: LeadBoardPr
                         column={column}
                         campaignId={campaignId}
                         activeFilters={activeFilters}
+                        searchQuery={searchQuery}
                     />
                 ))}
             </Box>

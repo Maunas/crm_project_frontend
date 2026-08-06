@@ -65,6 +65,11 @@ export const LeadListPage = () => {
 
     // Búsqueda de texto libre (mutuamente exclusiva con filtros)
     const [searchText, setSearchText] = useState('')
+    // Versión debounceada del texto de búsqueda (misma espera de 400ms que ya usa el fetch de la
+    // vista Tabla), para pasarle al modo Tablero -- este carga sus propios leads por columna
+    // (ver LeadListContent) y hasta ahora nunca recibía el texto buscado, solo los filtros
+    // estructurados del panel de filtros.
+    const [debouncedQuery, setDebouncedQuery] = useState<string | undefined>(undefined)
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
     const fetchLeads = useCallback((page: number, filters: LeadFilter[], headers: LeadListParams, campaignId: string | number) => {
@@ -129,7 +134,7 @@ export const LeadListPage = () => {
     // Filters (limpian la búsqueda de texto al activarse)
     const setFiltersAndHeaders = useCallback(async (filters: LeadFilter[], newParams: LeadListParams) => {
         if (!campaignId) return null
-        if (filters.length > 0) setSearchText('')
+        if (filters.length > 0) { setSearchText(''); setDebouncedQuery(undefined) }
         return fetchLeadLoad(1, filters, { ...newParams, ...orderParams }, campaignId).then(() => {
             setFetchParams(newParams); setFilters(filters)
         })
@@ -146,12 +151,14 @@ export const LeadListPage = () => {
             const query = value.trim() || undefined
             // Limpiar filtros activos al buscar
             if (value.trim()) { setFilters([]) }
+            setDebouncedQuery(query)
             fetchLeadLoad(1, [], { ...fetchParams, ...orderParams, query }, campaignId)
         }, 400)
     }, [campaignId, fetchLeadLoad, fetchParams, orderParams])
 
     const handleSearchClear = useCallback(() => {
         setSearchText('')
+        setDebouncedQuery(undefined)
         if (!campaignId) return
         fetchLeadLoad(1, filters, { ...fetchParams, ...orderParams, query: undefined }, campaignId)
     }, [campaignId, fetchLeadLoad, fetchParams, orderParams, filters])
@@ -455,6 +462,7 @@ export const LeadListPage = () => {
                                     workspaceId={workspaceId ?? undefined}
                                     campaignId={campaignId}
                                     filters={filters}
+                                    searchQuery={debouncedQuery}
                                     onClearFilters={() => setFiltersAndHeaders([], fetchParams)}
                                 />
                                 {presentationMode === 'TABLE' && (
