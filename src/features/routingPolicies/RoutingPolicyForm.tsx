@@ -35,14 +35,14 @@ interface FormValues {
     description: string | null,
     priority: number,
     logical_operator: "AND" | "OR",
-    target_team_id: number | null,
-    campaign_id: number | null,
+    target_team_id: string | null,
+    campaign_id: string | null,
     conditions: LeadRoutingConditionPost[],
 }
 
 interface RoutingPolicyFormSidebarProps {
     existingPolicy?: LeadRoutingPolicyDetailed,
-    initialCampaignId?: number | null,
+    initialCampaignId?: string | null,
     closeSidebar: () => void,
     updateEntityOnList: (entity: LeadRoutingPolicyDetailed) => void,
     handleSidebar: (mode: string, entity: LeadRoutingPolicyDetailed | null) => void,
@@ -82,7 +82,7 @@ export const RoutingPolicyFormSidebar = ({ existingPolicy, initialCampaignId, ha
 
 interface RoutingPolicyFormProps {
     existingPolicy?: LeadRoutingPolicyDetailed,
-    initialCampaignId?: number | null,
+    initialCampaignId?: string | null,
     submit: (data: LeadRoutingPolicyPost) => Promise<void>,
     onCancel: () => void,
 }
@@ -103,10 +103,17 @@ export const RoutingPolicyForm = ({ existingPolicy, initialCampaignId, submit, o
         description: existingPolicy?.description ?? null,
         priority: existingPolicy?.priority ?? 1,
         logical_operator: existingPolicy?.logical_operator ?? "AND",
-        target_team_id: existingPolicy?.target_team_id ?? null,
-        campaign_id: existingPolicy?.campaign_id ?? initialCampaignId ?? null,
+        // Fase 4: target_team_id/campaign_id de existingPolicy siguen siendo la FK embebida
+        // sin migrar (ver backend/AGENTS.md §18), pero ahora el Response también trae el
+        // objeto anidado target_team/campaign con el uuid real -- se usa ese en vez de forzar
+        // re-selección (patrón anterior, ya no hace falta).
+        target_team_id: existingPolicy?.target_team?.id ?? null,
+        campaign_id: existingPolicy ? (existingPolicy.campaign?.id ?? null) : (initialCampaignId ?? null),
+        // Fase 4: cada condición ahora trae el objeto anidado lead_field con el uuid real
+        // (ver backend/AGENTS.md §18-quinquies) -- se usa para precargar en vez de forzar
+        // re-selección (patrón anterior, ya no hace falta para condiciones dinámicas).
         conditions: existingPolicy?.conditions?.length
-            ? existingPolicy.conditions.map((c, idx) => ({ ...c, position: idx }))
+            ? existingPolicy.conditions.map((c, idx) => ({ ...c, position: idx, lead_field_id: c.lead_field?.id ?? null }))
             : [emptyCondition(0)],
     }), [existingPolicy, initialCampaignId])
 

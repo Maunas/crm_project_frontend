@@ -12,12 +12,13 @@ export const createValidation = async (body: FieldValidationRulePost): Promise<F
     return val.data;
 };
 
-export const updateValidation = async (body: FieldValidationRulePost, id: number): Promise<FieldValidationRule> => {
+// id es el public_uuid de la regla (rutas genéricas de BaseController, ver backend/AGENTS.md §17-18).
+export const updateValidation = async (body: FieldValidationRulePost, id: string): Promise<FieldValidationRule> => {
     const val = await axiosCRM.put(`validation_rules/${id}`, body);
     return val.data;
 };
 
-export const deleteValidation = async (id: number): Promise<DeleteResponse> => {
+export const deleteValidation = async (id: string): Promise<DeleteResponse> => {
     const val = await axiosCRM.delete(`validation_rules/${id}`);
     return val.data;
 };

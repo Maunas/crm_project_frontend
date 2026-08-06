@@ -7,7 +7,7 @@ export interface LeadTagPost {
     color?: string
 }
 export interface LeadTag extends LeadTagPost {
-    id: number,
+    id: string, // public_uuid desde Fase 3, ver backend/AGENTS.md §18
     organization_id: number
     color: string
 }
@@ -22,7 +22,7 @@ export interface LeadFieldSectionPost {
 }
 
 export interface LeadFieldSection extends LeadFieldSectionPost {
-    id: number;
+    id: string; // public_uuid desde Fase 3
     organization_id: number;
 }
 
@@ -38,7 +38,7 @@ export interface LeadContactStatePost {
 }
 
 export interface LeadContactState extends LeadContactStatePost {
-    id: number,
+    id: string, // public_uuid desde Fase 3
     active: boolean,
     organization_id: number
 }

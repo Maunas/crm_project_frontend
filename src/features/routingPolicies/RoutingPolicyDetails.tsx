@@ -6,11 +6,7 @@ import CommonButton from "shared/ui/buttons/CommonButton"
 import { EnabledIcon } from "shared/ui/lists/Icons"
 import { RoutingConditionRow } from "./RoutingConditionRow"
 import type { LeadRoutingPolicyDetailed } from "src/types/routing"
-import type { Team } from "src/types/teams"
-import type { Campaign } from "src/types/campaigns"
 import type { LeadField } from "src/types/leadFields"
-import { getTeams } from "src/features/teams/teamServices"
-import { getCampaigns } from "src/features/campaigns/campaignServices"
 import { getLeadFields } from "src/features/leadFields/leadFieldServices"
 import { ButtonGroup, Chip, Divider, Stack, Typography } from "@mui/material"
 import { Can } from "src/app/Can"
@@ -25,18 +21,16 @@ interface RoutingPolicyDetailsProps {
 
 export const RoutingPolicyDetails = ({ policy, closeSidebar, handleSidebar, handleToggleActive, handleDeleteForever }: RoutingPolicyDetailsProps) => {
 
-    const [team, setTeam] = useState<Team | null>(null)
-    const [campaign, setCampaign] = useState<Campaign | null>(null)
     const [leadFields, setLeadFields] = useState<LeadField[]>([])
 
     useEffect(() => {
         if (!policy) return
-        getTeams({ only_active: false, page_size: 0 }).then(res => setTeam(res.items.find(t => t.id === policy.target_team_id) ?? null))
-        if (policy.campaign_id) {
-            getCampaigns({ only_active: false, page_size: 0 }).then(res => setCampaign(res.items.find(c => c.id === policy.campaign_id) ?? null))
-            getLeadFields({ campaign_id: policy.campaign_id, only_active: false, page_size: 0 }).then(res => setLeadFields(res.items))
+        // policy.target_team/campaign son los objetos anidados con el uuid real (Fase 4, ver
+        // backend/AGENTS.md §18) -- ya no hace falta traer el catálogo completo de equipos/
+        // campañas solo para resolver el nombre.
+        if (policy.campaign) {
+            getLeadFields({ campaign_id: policy.campaign.id, only_active: false, page_size: 0 }).then(res => setLeadFields(res.items))
         } else {
-            setCampaign(null)
             setLeadFields([])
         }
     }, [policy])

@@ -197,20 +197,23 @@ const FlowStateChips = ({ currentState, nextStates, onSelectState }: FlowStateCh
     )
 }
 
+// id: string | number porque cubre tanto LeadContactState.id (ya migrado a public_uuid,
+// string) como LeadState.id (todavía number en types/leadFlow.ts, pendiente junto con
+// FlowEditorPage.tsx -- ver backend/AGENTS.md §18).
 interface StateOption {
-    id: number,
+    id: string | number,
     name: string,
     color?: string | null,
 }
 
 interface StateChangeListProps {
     title: string,
-    leadId: number,
+    leadId: string,
     options: StateOption[],
     initialSelected?: StateOption | null,
     onClose: () => void,
     onChange: (lead: LeadDetailed) => void,
-    submit: (leadId: number, stateId: number, notes?: string) => Promise<LeadDetailed>,
+    submit: (leadId: string, stateId: string | number, notes?: string) => Promise<LeadDetailed>,
 }
 
 /**

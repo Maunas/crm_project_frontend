@@ -31,10 +31,10 @@ const SEARCH_BY_UPDATER_DEFAULT = [
 const ORDER_COMMENTS_FIELDS = [
     { name: "updated_by", label: "Escritor" },
 ]
-export const LeadComments = ({ leadId }: { leadId: number }) => {
+export const LeadComments = ({ leadId }: { leadId: string }) => {
 
     const [comments, setComments] = useState<Paginable<LeadComment> | null>(null)
-    const [selectedCommentId, setSelectedCommentId] = useState<number | null>(null)
+    const [selectedCommentId, setSelectedCommentId] = useState<string | null>(null)
     const { fetchPage, pageSize, pageComponentProps, goToPageOne } = useListPagination(comments, 12)
     const { fetchParams, handleOrderChange, handleSearchChange } = useOrderSeachList()
 
@@ -56,10 +56,13 @@ export const LeadComments = ({ leadId }: { leadId: number }) => {
     const isOrgOwner = !!(activeOrg && user?.organizations_access.some(
         a => a.organization_id === activeOrg.id && a.is_owner
     ))
+    // Antes comparaba com.created_by === user.id. Ese campo se sacó del response
+    // (Fase 3 de "ID público por UUID", ver backend/AGENTS.md §18) por ser redundante
+    // con creator, que ya trae el id del autor -- se usa ese en su lugar.
     const canModifyComment = (com: LeadComment) =>
-        !!user && (user.is_superuser || isOrgOwner || com.created_by === user.id)
+        !!user && (user.is_superuser || isOrgOwner || com.creator?.id === user.id)
 
-    const fetchComments = useCallback(async (leadId: number, fetchPage: number, pageSize: number) => {
+    const fetchComments = useCallback(async (leadId: string, fetchPage: number, pageSize: number) => {
         if (!leadId) return
         return getComments({ detailed: true, lead_id: leadId, page: fetchPage, page_size: pageSize, ...fetchParams })
             .then(setComments)
@@ -72,7 +75,7 @@ export const LeadComments = ({ leadId }: { leadId: number }) => {
         fetchComLoad(leadId, fetchPage, pageSize)
     }, [fetchComLoad, fetchPage, pageSize, leadId])
 
-    const onDeleteComment = (delId: number) => {
+    const onDeleteComment = (delId: string) => {
         return deleteComment(delId)
             .then(() => {
                 showToast("Comentario eliminado.")

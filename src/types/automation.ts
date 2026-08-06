@@ -62,7 +62,7 @@ export interface AutomationAction {
 export interface FieldAutomationPost {
   name: string;
   description?: string;
-  campaign_id: number;
+  campaign_id: string; // public_uuid desde Fase 3 (FieldAutomationCreate ya lo resuelve, ver backend/AGENTS.md §18)
   trigger_events: TriggerEventEnum[];
   priority: number;
   conditions: RuleGroup;
@@ -70,7 +70,7 @@ export interface FieldAutomationPost {
 }
 
 export interface FieldAutomation extends FieldAutomationPost {
-  id: number;
+  id: string; // public_uuid desde Fase 3, ver backend/AGENTS.md §18
 }
 
 export interface FieldAutomationDetailed extends FieldAutomation, Metadata { }

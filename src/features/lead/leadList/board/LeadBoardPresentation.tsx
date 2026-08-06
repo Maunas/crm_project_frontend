@@ -72,7 +72,11 @@ export const LeadBoardPresentation = ({ campaignId, activeFilters }: LeadBoardPr
         if (!destination) return;
         if (destination.droppableId === source.droppableId && destination.index === source.index) return;
 
-        const leadId = Number(draggableId);
+        // leadId (draggableId) y destinationId (droppableId) son public_uuid desde Fase 3
+        // (Lead.id y LeadContactState.id respectivamente) -- antes se forzaban a Number(), lo
+        // que mandaba NaN a changeContactStateLead y rompía el cambio de estado al arrastrar
+        // una card entre columnas. Ver backend/AGENTS.md §18.
+        const leadId = draggableId;
         const sourceId = source.droppableId;
         const destinationId = destination.droppableId;
 
@@ -82,7 +86,7 @@ export const LeadBoardPresentation = ({ campaignId, activeFilters }: LeadBoardPr
 
         if (sourceId !== destinationId) {
             try {
-                await changeContactStateLead(leadId, Number(destinationId));
+                await changeContactStateLead(leadId, destinationId);
             } catch (error) {
                 console.error("Error al cambiar el estado del lead", error);
                 window.dispatchEvent(new CustomEvent('lead-moved', {

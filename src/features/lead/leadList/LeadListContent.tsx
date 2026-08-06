@@ -34,7 +34,9 @@ interface LeadListContentProps {
         removeAllItems: () => void;
     },
     presentationMode: string,
-    workspaceId?: number,
+    // Workspace.id / Campaign.id son public_uuid desde Fase 3 (ver backend/AGENTS.md §18);
+    // acá solo se usan para armar un query string, no hace falta el int interno.
+    workspaceId?: string | number,
     campaignId?: number | string,
     filters: unknown[],
     onClearFilters?: () => void,

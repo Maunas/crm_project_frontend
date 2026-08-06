@@ -10,7 +10,8 @@ export const getSystemAudit = async<T extends SystemAuditParams>(params?: T):
     return logs.data
 }
 
-export const getSystemLog = async (id: number): Promise<SystemAuditLog> => {
+// id es el public_uuid del log (SystemAuditLogResponse hereda el alias a public_uuid, ver backend/AGENTS.md §18).
+export const getSystemLog = async (id: string): Promise<SystemAuditLog> => {
     const log = await axiosCRM.get(`/audit-logs/${id}`)
     return log.data
 }

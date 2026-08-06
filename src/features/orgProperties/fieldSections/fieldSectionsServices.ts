@@ -9,7 +9,8 @@ export const getFieldSections = async <T extends ListParams>(params?: T): Promis
     return sections.data;
 };
 
-export const getFieldSection = async (id: number): Promise<LeadFieldSectionDetailed> => {
+// id es el public_uuid de la sección (rutas genéricas de BaseController, ver backend/AGENTS.md §17-18).
+export const getFieldSection = async (id: string): Promise<LeadFieldSectionDetailed> => {
     const section = await axiosCRM.get(`lead_field_sections/${id}`);
     return section.data;
 };
@@ -19,16 +20,16 @@ export const createFieldSection = async (body: LeadFieldSectionPost): Promise<Le
     return section.data;
 };
 
-export const updateFieldSection = async (body: LeadFieldSectionPost, id: number): Promise<LeadFieldSectionDetailed> => {
+export const updateFieldSection = async (body: LeadFieldSectionPost, id: string): Promise<LeadFieldSectionDetailed> => {
     const section = await axiosCRM.put(`lead_field_sections/${id}`, body);
     return section.data;
 };
 
-export const enableFieldSection = async (id: number): Promise<EnableResponse> => {
+export const enableFieldSection = async (id: string): Promise<EnableResponse> => {
     const section = await axiosCRM.put(`lead_field_sections/active/${id}`);
     return section.data;
 };
-export const disableFieldSection = async (id: number): Promise<DeleteResponse> => {
+export const disableFieldSection = async (id: string): Promise<DeleteResponse> => {
     const section = await axiosCRM.delete(`lead_field_sections/${id}`);
     return section.data;
 };

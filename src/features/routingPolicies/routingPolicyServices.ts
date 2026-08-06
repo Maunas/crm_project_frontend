@@ -6,7 +6,9 @@ import type { DeleteResponse, EnableResponse, ListParams, Paginable } from "src/
 import axiosCRM from "src/lib/axios"
 
 interface RoutingPolicyParams extends ListParams {
-    campaign_id?: number,
+    // FK a Campaign: public_uuid desde Fase 3 (el backend ya resuelve este filtro, ver
+    // resolve_fk_filter_value en backend/AGENTS.md §18).
+    campaign_id?: string,
 }
 
 export const getRoutingPolicies = async <T extends RoutingPolicyParams>(params?: T):
@@ -15,7 +17,8 @@ export const getRoutingPolicies = async <T extends RoutingPolicyParams>(params?:
     return policies.data
 }
 
-export const getRoutingPolicy = async (id: number): Promise<LeadRoutingPolicyDetailed> => {
+// id es el public_uuid de la política (rutas genéricas de BaseController, ver backend/AGENTS.md §17-18).
+export const getRoutingPolicy = async (id: string): Promise<LeadRoutingPolicyDetailed> => {
     const policy = await axiosCRM.get(`/lead_routing_policies/${id}`)
     return policy.data
 }
@@ -25,7 +28,7 @@ export const createRoutingPolicy = async (body: LeadRoutingPolicyPost): Promise<
     return policy.data
 }
 
-export const updateRoutingPolicy = async (body: LeadRoutingPolicyUpdate, id: number): Promise<LeadRoutingPolicyDetailed> => {
+export const updateRoutingPolicy = async (body: LeadRoutingPolicyUpdate, id: string): Promise<LeadRoutingPolicyDetailed> => {
     const policy = await axiosCRM.put(`/lead_routing_policies/${id}`, body)
     return policy.data
 }
@@ -36,13 +39,13 @@ export const updateRoutingPolicy = async (body: LeadRoutingPolicyUpdate, id: num
  * la política tiene delete_strategy=HARD_DELETE_WITH_TOGGLE, así que el
  * DELETE simple borra para siempre (ver deleteRoutingPolicyForever).
  */
-export const disableRoutingPolicy = async (id: number): Promise<DeleteResponse> => {
+export const disableRoutingPolicy = async (id: string): Promise<DeleteResponse> => {
     const policy = await axiosCRM.delete(`/lead_routing_policies/active/${id}`)
     return policy.data
 }
 
 /** Reactiva (active=true) una política previamente deshabilitada. */
-export const enableRoutingPolicy = async (id: number): Promise<EnableResponse> => {
+export const enableRoutingPolicy = async (id: string): Promise<EnableResponse> => {
     const policy = await axiosCRM.put(`/lead_routing_policies/active/${id}`)
     return policy.data
 }
@@ -51,7 +54,7 @@ export const enableRoutingPolicy = async (id: number): Promise<EnableResponse> =
  * Elimina la política DEFINITIVAMENTE (borrado físico, irreversible).
  * No confundir con disableRoutingPolicy.
  */
-export const deleteRoutingPolicyForever = async (id: number): Promise<DeleteResponse> => {
+export const deleteRoutingPolicyForever = async (id: string): Promise<DeleteResponse> => {
     const policy = await axiosCRM.delete(`/lead_routing_policies/${id}`)
     return policy.data
 }

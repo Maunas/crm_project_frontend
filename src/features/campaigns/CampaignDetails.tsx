@@ -29,7 +29,7 @@ export const CampaignDetails = () => {
 
     const nav = useNavigate()
 
-    const fetchCmpDetails = useCallback((id: number) => (
+    const fetchCmpDetails = useCallback((id: string) => (
         getCampaign(id).then(res => {
             setCampaign(res)
         })), [])
@@ -39,7 +39,7 @@ export const CampaignDetails = () => {
     useEffect(() => {
         closeSidebar()
         if (!id) return
-        fetchCmpLoad(Number(id))
+        fetchCmpLoad(id)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id])
 

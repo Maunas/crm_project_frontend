@@ -13,12 +13,13 @@ export const createTag = async (body: LeadTagPost): Promise<LeadTagDetailed> => 
     return tag.data;
 };
 
-export const updateTag = async (body: LeadTagPost, id: number): Promise<LeadTagDetailed> => {
+// id es el public_uuid del tag (rutas genéricas de BaseController, ver backend/AGENTS.md §17-18).
+export const updateTag = async (body: LeadTagPost, id: string): Promise<LeadTagDetailed> => {
     const tag = await axiosCRM.put(`tags/${id}`, body);
     return tag.data;
 };
 
-export const deleteTag = async (id: number): Promise<DeleteResponse> => {
+export const deleteTag = async (id: string): Promise<DeleteResponse> => {
     const tag = await axiosCRM.delete(`tags/${id}`);
     return tag.data;
 };

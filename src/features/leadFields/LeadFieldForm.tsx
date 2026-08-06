@@ -117,7 +117,10 @@ export const LeadFieldForm = ({ existingLF, campaign, leadFields, submit, onCanc
     {
       campaign_id: campaign.id,
       name: existingLF?.name ?? null,
-      lead_field_section_id: existingLF?.lead_field_section?.id ?? 1,
+      // existingLF.lead_field_section es un objeto anidado con su public_uuid real -- a
+      // diferencia de depends_on_field_id, sí sirve tal cual acá. El fallback numérico "1" que
+      // había antes ya no es válido (el backend espera un uuid, no un id interno viejo).
+      lead_field_section_id: existingLF?.lead_field_section?.id ?? null,
       field_type_code: existingLF?.field_type_code ?? "STRING",
       field_subtype_code: existingLF?.field_subtype_code ?? "NULL",
       calculation_expression: existingLF?.calculation_expression ?? null,
@@ -125,7 +128,10 @@ export const LeadFieldForm = ({ existingLF, campaign, leadFields, submit, onCanc
       input_mask: existingLF?.input_mask ?? null,
       nomenclator_id: existingLF?.nomenclator?.id ?? null,
       related_campaign_id: existingLF?.related_campaign?.id ?? null,
-      depends_on_field_id: existingLF?.depends_on_field_id ?? null,
+      // existingLF.depends_on_field (Fase 4, ver backend/AGENTS.md §18) es el objeto anidado
+      // con el uuid real del campo del que depende -- antes no existía y se forzaba a null
+      // para obligar a reelegir; ahora se puede precargar igual que lead_field_section.
+      depends_on_field_id: existingLF?.depends_on_field?.id ?? null,
       required: existingLF?.required ?? false,
       is_primary: existingLF?.is_primary ?? false,
       is_visible: existingLF?.is_visible ?? true,
@@ -210,7 +216,7 @@ interface LeadFieldFormFieldsProps {
   leadFields: LeadFieldDetailed[];
   control: Control<LeadFieldPostCreation>;
   errors: FieldErrors<LeadFieldPostCreation>;
-  existingLFId?: number;
+  existingLFId?: string;
   formulas: ExcelFormulaTemplate[];
   setValue: UseFormSetValue<LeadFieldPostCreation>;
   getValues: UseFormGetValues<LeadFieldPostCreation>;

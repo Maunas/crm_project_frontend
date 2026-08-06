@@ -203,7 +203,8 @@ export const LeadFieldTableSections = ({ leadFields, newFieldsBySectionIds, setN
 
 interface LeadFieldTableProps {
     sectLeadFields: LeadFieldDetailed[],
-    orderFieldsIds: number[],
+    // public_uuid de LeadField (Fase 3, ver backend/AGENTS.md §18).
+    orderFieldsIds: string[],
     setOrderFieldsIds: React.Dispatch<React.SetStateAction<ReorderFieldsIds[]>>,
     sectIdx: number,
     handleSidebar: (mode: string, entity: LeadFieldDetailed) => void,
@@ -219,7 +220,7 @@ interface LeadFieldTableProps {
 export const LeadFieldTable = memo(({ sectLeadFields, orderFieldsIds, setOrderFieldsIds, sectIdx, palette,
     isReordering = false, handleSidebar, setDeletingField, checkedItems, addItem, removeItem }: LeadFieldTableProps) => {
 
-    const handleFieldChange = (fields: number[]) => {
+    const handleFieldChange = (fields: string[]) => {
         setOrderFieldsIds(prev => {
             const newList = [...prev]
             newList[sectIdx].fields = fields

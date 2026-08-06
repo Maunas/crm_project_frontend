@@ -66,7 +66,10 @@ export const NomenclatorItemForm = ({ existingNom, nomenclator, submit, onCancel
 
     const defaultValues = useMemo(() => ({
         value: existingNom?.value ?? null,
-        nomenclator_id: existingNom?.nomenclator_id ?? nomenclator?.id ?? null,
+        // nomenclator_id es siempre el catálogo abierto (nomenclator.id, su public_uuid) --
+        // existingNom.nomenclator_id es la FK embebida sin migrar (id interno viejo, ver
+        // backend/AGENTS.md §18) y ya no sirve acá directo.
+        nomenclator_id: nomenclator?.id ?? null,
         parent_item_ids: existingNom?.parent_items?.map(parent => parent.id) ?? [],
     }), [existingNom, nomenclator])
 
@@ -82,6 +85,10 @@ export const NomenclatorItemForm = ({ existingNom, nomenclator, submit, onCancel
         new Map(nomenclator?.parent_nomenclators?.map(parent => [parent.id, parent.name]) ?? []),
         [nomenclator]
     )
+    // ^ mapa indexado por public_uuid de Nomenclator (Nomenclator.id). Por eso, más abajo, el
+    // lookup usa option.nomenclator?.id (objeto anidado, uuid real -- Fase 4, ver
+    // backend/AGENTS.md §18) y NO option.nomenclator_id (FK embebida, id interno viejo, que
+    // nunca matcheaba contra este mapa y siempre caía al fallback "Otro").
 
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -146,10 +153,10 @@ export const NomenclatorItemForm = ({ existingNom, nomenclator, submit, onCancel
                             <Grid size="grow" sx={{ minWidth: "20rem" }}>
                                 <ControlledAutocomplete control={control} multiple label="Ítems de los que depende" name="parent_item_ids" options={parentItemOptions}
                                     getOptionLabel={option => parentNomenclatorIds.length > 1
-                                        ? `${option.value!} (${parentNomenclatorNameById.get(option.nomenclator_id ?? -1) ?? "Otro"})`
+                                        ? `${option.value!} (${parentNomenclatorNameById.get(option.nomenclator?.id ?? "") ?? "Otro"})`
                                         : `${option.value!}`}
                                     groupBy={parentNomenclatorIds.length > 1
-                                        ? option => parentNomenclatorNameById.get(option.nomenclator_id ?? -1) ?? "Otro"
+                                        ? option => parentNomenclatorNameById.get(option.nomenclator?.id ?? "") ?? "Otro"
                                         : undefined}
                                     getOptionKey={option => `${option.id}`} returnField="id"
                                     errorMessage={errors?.parent_item_ids?.message} />

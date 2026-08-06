@@ -25,10 +25,10 @@ import { SystemAuditList } from "./features/audit/SystemAuditLogs";
 import { TeamsPage } from "./features/teams/TeamsPage";
 import { RequirePermission } from "./app/RequirePermission";
 
-// Muestra GlobalDashboard para Panel Global (id=1), OrgDashboard para el resto
+// Muestra GlobalDashboard para Panel Global (is_system), OrgDashboard para el resto
 function DashboardRouter() {
     const { activeOrg } = useUserContext()
-    if (activeOrg?.id === 1) return <GlobalDashboardPage />
+    if (activeOrg?.is_system) return <GlobalDashboardPage />
     return <OrgDashboardPage />
 }
 

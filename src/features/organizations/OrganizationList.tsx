@@ -44,7 +44,7 @@ export const OrganizationList = () => {
     const fetchOrganizations = useCallback(async () => {
         return getOrganizations({ detailed: true, page_size: 0, ...fetchParams })
             .then(orgList => {
-                const filteredList = orgList.items.filter(org => org.id !== 1)
+                const filteredList = orgList.items.filter(org => !org.is_system)
                 setOrganizations(filteredList)
             })
     }, [fetchParams])

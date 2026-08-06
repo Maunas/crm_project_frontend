@@ -60,7 +60,9 @@ export const LeadBoardColumn = ({ column, campaignId, activeFilters }: LeadBoard
         // Enviamos el contact_state_id como filtro para esta columna específica
         const filters = [...activeFilters, { field_id: "contact_state_id", operator: "eq", value: column.id }];
 
-        getFilteredLeads({ filters }, { campaign_id: Number(campaignId), page, page_size: 15 })
+        // campaignId es el public_uuid de Campaign (Fase 3); antes se forzaba a Number(), lo que
+        // mandaba NaN como filtro y rompía la carga de leads del tablero. Ver backend/AGENTS.md §18.
+        getFilteredLeads({ filters }, { campaign_id: campaignId, page, page_size: 15 })
             .then(res => {
                 if (cancelled) return;
                 setLeads(prev => page === 1 ? res.items : [...prev, ...res.items]);
@@ -94,8 +96,13 @@ export const LeadBoardColumn = ({ column, campaignId, activeFilters }: LeadBoard
 
                 // 2. Disparamos el evento AFUERA del setLeads (soluciona el bug del +2)
                 if (leadToMove) {
+                    // Nota: lead.contact_state_id sigue siendo el id interno (int, sin migrar --
+                    // ver backend/AGENTS.md §18), pero acá solo llega el public_uuid (destinationId)
+                    // de la columna destino. No hay forma de reconstruir el int desde el frontend;
+                    // este campo queda inconsistente en el objeto optimista, pero ninguna card lo lee
+                    // (la posición en el tablero es puramente por columna/index), así que es inofensivo.
                     window.dispatchEvent(new CustomEvent('receive-lead', {
-                        detail: { lead: { ...leadToMove, contact_state_id: Number(destinationId) }, destinationId, destinationIndex }
+                        detail: { lead: { ...leadToMove, contact_state_id: destinationId }, destinationId, destinationIndex }
                     }));
                 }
 

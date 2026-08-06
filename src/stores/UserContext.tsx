@@ -69,7 +69,7 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
             .then(orgs => {
                 setOrgHeaderList(orgs.items)
                 setActiveOrgState(prev => {
-                    if (prev?.id === 1) return prev // Panel Global, mantener
+                    if (prev?.is_system) return prev // Panel Global, mantener
                     if (!prev) return orgs.items[0] ?? null
                     const stillValid = orgs.items.some(o => o.id === prev.id)
                     return stillValid ? prev : (orgs.items[0] ?? null)

@@ -58,7 +58,8 @@ interface ViewGroupProps {
     views: LeadView[]
     onLoad: (view: LeadView) => void
     onEdit: (view: LeadView) => void
-    onDelete: (viewId: number) => void
+    // viewId es el public_uuid de LeadView (Fase 3, ver backend/AGENTS.md §18).
+    onDelete: (viewId: string) => void
     visibilities: DictionaryItem[]
 }
 
@@ -159,7 +160,9 @@ export const LeadSidebar = memo(({
 
     const fetchLeadViews = useCallback((page: number) => {
         if (!campaignId) return Promise.resolve()
-        return getLeadViews({ only_active: true, page_size: pageSize, page, campaign_id: Number(campaignId) })
+        // campaignId es el public_uuid de Campaign (Fase 3); antes Number() mandaba NaN como
+        // filtro y la lista de "Vistas Guardadas" del sidebar nunca cargaba nada.
+        return getLeadViews({ only_active: true, page_size: pageSize, page, campaign_id: String(campaignId) })
             .then(setCurrentViews)
     }, [campaignId, pageSize])
 
@@ -168,7 +171,8 @@ export const LeadSidebar = memo(({
         getDictionaries(['lead_view_visibilities']).then(res => setVisibilities(res.lead_view_visibilities ?? []))
     }, [])
 
-    const handleDeleteView = useCallback((viewId: number) => {
+    // viewId es el public_uuid de LeadView (Fase 3).
+    const handleDeleteView = useCallback((viewId: string) => {
         deleteView(viewId).then(() => fetchLeadViews(fetchPage))
     }, [fetchLeadViews, fetchPage])
 
@@ -314,7 +318,7 @@ export const LeadSidebar = memo(({
                         <LeadFilters
                             applyFilters={applyFilters}
                             filters={{ filters, headers }}
-                            campaignId={Number(campaignId)}
+                            campaignId={String(campaignId)}
                             onClose={() => { }}
                             showCancelButton={false}
                             showTitle={false}

@@ -3,12 +3,14 @@ import type { Nomenclator, NomenclatorDetailed, NomenclatorItem, NomenclatorItem
 import axiosCRM from "src/lib/axios";
 
 interface NomenclatorParams extends ListParams {
-    campaign_id?: number | null;
+    // FK a Campaign: public_uuid desde Fase 3 (el backend ya resuelve este filtro).
+    campaign_id?: string | null;
     global_nomenclator?: boolean;
 }
 interface NomenclatorItemParams extends ListParams {
-    nomenclator_id?: number | null;
-    parent_item_id?: number;
+    // FK a Nomenclator/NomenclatorItem: public_uuid desde Fase 3.
+    nomenclator_id?: string | null;
+    parent_item_id?: string;
 }
 export const getNomenclators = async <T extends NomenclatorParams>(params?: T): Promise<Paginable<
     T["detailed"] extends true ? NomenclatorDetailed : Nomenclator
@@ -17,7 +19,8 @@ export const getNomenclators = async <T extends NomenclatorParams>(params?: T): 
     return noms.data;
 };
 
-export const getNomenclator = async (id: number): Promise<NomenclatorDetailed> => {
+// id es el public_uuid del nomenclador (rutas genéricas de BaseController, ver backend/AGENTS.md §17-18).
+export const getNomenclator = async (id: string): Promise<NomenclatorDetailed> => {
     const nom = await axiosCRM.get(`nomenclators/${id}`)
     return nom.data
 }
@@ -26,16 +29,16 @@ export const createNomenclator = async (body: NomenclatorPost): Promise<Nomencla
     const nom = await axiosCRM.post(`nomenclators`, body)
     return nom.data
 }
-export const updateNomenclator = async (body: NomenclatorPost, id: number): Promise<NomenclatorDetailed> => {
+export const updateNomenclator = async (body: NomenclatorPost, id: string): Promise<NomenclatorDetailed> => {
     const nom = await axiosCRM.put(`nomenclators/${id}`, body)
     return nom.data
 }
-export const disableNomenclator = async (id: number): Promise<DeleteResponse> => {
+export const disableNomenclator = async (id: string): Promise<DeleteResponse> => {
     const nom = await axiosCRM.delete(`nomenclators/${id}`);
     return nom.data;
 };
 
-export const enableNomenclator = async (id: number): Promise<EnableResponse> => {
+export const enableNomenclator = async (id: string): Promise<EnableResponse> => {
     const nom = await axiosCRM.put(`nomenclators/active/${id}`);
     return nom.data;
 };
@@ -46,7 +49,8 @@ export const getNomenclatorItems = async <T extends NomenclatorItemParams>(param
     const nomItem = await axiosCRM.get(`/nomenclator_items`, { params });
     return nomItem.data;
 };
-export const getNomenclatorItem = async (id: number): Promise<NomenclatorItemDetailed> => {
+// id es el public_uuid del ítem (rutas genéricas de BaseController, ver backend/AGENTS.md §17-18).
+export const getNomenclatorItem = async (id: string): Promise<NomenclatorItemDetailed> => {
     const nom = await axiosCRM.get(`nomenclator_items/${id}`)
     return nom.data
 }
@@ -54,16 +58,16 @@ export const createNomenclatorItem = async (body: NomenclatorItemPost): Promise<
     const nom = await axiosCRM.post(`nomenclator_items`, body)
     return nom.data
 }
-export const updateNomenclatorItem = async (body: NomenclatorItemPost, id: number): Promise<NomenclatorItemDetailed> => {
+export const updateNomenclatorItem = async (body: NomenclatorItemPost, id: string): Promise<NomenclatorItemDetailed> => {
     const nom = await axiosCRM.put(`nomenclator_items/${id}`, body)
     return nom.data
 }
-export const disableNomenclatorItem = async (id: number): Promise<DeleteResponse> => {
+export const disableNomenclatorItem = async (id: string): Promise<DeleteResponse> => {
     const nom = await axiosCRM.delete(`nomenclator_items/${id}`);
     return nom.data;
 };
 
-export const enableNomenclatorItem = async (id: number): Promise<EnableResponse> => {
+export const enableNomenclatorItem = async (id: string): Promise<EnableResponse> => {
     const nom = await axiosCRM.put(`nomenclator_items/active/${id}`);
     return nom.data;
 };

@@ -15,10 +15,12 @@ export interface LeadsByContactState {
 }
 
 export interface RecentActivity {
-    id: number
+    // uuid real (public_uuid), no el id interno -- mismo criterio que el resto de la
+    // API desde Fase 3. entity_id también es un uuid ahora (ver backend/AGENTS.md §18-ter).
+    id: string
     action: string
     entity_type: string
-    entity_id: number
+    entity_id: string
     user_name: string | null
     created_at: string
 }

@@ -60,13 +60,18 @@ const WorkspaceAccessSection = ({ team }: TeamAccessPanelProps) => {
         getWorkspaces({ only_active: true, page_size: 0 }).then(res => setWorkspaces(res.items))
     }, [fetchAccess])
 
+    // a.workspace es el objeto anidado con el uuid real (Fase 4, ver backend/AGENTS.md §18)
+    // -- antes se comparaba a.workspace_id (id interno) contra w.id (uuid) y nunca matcheaba,
+    // por lo que este filtro nunca excluía nada.
     const availableWorkspaces = useMemo(() =>
-        workspaces.filter(w => !access.some(a => a.workspace_id === w.id))
+        workspaces.filter(w => !access.some(a => a.workspace?.id === w.id))
         , [workspaces, access])
 
-    const { control, handleSubmit, reset } = useForm<{ workspace_id: number | null }>({ defaultValues: { workspace_id: null } })
+    // workspace_id acá es el public_uuid de Workspace (retornado por ControlledAutocomplete
+    // vía returnField="id"), no el id interno viejo -- ver backend/AGENTS.md §18.
+    const { control, handleSubmit, reset } = useForm<{ workspace_id: string | null }>({ defaultValues: { workspace_id: null } })
 
-    const onSubmit = (data: { workspace_id: number | null }) => {
+    const onSubmit = (data: { workspace_id: string | null }) => {
         if (!data.workspace_id) return
         return createTeamWorkspaceAccess({ team_id: team.id, workspace_id: data.workspace_id })
             .then(() => {
@@ -84,15 +89,13 @@ const WorkspaceAccessSection = ({ team }: TeamAccessPanelProps) => {
         }).catch(e => showCommonErrorToast(e))
     }
 
-    const getName = (workspaceId: number) => workspaces.find(w => w.id === workspaceId)?.name ?? `Espacio #${workspaceId}`
-
     return (
         <Stack spacing={1}>
             <Typography variant="h3">Acceso a Espacios de Trabajo</Typography>
             <LoadingScreenWrapper loading={loading}>
                 <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: "wrap" }}>
                     {access.length > 0 ? access.map(item =>
-                        <Chip key={item.id} label={getName(item.workspace_id)}
+                        <Chip key={item.id} label={item.workspace?.name ?? `Espacio #${item.workspace_id}`}
                             onDelete={canDeleteAccess ? () => setRemoving(item) : undefined} />
                     ) : (
                         <Typography variant="body2" color="textSecondary">Este equipo no tiene acceso a ningún espacio de trabajo específico.</Typography>
@@ -145,13 +148,17 @@ const CampaignAccessSection = ({ team }: TeamAccessPanelProps) => {
         getCampaigns({ only_active: true, page_size: 0 }).then(res => setCampaigns(res.items))
     }, [fetchAccess])
 
+    // a.campaign es el objeto anidado con el uuid real (Fase 4, ver backend/AGENTS.md §18)
+    // -- mismo bug que en WorkspaceAccessSection (a.campaign_id vs c.id nunca matcheaba).
     const availableCampaigns = useMemo(() =>
-        campaigns.filter(c => !access.some(a => a.campaign_id === c.id))
+        campaigns.filter(c => !access.some(a => a.campaign?.id === c.id))
         , [campaigns, access])
 
-    const { control, handleSubmit, reset } = useForm<{ campaign_id: number | null }>({ defaultValues: { campaign_id: null } })
+    // campaign_id acá es el public_uuid de Campaign (retornado por ControlledAutocomplete vía
+    // returnField="id"), no el id interno viejo -- ver backend/AGENTS.md §18.
+    const { control, handleSubmit, reset } = useForm<{ campaign_id: string | null }>({ defaultValues: { campaign_id: null } })
 
-    const onSubmit = (data: { campaign_id: number | null }) => {
+    const onSubmit = (data: { campaign_id: string | null }) => {
         if (!data.campaign_id) return
         return createTeamCampaignAccess({ team_id: team.id, campaign_id: data.campaign_id })
             .then(() => {
@@ -169,15 +176,13 @@ const CampaignAccessSection = ({ team }: TeamAccessPanelProps) => {
         }).catch(e => showCommonErrorToast(e))
     }
 
-    const getName = (campaignId: number) => campaigns.find(c => c.id === campaignId)?.name ?? `Campaña #${campaignId}`
-
     return (
         <Stack spacing={1}>
             <Typography variant="h3">Acceso a Campañas</Typography>
             <LoadingScreenWrapper loading={loading}>
                 <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: "wrap" }}>
                     {access.length > 0 ? access.map(item =>
-                        <Chip key={item.id} label={getName(item.campaign_id)}
+                        <Chip key={item.id} label={item.campaign?.name ?? `Campaña #${item.campaign_id}`}
                             onDelete={canDeleteAccess ? () => setRemoving(item) : undefined} />
                     ) : (
                         <Typography variant="body2" color="textSecondary">Este equipo no tiene acceso a ninguna campaña específica.</Typography>

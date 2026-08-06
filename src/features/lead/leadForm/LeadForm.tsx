@@ -30,7 +30,11 @@ export interface LeadPostForm extends LeadPost {
 interface LeadFormProps {
     existingValues?: LeadFieldValue[],
     existingLeadFields?: LeadField[],
-    campaignId?: number,
+    // Recibe el public_uuid de Campaign al crear (selectedCampaign.id) pero el id interno viejo
+    // al editar (lead.campaign_id, FK embebida en LeadResponse todavía sin migrar -- Fase 4, ver
+    // backend/AGENTS.md §18). Ambas formas funcionan como filtro de getLeadFields gracias al
+    // resolver genérico de FKs del backend; solo importa la real (uuid) al crear un lead nuevo.
+    campaignId?: string | number,
     onSubmit: (data: FormData) => Promise<void>,
     submitBtnLabel?: string,
     onCancel?: () => void,
@@ -126,7 +130,7 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
     }, [replace])
 
     //Actualiza los leadFields respecto al campaignId seleccionado. Si ya hay existingLeadFields, no busca.
-    const fetchLeadFields = useCallback(async (campaignId: number, existingLeadFields?: LeadField[], existingValues?: LeadFieldValue[]) => {
+    const fetchLeadFields = useCallback(async (campaignId: string | number, existingLeadFields?: LeadField[], existingValues?: LeadFieldValue[]) => {
         if (campaignId == null) return
         if (existingLeadFields) {
             setLeadFields(existingLeadFields)
@@ -163,7 +167,11 @@ export const LeadForm = ({ existingValues, existingLeadFields, campaignId, onSub
     return (
         <LoadingScreenWrapper loading={fieldsLoading}>
             <form onSubmit={handleSubmit(submitLoad)} id={formId}>
-                <input type="text" {...register("campaign_id", { setValueAs: value => (value === "" || !value) ? null : Number(value) })} hidden />
+                {/* campaign_id ahora es el public_uuid de Campaign (string) al crear un lead -- ver
+                    backend/AGENTS.md §18. Antes se forzaba Number(value), lo que convertía el uuid
+                    en NaN y el submit terminaba mandando campaign_id: null. Se deja el valor tal cual
+                    (string), sin coerción numérica. */}
+                <input type="text" {...register("campaign_id", { setValueAs: value => (value === "" || value == null) ? null : value })} hidden />
                 <Stack spacing={3}>
                     <Box>
                         {campaignId &&

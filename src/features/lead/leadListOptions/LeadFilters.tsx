@@ -144,7 +144,8 @@ export const XS_INPUT_SX = {
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 interface LeadFiltersProps {
-    campaignId: number,
+    // public_uuid de Campaign (Fase 3, ver backend/AGENTS.md §18). getCampaign() ya solo acepta esto.
+    campaignId: string,
     filters: { filters: LeadFilter[], headers: LeadListParams },
     applyFilters: (data: { filters: LeadFilter[], headers: LeadListParams }) => Promise<void>,
     onClose: () => void,

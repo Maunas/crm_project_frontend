@@ -31,7 +31,8 @@ interface LeadFieldTableProps {
 export interface ReorderFieldsIds {
     sectId: number;
     sectName: string;
-    fields: number[];
+    // public_uuid de LeadField (Fase 3, ver backend/AGENTS.md §18).
+    fields: string[];
 }
 
 export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }: LeadFieldTableProps) => {
@@ -40,7 +41,8 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
 
     const [leadFields, setLeadFields] = useState<LeadFieldDetailed[] | null>(null)
 
-    const fetchLeadFields = useCallback((id: number) => {
+    // id es el public_uuid de Campaign (Fase 3, ver backend/AGENTS.md §18).
+    const fetchLeadFields = useCallback((id: string) => {
         return getLeadFields({
             detailed: true, campaign_id: id, only_active: false, page_size: 0
         }).then(res => setLeadFields(res.items))
@@ -49,7 +51,9 @@ export const LeadFieldList = memo(({ campaign, cmpSidebarMode, closeCmpSidebar }
     const { loading: fieldsLoading, fnWithLoading: fetchFieldsLoad } = useLoading(fetchLeadFields)
 
     useEffect(() => {
-        fetchFieldsLoad(Number(campaign.id))
+        // Antes se forzaba Number(campaign.id): campaign.id ya es un uuid, así que esto mandaba
+        // NaN como filtro y la lista de campos de la campaña nunca cargaba.
+        fetchFieldsLoad(campaign.id)
     }, [campaign, fetchFieldsLoad])
 
     const [params, setParams] = useSearchParams()

@@ -25,8 +25,9 @@ export interface Metadata {
   created_at: string;
   updated_at?: string;
   active: boolean;
-  created_by: number;
-  updated_by?: number;
+  // created_by/updated_by ya no los manda el backend (Fase 3 de "ID público por
+  // UUID" -- ver backend/AGENTS.md §18): eran redundantes con creator/updater,
+  // que ya traen toda la data del usuario. Usar creator?.id / updater?.id en su lugar.
   creator?: Creator | null;
   updater?: Updater | null;
 }
@@ -70,24 +71,32 @@ export interface ListParams extends OrderParams, SearchParams {
   only_active?: boolean,
 }
 export interface WorkspaceParams extends ListParams {
-  organization_id?: number
+  // FK a Organization: public_uuid desde Fase 3 (el backend ya resuelve este filtro).
+  organization_id?: string
 }
 export interface CampaignParams extends ListParams {
-  workspace_id?: number
+  // FK a Workspace: public_uuid desde Fase 3 (el backend ya resuelve este filtro).
+  workspace_id?: string
 }
 export interface LeadListParams extends ListParams {
-  campaign_id?: number
+  // FK a Campaign: public_uuid desde Fase 3 (el backend ya resuelve este filtro).
+  campaign_id?: string
   query?: string
 }
 export interface LeadFlowParams extends ListParams {
   organization_id?: number
 }
 export interface FlowStateParams extends LeadFlowParams {
-  lead_flow_id: number
+  // FK a LeadFlow: puede llegar como public_uuid (Fase 3, ej. FlowEditorPage con el id propio
+  // del flujo) o como el int interno viejo (ej. Campaign.lead_flow_id, todavía sin migrar --
+  // deuda catalogada en campaign_service.py, ver backend/AGENTS.md §18). El backend resuelve
+  // ambas formas igual como filtro.
+  lead_flow_id: string | number
 }
 
 export interface FieldAutomationParams extends ListParams {
-  campaign_id?: number
+  // FK a Campaign: public_uuid desde Fase 3 (el backend ya resuelve este filtro).
+  campaign_id?: string
 }
 
 export interface SystemAuditParams extends ListParams {

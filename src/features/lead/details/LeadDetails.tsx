@@ -12,7 +12,6 @@ import type { Campaign } from "src/types/campaigns.ts"
 import type { BulkAssignRequest } from "src/types/teams.ts"
 import type { UserPublic } from "src/types/users.ts"
 import { bulkAssignLeads, disableLead, enableLead, getLead } from "../leadService.ts"
-import { getCampaign } from "src/features/campaigns/campaignServices.ts"
 import { getLeadTitleArray, getLeadSubtitleArray } from "../leadUtils.ts"
 import { LeadTitleConfigSidebar } from "src/features/lead/leadTitleConfig/LeadTitleConfigSidebar"
 import { showCommonErrorToast, showToast } from "src/utils/feedback.ts"
@@ -44,12 +43,9 @@ export const LeadDetailsLayout = () => {
 
     const { id } = useParams()
 
-    const numId = useMemo(() => {
-        if (id === undefined) return id
-        const numId = parseInt(id)
-        if (isNaN(numId)) return undefined
-        return numId
-    }, [id])
+    // id es el public_uuid del lead desde Fase 3 (ver backend/AGENTS.md §18) -- ya no hace falta
+    // parsearlo a número, solo queda como estaba: undefined si no vino en la URL.
+    const numId = id
 
     const [lead, setLead] = useState<LeadDetailed | null>(null)
     const [campaign, setCampaign] = useState<Campaign | null>(null)
@@ -91,14 +87,18 @@ export const LeadDetailsLayout = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [numId]);
 
-    const fetchLeads = useCallback(async (numId: number) => {
+    const fetchLeads = useCallback(async (numId: string) => {
         try {
             if (numId === undefined) return
             await getLead(numId).then(async (lead) => {
                 setLead(prev => prev?.id !== lead.id ? lead : prev)
-                if (!lead.campaign_id) return
-                if (lead.campaign_id === campaign?.id) return
-                await getCampaign(lead.campaign_id).then(setCampaign)
+                // lead.campaign es el objeto anidado con el uuid real (Fase 4, ver
+                // backend/AGENTS.md §18) -- lead.campaign_id sigue siendo la FK embebida (id
+                // interno). Antes se intentaba getCampaign(lead.campaign_id), que nunca podía
+                // funcionar (getCampaign espera uuid, campaign_id es int) -- ya no hace falta
+                // ni siquiera pedirlo aparte, viene incluido en la respuesta del lead.
+                if (!lead.campaign || lead.campaign.id === campaign?.id) return
+                setCampaign(lead.campaign)
             })
         } catch (e) {
             showCommonErrorToast(e)
@@ -306,10 +306,17 @@ export const LeadInfo = ({ lead, leadTitle, leadSubtitle, handleActive, updateLe
                             }
                         </Stack>
                     </Stack>
+                    
                     <LeadQuickActions />
                     <LeadDetailsState lead={lead} updateLeadInfo={updateLeadInfo} contactState={lead.contact_state} flowState={lead.current_state} />
                     <LeadTags lead={lead} updateLeadInfo={updateLeadInfo} />
                     <LeadMetaInfo lead={lead} updateLeadInfo={updateLeadInfo} />
+
+                    
+                    {lead.reference &&
+                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: ".04em"}}>
+                            ID: {lead.reference}
+                        </Typography>}
                 </Stack>
             </GenericPaper>
             <LeadFieldSections lead={lead} updateLeadInfo={updateLeadInfo} />

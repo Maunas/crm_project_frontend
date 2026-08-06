@@ -61,7 +61,9 @@ export const ImportLeadsPage = () => {
             setError("No hay campaña seleccionada.");
             return;
         }
-        getLeadFields({ campaign_id: Number(campaignId), page_size: 0, only_active: true })
+        // campaignId acá viene del query param de la URL, siempre string (public_uuid de Campaign,
+        // Fase 3). getLeadFields ya resuelve este filtro genéricamente.
+        getLeadFields({ campaign_id: campaignId, page_size: 0, only_active: true })
             .then(res => setLeadFields(res.items))
             .catch(() => setError("Error al cargar los campos de la campaña."));
     }, [campaignId]);
@@ -166,7 +168,7 @@ export const ImportLeadsPage = () => {
 
         try {
             // El backend devuelve 200 OK y el JSON con los contadores/errores
-            const result = await processImport(Number(campaignId), file, payloadMapping);
+            const result = await processImport(campaignId, file, payloadMapping);
             setImportResult(result);
             setActiveStep(2); // Avanzar a pantalla de resultados
         } catch (err) {

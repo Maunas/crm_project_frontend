@@ -9,8 +9,15 @@ export const getFieldAutomations = async<T extends FieldAutomationParams>(params
     return field_automations.data
 }
 
-export const getFieldAutomation = async (id: number): Promise<FieldAutomationDetailed> => {
-    const field_automation = await axiosCRM.get(`/field_automations/${id}`)
+// id es el public_uuid de la automatización (rutas genéricas de BaseController, ver backend/AGENTS.md §17).
+export const getFieldAutomation = async (id: string): Promise<FieldAutomationDetailed> => {
+    // detailed: true es obligatorio -- sin él el backend devuelve FieldAutomationResponse
+    // (sin conditions/actions), pero este método está tipado como FieldAutomationDetailed.
+    // Bug real encontrado 2026-08-06: AutomationForm.tsx explotaba con
+    // "Cannot read properties of undefined (reading 'map')" al ver el detalle de una
+    // automatización recién creada, porque actions/trigger_events llegaban undefined.
+    // Mismo patrón que getLead() en leadService.ts.
+    const field_automation = await axiosCRM.get(`/field_automations/${id}`, { params: { detailed: true } })
     return field_automation.data
 }
 
@@ -19,12 +26,12 @@ export const createFieldAutomation = async (body: FieldAutomationPost): Promise<
     return field_automation.data
 }
 
-export const updateFieldAutomation = async (body: FieldAutomationPost, id: number): Promise<FieldAutomationDetailed> => {
+export const updateFieldAutomation = async (body: FieldAutomationPost, id: string): Promise<FieldAutomationDetailed> => {
     const field_automation = await axiosCRM.put(`/field_automations/${id}`, body)
     return field_automation.data
 }
 
-export const deleteFieldAutomation = async (id: number): Promise<DeleteResponse> => {
+export const deleteFieldAutomation = async (id: string): Promise<DeleteResponse> => {
     const cmp = await axiosCRM.delete(`/field_automations/${id}`)
     return cmp.data
 }

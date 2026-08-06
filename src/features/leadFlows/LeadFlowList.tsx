@@ -84,7 +84,8 @@ export const LeadFlowListData = ({ flows, updateList }: { flows: LeadFlowDetaile
 
     const [disableFlow, setDisableFlow] = useState<LeadFlowDetailed | null>(null)
 
-    const handleEnableDisable = (id: number, isActive: boolean) => {
+    // id es el public_uuid del flujo (Fase 3, ver backend/AGENTS.md §18).
+    const handleEnableDisable = (id: string, isActive: boolean) => {
         if (!isActive) {
             return enableLeadFlow(id)
                 .then(() => {
