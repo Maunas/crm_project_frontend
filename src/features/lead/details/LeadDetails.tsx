@@ -250,6 +250,10 @@ interface LeadInfoProps {
     onOpenTitleConfig?: () => void
 }
 
+//Mismo estilo que SECTION_LABEL_SX de LeadDetailsState.tsx (Estado/Etapa) y LeadTagsMenu.tsx
+//(Etiquetas), para que el título "ID" quede visualmente igual a esos otros títulos de sección.
+const ID_LABEL_SX = { fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: ".04em" }
+
 export const LeadInfo = ({ lead, leadTitle, leadSubtitle, handleActive, updateLeadInfo, onOpenTitleConfig }: LeadInfoProps) => {
 
     const titleText = (leadTitle && leadTitle?.length > 0) ? leadTitle?.join(" ") : "Título no encontrado"
@@ -314,9 +318,14 @@ export const LeadInfo = ({ lead, leadTitle, leadSubtitle, handleActive, updateLe
 
                     
                     {lead.reference &&
-                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: ".04em"}}>
-                            ID: {lead.reference}
-                        </Typography>}
+                        <Stack direction="row" spacing={1.25} sx={{ alignItems: "center" }}>
+                            <Typography variant="caption" color="text.secondary" sx={ID_LABEL_SX}>
+                                ID
+                            </Typography>
+                            <Typography variant="caption" color="text.primary" sx={{ fontWeight: 600 }}>
+                                {lead.reference}
+                            </Typography>
+                        </Stack>}
                 </Stack>
             </GenericPaper>
             <LeadFieldSections lead={lead} updateLeadInfo={updateLeadInfo} />
@@ -462,7 +471,7 @@ const LeadMetaInfo = ({ lead, updateLeadInfo }: { lead: LeadDetailed, updateLead
 const MetaSectionTitle = ({ icon, title }: { icon: ReactNode, title: string }) => (
     <Stack direction="row" spacing={.5} sx={{ alignItems: "center", color: "text.secondary" }}>
         {icon}
-        <Typography variant="caption" sx={{ fontWeight: 700, textTransform: "uppercase", letterSpacing: ".04em" }}>
+        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: "uppercase", letterSpacing: ".04em" }}>
             {title}
         </Typography>
     </Stack>

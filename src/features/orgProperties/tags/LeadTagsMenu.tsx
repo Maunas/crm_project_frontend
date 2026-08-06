@@ -5,6 +5,10 @@ import type { LeadDetailed } from 'src/types/leads'
 import { showCommonErrorToast } from 'src/utils/feedback'
 import { Box, Chip, List, ListItemButton, Paper, Stack, TextField, Typography } from '@mui/material'
 import AddIcon from "@mui/icons-material/Add"
+import SellIcon from "@mui/icons-material/Sell"
+// Alternativas de ícono para "Etiquetas", por si se prefiere cambiar más adelante:
+// import LocalOfferIcon from "@mui/icons-material/LocalOffer"
+// import LabelIcon from "@mui/icons-material/Label"
 import { InlineColorPickerButton } from 'src/components/ui/forms/ColorPicker'
 import { createTag, getTags } from './LeadTagService'
 import type { LeadTag } from 'src/types/orgProperties'
@@ -90,7 +94,10 @@ export const LeadTags = ({ lead, updateLeadInfo }: { lead: LeadDetailed, updateL
 
     return (
         <Stack spacing={.5}>
-            <Typography variant="caption" color="text.secondary" sx={SECTION_LABEL_SX}>Etiquetas</Typography>
+            <Stack direction="row" spacing={.5} sx={{ alignItems: "center", color: "text.secondary" }}>
+                <SellIcon fontSize="small" />
+                <Typography variant="caption" color="text.secondary" sx={SECTION_LABEL_SX}>Etiquetas</Typography>
+            </Stack>
             <Stack direction="row" spacing={.75} useFlexGap sx={{ flexWrap: "wrap", alignItems: "center", width: "100%" }}>
                 {lead.tags.map(tag =>
                     <CustomChip key={`lead-${tag.id}`} size="small" chipColor={tag.color} defaultColor="secondary"
