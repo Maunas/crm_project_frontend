@@ -19,6 +19,7 @@ Lista de campos personalizados, usada dentro de `CampaignDetails`.
 - Muestra campos agrupados por sección (`LeadFieldsBySection`)
 - Cada sección es colapsable
 - Drag & drop para reordenar campos dentro de una sección (usa `useDragAndDrop`)
+- El botón "Reordenar" exige permiso `lead_field:update`
 
 ### `LeadFieldForm` — `LeadFieldForm.tsx`
 Formulario de creación/edición de campo personalizado:
@@ -43,6 +44,7 @@ Tabla de campos con drag & drop para reordenar.
 - Columnas: orden, nombre, tipo, requerido, visible
 - Indicador de campo primario
 - Acciones inline
+- Renombrar sección con doble clic exige permiso `lead_field_section:update` (modifica `LeadFieldSection`, no el campo)
 
 ### `LeadFieldTypeIcon` — `LeadFieldTypeIcon.tsx`
 Ícono SVG/MUI correspondiente a cada tipo de campo:
@@ -66,3 +68,6 @@ getInputMasks() → InputMaskTemplate[]
 ## Utilidades (`leadFieldUtils.ts`)
 - `getFieldTypeIcon(fieldTypeCode)` → icono correspondiente
 - Helpers para determinar comportamiento según tipo de campo
+- `getFieldSelectorGroupName(field)` → nombre de la sección con la que se agrupa un campo en selectores: para nativos (id < 0) la sección sintética (`getNativeFieldSectionName` en `nativeLeadFields.ts`), para custom el nombre de su `lead_field_section`, fallback "Otros"
+- `groupFieldsForSelector(fields)` → agrupa campos (nativos + custom mezclados) en secciones contiguas preservando orden relativo y de aparición
+- `flattenGroupedFields(groups)` → aplana los grupos de vuelta a lista (ya reordenada por sección)

@@ -25,12 +25,15 @@ Página principal de equipos. Ruta: `/teams/`.
 
 #### `TeamList` — `TeamList.tsx`
 Lista de equipos con `ResponsiveListItem`.
+- Botón "Agregar" exige `team:create`
+- Acciones de la lista con permisos: "Modificar" exige `team:update`; "Deshabilitar"/"Habilitar" exige `team:delete`/`team:update` respectivamente
 
 #### `TeamDetail` — `TeamDetails.tsx`
 Sidebar de detalle de equipo:
 - Metadata del equipo
 - Lista de miembros con roles (MANAGER/AGENT)
 - Acceso a workspaces/campañas
+- Acciones gateadas por permiso: `team:update` (Modificar) y `team:delete`/`team:update` (Deshabilitar/Habilitar)
 
 #### `TeamForm` — `TeamForm.tsx`
 Formulario de creación/edición de equipo:
@@ -38,6 +41,8 @@ Formulario de creación/edición de equipo:
 
 #### `TeamMemberList` — `TeamMemberList.tsx`
 Lista de miembros de un equipo con acciones para remover/cambiar rol.
+- "Agregar miembro" exige `team_member:create`
+- Acciones con permisos: "Modificar rol" exige `team_member:update`; "Quitar del equipo" exige `team_member:delete`
 
 #### `TeamMemberForm` — `TeamMemberForm.tsx`
 Formulario para agregar miembro a un equipo:
@@ -46,6 +51,8 @@ Formulario para agregar miembro a un equipo:
 
 #### `TeamAccessPanel` — `TeamAccessPanel.tsx`
 Panel de configuración de acceso a workspaces/campañas para un equipo.
+- Agregar acceso exige `team_workspace_access:create` / `team_campaign_access:create`
+- Quitar acceso (onDelete de cada chip) exige `team_workspace_access:delete` / `team_campaign_access:delete` — sin permiso el chip se muestra sin la X
 
 ### Servicios (`teamServices.ts`)
 ```tsx
@@ -80,6 +87,8 @@ routingPolicies/
 
 #### `RoutingPolicyList` — `RoutingPolicyList.tsx`
 Lista de políticas de enrutamiento para una campaña.
+- Botón "Agregar" exige `lead_routing_policy:create`
+- Acciones con permisos: "Modificar" exige `lead_routing_policy:update`; "Deshabilitar"/"Habilitar" exige `lead_routing_policy:delete`/`lead_routing_policy:update`; "Eliminar definitivamente" exige `lead_routing_policy:delete`
 
 #### `RoutingPolicyForm` — `RoutingPolicyForm.tsx`
 Formulario de creación/edición:
@@ -88,9 +97,11 @@ Formulario de creación/edición:
 
 #### `RoutingPolicyDetail` — `RoutingPolicyDetails.tsx`
 Detalle de política con condiciones.
+- Acciones gateadas por permiso: `lead_routing_policy:update` (Modificar) y `lead_routing_policy:delete`/`lead_routing_policy:update` (Deshabilitar/Habilitar)
 
 #### `RoutingConditionRow` — `RoutingConditionRow.tsx`
 Fila de condición de enrutamiento: campo, operador, valor, conector AND/OR.
+- El selector de campo (dinámico) usa `FieldSelector` (agrupado por sección)
 
 ### Servicios (`routingPolicyServices.ts`)
 ```tsx

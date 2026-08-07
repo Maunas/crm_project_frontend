@@ -16,7 +16,7 @@ Dashboard global (superadmin). Se muestra cuando `activeOrg.id === 1`.
 
 ### `OrgDashboardPage` — `OrgDashboardPage.tsx`
 Dashboard de organización. Se muestra cuando `activeOrg.id !== 1`.
-- Estadísticas de la organización: leads por estado, leads por campaña, actividad reciente
+- Estadísticas de la organización: leads por etapa (estados del flujo), leads por campaña, actividad reciente
 
 ### Enrutamiento (`routes.tsx`)
 El componente `DashboardRouter` decide cuál mostrar:
