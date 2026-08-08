@@ -7,8 +7,8 @@ import { GenericSelector } from './GenericSelector'
 
 interface FieldSelectorProps {
     fields: LeadField[]
-    value: number | null
-    onChange: (fieldId: number | null) => void
+    value: number | string | null
+    onChange: (fieldId: number | string | null) => void
     /** true (default) = con buscador (Autocomplete); false = <Select> simple, sin input de texto. */
     searchable?: boolean
     label?: string

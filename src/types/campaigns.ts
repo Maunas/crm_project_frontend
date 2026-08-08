@@ -4,13 +4,14 @@ import type { Metadata } from "./shared";
 export interface CampaignPost {
   name: string;
   description?: string;
-  workspace_id: number;
-  lead_flow_id?: number;
+  // En el Response, Campaign.workspace_id es el id interno, no el uuid.
+  workspace_id: string;
+  lead_flow_id?: string;
   target_audience?: string | null;
   is_public?: boolean;
 }
 export interface Campaign extends Omit<CampaignPost, "workspace_id"> {
-  id: number;
+  id: string;
   organization_id: number | null;
   workspace_id: number | null;
 }
@@ -24,7 +25,7 @@ export interface WorkspacePost {
   organization_id: number | null;
 }
 export interface Workspace extends WorkspacePost {
-  id: number;
+  id: string;
 }
 export interface WorkspaceDetailed extends Workspace, Metadata {
   campaigns: CampaignDetailed[];
@@ -36,7 +37,8 @@ export interface OrganizationPost {
   description?: string | null;
 }
 export interface Organization extends OrganizationPost {
-  id: number;
+  id: string;
+  is_system: boolean; // true solo para "Panel Global" (solo lectura)
 }
 export interface OrganizationDetailed extends Organization, Metadata {
   active: boolean;

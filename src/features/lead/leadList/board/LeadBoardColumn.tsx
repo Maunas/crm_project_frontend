@@ -11,9 +11,10 @@ interface LeadBoardColumnProps {
     column: LeadContactState;
     campaignId: number | string;
     activeFilters: unknown[];
+    searchQuery?: string;
 }
 
-export const LeadBoardColumn = ({ column, campaignId, activeFilters }: LeadBoardColumnProps) => {
+export const LeadBoardColumn = ({ column, campaignId, activeFilters, searchQuery }: LeadBoardColumnProps) => {
     const [leads, setLeads] = useState<Lead[]>([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
@@ -42,7 +43,7 @@ export const LeadBoardColumn = ({ column, campaignId, activeFilters }: LeadBoard
         if (node) observer.current.observe(node);
     }, [loading, hasMore]);
 
-    // Resetea la paginación cuando cambian los filtros o la campaña,
+    // Resetea la paginación cuando cambian los filtros, la búsqueda de texto o la campaña,
     // para que el fetch siguiente siempre empiece desde la página 1
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -50,7 +51,7 @@ export const LeadBoardColumn = ({ column, campaignId, activeFilters }: LeadBoard
         setLeads([]);
         setHasMore(true);
         setTotalCount(0);
-    }, [campaignId, column.id, activeFilters]);
+    }, [campaignId, column.id, activeFilters, searchQuery]);
 
     // Fetch leads — usa un flag para ignorar respuestas de requests cancelados
     useEffect(() => {
@@ -60,7 +61,11 @@ export const LeadBoardColumn = ({ column, campaignId, activeFilters }: LeadBoard
         // Enviamos el contact_state_id como filtro para esta columna específica
         const filters = [...activeFilters, { field_id: "contact_state_id", operator: "eq", value: column.id }];
 
-        getFilteredLeads({ filters }, { campaign_id: Number(campaignId), page, page_size: 15 })
+        // campaignId antes se forzaba a Number(); eso mandaba NaN como filtro y rompía la carga
+        // de leads del tablero. `query` (searchQuery) es el texto libre buscado desde el header
+        // de LeadListPage -- antes nunca llegaba hasta acá, así que buscar por texto no filtraba
+        // nada en modo Tablero.
+        getFilteredLeads({ filters }, { campaign_id: campaignId, page, page_size: 15, query: searchQuery })
             .then(res => {
                 if (cancelled) return;
                 setLeads(prev => page === 1 ? res.items : [...prev, ...res.items]);
@@ -72,7 +77,7 @@ export const LeadBoardColumn = ({ column, campaignId, activeFilters }: LeadBoard
             });
 
         return () => { cancelled = true; };
-    }, [campaignId, column.id, page, activeFilters]);
+    }, [campaignId, column.id, page, activeFilters, searchQuery]);
 
     useEffect(() => {
         const handleLeadMoved = (e: unknown) => {
@@ -94,8 +99,13 @@ export const LeadBoardColumn = ({ column, campaignId, activeFilters }: LeadBoard
 
                 // 2. Disparamos el evento AFUERA del setLeads (soluciona el bug del +2)
                 if (leadToMove) {
+                    // Nota: lead.contact_state_id sigue siendo el id interno (int, sin migrar),
+                    // pero acá solo llega el uuid (destinationId) de la columna destino. No hay
+                    // forma de reconstruir el int desde el frontend; este campo queda inconsistente
+                    // en el objeto optimista, pero ninguna card lo lee (la posición en el tablero
+                    // es puramente por columna/index), así que es inofensivo.
                     window.dispatchEvent(new CustomEvent('receive-lead', {
-                        detail: { lead: { ...leadToMove, contact_state_id: Number(destinationId) }, destinationId, destinationIndex }
+                        detail: { lead: { ...leadToMove, contact_state_id: destinationId }, destinationId, destinationIndex }
                     }));
                 }
 

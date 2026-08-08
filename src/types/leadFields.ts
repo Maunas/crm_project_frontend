@@ -33,12 +33,14 @@ export interface LeadFieldValueDetailed extends LeadFieldValue, Metadata {
 
 export interface LeadFieldPost {
   name?: string | null;
-  campaign_id: number;
+  // public_uuid de Campaign (Fase 3, ya resuelto en el backend).
+  campaign_id: string;
   order?: number;
   required: boolean;
   is_primary: boolean;
   is_visible: boolean;
-  lead_field_section_id?: number | null;
+  // public_uuid de LeadFieldSection (Fase 3, ya resuelto en el backend).
+  lead_field_section_id?: string | null;
   default_value?: string | null;
   input_mask?: string | null;
   mask_template_code?: string | null;
@@ -47,22 +49,23 @@ export interface LeadFieldPost {
   //Manual con Subtype
   field_type_code?: string | null;
   field_subtype_code?: string | null;
-  //Selector o Checkbox
-  nomenclator_id?: number | null;
-  //Lead
-  related_campaign_id?: number | null;
+  //Selector o Checkbox. public_uuid de Nomenclator (Fase 3, ya resuelto en el backend).
+  nomenclator_id?: string | null;
+  //Lead. public_uuid de Campaign (Fase 3, ya resuelto en el backend).
+  related_campaign_id?: string | null;
   //Calculated
   calculation_expression?: string | null;
   title_order?: number | null;
   //Igual que title_order pero para el subtítulo (línea secundaria debajo del título, ej. Cargo +
   //Empresa). Ver getLeadSubtitleArray en leadUtils.ts.
   subtitle_order?: number | null;
-  //Selector/Checkbox dependiente de otro campo nomenclador de la misma campaña
-  depends_on_field_id?: number | null;
+  //Selector/Checkbox dependiente de otro campo nomenclador de la misma campaña. public_uuid de
+  //LeadField (Fase 3, ya resuelto en el backend).
+  depends_on_field_id?: string | null;
 }
 
-export interface LeadField extends Omit<LeadFieldPost, "lead_field_section_id"> {
-  id: number;
+export interface LeadField extends Omit<LeadFieldPost, "lead_field_section_id" | "campaign_id" | "nomenclator_id" | "related_campaign_id" | "depends_on_field_id"> {
+  id: string | number;
   active?: boolean;
   name: string;
   configuration?: string;
@@ -73,6 +76,11 @@ export interface LeadField extends Omit<LeadFieldPost, "lead_field_section_id"> 
   subtitle_order?: number | null;
   field_type_code: string;
   field_type: LeadFieldType,
+  // FKs embebidas: siguen siendo el id interno viejo.
+  campaign_id: number;
+  nomenclator_id?: number | null;
+  related_campaign_id?: number | null;
+  depends_on_field_id?: number | null;
   field_subtype: LeadFieldType | null,
   field_template_name: string | null,
   /** Clave nativa en el modelo Lead (solo para campos del sistema, ej: "contact_state_id") */
@@ -84,6 +92,19 @@ export interface LeadFieldDetailed extends LeadField, Omit<Metadata, "active"> {
   nomenclator: Nomenclator;
   lead_field_section: LeadFieldSectionDetailed;
   related_campaign: Campaign;
+  // Fase 4: objeto anidado con el uuid real del campo del que depende (ver
+  // backend/AGENTS.md §18), mismo patrón que nomenclator/related_campaign de arriba.
+  // depends_on_field_id (en LeadField) sigue siendo la FK embebida sin migrar.
+  depends_on_field?: {
+    id: string;
+    active: boolean;
+    name: string;
+    order: number;
+    field_type_code?: string | null;
+    field_subtype_code?: string | null;
+    title_order?: number | null;
+    subtitle_order?: number | null;
+  } | null;
 }
 
 export interface LeadFieldTemplate {
@@ -103,7 +124,7 @@ export interface InputMaskTemplate {
   mask: string;
 }
 export interface LeadFieldType {
-  id: number;
+  id: string | number; // public_uuid desde Fase 3
   code: string;
   description: string;
 }
@@ -118,11 +139,14 @@ export interface FieldValidationRulePost {
   error_message: string;
   template_code?: string | null;
   template_params?: { [param_name: string]: string };
-  field_id: number;
+  // public_uuid de LeadField (Fase 3, ya resuelto en el backend).
+  field_id: string;
 }
 
-export interface FieldValidationRule extends FieldValidationRulePost {
-  id: number;
+export interface FieldValidationRule extends Omit<FieldValidationRulePost, "field_id"> {
+  id: string; // public_uuid desde Fase 3
+  // FK embebida: sigue siendo el id interno viejo (sin migrar, ver backend/AGENTS.md §18).
+  field_id: number;
 }
 
 export interface FieldValidationRuleDetailed extends FieldValidationRule, Metadata { }
@@ -136,15 +160,16 @@ export interface FieldValidationRuleTemplate {
 }
 
 export interface LeadFieldsReorderBody {
-  campaign_id: number,
+  // public_uuid de Campaign/LeadField (Fase 3, ya resuelto en el backend).
+  campaign_id: string,
   orders: {
-    field_id: number,
+    field_id: string,
     order: number,
   }[]
 }
 
 export interface LeadFieldsBySection<T = LeadFieldValueDetailed | LeadFieldDetailed | FieldArrayWithId<LeadPostForm, "values", "id">> {
-  id: number,
+  id: string,
   name: string,
   sectionData?: LeadFieldSection,
   fields: T[]

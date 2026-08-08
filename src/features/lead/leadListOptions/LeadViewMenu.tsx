@@ -27,7 +27,8 @@ interface LeadViewMenuProps {
     saveView: (name: string, visibility: string, existingView?: LeadView) => Promise<unknown>;
     loadView: (view: LeadView) => void;
     currentView: LeadViewParams | undefined;
-    campaignId: number
+    // Se usa solo como filtro de getLeadViews, que el backend ya resuelve de forma genérica.
+    campaignId: string
 }
 
 export const LeadViewMenu = ({ saveView, loadView, campaignId }: LeadViewMenuProps) => {
@@ -54,7 +55,7 @@ export const LeadViewMenu = ({ saveView, loadView, campaignId }: LeadViewMenuPro
         fetchLeadViews(fetchPage)
     }, [fetchPage, fetchLeadViews])
 
-    const handleDelete = (viewId: number) => {
+    const handleDelete = (viewId: string) => {
         if (!currentViews || currentViews.items.length === 0) return
         deleteView(viewId)
             .then(() => fetchLeadViews(fetchPage))

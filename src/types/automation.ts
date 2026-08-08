@@ -39,7 +39,7 @@ export type ActionTypeEnum = typeof ActionTypeEnum[keyof typeof ActionTypeEnum];
 export interface RuleCondition {
   id?: string;
   type?: 'condition';
-  field_id: number | null;
+  field_id: string | null;
   operator: ConditionOperatorEnum;
   value?: string | number | boolean | null;
 }
@@ -62,7 +62,7 @@ export interface AutomationAction {
 export interface FieldAutomationPost {
   name: string;
   description?: string;
-  campaign_id: number;
+  campaign_id: string;
   trigger_events: TriggerEventEnum[];
   priority: number;
   conditions: RuleGroup;
@@ -70,7 +70,7 @@ export interface FieldAutomationPost {
 }
 
 export interface FieldAutomation extends FieldAutomationPost {
-  id: number;
+  id: string;
 }
 
 export interface FieldAutomationDetailed extends FieldAutomation, Metadata { }

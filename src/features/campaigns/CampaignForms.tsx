@@ -76,7 +76,7 @@ interface CampaignProps {
     existingCmp?: CampaignDetailed,
     submit: (data: CampaignPost) => Promise<void>,
     onCancel: () => void
-    workspaceId?: number | null,
+    workspaceId?: string | null,
 }
 
 export const CampaignForm = ({ existingCmp, workspaceId, submit, onCancel }: CampaignProps) => {
@@ -110,8 +110,12 @@ export const CampaignForm = ({ existingCmp, workspaceId, submit, onCancel }: Cam
     const defaultValues = useMemo(() => ({
         name: existingCmp?.name,
         description: existingCmp?.description,
-        workspace_id: existingCmp?.workspace_id ?? workspaceId ?? undefined,
-        lead_flow_id: existingCmp?.lead_flow_id,
+        // workspace_id/lead_flow_id solo se editan al crear (el selector correspondiente está
+        // gateado por `!existingCmp` más abajo). Al editar no hay que reenviar el valor viejo
+        // (existingCmp.workspace_id/lead_flow_id son el id interno, no un uuid -- mandarlos
+        // rompería la validación del backend, que ahora espera string).
+        workspace_id: existingCmp ? undefined : (workspaceId ?? undefined),
+        lead_flow_id: existingCmp ? undefined : undefined,
         target_audience: existingCmp?.target_audience ?? undefined,
         is_public: existingCmp?.is_public ?? true,
     }), [existingCmp, workspaceId])
@@ -121,7 +125,7 @@ export const CampaignForm = ({ existingCmp, workspaceId, submit, onCancel }: Cam
 
 
     /**Guarda lo escrito y la URL para continuar la creación de la campaña. */
-    const handleNavigateToFlow = (flowId?: number) => {
+    const handleNavigateToFlow = (flowId?: string) => {
         sessionStorage.setItem('campaign_draft', JSON.stringify(getValues()));
         sessionStorage.setItem('flow_return_url', window.location.pathname);
         onCancel();
@@ -247,7 +251,7 @@ export const CampaignForm = ({ existingCmp, workspaceId, submit, onCancel }: Cam
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 e.preventDefault();
-                                                                handleNavigateToFlow(option.id as number);
+                                                                handleNavigateToFlow(option.id as string);
                                                             }}
                                                             sx={{ ml: 1 }}
                                                         >

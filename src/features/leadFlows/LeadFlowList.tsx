@@ -84,7 +84,7 @@ export const LeadFlowListData = ({ flows, updateList }: { flows: LeadFlowDetaile
 
     const [disableFlow, setDisableFlow] = useState<LeadFlowDetailed | null>(null)
 
-    const handleEnableDisable = (id: number, isActive: boolean) => {
+    const handleEnableDisable = (id: string, isActive: boolean) => {
         if (!isActive) {
             return enableLeadFlow(id)
                 .then(() => {

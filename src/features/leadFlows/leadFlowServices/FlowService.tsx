@@ -10,7 +10,7 @@ export const getLeadFlows = async<T extends LeadFlowParams>(params?: T):
     return leadFlows.data
 }
 
-export const getLeadFlow = async (id: number): Promise<LeadFlowDetailed> => {
+export const getLeadFlow = async (id: string): Promise<LeadFlowDetailed> => {
     const leadFlow = await axiosCRM.get(`/lead_flows/${id}`)
     return leadFlow.data
 }
@@ -20,17 +20,17 @@ export const postLeadFlow = async (leadFlow: LeadFlowPost): Promise<LeadFlow> =>
     return response.data
 }
 
-export const updateLeadFlow = async (flowId: number, flowData: LeadFlowPost): Promise<LeadFlow> => {
+export const updateLeadFlow = async (flowId: string, flowData: LeadFlowPost): Promise<LeadFlow> => {
     const response = await axiosCRM.put(`/lead_flows/${flowId}`, flowData)
     return response.data
 }
 
-export const deleteLeadFlow = async (id: number): Promise<DeleteResponse> => {
+export const deleteLeadFlow = async (id: string): Promise<DeleteResponse> => {
     const response = await axiosCRM.delete(`/lead_flows/${id}`)
     return response.data
 }
 
-export const enableLeadFlow = async (id: number): Promise<EnableResponse> => {
+export const enableLeadFlow = async (id: string): Promise<EnableResponse> => {
     const response = await axiosCRM.put(`/lead_flows/active/${id}`)
     return response.data
 }
@@ -52,7 +52,7 @@ export const postLeadState = async (state: LeadStatePost): Promise<LeadState> =>
     return response.data
 }
 
-export const updateLeadState = async (stateId: number, stateData: LeadStatePost): Promise<LeadState> => {
+export const updateLeadState = async (stateId: string, stateData: LeadStatePost): Promise<LeadState> => {
     const response = await axiosCRM.put(`/lead_states/${stateId}`, stateData)
     return response.data
 }
@@ -74,12 +74,13 @@ export const updateLeadStateTransitionBulk = async (data: LeadTransitionBulkPost
     return response.data
 }
 
-export const saveLeadFlowGraph = async (payload: unknown): Promise<{ message: string, id: number }> => {
+// El id devuelto es el uuid del flujo guardado, para usarlo en la URL del editor.
+export const saveLeadFlowGraph = async (payload: unknown): Promise<{ message: string, id: string }> => {
     const response = await axiosCRM.post(`/lead_flows/graph`, payload);
     return response.data;
 };
 
-export const getNextFlowState = async (stateId: number): Promise<{ data: LeadState[] }> => {
+export const getNextFlowState = async (stateId: string): Promise<{ data: LeadState[] }> => {
     const leadFlows = await axiosCRM.get(`/lead_states/${stateId}/next-states`)
     return leadFlows.data
 }

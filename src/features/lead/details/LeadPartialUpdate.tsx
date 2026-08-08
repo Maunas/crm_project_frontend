@@ -25,8 +25,18 @@ import { LeadFormBool, LeadFormDate, LeadFormFile, LeadFormNumber, LeadFormText 
  */
 export const getUpdatedLead = (oldLead: LeadDetailed, newLead: Lead) => {
 
-    const newfieldValuesCopy = [...newLead.field_values].sort((a, b) => b.field.id - a.field.id)
-    const oldfieldValuesCopy = [...oldLead.field_values].sort((a, b) => b.field.id - a.field.id)
+    // Ordena por field.id para alinear posicionalmente los dos arrays (asume mismo
+    // conjunto de campos en distinto orden). Antes era una resta numérica
+    // (b.field.id - a.field.id); dejó de servir cuando field.id pasó a ser un UUID
+    // (string) -- la resta da NaN y el sort queda como no-op, rompiendo la
+    // alineación posicional de abajo. Comparación por string: determinística sin
+    // importar si el id es número (nativo) o UUID (campo real).
+    const sortByFieldId = (a: { field: { id: number | string } }, b: { field: { id: number | string } }) => {
+        const aId = String(a.field.id), bId = String(b.field.id)
+        return aId < bId ? 1 : aId > bId ? -1 : 0
+    }
+    const newfieldValuesCopy = [...newLead.field_values].sort(sortByFieldId)
+    const oldfieldValuesCopy = [...oldLead.field_values].sort(sortByFieldId)
 
     const newFieldValues = oldfieldValuesCopy.map((ofv, oidx) => {
         return {

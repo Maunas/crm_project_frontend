@@ -10,7 +10,7 @@ export const getCampaigns = async<T extends CampaignParams>(params?: T):
     return campaigns.data
 }
 
-export const getCampaign = async (id: number): Promise<CampaignDetailed> => {
+export const getCampaign = async (id: string): Promise<CampaignDetailed> => {
     const campaign = await axiosCRM.get(`/campaigns/${id}`)
     return campaign.data
 }
@@ -20,17 +20,17 @@ export const createCampaign = async (body: CampaignPost): Promise<CampaignDetail
     return campaign.data
 }
 
-export const updateCampaign = async (body: CampaignPost, id: number): Promise<CampaignDetailed> => {
+export const updateCampaign = async (body: CampaignPost, id: string): Promise<CampaignDetailed> => {
     const campaign = await axiosCRM.put(`/campaigns/${id}`, body)
     return campaign.data
 }
 
-export const disableCampaign = async (id: number): Promise<DeleteResponse> => {
+export const disableCampaign = async (id: string): Promise<DeleteResponse> => {
     const cmp = await axiosCRM.delete(`/campaigns/${id}`)
     return cmp.data
 }
 
-export const enableCampaign = async (id: number): Promise<EnableResponse> => {
+export const enableCampaign = async (id: string): Promise<EnableResponse> => {
     const cmp = await axiosCRM.put(`/campaigns/activate/${id}`)
     return cmp.data
 }

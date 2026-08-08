@@ -12,7 +12,6 @@ import type { Campaign } from "src/types/campaigns.ts"
 import type { BulkAssignRequest } from "src/types/teams.ts"
 import type { UserPublic } from "src/types/users.ts"
 import { bulkAssignLeads, disableLead, enableLead, getLead } from "../leadService.ts"
-import { getCampaign } from "src/features/campaigns/campaignServices.ts"
 import { getLeadTitleArray, getLeadSubtitleArray } from "../leadUtils.ts"
 import { LeadTitleConfigSidebar } from "src/features/lead/leadTitleConfig/LeadTitleConfigSidebar"
 import { showCommonErrorToast, showToast } from "src/utils/feedback.ts"
@@ -43,13 +42,7 @@ export const LeadDetailsLayout = () => {
 
     const { id } = useParams()
 
-
-    const numId = useMemo(() => {
-        if (id === undefined) return id
-        const numId = parseInt(id)
-        if (isNaN(numId)) return undefined
-        return numId
-    }, [id])
+    const numId = id
 
     const [lead, setLead] = useState<LeadDetailed | null>(null)
     const [campaign, setCampaign] = useState<Campaign | null>(null)
@@ -91,14 +84,18 @@ export const LeadDetailsLayout = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [numId]);
 
-    const fetchLeads = useCallback(async (numId: number) => {
+    const fetchLeads = useCallback(async (numId: string) => {
         try {
             if (numId === undefined) return
             await getLead(numId).then(async (lead) => {
                 setLead(prev => prev?.id !== lead.id ? lead : prev)
-                if (!lead.campaign_id) return
-                if (lead.campaign_id === campaign?.id) return
-                await getCampaign(lead.campaign_id).then(setCampaign)
+                // lead.campaign es el objeto anidado con el uuid real (Fase 4, ver
+                // backend/AGENTS.md §18) -- lead.campaign_id sigue siendo la FK embebida (id
+                // interno). Antes se intentaba getCampaign(lead.campaign_id), que nunca podía
+                // funcionar (getCampaign espera uuid, campaign_id es int) -- ya no hace falta
+                // ni siquiera pedirlo aparte, viene incluido en la respuesta del lead.
+                if (!lead.campaign || lead.campaign.id === campaign?.id) return
+                setCampaign(lead.campaign)
             })
         } catch (e) {
             showCommonErrorToast(e)
@@ -252,6 +249,10 @@ interface LeadInfoProps {
     onOpenTitleConfig?: () => void
 }
 
+//Mismo estilo que SECTION_LABEL_SX de LeadDetailsState.tsx (Estado/Etapa) y LeadTagsMenu.tsx
+//(Etiquetas), para que el título "ID" quede visualmente igual a esos otros títulos de sección.
+const ID_LABEL_SX = { fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: ".04em" }
+
 export const LeadInfo = ({ lead, leadTitle, leadSubtitle, handleActive, updateLeadInfo, onOpenTitleConfig }: LeadInfoProps) => {
 
     const titleText = (leadTitle && leadTitle?.length > 0) ? leadTitle?.join(" ") : "Título no encontrado"
@@ -308,10 +309,22 @@ export const LeadInfo = ({ lead, leadTitle, leadSubtitle, handleActive, updateLe
                             }
                         </Stack>
                     </Stack>
+
                     <LeadQuickActions />
                     <LeadDetailsState lead={lead} updateLeadInfo={updateLeadInfo} contactState={lead.contact_state} flowState={lead.current_state} />
                     <LeadTags lead={lead} updateLeadInfo={updateLeadInfo} />
                     <LeadMetaInfo lead={lead} updateLeadInfo={updateLeadInfo} />
+
+
+                    {lead.reference &&
+                        <Stack direction="row" spacing={1.25} sx={{ alignItems: "center" }}>
+                            <Typography variant="caption" color="text.secondary" sx={ID_LABEL_SX}>
+                                ID
+                            </Typography>
+                            <Typography variant="caption" color="text.primary" sx={{ fontWeight: 600 }}>
+                                {lead.reference}
+                            </Typography>
+                        </Stack>}
                 </Stack>
             </GenericPaper>
             <LeadFieldSections lead={lead} updateLeadInfo={updateLeadInfo} />
@@ -344,7 +357,7 @@ const LeadQuickActions = () => {
 // Opción genérica para los selectores de Usuario/Equipo asignado. id: null representa
 // "Sin asignar" (para poder desasignar, ver bulk_assign/clear_team/clear_user en el backend).
 interface AssignOption {
-    id: number | null
+    id: string | null
     label: string
 }
 const UNASSIGNED_OPTION: AssignOption = { id: null, label: "Sin asignar" }

@@ -43,7 +43,7 @@ export const CreateLeadFormPage = () => {
             setWorkspaces(res.items)
             const paramWspId = params.get("workspace")
             if (!paramWspId) return
-            const paramWsp = res.items.find(wsp => wsp.id === Number(paramWspId))
+            const paramWsp = res.items.find(wsp => wsp.id === paramWspId)
             if (!paramWsp) return
             setSelectedWorkspace(paramWsp)
         })
@@ -57,7 +57,7 @@ export const CreateLeadFormPage = () => {
             setCampaigns(res.items)
             const paramCmpId = params.get("campaign")
             if (!paramCmpId) return
-            const paramCmp = res.items.find(cmp => cmp.id === Number(paramCmpId))
+            const paramCmp = res.items.find(cmp => cmp.id === paramCmpId)
             if (!paramCmp) return
             setSelectedCampaign(paramCmp)
         })
@@ -203,7 +203,8 @@ export const UpdateLeadFormPage = () => {
     const [btnLoading, setBtnLoading] = useState(false)
 
     useEffect(() => {
-        getLead(Number(id)).then(setLead)
+        if (!id) return
+        getLead(id).then(setLead)
     }, [id])
 
     //Formatea LeadFieldValue para el formulario.

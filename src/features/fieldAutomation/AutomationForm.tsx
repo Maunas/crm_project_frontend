@@ -56,7 +56,7 @@ const rehydrateConditions = (node?: RuleCondition | RuleGroup): RuleCondition | 
 
 interface AutomationFormProps {
   initialData?: FieldAutomationDetailed | null; // Si viene data, estamos editando
-  campaignId: number;
+  campaignId: string;
   onSave: (data: FieldAutomationPost) => Promise<unknown>;
   fields?: LeadField[];
   nativeOptions?: NativeFieldOptions;
@@ -67,7 +67,7 @@ interface AutomationFormProps {
 
 /**Formulario */
 export const AutomationForm: React.FC<AutomationFormProps> = ({ initialData, onSave,
-  campaignId = 1, fields = [], nativeOptions, readOnly = false, isDuplicating = false, submitRef = null }) => {
+  campaignId = "", fields = [], nativeOptions, readOnly = false, isDuplicating = false, submitRef = null }) => {
 
   // INICIALIZACIÓN
   const defaultValues = useMemo(() => {

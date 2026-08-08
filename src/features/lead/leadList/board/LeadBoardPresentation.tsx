@@ -10,9 +10,10 @@ import type { LeadContactState } from 'src/types/orgProperties';
 interface LeadBoardPresentationProps {
     campaignId: number | string;
     activeFilters: unknown[];
+    searchQuery?: string;
 }
 
-export const LeadBoardPresentation = ({ campaignId, activeFilters }: LeadBoardPresentationProps) => {
+export const LeadBoardPresentation = ({ campaignId, activeFilters, searchQuery }: LeadBoardPresentationProps) => {
     const [columns, setColumns] = useState<LeadContactState[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -72,7 +73,11 @@ export const LeadBoardPresentation = ({ campaignId, activeFilters }: LeadBoardPr
         if (!destination) return;
         if (destination.droppableId === source.droppableId && destination.index === source.index) return;
 
-        const leadId = Number(draggableId);
+        // leadId (draggableId) y destinationId (droppableId) son los uuid de Lead y
+        // LeadContactState -- antes se forzaban a Number(), lo que mandaba NaN a
+        // changeContactStateLead y rompía el cambio de estado al arrastrar una card entre
+        // columnas.
+        const leadId = draggableId;
         const sourceId = source.droppableId;
         const destinationId = destination.droppableId;
 
@@ -82,7 +87,7 @@ export const LeadBoardPresentation = ({ campaignId, activeFilters }: LeadBoardPr
 
         if (sourceId !== destinationId) {
             try {
-                await changeContactStateLead(leadId, Number(destinationId));
+                await changeContactStateLead(leadId, destinationId);
             } catch (error) {
                 console.error("Error al cambiar el estado del lead", error);
                 window.dispatchEvent(new CustomEvent('lead-moved', {
@@ -125,6 +130,7 @@ export const LeadBoardPresentation = ({ campaignId, activeFilters }: LeadBoardPr
                         column={column}
                         campaignId={campaignId}
                         activeFilters={activeFilters}
+                        searchQuery={searchQuery}
                     />
                 ))}
             </Box>

@@ -10,7 +10,7 @@ export const getSystemAudit = async<T extends SystemAuditParams>(params?: T):
     return logs.data
 }
 
-export const getSystemLog = async (id: number): Promise<SystemAuditLog> => {
+export const getSystemLog = async (id: string): Promise<SystemAuditLog> => {
     const log = await axiosCRM.get(`/audit-logs/${id}`)
     return log.data
 }

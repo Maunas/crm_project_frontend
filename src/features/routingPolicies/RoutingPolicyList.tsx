@@ -49,10 +49,13 @@ export const RoutingPolicyList = () => {
     const [campaigns, setCampaigns] = useState<Campaign[]>([])
 
     const [params, setParams] = useSearchParams()
-    const teamFilterId = params.get("team") ? Number(params.get("team")) : null
+    // team/campaign en la URL son el uuid real (Team.id/Campaign.id) -- antes se forzaban a
+    // Number() y nunca matcheaban contra nada (resuelto acá aprovechando los objetos anidados
+    // policy.target_team/campaign).
+    const teamFilterId = params.get("team") ?? null
 
-    const { control } = useForm<{ campaign_id: number | null }>({
-        defaultValues: { campaign_id: params.get("campaign") ? Number(params.get("campaign")) : null },
+    const { control } = useForm<{ campaign_id: string | null }>({
+        defaultValues: { campaign_id: params.get("campaign") ?? null },
     })
     const campaignFilter = useWatch({ control, name: "campaign_id" })
 
@@ -78,12 +81,12 @@ export const RoutingPolicyList = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [campaignFilter])
 
-    const fetchPolicies = useCallback((fetchPage: number, pageSize: number, campaignId: number | null, teamId: number | null) => {
+    const fetchPolicies = useCallback((fetchPage: number, pageSize: number, campaignId: string | null, teamId: string | null) => {
         // Si hay filtro por equipo, no es soportado por el backend: traemos todo y filtramos/paginamos client-side.
         if (teamId) {
             return getRoutingPolicies({ detailed: true, page_size: 0, target_team_id: teamId, campaign_id: campaignId ?? undefined, ...fetchParams })
                 .then(res => {
-                    const filtered = res.items.filter(p => p.target_team_id === teamId)
+                    const filtered = res.items.filter(p => p.target_team?.id === teamId)
                     const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
                     const page = Math.min(fetchPage, totalPages)
                     const start = (page - 1) * pageSize
@@ -266,7 +269,7 @@ export const RoutingPolicyList = () => {
 interface SidebarProps {
     mode: string | null,
     entity: LeadRoutingPolicyDetailed | null,
-    initialCampaignId: number | null,
+    initialCampaignId: string | null,
     closeSidebar: () => void,
     updateEntityOnList: (entity: LeadRoutingPolicyDetailed | null, mode: string) => void,
     handleSidebar: (mode: string, entity: LeadRoutingPolicyDetailed | null) => void,
