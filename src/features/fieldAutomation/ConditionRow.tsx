@@ -78,7 +78,7 @@ export const ConditionRow: React.FC<ConditionRowProps> = ({
         setLoadingOptions(true);
         try {
           const response = await getNomenclatorItems({
-            nomenclator_id: selectedField.nomenclator_id,
+            nomenclator_id: `${selectedField.nomenclator_id}`,
             page_size: 0,
             only_active: true
           });
@@ -285,7 +285,7 @@ export const ConditionRow: React.FC<ConditionRowProps> = ({
           value={condition.field_id ?? null}
           onChange={(fieldId) => onUpdate({
             ...condition,
-            field_id: fieldId,
+            field_id: fieldId ? `${fieldId}` : null,
             value: null,
             operator: getAvailableOperators(allowedFields.find(f => f.id === fieldId))[0]
           })}

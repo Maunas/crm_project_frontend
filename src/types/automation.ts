@@ -39,7 +39,7 @@ export type ActionTypeEnum = typeof ActionTypeEnum[keyof typeof ActionTypeEnum];
 export interface RuleCondition {
   id?: string;
   type?: 'condition';
-  field_id: number | null;
+  field_id: string | null;
   operator: ConditionOperatorEnum;
   value?: string | number | boolean | null;
 }
