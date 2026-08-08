@@ -65,6 +65,11 @@ export const LeadListPage = () => {
 
     // Búsqueda de texto libre (mutuamente exclusiva con filtros)
     const [searchText, setSearchText] = useState('')
+    // Versión debounceada del texto de búsqueda (misma espera de 400ms que ya usa el fetch de la
+    // vista Tabla), para pasarle al modo Tablero -- este carga sus propios leads por columna
+    // (ver LeadListContent) y hasta ahora nunca recibía el texto buscado, solo los filtros
+    // estructurados del panel de filtros.
+    const [debouncedQuery, setDebouncedQuery] = useState<string | undefined>(undefined)
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
     const fetchLeads = useCallback((page: number, filters: LeadFilter[], headers: LeadListParams, campaignId: string | number) => {
@@ -84,7 +89,9 @@ export const LeadListPage = () => {
     useEffect(() => {
         if (leads?.items?.length) {
             const ids = leads.items.map(l => l.id)
-            setListContext(ids, { ...headerParams, page: leads.page, campaign_id: Number(campaignId) }, filters, leads.total_pages)
+            // campaignId antes se forzaba a Number(), lo que mandaba NaN como filtro al
+            // re-buscar leads adyacentes (nav siguiente/anterior).
+            setListContext(ids, { ...headerParams, page: leads.page, campaign_id: campaignId as string }, filters, leads.total_pages)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [leads, headerParams, filters, setListContext])
@@ -127,7 +134,7 @@ export const LeadListPage = () => {
     // Filters (limpian la búsqueda de texto al activarse)
     const setFiltersAndHeaders = useCallback(async (filters: LeadFilter[], newParams: LeadListParams) => {
         if (!campaignId) return null
-        if (filters.length > 0) setSearchText('')
+        if (filters.length > 0) { setSearchText(''); setDebouncedQuery(undefined) }
         return fetchLeadLoad(1, filters, { ...newParams, ...orderParams }, campaignId).then(() => {
             setFetchParams(newParams); setFilters(filters)
         })
@@ -144,12 +151,14 @@ export const LeadListPage = () => {
             const query = value.trim() || undefined
             // Limpiar filtros activos al buscar
             if (value.trim()) { setFilters([]) }
+            setDebouncedQuery(query)
             fetchLeadLoad(1, [], { ...fetchParams, ...orderParams, query }, campaignId)
         }, 400)
     }, [campaignId, fetchLeadLoad, fetchParams, orderParams])
 
     const handleSearchClear = useCallback(() => {
         setSearchText('')
+        setDebouncedQuery(undefined)
         if (!campaignId) return
         fetchLeadLoad(1, filters, { ...fetchParams, ...orderParams, query: undefined }, campaignId)
     }, [campaignId, fetchLeadLoad, fetchParams, orderParams, filters])
@@ -158,7 +167,9 @@ export const LeadListPage = () => {
     const [leadFields, setLeadFields] = useState<LeadField[]>([])
     useEffect(() => {
         if (!campaignId) return
-        getLeadFields({ detailed: false, campaign_id: Number(campaignId), only_active: true, page_size: 0 })
+        // campaignId antes se forzaba a Number(); eso mandaba NaN y rompía la carga de
+        // campos para el selector de columnas.
+        getLeadFields({ detailed: false, campaign_id: String(campaignId), only_active: true, page_size: 0 })
             .then(r => setLeadFields([...r.items, ...NATIVE_LEAD_FIELDS]))
     }, [campaignId])
 
@@ -177,7 +188,10 @@ export const LeadListPage = () => {
     useEffect(() => {
         if (!selectedFieldIds.length || !campaignId) return
         const stored = JSON.parse(window.localStorage.getItem('sel_lead_fields') ?? '{}')
-        stored[Number(campaignId)] = selectedFieldIds
+        // Antes se guardaba bajo Number(campaignId) (= "NaN" como key de objeto, ya que
+        // campaignId es un uuid) pero se leía bajo el campaignId real (línea de arriba) --
+        // esa key desalineada hacía que la selección de columnas nunca persistiera.
+        stored[campaignId] = selectedFieldIds
         window.localStorage.setItem('sel_lead_fields', JSON.stringify(stored))
     }, [selectedFieldIds, campaignId])
 
@@ -193,10 +207,14 @@ export const LeadListPage = () => {
         if (!campaignId) return
         if (existingView) {
             if (!existingView.campaign_id) return
-            return updateView({ ...existingView, name }, existingView.id)
+            // team_id de existingView es el id interno viejo (FK embebida sin migrar), no el
+            // uuid que ahora espera LeadViewPost. Se omite del payload para no reenviarlo --
+            // el backend lo deja sin cambios si no viene en el body (exclude_unset).
+            const { team_id: _existingTeamId, ...restExistingView } = existingView
+            return updateView({ ...restExistingView, name }, existingView.id)
         }
         return createView({
-            name, visibility, campaign_id: Number(campaignId),
+            name, visibility, campaign_id: String(campaignId),
             filters: { filters },
             sort_config: { order_by: orderProps.orderBy, ascending: orderProps.ascending },
             ui_config: { selected_ids: selectedFieldIds, fetch_params: fetchParams },
@@ -215,7 +233,11 @@ export const LeadListPage = () => {
     }, [campaignId, fetchParams, filters, orderProps, presentationMode, selectedFieldIds])
 
     const loadView = useCallback((view: LeadView) => {
-        if (!campaignId || Number(campaignId) !== view.campaign_id) return
+        // view.campaign_id sigue siendo la FK embebida (id interno viejo) -- el uuid real está
+        // en el objeto anidado view.campaign. El comentario viejo acá decía que campaign_id ya
+        // era el uuid, pero eso era un bug de schema (el Response tiraba 500 en la práctica) --
+        // nunca llegó a probarse con datos reales.
+        if (!campaignId || String(campaignId) !== view.campaign?.id) return
         let newFilters: LeadFilter[] = []
         if (view?.filters?.filters) { newFilters = view.filters.filters; setFilters(newFilters) }
         let newFetchParams: ListParams = {}
@@ -256,7 +278,7 @@ export const LeadListPage = () => {
     // Export / Import
     const handleExport = useCallback(async () => {
         if (!campaignId) return
-        try { await exportLeads(Number(campaignId)) }
+        try { await exportLeads(campaignId) }
         catch (e) { console.error('Error al exportar los leads', e) }
     }, [campaignId])
     const { fnWithLoading: exportLoad, loading: exporting } = useLoading(handleExport)
@@ -436,9 +458,10 @@ export const LeadListPage = () => {
                                     orderProps={orderProps}
                                     handleSelectedFieldIds={handleSelectedFieldIds}
                                     selectCheckboxProps={selectCheckboxProps}
-                                    workspaceId={workspaceId ? Number(workspaceId) : undefined}
+                                    workspaceId={workspaceId ?? undefined}
                                     campaignId={campaignId}
                                     filters={filters}
+                                    searchQuery={debouncedQuery}
                                     onClearFilters={() => setFiltersAndHeaders([], fetchParams)}
                                 />
                                 {presentationMode === 'TABLE' && (

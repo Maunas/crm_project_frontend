@@ -47,7 +47,7 @@ export const TeamMemberList = ({ team }: TeamMemberListProps) => {
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(members, 10)
 
-    const fetchMembers = useCallback((fetchPage: number, pageSize: number, teamId: number) => {
+    const fetchMembers = useCallback((fetchPage: number, pageSize: number, teamId: string) => {
         return getTeamMembers({ detailed: true, page: fetchPage, page_size: pageSize, team_id: teamId, ...fetchParams })
             .then(setMembers)
             .catch(e => showCommonErrorToast(e, "Ha ocurrido un error al traer los miembros del equipo"))
@@ -59,7 +59,10 @@ export const TeamMemberList = ({ team }: TeamMemberListProps) => {
         fetchMembersLoad(fetchPage, pageSize, team.id)
     }, [fetchMembersLoad, fetchPage, pageSize, team.id])
 
-    const excludedUserIds = useMemo(() => members?.items.map(m => m.user_id) ?? [], [members])
+    // m.user es el objeto anidado con el uuid real del usuario -- m.user_id sigue siendo la FK
+    // embebida sin migrar (id interno), comparaba mal contra UserPublic.id (uuid) y nunca
+    // excluía a nadie de la lista de "disponibles para agregar".
+    const excludedUserIds = useMemo(() => members?.items.map(m => m.user.id) ?? [], [members])
 
     const refreshList = useCallback(() => {
         fetchMembers(members?.page ?? 1, pageSize, team.id)

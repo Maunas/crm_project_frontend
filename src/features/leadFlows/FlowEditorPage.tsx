@@ -9,7 +9,7 @@ import { getLeadFlow, getLeadFlowStates, getLeadFlowTransitions, saveLeadFlowGra
 import { usePageTitle } from 'src/hooks/usePageTitle';
 
 interface GraphData {
-  id?: number | null,
+  id?: string | null,
   name: string;
   description?: string;
   states: FlowEditorState[];
@@ -18,9 +18,9 @@ interface GraphData {
 
 export const LeadFlowEditor = () => {
   const { id } = useParams();
-  const editFlowId = id ? parseInt(id) : undefined;
+  const editFlowId = id || undefined;
 
-  const [currentLeadFlowId, setCurrentLeadFlowId] = useState<number | null>(editFlowId || null);
+  const [currentLeadFlowId, setCurrentLeadFlowId] = useState<string | null>(editFlowId || null);
 
   const [initialData, setInitialData] = useState<GraphData>(
     { name: '', description: '', states: [], transitions: [] }
@@ -33,7 +33,10 @@ export const LeadFlowEditor = () => {
       const [flowRes, statesRes, transRes] = await Promise.all([
         getLeadFlow(editFlowId),
         getLeadFlowStates({ lead_flow_id: editFlowId }),
-        getLeadFlowTransitions({ lead_flow_id: editFlowId })
+        // detailed: true trae from_state/to_state anidados (con su .id como uuid) -- from_state_id/
+        // to_state_id planos siguen siendo el id interno viejo (FK embebida sin migrar) y ya no
+        // sirven para conectar la transición al tempId (uuid) del nodo. Ver mapFlowTransitions.
+        getLeadFlowTransitions({ lead_flow_id: editFlowId, detailed: true })
       ]);
 
       const mappedStates = mapFlowStates(statesRes.items ?? []);
@@ -63,20 +66,22 @@ export const LeadFlowEditor = () => {
 
   // --- GUARDADO ATÓMICO (TRANSACCIONAL) ---
   const handleSave = async (flowName: string, flowDescription: string, states: FlowEditorState[], transitions: FlowEditorTransition[]) => {
-    // 1. Mapeo de UUIDs a IDs Negativos para el Backend
+    // 1. Mapeo de tempId -> ID negativo, solo para etapas NUEVAS (placeholder temporal que le
+    // permite al backend correlacionar las transiciones dentro de este mismo payload). Las
+    // etapas existentes viajan con su tempId real (uuid) tal cual -- antes se detectaba
+    // "nuevo" por si el tempId tenía un guion, pero un uuid de un estado YA EXISTENTE también
+    // tiene guiones, así que esa detección dejó de servir (ver isNew en types/leadFlow.ts).
     let negativeIdCounter = -1;
-    const uuidToBackendIdMap = new Map<string, number>();
+    const newTempIdToBackendId = new Map<string, number>();
 
     // 2. Preparar Etapas
     const statesPayload = states.map(s => {
-      let backendId: number;
-      // Si el tempId tiene un guion, es un UUID (nueva etapa)
-      if (s.tempId.includes('-')) {
+      let backendId: number | string;
+      if (s.isNew) {
         backendId = negativeIdCounter--;
-        uuidToBackendIdMap.set(s.tempId, backendId);
+        newTempIdToBackendId.set(s.tempId, backendId);
       } else {
-        // Si es un número, ya existe en la BD
-        backendId = parseInt(s.tempId);
+        backendId = s.tempId; // el tempId de una etapa existente ya es su uuid real
       }
 
       return {
@@ -91,16 +96,20 @@ export const LeadFlowEditor = () => {
       };
     });
 
-    // 3. Preparar Transiciones (usando el mapa de IDs)
-    const transitionsPayload = transitions.map(t => {
-      const fromId = uuidToBackendIdMap.get(t.fromStateId || '') ?? parseInt(t.fromStateId || '0');
-      const toId = uuidToBackendIdMap.get(t.toStateId || '') ?? parseInt(t.toStateId || '0');
+    // 3. Preparar Transiciones: si la punta es una etapa nueva de este mismo payload, usa su
+    // placeholder negativo; si no, es una etapa existente y su tempId ya es el uuid real.
+    const resolveEndpoint = (tempId: string | null): number | string | null => {
+      if (!tempId) return null;
+      return newTempIdToBackendId.get(tempId) ?? tempId;
+    };
 
-      return {
-        from_state_id: fromId,
-        to_state_id: toId
-      };
-    }).filter(t => t.from_state_id !== 0 && t.to_state_id !== 0);
+    const transitionsPayload = transitions.map(t => ({
+      from_state_id: resolveEndpoint(t.fromStateId),
+      to_state_id: resolveEndpoint(t.toStateId)
+    })).filter(
+      (t): t is { from_state_id: number | string; to_state_id: number | string } =>
+        t.from_state_id !== null && t.to_state_id !== null
+    );
 
     // 4. Construir el Payload Final
     const finalPayload = {
@@ -114,7 +123,7 @@ export const LeadFlowEditor = () => {
     try {
       const result = await saveLeadFlowGraph(finalPayload);
 
-      // Si era una creación, actualizamos el ID y la URL sin recargar
+      // Si era una creación, actualizamos el ID (uuid) y la URL sin recargar
       if (!currentLeadFlowId) {
         setCurrentLeadFlowId(result.id);
         window.history.replaceState(null, '', `/lead-flow-editor/${result.id}`);

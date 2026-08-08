@@ -25,8 +25,8 @@ export interface Metadata {
   created_at: string;
   updated_at?: string;
   active: boolean;
-  created_by: number;
-  updated_by?: number;
+  // created_by/updated_by ya no vienen en el response: eran redundantes con
+  // creator/updater, que ya traen toda la data del usuario. Usar creator?.id / updater?.id.
   creator?: Creator | null;
   updater?: Updater | null;
 }
@@ -66,24 +66,26 @@ export interface ListParams extends OrderParams, SearchParams {
   only_active?: boolean,
 }
 export interface WorkspaceParams extends ListParams {
-  organization_id?: number
+  organization_id?: string
 }
 export interface CampaignParams extends ListParams {
-  workspace_id?: number
+  workspace_id?: string
 }
 export interface LeadListParams extends ListParams {
-  campaign_id?: number
+  campaign_id?: string
   query?: string
 }
 export interface LeadFlowParams extends ListParams {
   organization_id?: number
 }
 export interface FlowStateParams extends LeadFlowParams {
-  lead_flow_id: number
+  // Puede llegar como el uuid del flujo (ej. FlowEditorPage con el id propio) o como el id
+  // interno (ej. Campaign.lead_flow_id). Ambas formas funcionan como filtro de la API.
+  lead_flow_id: string | number
 }
 
 export interface FieldAutomationParams extends ListParams {
-  campaign_id?: number
+  campaign_id?: string
 }
 
 export interface SystemAuditParams extends ListParams {

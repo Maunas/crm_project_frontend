@@ -36,10 +36,10 @@ export interface RouteListProps {
     permission?: string | string[]
 }
 
-// Muestra GlobalDashboard para Panel Global (id=1), OrgDashboard para el resto
+// Muestra GlobalDashboard para Panel Global (is_system), OrgDashboard para el resto
 function DashboardRouter() {
     const { activeOrg } = useUserContext()
-    if (activeOrg?.id === 1) return <GlobalDashboardPage />
+    if (activeOrg?.is_system) return <GlobalDashboardPage />
     return <OrgDashboardPage />
 }
 

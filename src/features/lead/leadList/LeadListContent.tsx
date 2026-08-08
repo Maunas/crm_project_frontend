@@ -34,9 +34,13 @@ interface LeadListContentProps {
         removeAllItems: () => void;
     },
     presentationMode: string,
-    workspaceId?: number,
+    // Acá solo se usan para armar un query string, no hace falta el id interno.
+    workspaceId?: string | number,
     campaignId?: number | string,
     filters: unknown[],
+    // Texto libre buscado (ya debounceado), para que el modo Tablero -- que carga sus propios
+    // leads por columna, no depende de este array `leads` -- también pueda filtrar por búsqueda.
+    searchQuery?: string,
     onClearFilters?: () => void,
 }
 
@@ -44,7 +48,7 @@ interface LeadListContentProps {
  * Wrapper del contenido, realiza la lógica de selectedColumns, y elige el modo de vista deseado.
  */
 export const LeadListContent = memo(({ leads, leadFields, selectedFieldIds, activeFilters = 0, modalProps, orderProps, handleSelectedFieldIds,
-    selectCheckboxProps, presentationMode, workspaceId, campaignId, filters, onClearFilters }: LeadListContentProps) => {
+    selectCheckboxProps, presentationMode, workspaceId, campaignId, filters, searchQuery, onClearFilters }: LeadListContentProps) => {
 
     //Filtra los objetos LeadField para seguir el orden del arreglo de ids.
     const selectedColumns = useMemo(() => {
@@ -62,6 +66,7 @@ export const LeadListContent = memo(({ leads, leadFields, selectedFieldIds, acti
         return <LeadBoardPresentation
             campaignId={campaignId}
             activeFilters={filters}
+            searchQuery={searchQuery}
         />
     }
 

@@ -144,7 +144,7 @@ export const XS_INPUT_SX = {
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 interface LeadFiltersProps {
-    campaignId: number,
+    campaignId: string,
     filters: { filters: LeadFilter[], headers: LeadListParams },
     applyFilters: (data: { filters: LeadFilter[], headers: LeadListParams }) => Promise<void>,
     onClose: () => void,

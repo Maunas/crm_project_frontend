@@ -194,6 +194,9 @@ export const LeadTablePresentation = memo(({ leads, selectedColumns, modalProps,
                                     onChange={(_, checked) => checked ? addItem(leads) : removeAllItems()}
                                 />
                             </TableCell>
+                            {/* Columna fija de referencia (ej. "L-0001") -- siempre primera, no es
+                                parte de las columnas custom seleccionables/reordenables. */}
+                            <TableCell align="left" sx={{ fontWeight: 600 }}>Referencia</TableCell>
                             {selectedColumns.map((column, idx) =>
                                 <LeadTableHeaderRow key={column.id} column={column} idx={idx} orderProps={orderProps}
                                     dragStyles={dragStyles} dragEvents={dragEvents} palette={palette} />
@@ -213,6 +216,9 @@ export const LeadTablePresentation = memo(({ leads, selectedColumns, modalProps,
                                             else removeItem(lead)
                                         }}
                                     />
+                                </TableCell>
+                                <TableCell align="left" sx={{ whiteSpace: 'nowrap' }}>
+                                    {lead.reference ?? '—'}
                                 </TableCell>
                                 <LeadTableBodyRow key={lead.id} lead={lead} modalProps={modalProps} selectedColumns={selectedColumns} />
                             </SelectableTableRow>
@@ -294,9 +300,18 @@ export const LeadTableBodyRow = memo(({ lead, selectedColumns, modalProps }: Lea
 
     // Evita O(leads*columnas*field_values.find) en cada render:
     // lookup por columna para esta fila.
+    //
+    // Bug real encontrado 2026-08-01: la clave usada acá era fv.field_id, el id interno crudo
+    // del campo (LeadFieldValueResponse.field_id: int -- FK embebida sin migrar). Pero
+    // column.id (LeadField.id) es el uuid del campo -- nunca matcheaban, así que TODAS las
+    // columnas custom del listado quedaban vacías aunque los leads sí tuvieran valores
+    // cargados (se veían bien en el detalle, que indexa por el objeto anidado fv.field.id, no
+    // por fv.field_id). Se corrige indexando por fv.field?.id, que sí es el uuid real.
     const fieldValueByFieldId = useMemo(() => {
-        const map = new Map<number, LeadFieldValue>()
-        for (const fv of lead.field_values) map.set(fv.field_id, fv)
+        const map = new Map<string, LeadFieldValue>()
+        for (const fv of lead.field_values) {
+            if (fv.field?.id) map.set(fv.field.id, fv)
+        }
         return map
     }, [lead.field_values])
 

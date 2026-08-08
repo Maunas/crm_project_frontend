@@ -8,7 +8,7 @@ export const getLeadContactStates = async <T extends ListParams>(params?: T)
     return LeadContactState.data;
 };
 
-export const getLeadContactState = async (id: number): Promise<LeadContactStateDetailed> => {
+export const getLeadContactState = async (id: string): Promise<LeadContactStateDetailed> => {
     const LeadContactState = await axiosCRM.get(`lead_contact_states/${id}`);
     return LeadContactState.data;
 };
@@ -18,16 +18,16 @@ export const createLeadContactState = async (body: LeadContactStatePost): Promis
     return LeadContactState.data;
 };
 
-export const updateLeadContactState = async (body: LeadContactStatePost, id: number): Promise<LeadContactStateDetailed> => {
+export const updateLeadContactState = async (body: LeadContactStatePost, id: string): Promise<LeadContactStateDetailed> => {
     const LeadContactState = await axiosCRM.put(`lead_contact_states/${id}`, body);
     return LeadContactState.data;
 };
 
-export const enableLeadContactState = async (id: number): Promise<EnableResponse> => {
+export const enableLeadContactState = async (id: string): Promise<EnableResponse> => {
     const LeadContactState = await axiosCRM.put(`lead_contact_states/active/${id}`);
     return LeadContactState.data;
 };
-export const disableLeadContactState = async (id: number): Promise<DeleteResponse> => {
+export const disableLeadContactState = async (id: string): Promise<DeleteResponse> => {
     const LeadContactState = await axiosCRM.delete(`lead_contact_states/${id}`);
     return LeadContactState.data;
 };

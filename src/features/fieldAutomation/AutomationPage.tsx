@@ -33,10 +33,14 @@ export const AutomationPage = () => {
 
   const [searchParams] = useSearchParams();
   const campaignQueryParam = searchParams.get('campaign');
-  const campaignId = campaignQueryParam ? Number(campaignQueryParam) : undefined;
+  const campaignId = campaignQueryParam ?? undefined;
   const duplicateFromId = searchParams.get('duplicate_from');
 
-  const isEditing = Boolean(id && !isNaN(Number(id)));
+  // La ruta es "/automations/:id", con "create" como valor literal para "nueva automatización"
+  // (ver routes.tsx). Antes se usaba isNaN(Number(id)) para distinguir un id real de "create",
+  // pero ahora los ids reales son UUID strings, que también fallan Number() -- ya no sirve
+  // para distinguir. Se compara directo contra el literal "create".
+  const isEditing = Boolean(id && id !== 'create');
   const isDuplicating = Boolean(duplicateFromId);
 
   // Sin el permiso correspondiente (según se esté creando o editando), el formulario
@@ -55,11 +59,11 @@ export const AutomationPage = () => {
 
   const initialLoad = useCallback(async () => {
     if (isEditing) {
-      await getFieldAutomation(Number(id))
+      await getFieldAutomation(id!)
         .then(setInitialData)
         .catch(e => showCommonErrorToast(e))
     } else if (isDuplicating) {
-      await getFieldAutomation(Number(duplicateFromId))
+      await getFieldAutomation(duplicateFromId!)
         .then(data => {
           setInitialData({ ...data, name: `Copia de ${data.name}` });
         })
@@ -108,7 +112,7 @@ export const AutomationPage = () => {
   const handleSaveToApi = async (payload: FieldAutomationPost) => {
     if (!canEdit) return
     try {
-      if (isEditing) await updateFieldAutomation(payload, Number(id));
+      if (isEditing) await updateFieldAutomation(payload, id!);
       else await createFieldAutomation(payload);
       navigate(`/automations${campaignId ? `?campaign=${campaignId}` : ""}`);
     } catch (error) {
@@ -120,7 +124,7 @@ export const AutomationPage = () => {
 
   return (
     <LoadingScreenWrapper loading={initialFetchLoading}>
-      {(campaignId && !isNaN(campaignId)) ?
+      {campaignId ?
         <GenericContainer noPaper sx={{ bgcolor: 'transparent', minHeight: '100vh' }}>
           <GenericPaper
             elevation={0}
