@@ -13,9 +13,12 @@ interface LeadBoardPresentationProps {
     activeFilters: unknown[];
     searchQuery?: string;
     cardFields: BoardCardFieldCode[];
+    // Clic simple: abre el sidebar de detalle rápido. Ir al detalle completo es explícito, con el
+    // ícono de la card.
+    onLeadClick?: (id: string) => void;
 }
 
-export const LeadBoardPresentation = ({ campaignId, activeFilters, searchQuery, cardFields }: LeadBoardPresentationProps) => {
+export const LeadBoardPresentation = ({ campaignId, activeFilters, searchQuery, cardFields, onLeadClick }: LeadBoardPresentationProps) => {
     const [columns, setColumns] = useState<LeadContactState[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -134,6 +137,7 @@ export const LeadBoardPresentation = ({ campaignId, activeFilters, searchQuery, 
                         activeFilters={activeFilters}
                         searchQuery={searchQuery}
                         cardFields={cardFields}
+                        onLeadClick={onLeadClick}
                     />
                 ))}
             </Box>

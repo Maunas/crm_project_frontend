@@ -1,9 +1,10 @@
 import { Draggable } from '@hello-pangea/dnd';
-import { Card, Typography, Box, Avatar, Stack, Tooltip, alpha } from '@mui/material';
+import { Card, Typography, Box, Avatar, IconButton, Stack, Tooltip, alpha } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import GroupsIcon from '@mui/icons-material/Groups';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import CancelIcon from '@mui/icons-material/Cancel';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import type { Lead } from 'src/types/leads';
 import { getLeadTitleArray, getLeadSubtitleArray } from '../../leadUtils';
 import CustomChip from 'shared/ui/details/CustomChip';
@@ -20,6 +21,10 @@ interface LeadBoardCardProps {
     columnColor?: string;
     observerRef?: (node: HTMLDivElement | null) => void;
     cardFields: BoardCardFieldCode[];
+    // Clic simple: abre el sidebar de detalle rápido (si no se pasa, cae al comportamiento viejo
+    // de navegar directo). Ir al detalle completo ahora es siempre explícito, con el ícono de la
+    // esquina superior derecha -- ya no hay doble clic.
+    onLeadClick?: (id: string) => void;
 }
 
 // Mismo criterio que getCategoryIcon en LeadDetailsState.tsx (detalle del lead) -- se repite acá
@@ -33,7 +38,7 @@ const getCategoryIcon = (category: StateCategory, sx?: object) => {
     }
 }
 
-export const LeadBoardCard = ({ lead, index, columnColor, observerRef, cardFields }: LeadBoardCardProps) => {
+export const LeadBoardCard = ({ lead, index, columnColor, observerRef, cardFields, onLeadClick }: LeadBoardCardProps) => {
     const navigate = useNavigate();
     const titleArray = getLeadTitleArray(lead);
     //Antes esto tomaba solo el primer campo del título como "nombre" y dejaba el resto (ej.
@@ -65,7 +70,10 @@ export const LeadBoardCard = ({ lead, index, columnColor, observerRef, cardField
                     {...provided.draggableProps}
                     {...provided.dragHandleProps}
                     elevation={0}
-                    onClick={() => { if (!snapshot.isDragging) navigate(`/leads/${lead.id}`) }}
+                    onClick={() => {
+                        if (snapshot.isDragging) return
+                        if (onLeadClick) onLeadClick(String(lead.id)); else navigate(`/leads/${lead.id}`)
+                    }}
                     sx={{
                         p: 2,
                         mb: 1.5,
@@ -122,6 +130,11 @@ export const LeadBoardCard = ({ lead, index, columnColor, observerRef, cardField
                                     size="small"
                                 />
                             )}
+                            <Tooltip title="Ver detalle completo">
+                                <IconButton size="small" onClick={e => { e.stopPropagation(); navigate(`/leads/${lead.id}`) }}>
+                                    <OpenInNewIcon fontSize="small" />
+                                </IconButton>
+                            </Tooltip>
                         </Stack>
 
                         {showStage && lead.current_state && (

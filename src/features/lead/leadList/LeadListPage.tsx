@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { DEFAULT_LEAD_PAGE_SIZE } from 'src/utils/constants'
 import { LeadListContent } from './LeadListContent'
 import { LeadSidebar } from './LeadSidebar'
+import { LeadDetailsSidebar } from './LeadDetailsSidebar'
 import LeadColumnSelector from '../leadListOptions/LeadColumnSelector'
 import LeadBoardCardFieldsSelector from '../leadListOptions/LeadBoardCardFieldsSelector'
 import { DisableBulkConfirmDialog } from 'src/components/ui/feedback/ConfirmationDialog'
@@ -17,10 +18,11 @@ import { useSelectCheckbox } from 'src/hooks/useSelectCheckbox'
 import { useOrderList } from 'src/hooks/useOrderList'
 import { useLoading } from 'src/hooks/useLoading'
 import { useModal } from 'src/hooks/useModal'
+import { useSidebar } from 'src/hooks/useSidebar'
 import type { LeadFilter, LeadListParams, ListParams, OrderParams, Paginable } from 'src/types/shared'
-import type { Lead, LeadView, LeadViewParams } from 'src/types/leads'
+import type { Lead, LeadDetailed, LeadView, LeadViewParams } from 'src/types/leads'
 import type { LeadField } from 'src/types/leadFields'
-import { bulkDeleteLead, createView, getFilteredLeads, getLeads, updateView, exportLeads } from '../leadService'
+import { bulkDeleteLead, createView, getFilteredLeads, getLead, getLeads, updateView, exportLeads } from '../leadService'
 import { getLeadFields } from 'src/features/leadFields/leadFieldServices'
 import { showCommonErrorToast, showToast } from 'src/utils/feedback'
 import { useLeadNavigation } from '../stores/LeadNavigationContext'
@@ -314,6 +316,27 @@ export const LeadListPage = () => {
 
     const hasSelection = selectedCount > 0
 
+    // Sidebar de detalle "rápido" de un lead (clic simple en la Tabla o el Tablero) -- reutiliza
+    // el mismo mecanismo de Drawer que Workspace/Team (useSidebar + GenericSidebar, ver
+    // LeadDetailsSidebar.tsx). A diferencia de esas listas (que ya tienen el objeto completo en
+    // memoria), el listado de leads solo trae la versión "lite" de los campos (sin
+    // validation_rules/nomenclator completo, ver LeadFieldValueResponse vs
+    // LeadFieldValueDetailedResponse en el backend) -- por eso NO se pasa directo el Lead de la
+    // fila/tarjeta clickeada, sino que se pide el LeadDetailed completo (mismo pedido que hace la
+    // página de detalle completo) antes de mostrar el sidebar con datos editables.
+    const { sidebarMode: leadSidebarMode, selectedEntity: selectedLead, handleSidebar: handleLeadSidebar, closeSidebar: closeLeadSidebar } =
+        useSidebar<LeadDetailed>("id", params, setParams, getLead, "DETAILS_LEAD")
+    const [leadSidebarLoading, setLeadSidebarLoading] = useState(false)
+
+    const handleLeadClick = useCallback((id: string) => {
+        handleLeadSidebar("DETAILS_LEAD", null)
+        setLeadSidebarLoading(true)
+        getLead(id)
+            .then(lead => handleLeadSidebar("KEEP", lead))
+            .catch(e => { showCommonErrorToast(e); closeLeadSidebar() })
+            .finally(() => setLeadSidebarLoading(false))
+    }, [handleLeadSidebar, closeLeadSidebar])
+
     return (
         <Box sx={{
             display: 'flex',
@@ -480,6 +503,7 @@ export const LeadListPage = () => {
                                     filters={filters}
                                     searchQuery={debouncedQuery}
                                     onClearFilters={() => setFiltersAndHeaders([], fetchParams)}
+                                    onLeadClick={handleLeadClick}
                                 />
                                 {presentationMode === 'TABLE' && (
                                     <Box sx={{ mt: 1 }}>
@@ -540,6 +564,14 @@ export const LeadListPage = () => {
                     handleClose={modalProps.handleClose}
                 />
             </GenericModal>
+
+            <LeadDetailsSidebar
+                isOpen={Boolean(leadSidebarMode)}
+                lead={selectedLead}
+                loading={leadSidebarLoading}
+                onClose={closeLeadSidebar}
+                onUpdate={(lead) => handleLeadSidebar("KEEP", lead)}
+            />
         </Box>
     )
 }

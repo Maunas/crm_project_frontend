@@ -247,13 +247,17 @@ interface LeadInfoProps {
     leadSubtitle?: (string | undefined)[] | null,
     updateLeadInfo: (lead: LeadDetailed, reloadAudits?: boolean) => void
     onOpenTitleConfig?: () => void
+    //Usado desde el sidebar de detalle rápido (LeadDetailsSidebar): ahí las secciones de campos
+    //deben mostrarse siempre desplegadas y no poder plegarse. En el detalle de página completa
+    //queda sin usar, así que el acordeón se comporta igual que siempre.
+    forceExpandSections?: boolean
 }
 
 //Mismo estilo que SECTION_LABEL_SX de LeadDetailsState.tsx (Estado/Etapa) y LeadTagsMenu.tsx
 //(Etiquetas), para que el título "ID" quede visualmente igual a esos otros títulos de sección.
 const ID_LABEL_SX = { fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: ".04em" }
 
-export const LeadInfo = ({ lead, leadTitle, leadSubtitle, handleActive, updateLeadInfo, onOpenTitleConfig }: LeadInfoProps) => {
+export const LeadInfo = ({ lead, leadTitle, leadSubtitle, handleActive, updateLeadInfo, onOpenTitleConfig, forceExpandSections }: LeadInfoProps) => {
 
     const titleText = (leadTitle && leadTitle?.length > 0) ? leadTitle?.join(" ") : "Título no encontrado"
     const subtitleText = (leadSubtitle && leadSubtitle.length > 0) ? leadSubtitle.join(" ") : null
@@ -327,7 +331,7 @@ export const LeadInfo = ({ lead, leadTitle, leadSubtitle, handleActive, updateLe
                         </Stack>}
                 </Stack>
             </GenericPaper>
-            <LeadFieldSections lead={lead} updateLeadInfo={updateLeadInfo} />
+            <LeadFieldSections lead={lead} updateLeadInfo={updateLeadInfo} forceExpanded={forceExpandSections} />
         </Stack>
     )
 }

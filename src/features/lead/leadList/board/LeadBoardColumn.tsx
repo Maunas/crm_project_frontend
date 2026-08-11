@@ -14,9 +14,10 @@ interface LeadBoardColumnProps {
     activeFilters: unknown[];
     searchQuery?: string;
     cardFields: BoardCardFieldCode[];
+    onLeadClick?: (id: string) => void;
 }
 
-export const LeadBoardColumn = ({ column, campaignId, activeFilters, searchQuery, cardFields }: LeadBoardColumnProps) => {
+export const LeadBoardColumn = ({ column, campaignId, activeFilters, searchQuery, cardFields, onLeadClick }: LeadBoardColumnProps) => {
     const [leads, setLeads] = useState<Lead[]>([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
@@ -222,6 +223,7 @@ export const LeadBoardColumn = ({ column, campaignId, activeFilters, searchQuery
                                     columnColor={colorShades.MAIN}
                                     observerRef={isLast ? lastLeadElementRef : undefined}
                                     cardFields={cardFields}
+                                    onLeadClick={onLeadClick}
                                 />
                             );
                         })}

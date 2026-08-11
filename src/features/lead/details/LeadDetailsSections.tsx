@@ -28,9 +28,12 @@ import { useUserContext } from "src/stores/UserContext"
 interface LeadFieldSectionsProps {
     lead: LeadDetailed,
     updateLeadInfo: (lead: LeadDetailed, reloadAudits?: boolean) => void
+    //Ver LeadInfo (LeadDetails.tsx) -- true desde el sidebar de detalle rápido: todas las secciones
+    //quedan desplegadas y dejan de poder plegarse (no se pasa onChange ni expandIcon al Accordion).
+    forceExpanded?: boolean
 }
 
-export const LeadFieldSections = ({ lead, updateLeadInfo }: LeadFieldSectionsProps) => {
+export const LeadFieldSections = ({ lead, updateLeadInfo, forceExpanded = false }: LeadFieldSectionsProps) => {
 
     //Para datos que necesitan un modal
     const { modalProps } = useModal()
@@ -105,9 +108,9 @@ export const LeadFieldSections = ({ lead, updateLeadInfo }: LeadFieldSectionsPro
     return (
         <Box>
             {fieldValuesBySection.map((section, idx) =>
-                <Accordion expanded={expanded === idx} onChange={onExpand(idx)} key={`section-${idx}`}
+                <Accordion expanded={forceExpanded || expanded === idx} onChange={forceExpanded ? undefined : onExpand(idx)} key={`section-${idx}`}
                     component={GenericPaper} elevation={0} sx={{ p: 0 }}>
-                    <ColoredAccordionSummary expandIcon={<ArrowDropDownIcon />}
+                    <ColoredAccordionSummary expandIcon={forceExpanded ? undefined : <ArrowDropDownIcon />}
                         color={section?.sectionData?.color} isFirst={idx === 0} isLast={idx === fieldValuesBySection.length - 1}
                         aria-controls={`panel${idx + 1}-content`} id={`panel${idx + 1}-header`}>
                         {editingSectionId === section.id ? (
