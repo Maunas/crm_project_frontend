@@ -322,7 +322,6 @@ export const LeadSidebar = memo(({
                             showTitle={false}
                             showHeaders={false}
                             showSectionHeader
-                            activeFilterCount={filters.length}
                             formResetKey={formResetKey}
                         />
                     ) : (

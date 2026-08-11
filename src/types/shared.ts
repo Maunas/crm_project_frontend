@@ -158,7 +158,9 @@ export interface SearchResults {
 export interface LeadFilter {
   "field_id"?: number | string,
   "operator"?: string,
-  "value"?: string | number | boolean | number[]
+  // Los ids de NATIVE_ID/SELECTOR son public_uuid (string) desde Fase 3/4, no int -- ver
+  // backend/AGENTS.md §18. number[] queda por compatibilidad con filtros numéricos "in".
+  "value"?: string | number | boolean | number[] | (number | string)[]
 }
 
 export interface Dictionary {
