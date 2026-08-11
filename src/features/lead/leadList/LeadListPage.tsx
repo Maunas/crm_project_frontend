@@ -302,11 +302,15 @@ export const LeadListPage = () => {
     }, [selectCheckboxProps, campaignId, fetchLeadLoad, fetchPage, filters, headerParams])
 
     // Export / Import
+    // Bug real encontrado 2026-08-11: se mandaba solo campaignId, así que el Excel exportado
+    // siempre traía todos los leads de la campaña sin importar los filtros/búsqueda aplicados en
+    // el listado. Se mandan los mismos filtros y texto buscado que se están usando ahora (son
+    // mutuamente excluyentes, ver setFiltersAndHeaders/handleSearchChange).
     const handleExport = useCallback(async () => {
         if (!campaignId) return
-        try { await exportLeads(campaignId) }
+        try { await exportLeads(campaignId, filters, debouncedQuery) }
         catch (e) { console.error('Error al exportar los leads', e) }
-    }, [campaignId])
+    }, [campaignId, filters, debouncedQuery])
     const { fnWithLoading: exportLoad, loading: exporting } = useLoading(handleExport)
 
     const handleImport = useCallback(() => {
