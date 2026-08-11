@@ -2,20 +2,38 @@ import { Draggable } from '@hello-pangea/dnd';
 import { Card, Typography, Box, Avatar, Stack, Tooltip, alpha } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import GroupsIcon from '@mui/icons-material/Groups';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import CancelIcon from '@mui/icons-material/Cancel';
 import type { Lead } from 'src/types/leads';
 import { getLeadTitleArray, getLeadSubtitleArray } from '../../leadUtils';
 import CustomChip from 'shared/ui/details/CustomChip';
 import { useNavigate } from 'react-router-dom';
 import { UserAvatar } from 'shared/ui/details/UserAvatar';
+import { CATEGORY_CONFIG } from 'src/features/leadFlows/leadFlowServices/leadFlowUtils';
+import type { StateCategory } from 'src/types/leadFlow';
+import type { BoardCardFieldCode } from '../../boardCardFields';
+import { formatUserFullName } from 'src/utils/formatters';
 
 interface LeadBoardCardProps {
     lead: Lead;
     index: number;
     columnColor?: string;
     observerRef?: (node: HTMLDivElement | null) => void;
+    cardFields: BoardCardFieldCode[];
 }
 
-export const LeadBoardCard = ({ lead, index, columnColor, observerRef }: LeadBoardCardProps) => {
+// Mismo criterio que getCategoryIcon en LeadDetailsState.tsx (detalle del lead) -- se repite acá
+// en chico en vez de exportarlo, para no acoplar ese componente (pensado para la vista de
+// detalle) a la tarjeta del tablero.
+const getCategoryIcon = (category: StateCategory, sx?: object) => {
+    switch (category) {
+        case 'WON': return <EmojiEventsIcon sx={sx} />
+        case 'LOST': return <CancelIcon sx={sx} />
+        default: return null
+    }
+}
+
+export const LeadBoardCard = ({ lead, index, columnColor, observerRef, cardFields }: LeadBoardCardProps) => {
     const navigate = useNavigate();
     const titleArray = getLeadTitleArray(lead);
     //Antes esto tomaba solo el primer campo del título como "nombre" y dejaba el resto (ej.
@@ -23,7 +41,18 @@ export const LeadBoardCard = ({ lead, index, columnColor, observerRef }: LeadBoa
     //subtitle_order (Cargo/Empresa, configurable desde "Configurar título"), el título se muestra
     //completo y el subtítulo usa ese campo real en su lugar.
     const mainTitle = titleArray.join(" ") || "Sin nombre";
-    const subTitle = getLeadSubtitleArray(lead).join(" ");
+    // El título (mainTitle) siempre se muestra -- es el identificador principal de la tarjeta,
+    // no forma parte de la configuración de "Elementos de la Tarjeta". El resto sí es condicional.
+    const showSubtitle = cardFields.includes('subtitle');
+    const showStage = cardFields.includes('current_state');
+    const showTeam = cardFields.includes('team');
+    const showAssignedUser = cardFields.includes('assigned_user');
+    const showReference = cardFields.includes('reference');
+    const subTitle = showSubtitle ? getLeadSubtitleArray(lead).join(" ") : "";
+    // Tooltips: antes mostraban el rótulo genérico ("Equipo asignado" / "Usuario asignado") en
+    // vez del valor -- lo que interesa al pasar el mouse es a quién/qué equipo está asignado.
+    const teamName = lead.team?.name || "Equipo asignado";
+    const assignedUserName = formatUserFullName(lead.assigned_to_user) || lead.assigned_to_user?.email || "Usuario asignado";
 
     return (
         <Draggable draggableId={String(lead.id)} index={index}>
@@ -76,7 +105,7 @@ export const LeadBoardCard = ({ lead, index, columnColor, observerRef }: LeadBoa
                                     outlineOffset: '1px',
                                 } : undefined}
                             />
-                            <Box sx={{ overflow: 'hidden' }}>
+                            <Box sx={{ overflow: 'hidden', flexGrow: 1 }}>
                                 <Typography variant="subtitle2" noWrap sx={{ fontWeight: "bold" }}>
                                     {mainTitle}
                                 </Typography>
@@ -86,7 +115,25 @@ export const LeadBoardCard = ({ lead, index, columnColor, observerRef }: LeadBoa
                                     </Typography>
                                 )}
                             </Box>
+                            {showReference && lead.reference && (
+                                <CustomChip
+                                    label={lead.reference}
+                                    chipColor="secondary"
+                                    size="small"
+                                />
+                            )}
                         </Stack>
+
+                        {showStage && lead.current_state && (
+                            <Box>
+                                <CustomChip
+                                    chipColor={lead.current_state.color || CATEGORY_CONFIG[lead.current_state.category]?.color || "secondary"}
+                                    icon={getCategoryIcon(lead.current_state.category, { fontSize: "inherit" }) ?? undefined}
+                                    label={lead.current_state.name}
+                                    size="small"
+                                />
+                            </Box>
+                        )}
 
                         {lead.tags && lead.tags.length > 0 && (
                             <Stack direction="row" spacing={0.5} sx={{ flexWrap: "wrap" }} useFlexGap>
@@ -101,17 +148,17 @@ export const LeadBoardCard = ({ lead, index, columnColor, observerRef }: LeadBoa
                             </Stack>
                         )}
 
-                        {(lead.team_id || lead.assigned_to_user_id) && (
+                        {((showTeam && lead.team_id) || (showAssignedUser && lead.assigned_to_user_id)) && (
                             <Stack direction="row" sx={{ justifyContent: "flex-end", alignItems: "center" }} spacing={1}>
-                                {lead.team_id && (
-                                    <Tooltip title="Equipo asignado">
+                                {showTeam && lead.team_id && (
+                                    <Tooltip title={teamName}>
                                         <Avatar sx={{ width: 24, height: 24, bgcolor: 'secondary.main' }}>
                                             <GroupsIcon sx={{ fontSize: 16 }} />
                                         </Avatar>
                                     </Tooltip>
                                 )}
-                                {lead.assigned_to_user_id && (
-                                    <Tooltip title="Usuario asignado">
+                                {showAssignedUser && lead.assigned_to_user_id && (
+                                    <Tooltip title={assignedUserName}>
                                         <Avatar sx={{ width: 24, height: 24, bgcolor: 'primary.main' }}>
                                             <PersonIcon sx={{ fontSize: 16 }} />
                                         </Avatar>

@@ -3,8 +3,10 @@ import { DEFAULT_LEAD_PAGE_SIZE } from 'src/utils/constants'
 import { LeadListContent } from './LeadListContent'
 import { LeadSidebar } from './LeadSidebar'
 import LeadColumnSelector from '../leadListOptions/LeadColumnSelector'
+import LeadBoardCardFieldsSelector from '../leadListOptions/LeadBoardCardFieldsSelector'
 import { DisableBulkConfirmDialog } from 'src/components/ui/feedback/ConfirmationDialog'
 import { NATIVE_LEAD_FIELDS } from '../nativeLeadFields'
+import { DEFAULT_BOARD_CARD_FIELDS, type BoardCardFieldCode } from '../boardCardFields'
 import { getFieldSelectorGroupName } from 'src/features/leadFields/leadFieldUtils'
 import { LeadCampaignSelector } from '../leadListOptions/LeadListOptions'
 import PaginationComponent from 'shared/ui/lists/PaginationComponent'
@@ -35,7 +37,6 @@ import FileUploadIcon from '@mui/icons-material/FileUpload'
 import FileDownloadIcon from '@mui/icons-material/FileDownload'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
-import ViewListIcon from '@mui/icons-material/ViewList'
 import { Can } from 'src/components/auth/Can'
 
 const DEFAULT_N_OF_FIELDS = 6
@@ -195,6 +196,28 @@ export const LeadListPage = () => {
         window.localStorage.setItem('sel_lead_fields', JSON.stringify(stored))
     }, [selectedFieldIds, campaignId])
 
+    // Elementos de la tarjeta del tablero (Subtítulo/Etapa/Equipo/Asignado a) -- mismo patrón de
+    // persistencia que selectedFieldIds (columnas de la tabla) de arriba: localStorage por
+    // campaña, más adelante también en ui_config.card_fields de la vista guardada.
+    const [cardFields, setCardFields] = useState<BoardCardFieldCode[]>(DEFAULT_BOARD_CARD_FIELDS)
+    useEffect(() => {
+        if (!campaignId) return
+        const local = JSON.parse(window.localStorage.getItem('board_card_fields') ?? '{}')?.[campaignId]
+        setCardFields(local ?? DEFAULT_BOARD_CARD_FIELDS)
+    }, [campaignId])
+
+    const handleCardFields = useCallback((fields: BoardCardFieldCode[], closeModal = false) => {
+        setCardFields(fields)
+        if (closeModal) modalProps.handleClose()
+    }, [modalProps])
+
+    useEffect(() => {
+        if (!campaignId) return
+        const stored = JSON.parse(window.localStorage.getItem('board_card_fields') ?? '{}')
+        stored[campaignId] = cardFields
+        window.localStorage.setItem('board_card_fields', JSON.stringify(stored))
+    }, [cardFields, campaignId])
+
     // Presentation mode
     const [presentationMode, setPresentationMode] = useState('TABLE')
     const presentationProps = useMemo(() => ({
@@ -217,20 +240,20 @@ export const LeadListPage = () => {
             name, visibility, campaign_id: String(campaignId),
             filters: { filters },
             sort_config: { order_by: orderProps.orderBy, ascending: orderProps.ascending },
-            ui_config: { selected_ids: selectedFieldIds, fetch_params: fetchParams },
+            ui_config: { selected_ids: selectedFieldIds, fetch_params: fetchParams, card_fields: cardFields },
             view_type: presentationMode,
         })
-    }, [campaignId, fetchParams, filters, orderProps, presentationMode, selectedFieldIds])
+    }, [campaignId, fetchParams, filters, orderProps, presentationMode, selectedFieldIds, cardFields])
 
     const currentView = useMemo(() => {
         if (!campaignId) return
         return {
             filters: { filters },
             sort_config: { order_by: orderProps.orderBy, ascending: orderProps.ascending },
-            ui_config: { selected_ids: selectedFieldIds, fetch_params: fetchParams },
+            ui_config: { selected_ids: selectedFieldIds, fetch_params: fetchParams, card_fields: cardFields },
             view_type: presentationMode,
         } as LeadViewParams
-    }, [campaignId, fetchParams, filters, orderProps, presentationMode, selectedFieldIds])
+    }, [campaignId, fetchParams, filters, orderProps, presentationMode, selectedFieldIds, cardFields])
 
     const loadView = useCallback((view: LeadView) => {
         // view.campaign_id sigue siendo la FK embebida (id interno viejo) -- el uuid real está
@@ -249,6 +272,7 @@ export const LeadListPage = () => {
             setOrderList(view.sort_config.order_by, view.sort_config.ascending)
         }
         if (view?.ui_config?.selected_ids) setSelectedFieldIds(view.ui_config.selected_ids)
+        if (view?.ui_config?.card_fields) setCardFields(view.ui_config.card_fields as BoardCardFieldCode[])
         if (view?.view_type) setPresentationMode(view.view_type)
         fetchLeadLoad(fetchPage, newFilters, { ...newFetchParams, ...newOrderParams }, campaignId)
         setViewLoadKey(k => k + 1)
@@ -314,6 +338,7 @@ export const LeadListPage = () => {
                         setFiltersAndHeaders={setFiltersAndHeaders}
                         presentationProps={presentationProps}
                         viewUpdateProps={viewUpdateProps}
+                        modalProps={modalProps}
                         onToggle={() => setSidebarOpen(false)}
                         formResetKey={viewLoadKey}
                     />
@@ -411,15 +436,6 @@ export const LeadListPage = () => {
                                         </IconButton>
                                     </Tooltip>
                                 )}
-                                {areThereLeads && !!campaignId && (
-                                    <Tooltip title="Campos a Mostrar">
-                                        <IconButton size="small"
-                                            onClick={() => modalProps.handleOpen('columns_selector')}
-                                            sx={{ color: 'text.secondary' }}>
-                                            <ViewListIcon fontSize="small" />
-                                        </IconButton>
-                                    </Tooltip>
-                                )}
                                 {areThereLeads && (
                                     <Can permission="lead:create">
                                         <Button variant="contained" size="small"
@@ -452,6 +468,7 @@ export const LeadListPage = () => {
                                     leads={leads.items}
                                     leadFields={leadFields}
                                     selectedFieldIds={selectedFieldIds}
+                                    cardFields={cardFields}
                                     modalProps={modalProps}
                                     presentationMode={presentationMode}
                                     activeFilters={filters.length}
@@ -507,6 +524,20 @@ export const LeadListPage = () => {
                     handleClose={modalProps.handleClose}
                     showField="name"
                     getGroupName={getFieldSelectorGroupName}
+                />
+            </GenericModal>
+            <GenericModal
+                idModal="card_fields_selector"
+                {...modalProps}
+                buttonText="Elementos de la Tarjeta"
+                maxWidth="sm"
+                fullWidth
+                showButton={false}
+            >
+                <LeadBoardCardFieldsSelector
+                    cardFields={cardFields}
+                    handleCardFields={handleCardFields}
+                    handleClose={modalProps.handleClose}
                 />
             </GenericModal>
         </Box>

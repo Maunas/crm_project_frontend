@@ -10,11 +10,13 @@ import { Stack, Typography, ButtonGroup } from "@mui/material"
 import FilterAltOffIcon from '@mui/icons-material/FilterAltOff'
 import { LeadBoardPresentation } from "./board/LeadBoardPresentation"
 import { Can } from "src/components/auth/Can"
+import type { BoardCardFieldCode } from "../boardCardFields"
 
 interface LeadListContentProps {
     leads: Lead[],
     leadFields: LeadField[],
     selectedFieldIds: number[],
+    cardFields: BoardCardFieldCode[],
     activeFilters: number,
     modalProps: {
         openModalId?: string;
@@ -47,7 +49,7 @@ interface LeadListContentProps {
 /**
  * Wrapper del contenido, realiza la lógica de selectedColumns, y elige el modo de vista deseado.
  */
-export const LeadListContent = memo(({ leads, leadFields, selectedFieldIds, activeFilters = 0, modalProps, orderProps, handleSelectedFieldIds,
+export const LeadListContent = memo(({ leads, leadFields, selectedFieldIds, cardFields, activeFilters = 0, modalProps, orderProps, handleSelectedFieldIds,
     selectCheckboxProps, presentationMode, workspaceId, campaignId, filters, searchQuery, onClearFilters }: LeadListContentProps) => {
 
     //Filtra los objetos LeadField para seguir el orden del arreglo de ids.
@@ -67,6 +69,7 @@ export const LeadListContent = memo(({ leads, leadFields, selectedFieldIds, acti
             campaignId={campaignId}
             activeFilters={filters}
             searchQuery={searchQuery}
+            cardFields={cardFields}
         />
     }
 

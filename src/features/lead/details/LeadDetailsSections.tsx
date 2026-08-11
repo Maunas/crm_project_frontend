@@ -230,8 +230,15 @@ export const LeadFieldContent = (props: LeadFieldProps) => {
             //para cargar." de más abajo, igual que BOOL/DATE/FILE.
             case "STRING": return value ? <StringValue value={`${value}`} idModal={`${fieldValue?.field_id}-${fieldValue?.id}`}
                 modalProps={modalProps} subtype={subtypeCode ?? undefined} /> : undefined
-            case "NUMBER": return <NumberValue value={typeof value === "string" ? Number(value) : undefined}
-                subtype={subtypeCode!} ratingCounter />
+            // Bug real encontrado 2026-08-11: antes esto siempre devolvía un elemento <NumberValue/>
+            // (nunca undefined), a diferencia de STRING/BOOL/DATE de arriba/abajo -- así que el
+            // placeholder "Sin valor. Clic para cargar." nunca aparecía para un NUMBER vacío
+            // (ej. Calificación Estrellas sin cargar), y sin nada visible tampoco quedaba claro
+            // dónde hacer clic para editarlo.
+            case "NUMBER": return (value !== null && value !== undefined && value !== "")
+                ? <NumberValue value={typeof value === "string" ? Number(value) : undefined}
+                    subtype={subtypeCode!} ratingCounter />
+                : undefined
 
             //A diferencia de StringValue/NumberValue (que ya devuelven nada si no hay valor cargado),
             //BoolValue/DateValue/ModalValue no se autoguardan contra un valor vacío: sin este chequeo,

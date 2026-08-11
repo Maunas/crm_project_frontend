@@ -404,14 +404,22 @@ const LeadMetaInfo = ({ lead, updateLeadInfo }: { lead: LeadDetailed, updateLead
 
     const [assigning, setAssigning] = useState(false)
 
-    const handleAssign = useCallback((body: Omit<BulkAssignRequest, "lead_ids">, merge: (updated: Lead) => Partial<LeadDetailed>) => {
+    const handleAssign = useCallback((body: Omit<BulkAssignRequest, "lead_ids">, merge: (updated: Lead) => Partial<LeadDetailed>, successMsg: string) => {
         setAssigning(true)
         bulkAssignLeads({ lead_ids: [lead.id], ...body })
             .then(res => {
                 const updated = res[0]
                 //El timeline del lead registra un evento LEAD_REASSIGNED (ver lead_service.bulk_assign),
                 //así que recargamos la pestaña de Auditoría igual que al cambiar etapa/estado.
-                if (updated) updateLeadInfo({ ...lead, ...merge(updated) }, true)
+                //Bug real encontrado 2026-08-11: merge(updated) solo copiaba los campos puntuales
+                //(assigned_to_user_id/team_id), descartando updated_at/updater de la respuesta --
+                //"Modificado por" se quedaba con el valor viejo hasta refrescar la página (mismo
+                //patrón ya arreglado en getUpdatedLead para la edición de campos custom). Tampoco
+                //había ningún toast de éxito acá, a diferencia del resto de las ediciones del detalle.
+                if (updated) {
+                    updateLeadInfo({ ...lead, ...merge(updated), updated_at: updated.updated_at, updater: updated.updater }, true)
+                    showToast(successMsg)
+                }
             })
             .catch(e => showCommonErrorToast(e))
             .finally(() => setAssigning(false))
@@ -422,6 +430,7 @@ const LeadMetaInfo = ({ lead, updateLeadInfo }: { lead: LeadDetailed, updateLead
         handleAssign(
             option.id === null ? { clear_user: true } : { target_user_id: option.id },
             updated => ({ assigned_to_user_id: updated.assigned_to_user_id, assigned_to_user: updated.assigned_to_user }),
+            "Usuario asignado actualizado con éxito.",
         )
     }
 
@@ -430,6 +439,7 @@ const LeadMetaInfo = ({ lead, updateLeadInfo }: { lead: LeadDetailed, updateLead
         handleAssign(
             option.id === null ? { clear_team: true } : { target_team_id: option.id },
             updated => ({ team_id: updated.team_id, team: updated.team }),
+            "Equipo asignado actualizado con éxito.",
         )
     }
 
