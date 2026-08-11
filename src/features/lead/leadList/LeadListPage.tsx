@@ -34,9 +34,9 @@ import SearchIcon from '@mui/icons-material/Search'
 import FileUploadIcon from '@mui/icons-material/FileUpload'
 import FileDownloadIcon from '@mui/icons-material/FileDownload'
 import DeleteIcon from '@mui/icons-material/Delete'
-import AddIcon from '@mui/icons-material/Add'
 import ViewListIcon from '@mui/icons-material/ViewList'
 import { Can } from 'src/components/auth/Can'
+import { ListAddButton } from 'src/components/ui/buttons/ExpandingButton'
 
 const DEFAULT_N_OF_FIELDS = 6
 // MUI AppBar toolbar height (desktop) = 64px; m: -3 cancels parent p: 3 entirely
@@ -97,8 +97,8 @@ export const LeadListPage = () => {
     }, [leads, headerParams, filters, setListContext])
 
     // Campaign / Workspace
-    const [workspaceId, setWorkspaceId] = useState<string | number | null>(params?.get('workspace') ?? null)
-    const [campaignId, setCampaignId] = useState<string | number | null>(params?.get('campaign') ?? null)
+    const [workspaceId, setWorkspaceId] = useState<string | null>(params?.get('workspace') ?? null)
+    const [campaignId, setCampaignId] = useState<string | null>(params?.get('campaign') ?? null)
 
     useEffect(() => {
         setParams(prev => {
@@ -109,8 +109,8 @@ export const LeadListPage = () => {
         }, { replace: true })
     }, [campaignId, workspaceId, setParams])
 
-    const handleWorkspaceChange = useCallback((id: number | string | null) => setWorkspaceId(id), [])
-    const handleCampaignChange = useCallback((id: number | string | null) => setCampaignId(id), [])
+    const handleWorkspaceChange = useCallback((id: string | null) => setWorkspaceId(id), [])
+    const handleCampaignChange = useCallback((id: string | null) => setCampaignId(id), [])
     const campaignSelectorProps = useMemo(() => ({
         workspaceId, campaignId, handleWorkspaceChange, handleCampaignChange
     }), [workspaceId, campaignId, handleWorkspaceChange, handleCampaignChange])
@@ -173,14 +173,14 @@ export const LeadListPage = () => {
             .then(r => setLeadFields([...r.items, ...NATIVE_LEAD_FIELDS]))
     }, [campaignId])
 
-    const [selectedFieldIds, setSelectedFieldIds] = useState<number[]>([])
+    const [selectedFieldIds, setSelectedFieldIds] = useState<string[]>([])
     useEffect(() => {
         if (!leadFields.length || !campaignId) return
         const local = JSON.parse(window.localStorage.getItem('sel_lead_fields') ?? '{}')?.[campaignId]
         setSelectedFieldIds(local ?? leadFields.slice(0, DEFAULT_N_OF_FIELDS).map(f => f.id))
     }, [leadFields, campaignId])
 
-    const handleSelectedFieldIds = useCallback((ids: number[], closeModal = false) => {
+    const handleSelectedFieldIds = useCallback((ids: string[], closeModal = false) => {
         setSelectedFieldIds(ids)
         if (closeModal) modalProps.handleClose()
     }, [modalProps])
@@ -210,6 +210,7 @@ export const LeadListPage = () => {
             // team_id de existingView es el id interno viejo (FK embebida sin migrar), no el
             // uuid que ahora espera LeadViewPost. Se omite del payload para no reenviarlo --
             // el backend lo deja sin cambios si no viene en el body (exclude_unset).
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { team_id: _existingTeamId, ...restExistingView } = existingView
             return updateView({ ...restExistingView, name }, existingView.id)
         }
@@ -422,12 +423,10 @@ export const LeadListPage = () => {
                                 )}
                                 {areThereLeads && (
                                     <Can permission="lead:create">
-                                        <Button variant="contained" size="small"
-                                            component={RouterLink}
-                                            to={`/leads/new?workspace=${workspaceId}&campaign=${campaignId}`}
-                                            startIcon={<AddIcon sx={{ fontSize: '16px !important' }} />}>
+                                        <ListAddButton variant="contained" size="small" actionType="CREATE" variableWidth
+                                            component={RouterLink} to={`/leads/new?workspace=${workspaceId}&campaign=${campaignId}`}>
                                             Nuevo Lead
-                                        </Button>
+                                        </ListAddButton>
                                     </Can>
                                 )}
                             </>
