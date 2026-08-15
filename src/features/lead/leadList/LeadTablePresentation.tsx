@@ -11,6 +11,7 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew"
 import type { Palette } from "@mui/material/styles"
 import { getTypeIconAndColor } from "../../leadFields/LeadFieldTypeIcon"
 import { formatUserFullName } from "src/utils/formatters"
+import ReferenceChip from "shared/ui/details/ReferenceChip"
 
 // Tipos semánticos para los campos nativos (id < 0)
 const NATIVE_KEY_TYPES: Record<string, { type: string; subtype?: string }> = {
@@ -234,7 +235,7 @@ export const LeadTablePresentation = memo(({ leads, selectedColumns, modalProps,
                                     </Tooltip>
                                 </TableCell>
                                 <TableCell align="left" sx={{ whiteSpace: 'nowrap' }}>
-                                    {lead.reference ?? '—'}
+                                    {lead.reference ? <ReferenceChip reference={lead.reference} /> : '—'}
                                 </TableCell>
                                 <LeadTableBodyRow key={lead.id} lead={lead} modalProps={modalProps} selectedColumns={selectedColumns} />
                             </SelectableTableRow>

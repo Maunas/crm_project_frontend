@@ -131,6 +131,11 @@ export const LeadFieldSections = ({ lead, updateLeadInfo, forceExpanded = false 
                                     }
                                     if (e.key === "Escape") {
                                         e.preventDefault()
+                                        // stopPropagation: sin esto, Escape también burbujeaba hasta el
+                                        // listener global que cierra LeadDetailsSidebar (el panel embebido
+                                        // del listado de leads) -- cancelar el renombre de una sección no
+                                        // debería cerrar todo el panel de paso.
+                                        e.stopPropagation()
                                         cancelEditingSectionName()
                                     }
                                 }}

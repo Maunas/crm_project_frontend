@@ -8,6 +8,7 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import type { Lead } from 'src/types/leads';
 import { getLeadTitleArray, getLeadSubtitleArray } from '../../leadUtils';
 import CustomChip from 'shared/ui/details/CustomChip';
+import ReferenceChip from 'shared/ui/details/ReferenceChip';
 import { useNavigate } from 'react-router-dom';
 import { UserAvatar } from 'shared/ui/details/UserAvatar';
 import { CATEGORY_CONFIG } from 'src/features/leadFlows/leadFlowServices/leadFlowUtils';
@@ -103,6 +104,24 @@ export const LeadBoardCard = ({ lead, index, columnColor, observerRef, cardField
                     style={provided.draggableProps.style}
                 >
                     <Stack spacing={1.5}>
+                        {/* Etiquetas arriba de todo (como en Trello) -- pedido del usuario para
+                            que sean lo primero que se ve y no compitan por espacio con el título.
+                            `squared` las distingue del resto de los chips de la tarjeta (etapa,
+                            referencia), que mantienen el redondeo original. */}
+                        {lead.tags && lead.tags.length > 0 && (
+                            <Stack direction="row" spacing={0.5} sx={{ flexWrap: "wrap" }} useFlexGap>
+                                {lead.tags.map(tag => (
+                                    <CustomChip
+                                        key={tag.id}
+                                        label={tag.name}
+                                        chipColor={tag.color}
+                                        size="small"
+                                        squared
+                                    />
+                                ))}
+                            </Stack>
+                        )}
+
                         <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
                             <UserAvatar
                                 name={mainTitle}
@@ -114,22 +133,22 @@ export const LeadBoardCard = ({ lead, index, columnColor, observerRef, cardField
                                 } : undefined}
                             />
                             <Box sx={{ overflow: 'hidden', flexGrow: 1 }}>
-                                <Typography variant="subtitle2" noWrap sx={{ fontWeight: "bold" }}>
-                                    {mainTitle}
-                                </Typography>
-                                {subTitle && (
-                                    <Typography variant="caption" color="text.secondary" noWrap sx={{ display: "block" }}>
-                                        {subTitle}
+                                {/* Tooltip solo en título/subtítulo -- son los únicos datos de la
+                                    tarjeta que hoy se truncan (noWrap); el resto de los chips no
+                                    tienen ancho máximo fijado, así que no se cortan. */}
+                                <Tooltip title={mainTitle}>
+                                    <Typography variant="subtitle2" noWrap sx={{ fontWeight: "bold" }}>
+                                        {mainTitle}
                                     </Typography>
+                                </Tooltip>
+                                {subTitle && (
+                                    <Tooltip title={subTitle}>
+                                        <Typography variant="caption" color="text.secondary" noWrap sx={{ display: "block" }}>
+                                            {subTitle}
+                                        </Typography>
+                                    </Tooltip>
                                 )}
                             </Box>
-                            {showReference && lead.reference && (
-                                <CustomChip
-                                    label={lead.reference}
-                                    chipColor="secondary"
-                                    size="small"
-                                />
-                            )}
                             <Tooltip title="Ver detalle completo">
                                 <IconButton size="small" onClick={e => { e.stopPropagation(); navigate(`/leads/${lead.id}`) }}>
                                     <OpenInNewIcon fontSize="small" />
@@ -148,35 +167,33 @@ export const LeadBoardCard = ({ lead, index, columnColor, observerRef, cardField
                             </Box>
                         )}
 
-                        {lead.tags && lead.tags.length > 0 && (
-                            <Stack direction="row" spacing={0.5} sx={{ flexWrap: "wrap" }} useFlexGap>
-                                {lead.tags.map(tag => (
-                                    <CustomChip
-                                        key={tag.id}
-                                        label={tag.name}
-                                        chipColor={tag.color}
-                                        size="small"
-                                    />
-                                ))}
-                            </Stack>
-                        )}
-
-                        {((showTeam && lead.team_id) || (showAssignedUser && lead.assigned_to_user_id)) && (
-                            <Stack direction="row" sx={{ justifyContent: "flex-end", alignItems: "center" }} spacing={1}>
-                                {showTeam && lead.team_id && (
-                                    <Tooltip title={teamName}>
-                                        <Avatar sx={{ width: 24, height: 24, bgcolor: 'secondary.main' }}>
-                                            <GroupsIcon sx={{ fontSize: 16 }} />
-                                        </Avatar>
-                                    </Tooltip>
-                                )}
-                                {showAssignedUser && lead.assigned_to_user_id && (
-                                    <Tooltip title={assignedUserName}>
-                                        <Avatar sx={{ width: 24, height: 24, bgcolor: 'primary.main' }}>
-                                            <PersonIcon sx={{ fontSize: 16 }} />
-                                        </Avatar>
-                                    </Tooltip>
-                                )}
+                        {((showReference && lead.reference) || (showTeam && lead.team_id) || (showAssignedUser && lead.assigned_to_user_id)) && (
+                            <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center" }} spacing={1}>
+                                {/* Referencia siempre en esta esquina (izquierda), aunque no haya
+                                    equipo/usuario asignado -- por eso el Box (no un Fragment): con
+                                    justifyContent "space-between" hace falta un segundo elemento
+                                    para que el grupo de la derecha no termine pegado a la izquierda. */}
+                                <Box>
+                                    {showReference && lead.reference && (
+                                        <ReferenceChip reference={lead.reference} />
+                                    )}
+                                </Box>
+                                <Stack direction="row" sx={{ alignItems: "center" }} spacing={1}>
+                                    {showTeam && lead.team_id && (
+                                        <Tooltip title={teamName}>
+                                            <Avatar sx={{ width: 24, height: 24, bgcolor: 'secondary.main' }}>
+                                                <GroupsIcon sx={{ fontSize: 16 }} />
+                                            </Avatar>
+                                        </Tooltip>
+                                    )}
+                                    {showAssignedUser && lead.assigned_to_user_id && (
+                                        <Tooltip title={assignedUserName}>
+                                            <Avatar sx={{ width: 24, height: 24, bgcolor: 'primary.main' }}>
+                                                <PersonIcon sx={{ fontSize: 16 }} />
+                                            </Avatar>
+                                        </Tooltip>
+                                    )}
+                                </Stack>
                             </Stack>
                         )}
                     </Stack>

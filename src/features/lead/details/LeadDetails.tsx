@@ -6,6 +6,7 @@ import { DisableConfirmDialog } from "src/components/ui/feedback/ConfirmationDia
 import LoadingScreenWrapper from "src/components/ui/feedback/LoadingScreen.tsx"
 import GenericPaper from "shared/layout/container/GenericPaper"
 import { ListActionMenu, type ListItemAction } from "shared/ui/lists/CustomListItem"
+import ReferenceChip from "shared/ui/details/ReferenceChip"
 import { useLoading } from "src/hooks/useLoading.ts"
 import type { Lead, LeadDetailed, LeadTeam } from "src/types/leads.ts"
 import type { Campaign } from "src/types/campaigns.ts"
@@ -253,10 +254,6 @@ interface LeadInfoProps {
     forceExpandSections?: boolean
 }
 
-//Mismo estilo que SECTION_LABEL_SX de LeadDetailsState.tsx (Estado/Etapa) y LeadTagsMenu.tsx
-//(Etiquetas), para que el título "ID" quede visualmente igual a esos otros títulos de sección.
-const ID_LABEL_SX = { fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: ".04em" }
-
 export const LeadInfo = ({ lead, leadTitle, leadSubtitle, handleActive, updateLeadInfo, onOpenTitleConfig, forceExpandSections }: LeadInfoProps) => {
 
     const titleText = (leadTitle && leadTitle?.length > 0) ? leadTitle?.join(" ") : "Título no encontrado"
@@ -321,14 +318,7 @@ export const LeadInfo = ({ lead, leadTitle, leadSubtitle, handleActive, updateLe
 
 
                     {lead.reference &&
-                        <Stack direction="row" spacing={1.25} sx={{ alignItems: "center" }}>
-                            <Typography variant="caption" color="text.secondary" sx={ID_LABEL_SX}>
-                                ID
-                            </Typography>
-                            <Typography variant="caption" color="text.primary" sx={{ fontWeight: 600 }}>
-                                {lead.reference}
-                            </Typography>
-                        </Stack>}
+                        <ReferenceChip reference={lead.reference} />}
                 </Stack>
             </GenericPaper>
             <LeadFieldSections lead={lead} updateLeadInfo={updateLeadInfo} forceExpanded={forceExpandSections} />
