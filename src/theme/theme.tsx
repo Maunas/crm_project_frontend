@@ -18,9 +18,7 @@ const theme = createTheme({
   // Tipografía
   typography: {
     fontFamily: [
-      'Roboto',
-      '"Helvetica Neue"',
-      'Arial',
+      'Inter',
       'sans-serif',
     ].join(','),
     h1: {
@@ -64,7 +62,8 @@ const theme = createTheme({
     MuiCssBaseline: {
       styleOverrides: {
         '#root': {
-          ...textTheme.root
+          ...textTheme.root,
+          fontOpticalSizing: "auto",
         },
       },
     },
