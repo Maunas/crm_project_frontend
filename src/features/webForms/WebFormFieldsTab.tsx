@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
-import { Stack, Typography, Box, IconButton } from '@mui/material';
+import { Stack, Typography, Box, IconButton, MenuItem, TextField } from '@mui/material';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
-import { useFieldArray, useWatch, type Control, type UseFormRegister } from 'react-hook-form';
+import { Controller, useFieldArray, useWatch, type Control, type UseFormRegister } from 'react-hook-form';
 import type { WebFormPost } from 'src/types/webForms';
 import type { LeadField } from 'src/types/leadFields';
 import GenericPaper from 'src/components/layout/container/GenericPaper';
@@ -13,15 +13,134 @@ import { ControlledFieldSelector } from 'src/components/ui/forms/FieldSelector';
 import { ChipTooltip } from 'src/components/ui/details/ChipTooltip';
 import { CustomAlert } from 'src/components/ui/feedback/CustomAlert';
 import CustomChip from 'src/components/ui/details/CustomChip';
+import type { WebFormFieldOptionLite } from './WebFormFieldRenderer';
 
 interface WebFormFieldsTabProps {
   control: Control<WebFormPost>;
   register: UseFormRegister<WebFormPost>;
   fields: LeadField[];
+  // Opciones de nomenclador por campo (clave = LeadField.id) -- si el campo elegido en esta fila
+  // tiene nomenclador, "valor oculto" se muestra como un <Select> con esas opciones en vez de
+  // texto libre (evita que se cargue un valor que no exista en la lista real).
+  fieldOptionsMap?: Record<string, WebFormFieldOptionLite[]>;
   readOnly: boolean;
 }
 
-export const WebFormFieldsTab = ({ control, register, fields, readOnly }: WebFormFieldsTabProps) => {
+interface WebFormFieldRowProps {
+  control: Control<WebFormPost>;
+  register: UseFormRegister<WebFormPost>;
+  index: number;
+  selectableFields: LeadField[];
+  fieldOptionsMap: Record<string, WebFormFieldOptionLite[]>;
+  readOnly: boolean;
+  isFirst: boolean;
+  isLast: boolean;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+  onRemove: () => void;
+}
+
+// Fila individual, separada del map principal porque necesita su propio `useWatch` (para
+// reaccionar al campo elegido y decidir si "valor oculto" es texto libre o un <Select> de
+// nomenclador) -- los hooks no se pueden llamar dentro de un callback de `.map()`.
+const WebFormFieldRow = ({
+  control, register, index, selectableFields, fieldOptionsMap, readOnly,
+  isFirst, isLast, onMoveUp, onMoveDown, onRemove,
+}: WebFormFieldRowProps) => {
+  const selectedLeadFieldId = useWatch({ control, name: `fields.${index}.lead_field_id` });
+  const options = selectedLeadFieldId ? fieldOptionsMap[selectedLeadFieldId] ?? [] : [];
+  const hasNomenclatorOptions = options.length > 0;
+
+  return (
+    <GenericPaper elevation={0} sx={{ p: 2, border: '1px solid', borderColor: 'divider' }}>
+      <Stack direction="row" spacing={1.5} useFlexGap sx={{ alignItems: 'flex-start', flexWrap: 'wrap' }}>
+        <CustomChip label={`${index + 1}`} size="small" sx={{ fontWeight: 700, mt: 1 }} />
+
+        <Stack spacing={1.5} sx={{ flexGrow: 1, minWidth: '16rem' }}>
+          <Box sx={{ maxWidth: '24rem' }}>
+            <ControlledFieldSelector
+              control={control}
+              name={`fields.${index}.lead_field_id`}
+              fields={selectableFields}
+              label="Campo de la campaña"
+              disabled={readOnly}
+              showTypeCaption
+            />
+          </Box>
+
+          <ChipTooltip title="Reemplaza el nombre del campo tal como lo ve el visitante. Si lo dejás vacío, se usa el nombre del campo configurado en el sistema.">
+            <Box sx={{ maxWidth: '24rem' }}>
+              <RegisteredTextInput
+                register={register}
+                name={`fields.${index}.custom_label`}
+                label="Etiqueta personalizada (opcional)"
+                disabled={readOnly}
+                size="small"
+              />
+            </Box>
+          </ChipTooltip>
+
+          <Stack direction="row" spacing={1.5} useFlexGap sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
+            <ControlledCheckbox
+              control={control}
+              name={`fields.${index}.is_required`}
+              label="Obligatorio en este formulario"
+              title=""
+            />
+            <ChipTooltip title="Si se completa, el campo queda oculto para el visitante y siempre se guarda con este valor fijo.">
+              <Box sx={{ minWidth: '14rem' }}>
+                {hasNomenclatorOptions ? (
+                  <Controller
+                    control={control}
+                    name={`fields.${index}.hidden_value`}
+                    render={({ field }) => (
+                      <TextField
+                        select
+                        fullWidth
+                        size="small"
+                        label="Valor oculto (opcional)"
+                        disabled={readOnly}
+                        value={field.value ?? ''}
+                        onChange={e => field.onChange(e.target.value || null)}
+                      >
+                        <MenuItem value="">-- Sin valor fijo --</MenuItem>
+                        {options.map(opt => (
+                          <MenuItem key={opt.id} value={opt.id}>{opt.value}</MenuItem>
+                        ))}
+                      </TextField>
+                    )}
+                  />
+                ) : (
+                  <RegisteredTextInput
+                    register={register}
+                    name={`fields.${index}.hidden_value`}
+                    label="Valor oculto (opcional)"
+                    disabled={readOnly}
+                    size="small"
+                  />
+                )}
+              </Box>
+            </ChipTooltip>
+          </Stack>
+        </Stack>
+
+        {!readOnly && (
+          <Stack spacing={0} sx={{ alignItems: 'center' }}>
+            <IconButton size="small" disabled={isFirst} onClick={onMoveUp} aria-label="Mover arriba">
+              <ArrowUpwardIcon fontSize="small" />
+            </IconButton>
+            <IconButton size="small" disabled={isLast} onClick={onMoveDown} aria-label="Mover abajo">
+              <ArrowDownwardIcon fontSize="small" />
+            </IconButton>
+            <CommonIconButton actionType="DISABLE" size="small" color="error" onClick={onRemove} title="Quitar campo" />
+          </Stack>
+        )}
+      </Stack>
+    </GenericPaper>
+  );
+};
+
+export const WebFormFieldsTab = ({ control, register, fields, fieldOptionsMap = {}, readOnly }: WebFormFieldsTabProps) => {
   // Los campos nativos (Estado, Etapa, Usuario Creador, etc.) tienen id numérico negativo y NO se
   // pueden agregar a un formulario web -- _validate_form_fields (backend) los rechaza porque no
   // son filas reales de LeadField. `fields` acá ya viene filtrado de CALCULATED/LEAD/FILE desde
@@ -66,81 +185,20 @@ export const WebFormFieldsTab = ({ control, register, fields, readOnly }: WebFor
 
       <Stack spacing={1.5}>
         {rows.map((row, index) => (
-          <GenericPaper key={row.idField} elevation={0} sx={{ p: 2, border: '1px solid', borderColor: 'divider' }}>
-            <Stack direction="row" spacing={1.5} useFlexGap sx={{ alignItems: 'flex-start', flexWrap: 'wrap' }}>
-              <CustomChip label={`${index + 1}`} size="small" sx={{ fontWeight: 700, mt: 1 }} />
-
-              <Stack spacing={1.5} sx={{ flexGrow: 1, minWidth: '16rem' }}>
-                <Box sx={{ maxWidth: '24rem' }}>
-                  <ControlledFieldSelector
-                    control={control}
-                    name={`fields.${index}.lead_field_id`}
-                    fields={selectableFields}
-                    label="Campo de la campaña"
-                    disabled={readOnly}
-                    showTypeCaption
-                  />
-                </Box>
-
-                <Stack direction="row" spacing={1.5} useFlexGap sx={{ flexWrap: 'wrap' }}>
-                  <ChipTooltip title="Reemplaza el nombre del campo tal como lo ve el visitante. Si lo dejás vacío, se usa el nombre del campo configurado en el sistema.">
-                    <Box sx={{ flexGrow: 1, minWidth: '12rem' }}>
-                      <RegisteredTextInput
-                        register={register}
-                        name={`fields.${index}.custom_label`}
-                        label="Etiqueta personalizada (opcional)"
-                        disabled={readOnly}
-                        size="small"
-                      />
-                    </Box>
-                  </ChipTooltip>
-                  <ChipTooltip title="Texto de ejemplo que aparece dentro del campo cuando está vacío, a modo de guía para el visitante. No se guarda como respuesta.">
-                    <Box sx={{ flexGrow: 1, minWidth: '12rem' }}>
-                      <RegisteredTextInput
-                        register={register}
-                        name={`fields.${index}.custom_placeholder`}
-                        label="Placeholder (opcional)"
-                        disabled={readOnly}
-                        size="small"
-                      />
-                    </Box>
-                  </ChipTooltip>
-                </Stack>
-
-                <Stack direction="row" spacing={1.5} useFlexGap sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
-                  <ControlledCheckbox
-                    control={control}
-                    name={`fields.${index}.is_required`}
-                    label="Obligatorio en este formulario"
-                    title=""
-                  />
-                  <ChipTooltip title="Si se completa, el campo queda oculto para el visitante y siempre se guarda con este valor fijo.">
-                    <Box sx={{ minWidth: '14rem' }}>
-                      <RegisteredTextInput
-                        register={register}
-                        name={`fields.${index}.hidden_value`}
-                        label="Valor oculto (opcional)"
-                        disabled={readOnly}
-                        size="small"
-                      />
-                    </Box>
-                  </ChipTooltip>
-                </Stack>
-              </Stack>
-
-              {!readOnly && (
-                <Stack spacing={0} sx={{ alignItems: 'center' }}>
-                  <IconButton size="small" disabled={index === 0} onClick={() => move(index, index - 1)} aria-label="Mover arriba">
-                    <ArrowUpwardIcon fontSize="small" />
-                  </IconButton>
-                  <IconButton size="small" disabled={index === rows.length - 1} onClick={() => move(index, index + 1)} aria-label="Mover abajo">
-                    <ArrowDownwardIcon fontSize="small" />
-                  </IconButton>
-                  <CommonIconButton actionType="DISABLE" size="small" color="error" onClick={() => remove(index)} title="Quitar campo" />
-                </Stack>
-              )}
-            </Stack>
-          </GenericPaper>
+          <WebFormFieldRow
+            key={row.idField}
+            control={control}
+            register={register}
+            index={index}
+            selectableFields={selectableFields}
+            fieldOptionsMap={fieldOptionsMap}
+            readOnly={readOnly}
+            isFirst={index === 0}
+            isLast={index === rows.length - 1}
+            onMoveUp={() => move(index, index - 1)}
+            onMoveDown={() => move(index, index + 1)}
+            onRemove={() => remove(index)}
+          />
         ))}
       </Stack>
 

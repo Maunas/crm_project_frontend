@@ -1,19 +1,21 @@
 import { Stack, Grid, Autocomplete, TextField, Typography } from '@mui/material';
-import { Controller, type Control, type UseFormRegister } from 'react-hook-form';
+import { Controller, type Control, type UseFormRegister, type UseFormSetValue } from 'react-hook-form';
 import type { WebFormPost } from 'src/types/webForms';
 import { RegisteredTextInput, ControlledCheckbox, ControlledSwitch } from 'src/components/ui/forms/CustomInputs';
 import GenericPaper from 'src/components/layout/container/GenericPaper';
+import { WebFormImageField } from './WebFormImageField';
 
 interface WebFormGeneralTabProps {
   register: UseFormRegister<WebFormPost>;
   control: Control<WebFormPost>;
+  setValue: UseFormSetValue<WebFormPost>;
   readOnly: boolean;
 }
 
 // Nota: al igual que en el resto del CRM (ver AutomationForm.tsx, priority sin disabled),
 // ControlledCheckbox/ControlledSwitch no bloquean visualmente el toggle en solo-lectura --
 // la protección real es que el botón "Guardar" no está disponible en ese modo.
-export const WebFormGeneralTab = ({ register, control, readOnly }: WebFormGeneralTabProps) => {
+export const WebFormGeneralTab = ({ register, control, setValue, readOnly }: WebFormGeneralTabProps) => {
   return (
     <Stack spacing={3}>
       <GenericPaper sx={{ p: 3 }}>
@@ -44,6 +46,9 @@ export const WebFormGeneralTab = ({ register, control, readOnly }: WebFormGenera
         <Stack spacing={2}>
           <Typography variant="h4">Contenido visible</Typography>
           <Grid container spacing={2}>
+            <Grid size={12}>
+              <WebFormImageField control={control} setValue={setValue} readOnly={readOnly} />
+            </Grid>
             <Grid size={12}>
               <RegisteredTextInput
                 register={register}

@@ -9,6 +9,7 @@ import { getErrorMessage } from 'src/lib/axios';
 import type { SimpleErrorBody } from 'src/types/shared';
 import { isBoolType } from './webFormFieldTypeUtils';
 import { WebFormFieldRenderer } from './WebFormFieldRenderer';
+import { compileCustomCss } from './webFormCssTargets';
 
 // Mismo nombre de campo que el backend (HONEYPOT_FIELD_NAME en web_form_public_controller.py) --
 // se manda siempre vacío por un visitante real; si un bot lo completa, el backend "finge éxito"
@@ -56,6 +57,9 @@ export const PublicWebFormPage = () => {
     () => (form?.fields ?? []).filter(f => f.hidden_value == null).sort((a, b) => a.order - b.order),
     [form]
   );
+
+  const hasRequiredFields = visibleFields.some(f => f.is_required);
+  const compiledCustomCss = useMemo(() => compileCustomCss(theme.custom_css_rules), [theme.custom_css_rules]);
 
   const handleChange = (fieldId: string, value: FieldValue) => {
     setValues(prev => ({ ...prev, [fieldId]: value }));
@@ -106,96 +110,121 @@ export const PublicWebFormPage = () => {
   }
 
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'flex-start',
-        p: { xs: 2, sm: 4 },
-        backgroundColor: theme.background_color || DEFAULT_THEME_CONFIG.background_color,
-        color: theme.text_color || DEFAULT_THEME_CONFIG.text_color,
-        fontFamily: theme.font_family || DEFAULT_THEME_CONFIG.font_family,
-      }}
-    >
-      <Box sx={{ width: '100%', maxWidth: 560 }}>
-        {submitted ? (
-          <Stack spacing={2} sx={{ alignItems: 'center', textAlign: 'center', py: 6 }}>
-            <CheckCircleIcon sx={{ fontSize: 56, color: theme.primary_color || DEFAULT_THEME_CONFIG.primary_color }} />
-            <Typography variant="h5" sx={{ color: 'inherit', fontFamily: 'inherit' }}>
-              {form.success_message || 'Formulario enviado exitosamente.'}
-            </Typography>
-          </Stack>
-        ) : (
-          <form onSubmit={handleSubmit} noValidate>
-            <Stack spacing={3}>
-              <Stack spacing={1}>
-                {form.title && (
-                  <Typography
-                    variant="h1"
-                    component="h1"
-                    sx={{ color: 'inherit', fontFamily: 'inherit', textAlign: 'center', fontWeight: 700 }}
-                  >
-                    {form.title}
-                  </Typography>
-                )}
-                {form.description && (
-                  <Typography variant="body1" sx={{ color: 'inherit', fontFamily: 'inherit', opacity: 0.85, textAlign: 'center' }}>
-                    {form.description}
-                  </Typography>
-                )}
-              </Stack>
-
-              {submitError && <Alert severity="error">{submitError}</Alert>}
-
-              <Stack spacing={2}>
-                {visibleFields.map(field => (
-                  <PublicFieldInput
-                    key={field.id}
-                    field={field}
-                    value={values[field.id]}
-                    onChange={value => handleChange(field.id, value)}
-                    borderRadius={theme.border_radius || DEFAULT_THEME_CONFIG.border_radius}
-                  />
-                ))}
-              </Stack>
-
-              {/* Honeypot: oculto con estilos inline (no `display:none`/`type=hidden`, que muchos
-                  bots ya ignoran) -- posicionado fuera de pantalla y sin foco por tabulación. */}
-              <Box sx={{ position: 'absolute', left: '-9999px', width: 1, height: 1, overflow: 'hidden' }} aria-hidden="true">
-                <TextField
-                  inputRef={honeypotRef}
-                  tabIndex={-1}
-                  autoComplete="off"
-                  label="Sitio web"
-                  name={HONEYPOT_FIELD_NAME}
-                />
-              </Box>
-
-              <Button
-                type="submit"
-                disabled={submitting}
-                disableRipple
-                sx={{
-                  backgroundColor: theme.primary_color || DEFAULT_THEME_CONFIG.primary_color,
-                  color: theme.button_text_color || DEFAULT_THEME_CONFIG.button_text_color,
-                  borderRadius: theme.border_radius || DEFAULT_THEME_CONFIG.border_radius,
-                  fontFamily: 'inherit',
-                  textTransform: 'none',
-                  py: 1.2,
-                  '&:hover': {
-                    backgroundColor: theme.primary_color || DEFAULT_THEME_CONFIG.primary_color,
-                    opacity: 0.9,
-                  },
-                }}
-              >
-                {submitting ? <CircularProgress size={20} sx={{ color: 'inherit' }} /> : 'Enviar'}
-              </Button>
+    <>
+      {/* CSS del dueño del formulario, compilado a partir de theme_config.custom_css_rules (una
+          regla por elemento, ver webFormCssTargets.ts) -- se aplica tal cual, sin sanitizar,
+          porque esta es la única página que renderiza este componente (ruta pública dedicada, no
+          comparte DOM con el resto del CRM como sí pasa con WebFormLivePreview). */}
+      {compiledCustomCss && <style>{compiledCustomCss}</style>}
+      <Box
+        className="web-form-container"
+        sx={{
+          minHeight: '100vh',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'flex-start',
+          p: { xs: 2, sm: 4 },
+          backgroundColor: theme.background_color || DEFAULT_THEME_CONFIG.background_color,
+          color: theme.text_color || DEFAULT_THEME_CONFIG.text_color,
+          fontFamily: theme.font_family || DEFAULT_THEME_CONFIG.font_family,
+        }}
+      >
+        <Box sx={{ width: '100%', maxWidth: 560 }}>
+          {submitted ? (
+            <Stack spacing={2} className="web-form-success-message" sx={{ alignItems: 'center', textAlign: 'center', py: 6 }}>
+              <CheckCircleIcon sx={{ fontSize: 56, color: theme.primary_color || DEFAULT_THEME_CONFIG.primary_color }} />
+              <Typography variant="h5" sx={{ color: 'inherit', fontFamily: 'inherit' }}>
+                {form.success_message || 'Formulario enviado exitosamente.'}
+              </Typography>
             </Stack>
-          </form>
-        )}
+          ) : (
+            <form onSubmit={handleSubmit} noValidate>
+              <Stack spacing={3}>
+                <Stack spacing={1}>
+                  {theme.image_url && (
+                    <Box
+                      component="img"
+                      src={theme.image_url}
+                      className="web-form-image"
+                      sx={{ maxWidth: '100%', maxHeight: 96, display: 'block', mx: 'auto', mb: 1 }}
+                    />
+                  )}
+                  {form.title && (
+                    <Typography
+                      variant="h1"
+                      component="h1"
+                      className="web-form-title"
+                      sx={{ color: 'inherit', fontFamily: 'inherit', textAlign: 'center', fontWeight: 700 }}
+                    >
+                      {form.title}
+                    </Typography>
+                  )}
+                  {form.description && (
+                    <Typography variant="body1" className="web-form-description" sx={{ color: 'inherit', fontFamily: 'inherit', opacity: 0.85, textAlign: 'center' }}>
+                      {form.description}
+                    </Typography>
+                  )}
+                </Stack>
+
+                {submitError && <Alert severity="error">{submitError}</Alert>}
+
+                <Stack spacing={2}>
+                  {visibleFields.map(field => (
+                    <Box className="web-form-field" key={field.id}>
+                      <PublicFieldInput
+                        field={field}
+                        value={values[field.id]}
+                        onChange={value => handleChange(field.id, value)}
+                        borderRadius={theme.border_radius || DEFAULT_THEME_CONFIG.border_radius}
+                      />
+                    </Box>
+                  ))}
+                </Stack>
+
+                {/* Honeypot: oculto con estilos inline (no `display:none`/`type=hidden`, que muchos
+                    bots ya ignoran) -- posicionado fuera de pantalla y sin foco por tabulación. */}
+                <Box sx={{ position: 'absolute', left: '-9999px', width: 1, height: 1, overflow: 'hidden' }} aria-hidden="true">
+                  <TextField
+                    inputRef={honeypotRef}
+                    tabIndex={-1}
+                    autoComplete="off"
+                    label="Sitio web"
+                    name={HONEYPOT_FIELD_NAME}
+                  />
+                </Box>
+
+                {hasRequiredFields && (
+                  <Typography variant="caption" className="web-form-required-legend" sx={{ color: 'inherit', fontFamily: 'inherit', opacity: 0.75 }}>
+                    Los campos con * son obligatorios.
+                  </Typography>
+                )}
+
+                <Button
+                  type="submit"
+                  disabled={submitting}
+                  disableRipple
+                  className="web-form-submit-button"
+                  sx={{
+                    backgroundColor: theme.primary_color || DEFAULT_THEME_CONFIG.primary_color,
+                    color: theme.button_text_color || DEFAULT_THEME_CONFIG.button_text_color,
+                    borderRadius: theme.border_radius || DEFAULT_THEME_CONFIG.border_radius,
+                    fontFamily: 'inherit',
+                    textTransform: 'none',
+                    py: 1.2,
+                    '&:hover': {
+                      backgroundColor: theme.primary_color || DEFAULT_THEME_CONFIG.primary_color,
+                      opacity: 0.9,
+                    },
+                  }}
+                >
+                  {submitting ? <CircularProgress size={20} sx={{ color: 'inherit' }} /> : 'Enviar'}
+                </Button>
+              </Stack>
+            </form>
+          )}
+        </Box>
       </Box>
-    </Box>
+    </>
   );
 };
 

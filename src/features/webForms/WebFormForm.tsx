@@ -10,6 +10,7 @@ import { WebFormFieldsTab } from './WebFormFieldsTab';
 import { WebFormThemeTab } from './WebFormThemeTab';
 import { WebFormEmbedTab } from './WebFormEmbedTab';
 import { WebFormLivePreview } from './WebFormLivePreview';
+import type { WebFormFieldOptionLite } from './WebFormFieldRenderer';
 import { showCommonErrorToast, showToast } from 'src/utils/feedback';
 import GenericPaper from 'src/components/layout/container/GenericPaper';
 
@@ -32,6 +33,10 @@ interface WebFormFormProps {
   campaignId: string;
   onSave: (data: WebFormPost) => Promise<unknown>;
   fields?: LeadField[];
+  // Opciones de nomenclador por campo (clave = LeadField.id), precargadas en WebFormPage --
+  // alimenta el selector de "valor oculto" (WebFormFieldsTab) y las opciones reales del
+  // SELECTOR/CHECKBOX en la vista previa (WebFormLivePreview).
+  fieldOptionsMap?: Record<string, WebFormFieldOptionLite[]>;
   readOnly?: boolean;
   submitRef?: React.RefObject<(() => void) | null>;
 }
@@ -54,7 +59,7 @@ const fieldToPost = (f: WebFormField): WebFormFieldPost => ({
   hidden_value: f.hidden_value,
 });
 
-export const WebFormForm = ({ initialData, campaignId, onSave, fields = [], readOnly = false, submitRef = null }: WebFormFormProps) => {
+export const WebFormForm = ({ initialData, campaignId, onSave, fields = [], fieldOptionsMap = {}, readOnly = false, submitRef = null }: WebFormFormProps) => {
   const [tab, setTab] = useState(0);
 
   const defaultValues = useMemo((): WebFormPost => {
@@ -197,10 +202,10 @@ export const WebFormForm = ({ initialData, campaignId, onSave, fields = [], read
               </Box>
               <Box sx={{ p: 2 }}>
                 <CustomTabPanel value={tab} index={0}>
-                  <WebFormGeneralTab register={register} control={control} readOnly={readOnly} />
+                  <WebFormGeneralTab register={register} control={control} setValue={setValue} readOnly={readOnly} />
                 </CustomTabPanel>
                 <CustomTabPanel value={tab} index={1}>
-                  <WebFormFieldsTab control={control} register={register} fields={fields} readOnly={readOnly} />
+                  <WebFormFieldsTab control={control} register={register} fields={fields} fieldOptionsMap={fieldOptionsMap} readOnly={readOnly} />
                 </CustomTabPanel>
                 <CustomTabPanel value={tab} index={2}>
                   <WebFormThemeTab control={control} register={register} setValue={setValue} readOnly={readOnly} />
@@ -217,7 +222,7 @@ export const WebFormForm = ({ initialData, campaignId, onSave, fields = [], read
           {/* Vista previa en vivo, siempre visible sin importar la pestaña activa a la izquierda
               (pedido del usuario, 2026-08-17) -- por eso vive acá y no dentro de cada tab. */}
           <Grid size={{ xs: 12, lg: 5 }}>
-            <WebFormLivePreview control={control} leadFields={fields} />
+            <WebFormLivePreview control={control} leadFields={fields} fieldOptionsMap={fieldOptionsMap} />
           </Grid>
         </Grid>
       </Stack>

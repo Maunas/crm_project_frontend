@@ -6,11 +6,14 @@ import type { WebFormPost } from 'src/types/webForms';
 import { DEFAULT_THEME_CONFIG } from 'src/types/webForms';
 import type { LeadField } from 'src/types/leadFields';
 import GenericPaper from 'src/components/layout/container/GenericPaper';
-import { WebFormFieldRenderer } from './WebFormFieldRenderer';
+import { WebFormFieldRenderer, type WebFormFieldOptionLite } from './WebFormFieldRenderer';
 
 interface WebFormLivePreviewProps {
   control: Control<WebFormPost>;
   leadFields: LeadField[];
+  // Opciones de nomenclador por campo (clave = LeadField.id) -- para que los SELECTOR/CHECKBOX
+  // de la vista previa muestren las opciones reales en vez de un desplegable vacío.
+  fieldOptionsMap?: Record<string, WebFormFieldOptionLite[]>;
 }
 
 type PreviewFieldValue = string | boolean;
@@ -27,7 +30,7 @@ type PreviewFieldValue = string | boolean;
  * real ni el botón "Guardar" de arriba. El botón "Enviar" de acá simula el envío y muestra el
  * mensaje de éxito configurado, con un link para volver.
  */
-export const WebFormLivePreview = memo(({ control, leadFields }: WebFormLivePreviewProps) => {
+export const WebFormLivePreview = memo(({ control, leadFields, fieldOptionsMap = {} }: WebFormLivePreviewProps) => {
   const title = useWatch({ control, name: 'title' });
   const description = useWatch({ control, name: 'description' });
   const themeConfig = useWatch({ control, name: 'theme_config' });
@@ -88,6 +91,13 @@ export const WebFormLivePreview = memo(({ control, leadFields }: WebFormLivePrev
           ) : (
             <Stack spacing={3}>
               <Stack spacing={1}>
+                {theme.image_url && (
+                  <Box
+                    component="img"
+                    src={theme.image_url}
+                    sx={{ maxWidth: '100%', maxHeight: 80, display: 'block', mx: 'auto', mb: 1 }}
+                  />
+                )}
                 <Typography
                   variant="h1"
                   component="h1"
@@ -122,6 +132,7 @@ export const WebFormLivePreview = memo(({ control, leadFields }: WebFormLivePrev
                         subtypeCode={leadField?.field_subtype_code}
                         placeholder={f.custom_placeholder}
                         required={f.is_required}
+                        options={fieldOptionsMap[f.lead_field_id] ?? []}
                         value={previewValues[previewKey] ?? ''}
                         onChange={value => handlePreviewChange(previewKey, value)}
                         borderRadius={theme.border_radius || DEFAULT_THEME_CONFIG.border_radius}
@@ -129,6 +140,12 @@ export const WebFormLivePreview = memo(({ control, leadFields }: WebFormLivePrev
                     );
                   })}
                 </Stack>
+              )}
+
+              {visibleFields.some(f => f.is_required) && (
+                <Typography variant="caption" sx={{ color: 'inherit', fontFamily: 'inherit', opacity: 0.75 }}>
+                  Los campos con * son obligatorios.
+                </Typography>
               )}
 
               <Box

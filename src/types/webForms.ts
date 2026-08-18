@@ -1,7 +1,18 @@
 import type { Metadata } from "./shared"
 
-// Mismos 6 campos que ThemeConfig en el backend (web_form_schema.py) -- schema cerrado, no
-// admite CSS libre todavía (el usuario pidió dejarlo para más adelante).
+// Mismo enum que CustomCssTarget en el backend (web_form_schema.py) -- identifica a qué elemento
+// del formulario público se le aplica una regla de CSS. "advanced" es la única excepción: no se
+// envuelve en ningún selector, se inyecta tal cual (ver compileCustomCss en webFormCssTargets.ts).
+export type CustomCssTarget =
+  | "container" | "text" | "image" | "title" | "description" | "field"
+  | "submit_button" | "required_legend" | "success_message" | "advanced"
+
+export interface CustomCssRule {
+  target: CustomCssTarget
+  css: string
+}
+
+// Mismos campos que ThemeConfig en el backend (web_form_schema.py).
 export interface ThemeConfig {
   primary_color: string
   background_color: string
@@ -9,6 +20,14 @@ export interface ThemeConfig {
   button_text_color: string
   border_radius: string
   font_family: string
+  // URL pública de una imagen (logo u otra) para mostrar arriba del título -- se sube vía
+  // /storage/upload (ver webFormImageService.ts) y acá solo se guarda la URL resultante.
+  image_url?: string | null
+  // Reglas de CSS por elemento (agregado 2026-08-18, reemplaza al cuadro único de CSS libre de la
+  // misma fecha) -- se aplican en la página pública real (PublicWebFormPage.tsx) dentro de un
+  // <style>, pero NO en la vista previa del editor (WebFormLivePreview.tsx comparte DOM con el
+  // resto del CRM, e inyectar CSS arbitrario ahí podría romper esa UI).
+  custom_css_rules?: CustomCssRule[] | null
 }
 
 export const DEFAULT_THEME_CONFIG: ThemeConfig = {
@@ -18,6 +37,8 @@ export const DEFAULT_THEME_CONFIG: ThemeConfig = {
   button_text_color: "#FFFFFF",
   border_radius: "6px",
   font_family: "Inter, sans-serif",
+  image_url: null,
+  custom_css_rules: [],
 }
 
 // Versión mínima de LeadField que trae WebFormFieldResponse.lead_field (LeadFieldLiteResponse

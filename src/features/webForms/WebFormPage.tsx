@@ -5,9 +5,12 @@ import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { Box, Typography, alpha, useTheme, Stack } from '@mui/material';
 import { WebFormForm } from './WebFormForm';
 import { getLeadFields } from '../leadFields/leadFieldServices';
+import { getNomenclatorItems } from '../nomenclators/nomenclatorService';
 import { getWebForm, createWebForm, updateWebForm } from './webFormServices';
 import type { WebFormDetailed, WebFormPost } from '../../types/webForms';
 import type { LeadField } from '../../types/leadFields';
+import type { NomenclatorItem } from '../../types/nomenclators';
+import type { WebFormFieldOptionLite } from './WebFormFieldRenderer';
 import { showCommonErrorToast } from 'src/utils/feedback';
 import { useLoading } from 'src/hooks/useLoading';
 import GenericPaper from 'src/components/layout/container/GenericPaper';
@@ -22,6 +25,10 @@ import { usePageTitle } from 'src/hooks/usePageTitle';
 // CALCULATED (se calcula solo) y LEAD (referencia interna a otro lead) igual que en
 // field_automation, más FILE (el submit público es JSON plano, sin soporte de adjuntos todavía).
 const EXCLUDED_FIELD_TYPES = ['CALCULATED', 'LEAD', 'FILE'];
+
+// Mismo criterio que _SELECTOR_FIELD_TYPES en web_form_service.py (backend): son los únicos
+// tipos de campo cuyo valor sale de una lista de opciones fija (nomenclador).
+const SELECTOR_FIELD_TYPES = ['SELECTOR', 'CHECKBOX'];
 
 export const WebFormPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -46,6 +53,12 @@ export const WebFormPage = () => {
   const [initialData, setInitialData] = useState<WebFormDetailed | null>(null);
 
   const [fields, setFields] = useState<LeadField[]>([]);
+  // Opciones de nomenclador por campo (clave = LeadField.id) -- solo para campos SELECTOR/CHECKBOX
+  // que tengan un nomenclador asociado. Se precarga para TODOS los campos elegibles de la campaña
+  // (no solo los ya agregados al formulario), para que estén listas apenas se agrega un campo
+  // nuevo en la pestaña "Campos". Alimenta tanto el selector de "valor oculto" (WebFormFieldsTab)
+  // como las opciones reales del SELECTOR/CHECKBOX en la vista previa (WebFormLivePreview).
+  const [fieldOptionsMap, setFieldOptionsMap] = useState<Record<string, WebFormFieldOptionLite[]>>({});
 
   const formSubmitRef = useRef<() => void>(null);
 
@@ -55,8 +68,34 @@ export const WebFormPage = () => {
         .then(setInitialData)
         .catch(e => showCommonErrorToast(e))
     }
-    await getLeadFields({ detailed: false, only_active: true, campaign_id: campaignId, page_size: 0 })
-      .then(data => setFields(data.items.filter(f => !EXCLUDED_FIELD_TYPES.includes(f.field_type_code))))
+    // detailed:true para tener LeadFieldDetailed.nomenclator (uuid real) -- sin esto no hay forma
+    // de pedir los ítems del nomenclador de cada campo (LeadField "liviano" solo trae el id
+    // interno crudo de nomenclator_id, FK sin migrar, ver types/leadFields.ts).
+    await getLeadFields({ detailed: true, only_active: true, campaign_id: campaignId, page_size: 0 })
+      .then(async data => {
+        const eligibleFields = data.items.filter(f => !EXCLUDED_FIELD_TYPES.includes(f.field_type_code))
+        setFields(eligibleFields)
+
+        const selectorFields = eligibleFields.filter(
+          f => SELECTOR_FIELD_TYPES.includes(f.field_type_code) && f.nomenclator?.id
+        )
+        const uniqueNomenclatorIds = [...new Set(selectorFields.map(f => f.nomenclator!.id))]
+
+        const itemsByNomenclatorId: Record<string, NomenclatorItem[]> = {}
+        await Promise.all(
+          uniqueNomenclatorIds.map(nomId =>
+            getNomenclatorItems({ nomenclator_id: nomId, only_active: true, page_size: 0 })
+              .then(res => { itemsByNomenclatorId[nomId] = res.items })
+          )
+        ).catch(e => showCommonErrorToast(e, 'Error cargando las opciones de los nomencladores.'))
+
+        const map: Record<string, WebFormFieldOptionLite[]> = {}
+        selectorFields.forEach(f => {
+          const items = itemsByNomenclatorId[f.nomenclator!.id] ?? []
+          map[f.id as string] = items.map(item => ({ id: item.id, value: item.value ?? '' }))
+        })
+        setFieldOptionsMap(map)
+      })
       .catch(e => showCommonErrorToast(e))
   }, [campaignId, id, isEditing])
 
@@ -139,6 +178,7 @@ export const WebFormPage = () => {
             campaignId={campaignId}
             onSave={handleSaveLoad}
             fields={fields}
+            fieldOptionsMap={fieldOptionsMap}
             readOnly={effectiveReadOnly}
             submitRef={formSubmitRef}
           />
