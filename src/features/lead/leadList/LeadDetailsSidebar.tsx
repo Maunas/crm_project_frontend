@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from "react"
 import { useNavigate } from "react-router-dom"
 import { alpha, Box, CircularProgress, Collapse, IconButton, LinearProgress, Stack, Tooltip, useTheme } from "@mui/material"
 import CloseIcon from "@mui/icons-material/Close"
@@ -18,6 +18,18 @@ interface LeadDetailsSidebarProps {
     onClose: () => void
     onUpdate: (lead: LeadDetailed) => void
 }
+
+// Ancho ajustable arrastrando el borde izquierdo (pedido del usuario): antes era fijo
+// (clamp(26rem, 40vw, 50rem)) -- ahora ese mismo clamp es solo el valor por defecto (y un poco
+// más chico, también pedido), y el usuario puede agrandar/achicar arrastrando, con un mínimo y
+// máximo. El ancho elegido se guarda en localStorage para la próxima vez.
+const SIDEBAR_WIDTH_STORAGE_KEY = "leadDetailsSidebarWidth"
+const MIN_WIDTH = 352 // 22rem
+const MAX_WIDTH = 672 // 42rem
+const DEFAULT_WIDTH_VW = 34 // vw preferido antes de tocar el handle, mismo criterio que el clamp original pero más chico
+const DEFAULT_WIDTH_CSS = `clamp(${MIN_WIDTH / 16}rem, ${DEFAULT_WIDTH_VW}vw, ${MAX_WIDTH / 16}rem)`
+
+const clampWidth = (w: number) => Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, w))
 
 /**
  * Sidebar de detalle "rápido" de un lead, abierto con un solo clic desde el listado (Tabla o
@@ -50,6 +62,10 @@ interface LeadDetailsSidebarProps {
  *
  * Las secciones de campos (LeadFieldSections, vía forceExpandSections) quedan siempre desplegadas
  * y no se pueden plegar -- a diferencia del detalle de página completa, donde sí es un acordeón.
+ *
+ * Ancho: el default es más chico que antes (pedido del usuario) y además ajustable arrastrando
+ * el borde izquierdo, con un mínimo y máximo (ver MIN_WIDTH/MAX_WIDTH acá arriba) -- el ancho
+ * elegido se recuerda entre sesiones (localStorage).
  */
 export const LeadDetailsSidebar = ({ isOpen, lead, loading = false, onClose, onUpdate }: LeadDetailsSidebarProps) => {
     const navigate = useNavigate()
@@ -57,6 +73,68 @@ export const LeadDetailsSidebar = ({ isOpen, lead, loading = false, onClose, onU
     //Estado propio (no comparte idModal con LeadDetails.tsx a propósito, para no acoplar ambos
     //lugares -- nunca están montados sobre el mismo lead a la vez de todos modos).
     const [isDeleting, setIsDeleting] = useState<LeadDetailed | null>(null)
+
+    // Ancho: null = todavía sin tocar el handle, usa el clamp por defecto (responsive según
+    // viewport). Un número = el usuario ya arrastró, ancho fijo en px (clamp/eado entre
+    // MIN_WIDTH/MAX_WIDTH), persistido en localStorage.
+    const [customWidth, setCustomWidth] = useState<number | null>(() => {
+        const stored = localStorage.getItem(SIDEBAR_WIDTH_STORAGE_KEY)
+        const parsed = stored ? Number(stored) : NaN
+        return Number.isFinite(parsed) ? clampWidth(parsed) : null
+    })
+    const panelRef = useRef<HTMLDivElement>(null)
+    const dragStateRef = useRef<{ startX: number, startWidth: number } | null>(null)
+    const [isDragging, setIsDragging] = useState(false)
+
+    const handleDragStart = useCallback((e: ReactMouseEvent) => {
+        e.preventDefault()
+        const startWidth = panelRef.current?.getBoundingClientRect().width ?? MIN_WIDTH
+        dragStateRef.current = { startX: e.clientX, startWidth }
+        setIsDragging(true)
+    }, [])
+
+    // Doble clic en el handle: vuelve al ancho por defecto (por si alguien lo arrastra a un
+    // extremo raro y no encuentra cómo volver).
+    const handleDragReset = useCallback(() => {
+        setCustomWidth(null)
+        localStorage.removeItem(SIDEBAR_WIDTH_STORAGE_KEY)
+    }, [])
+
+    useEffect(() => {
+        if (!isDragging) return
+        // El panel está pegado al borde derecho de la pantalla: arrastrar el handle hacia la
+        // izquierda (el mouse se mueve hacia la izquierda, clientX baja) agranda el panel.
+        const handleMouseMove = (e: MouseEvent) => {
+            if (!dragStateRef.current) return
+            const delta = dragStateRef.current.startX - e.clientX
+            setCustomWidth(clampWidth(dragStateRef.current.startWidth + delta))
+        }
+        const handleMouseUp = () => {
+            setIsDragging(false)
+            dragStateRef.current = null
+        }
+        // Cursor consistente y sin selección de texto accidental mientras se arrastra, incluso
+        // si el mouse se despega momentáneamente del handle de 5px.
+        const prevCursor = document.body.style.cursor
+        const prevUserSelect = document.body.style.userSelect
+        document.body.style.cursor = "ew-resize"
+        document.body.style.userSelect = "none"
+        window.addEventListener("mousemove", handleMouseMove)
+        window.addEventListener("mouseup", handleMouseUp)
+        return () => {
+            document.body.style.cursor = prevCursor
+            document.body.style.userSelect = prevUserSelect
+            window.removeEventListener("mousemove", handleMouseMove)
+            window.removeEventListener("mouseup", handleMouseUp)
+        }
+    }, [isDragging])
+
+    // Persistir el ancho elegido para la próxima vez que se abra el sidebar.
+    useEffect(() => {
+        if (customWidth !== null) {
+            localStorage.setItem(SIDEBAR_WIDTH_STORAGE_KEY, String(customWidth))
+        }
+    }, [customWidth])
 
     // Pedido del usuario: si scrolleó hasta un campo puntual y clickea otro lead, que no tenga que
     // volver a scrollear.
@@ -121,16 +199,19 @@ export const LeadDetailsSidebar = ({ isOpen, lead, loading = false, onClose, onU
     return (
         <>
             <Collapse in={isOpen} orientation="horizontal" sx={{ height: "100%", flexShrink: 0 }}>
-                <Box sx={{
-                    // Proporcional al espacio disponible (no ancho fijo): en pantallas grandes la
-                    // tabla conserva más lugar, en pantallas chicas el panel no la aplasta.
-                    width: "clamp(26rem, 40vw, 50rem)",
+                <Box ref={panelRef} sx={{
+                    // Sin tocar el handle: clamp responsive según viewport (más chico que antes).
+                    // Ya arrastrado: ancho fijo en px, elegido por el usuario y persistido.
+                    width: customWidth ?? DEFAULT_WIDTH_CSS,
                     height: "100%",
                     position: "relative",
                     borderLeft: `1px solid ${theme.palette.divider}`,
                     display: "flex",
                     flexDirection: "column",
                     overflow: "hidden",
+                    // Mientras se arrastra, ninguna transición/animación de ancho (evita que se
+                    // sienta "elástico" o con delay respecto al mouse).
+                    ...(isDragging && { transition: "none" }),
                 }}>
                     {/* Franja superior con fondo -- mismo criterio visual que headerActions de
                         GenericSidebar, armado acá directo porque ya no hay Drawer. */}
@@ -179,6 +260,24 @@ export const LeadDetailsSidebar = ({ isOpen, lead, loading = false, onClose, onU
                                 forceExpandSections />
                         }
                     </Box>
+
+                    {/* Handle para agrandar/achicar arrastrando (pedido del usuario, con mínimo y
+                        máximo -- ver MIN_WIDTH/MAX_WIDTH). Angosto (5px) y pegado al borde
+                        interno para no invadir el espacio de la flechita de cerrar de acá abajo
+                        (misma lección que esa flecha: si se sale del Box, el overflow:hidden del
+                        panel lo recorta). Invisible hasta hover/arrastre para no ensuciar la UI. */}
+                    <Box
+                        onMouseDown={handleDragStart}
+                        onDoubleClick={handleDragReset}
+                        sx={{
+                            position: "absolute", top: 0, left: 0,
+                            width: "5px", height: "100%",
+                            cursor: "ew-resize",
+                            zIndex: 1,
+                            bgcolor: isDragging ? alpha(theme.palette.primary.main, 0.5) : "transparent",
+                            "&:hover": { bgcolor: alpha(theme.palette.primary.main, 0.35) },
+                        }}
+                    />
 
                     {/* Flecha en el borde izquierdo -- forma alternativa de cerrar, más cómoda que
                         ir hasta la cruz (pedido del usuario): pegada al borde interno del panel,

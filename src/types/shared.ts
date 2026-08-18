@@ -88,6 +88,10 @@ export interface FieldAutomationParams extends ListParams {
   campaign_id?: string
 }
 
+export interface WebFormParams extends ListParams {
+  campaign_id?: string
+}
+
 export interface SystemAuditParams extends ListParams {
   start_date?: string,
   end_date?: string,
@@ -169,7 +173,7 @@ export interface Dictionary {
   "team_roles"?: DictionaryItem[]
   "lead_states_categories"?: DictionaryItem[],
   "lead_view_visibilities"?: DictionaryItem[],
-  "automation_compatibility_matrix"?: AutomationCompatibility[],
+  "automation_compatibility_matrix"?: AutomationCompatibility,
   "entities"?: Record<string, string>,
   "system_audit_log_actions"?: Record<string, string>,
 }
