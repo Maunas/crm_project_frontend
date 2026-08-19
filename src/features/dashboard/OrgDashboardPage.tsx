@@ -10,6 +10,7 @@ import { getOrgDashboard, type OrgDashboard, type LeadsByState } from "src/featu
 import { useUserContext } from "src/stores/UserContext"
 import { showCommonErrorToast } from "src/utils/feedback"
 import { UserAvatar } from "src/components/ui/details/UserAvatar"
+import { CommonCRMText, CommonCRMTitle } from "src/components/ui/details/CommonText"
 
 // ── Stat card ─────────────────────────────────────────────────────────────────
 function StatCard({ label, value, icon, color }: { label: string; value: number | string; icon: React.ReactNode; color: string }) {
@@ -18,8 +19,8 @@ function StatCard({ label, value, icon, color }: { label: string; value: number 
             <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
                 <Box sx={{ color, bgcolor: `${color}18`, borderRadius: 1.5, p: 1, display: "flex" }}>{icon}</Box>
                 <Box>
-                    <Typography variant="h4" sx={{ fontWeight: 800, lineHeight: 1 }}>{value}</Typography>
-                    <Typography variant="caption" color="text.secondary">{label}</Typography>
+                    <CommonCRMTitle titleLevel="h2" component="p" font="display" >{value}</CommonCRMTitle>
+                    <CommonCRMText variant="subtitle2" color="textSecondary" sx={{ fontWeight: 500 }} >{label}</CommonCRMText>
                 </Box>
             </Stack>
         </Paper>
