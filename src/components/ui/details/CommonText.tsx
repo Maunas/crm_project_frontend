@@ -20,10 +20,10 @@ interface CommonCRMTitleProps extends TypographyProps {
     font?: "CRM" | "display"
 }
 
-export const CommonCRMTitle = ({ children, titleLevel, font = "CRM", color, ...props }: CommonCRMTitleProps) => {
+export const CommonCRMTitle = ({ children, titleLevel, font = "CRM", color, sx, ...props }: CommonCRMTitleProps) => {
 
     return (
-        <Typography variant={titleLevel} color={color} sx={{ fontFamily: font === "display" ? FONT_FAMILY.display : undefined }}
+        <Typography variant={titleLevel} color={color} sx={{ fontFamily: font === "display" ? FONT_FAMILY.display : undefined, ...sx }}
             {...props}>
             {children}
         </Typography>

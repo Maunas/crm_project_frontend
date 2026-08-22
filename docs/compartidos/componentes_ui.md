@@ -340,6 +340,16 @@ Componentes wrapper de `Typography` para texto centralizado (ver "Sistema tipogr
 - `font` (`"CRM" | "display"`): `"display"` usa la fuente Sora (para números destacados, stat cards). Default: `"CRM"` (Inter)
 - `component`: prop de MUI para controlar el elemento HTML renderizado (ej. `"p"` para que un `h2` se renderice como `<p>`)
 
+### `StatCard` (default export) — `details/StatCard.tsx`
+Tarjeta de métrica para dashboards (valor destacado + ícono + etiqueta):
+```tsx
+<StatCard label="Leads totales" value={data.total_leads} icon={<LeaderboardOutlined fontSize="small" />} color={palette.primary.main} />
+```
+- `label`: texto descriptivo bajo el valor (`CommonCRMText subtitle2`)
+- `value`: número o string destacado (se muestra con `CommonCRMTitle` en fuente display)
+- `icon`: nodo de ícono, teñido con el `color` recibido
+- `color`: color del borde izquierdo y del ícono (hex o token)
+
 ### `NewTabLink` (default export) — `details/NewTabLink.tsx`
 Link que se abre en nueva pestaña, con validación de URL:
 ```tsx
