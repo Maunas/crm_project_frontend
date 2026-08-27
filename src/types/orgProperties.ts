@@ -7,7 +7,7 @@ export interface LeadTagPost {
     color?: string
 }
 export interface LeadTag extends LeadTagPost {
-    id: number,
+    id: string,
     organization_id: number
     color: string
 }
@@ -22,7 +22,7 @@ export interface LeadFieldSectionPost {
 }
 
 export interface LeadFieldSection extends LeadFieldSectionPost {
-    id: number;
+    id: string;
     organization_id: number;
 }
 
@@ -38,7 +38,7 @@ export interface LeadContactStatePost {
 }
 
 export interface LeadContactState extends LeadContactStatePost {
-    id: number,
+    id: string,
     active: boolean,
     organization_id: number
 }

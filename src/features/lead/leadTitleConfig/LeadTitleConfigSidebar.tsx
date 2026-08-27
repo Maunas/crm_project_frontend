@@ -43,7 +43,7 @@ interface TitleConfigForm {
 interface LeadTitleConfigSidebarProps {
     open: boolean
     onClose: () => void
-    campaignId?: number
+    campaignId?: string
     fieldValues?: LeadFieldValueDetailed[] | undefined
     onSave?: (fields: Record<number, LeadFieldDetailed>) => void
 }
@@ -62,7 +62,7 @@ export const LeadTitleConfigSidebar = ({ open, onClose, campaignId, fieldValues,
         return map
     }, [fieldValues])
 
-    const fetchFields = useCallback((campaignId: number) => {
+    const fetchFields = useCallback((campaignId: string) => {
         return getLeadFields({ campaign_id: campaignId, page_size: 0, detailed: true, only_active: false })
             .then(res => setFields(res.items.filter(isFieldValidForTitle)))
             .catch(e => showCommonErrorToast(e, "No se ha podido recuperar los campos de lead."))
@@ -122,8 +122,8 @@ export const LeadTitleConfigSidebar = ({ open, onClose, campaignId, fieldValues,
     const getOptionKey = (option: LeadFieldDetailed) => String(option.id)
 
     const onSubmit = useCallback(async (data: TitleConfigForm) => {
-        const orderMap = new Map<number, number | null>()
-        const subOrderMap = new Map<number, number | null>()
+        const orderMap = new Map<string, number | null>()
+        const subOrderMap = new Map<string, number | null>()
 
         if (selectedFields.length === 0) {
             setError("root", { message: "Debe seleccionarse por lo menos un campo" })
@@ -135,40 +135,40 @@ export const LeadTitleConfigSidebar = ({ open, onClose, campaignId, fieldValues,
             return
         }
 
-        if (data.order1) orderMap.set(data.order1.id, 1)
-        if (data.order2) orderMap.set(data.order2.id, 2)
+        if (data.order1) orderMap.set(`${data.order1.id}`, 1)
+        if (data.order2) orderMap.set(`${data.order2.id}`, 2)
 
         //El subtítulo es opcional (a diferencia del título), no exige mínimo de campos
-        if (data.subOrder1) subOrderMap.set(data.subOrder1.id, 1)
-        if (data.subOrder2) subOrderMap.set(data.subOrder2.id, 2)
+        if (data.subOrder1) subOrderMap.set(`${data.subOrder1.id}`, 1)
+        if (data.subOrder2) subOrderMap.set(`${data.subOrder2.id}`, 2)
 
         //Lista de cambios a enviar a backend
-        const updates: { fieldId: number, newOrder: number | null }[] = []
-        const subUpdates: { fieldId: number, newOrder: number | null }[] = []
+        const updates: { fieldId: string, newOrder: number | null }[] = []
+        const subUpdates: { fieldId: string, newOrder: number | null }[] = []
 
         for (const field of fields) {
-            const newOrder = orderMap.get(field.id)
+            const newOrder = orderMap.get(`${field.id}`)
             const oldOrder = field.title_order
             if (newOrder === undefined) {
                 //Si el campo no es parte del nuevo título, pero tiene un orden preexistente, lo setea a null.
                 if (oldOrder !== null) {
-                    updates.push({ fieldId: field.id, newOrder: null })
+                    updates.push({ fieldId: `${field.id}`, newOrder: null })
                 }
             }
             //Si el campo nuevo es diferente al original, lo actualiza. Si es igual, no modifica nada.
             else if (oldOrder !== newOrder) {
-                updates.push({ fieldId: field.id, newOrder })
+                updates.push({ fieldId: `${field.id}`, newOrder })
             }
 
             //Mismo tratamiento, en paralelo, para subtitle_order.
-            const newSubOrder = subOrderMap.get(field.id)
+            const newSubOrder = subOrderMap.get(`${field.id}`)
             const oldSubOrder = field.subtitle_order
             if (newSubOrder === undefined) {
                 if (oldSubOrder !== null) {
-                    subUpdates.push({ fieldId: field.id, newOrder: null })
+                    subUpdates.push({ fieldId: `${field.id}`, newOrder: null })
                 }
             } else if (oldSubOrder !== newSubOrder) {
-                subUpdates.push({ fieldId: field.id, newOrder: newSubOrder })
+                subUpdates.push({ fieldId: `${field.id}`, newOrder: newSubOrder })
             }
         }
 
@@ -181,11 +181,11 @@ export const LeadTitleConfigSidebar = ({ open, onClose, campaignId, fieldValues,
             ...updates.map(u => updateLeadFieldTitle(u.newOrder, u.fieldId)),
             ...subUpdates.map(u => updateLeadFieldSubtitle(u.newOrder, u.fieldId)),
         ])
-        const resultRecord: Record<number, LeadFieldDetailed> = results.reduce(
+        const resultRecord: Record<string, LeadFieldDetailed> = results.reduce(
             (acc, field) => {
                 acc[field.id] = field
                 return acc
-            }, {} as Record<number, LeadFieldDetailed>
+            }, {} as Record<string, LeadFieldDetailed>
         )
         if (onSave) onSave(resultRecord)
         showToast("Configuración de título y subtítulo actualizada con éxito")

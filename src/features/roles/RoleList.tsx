@@ -22,6 +22,7 @@ import { OrderSearchMenu } from 'src/components/ui/lists/OrderMenu'
 import { NoItemsMessage } from 'src/components/ui/lists/NoItemsMessage'
 import { disableRole, enableRole, getRole, getRoles } from 'src/services/roleService'
 import type { RoleDetailed } from 'src/types/roles'
+import { ListAddButton } from 'src/components/ui/buttons/ExpandingButton'
 
 const ORDER_ROLE_FIELDS = [
     { name: "name", label: "Orden Alfabético" },
@@ -45,7 +46,7 @@ export const RoleList = () => {
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(roles)
 
-    const { fetchParams, changeHandlers } = useOrderSeachList()
+    const { fetchParams, changeHandlers } = useOrderSeachList("roles")
 
     const fetchRoles = useCallback((fetchPage: number, pageSize: number) => {
         return getRoles({ detailed: true, page: fetchPage, page_size: pageSize, ...fetchParams })
@@ -134,10 +135,8 @@ export const RoleList = () => {
                     <Typography variant="h1">Roles</Typography>
                     {roles && roles.items?.length > 0 &&
                         <Can permission="role:create">
-                            <CommonButton actionType="CREATE" onClick={() => { handleSidebar("CREATE_ROLE", null) }}
-                                sx={{ marginLeft: "auto" }} onlyTooltip>
-                                Agregar
-                            </CommonButton>
+                            <ListAddButton onClick={() => { handleSidebar("CREATE_ROLE", null) }}
+                                sx={{ marginLeft: "auto" }} />
                         </Can>
                     }
                 </Stack>

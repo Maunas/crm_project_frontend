@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react';
 import { GenericContainer } from 'shared/layout/container/GenericContainer';
 import PaginationComponent from 'shared/ui/lists/PaginationComponent';
 import { ResponsiveListItem } from 'shared/ui/lists/CustomListItem';
-import CommonButton from 'shared/ui/buttons/CommonButton';
 import { EnabledIcon } from 'shared/ui/lists/Icons';
 import { useListPagination } from 'src/hooks/useListPagination';
 import type { FieldAutomationDetailed } from 'src/types/automation';
@@ -21,6 +20,7 @@ import { DisableConfirmDialog } from 'src/components/ui/feedback/ConfirmationDia
 import { useOrderSeachList } from 'src/hooks/useOrderSearchLists';
 import { OrderSearchMenu } from 'src/components/ui/lists/OrderMenu';
 import { Can } from 'src/components/auth/Can';
+import { ListAddButton } from 'src/components/ui/buttons/ExpandingButton';
 
 const ORDER_AUTO_FIELDS = [
   { name: "name", label: "Orden Alfabético" },
@@ -34,8 +34,10 @@ const SEARCH_AUTO_FIELDS = [
 
 const DEFAULT_FIELDS: OrderSearchParams = { order_by: "priority", ascending: true }
 
+// id="" es el sentinel de "ninguna campaña seleccionada" (antes era -1; Campaign.id pasó a
+// ser uuid y ya no puede usarse un número como sentinel).
 const NONE_OPTION: Campaign = {
-  id: -1,
+  id: "",
   name: "-- Ninguna --",
   organization_id: null,
   workspace_id: null
@@ -48,12 +50,12 @@ export const AutomationList = () => {
   const urlCampaignId = searchParams.get('campaign');
 
   const [campaigns, setCampaigns] = useState<Campaign[]>([NONE_OPTION]);
-  const [selectedCampaignId, setSelectedCampaignId] = useState<number>(urlCampaignId ? Number(urlCampaignId) : -1);
+  const [selectedCampaignId, setSelectedCampaignId] = useState<string>(urlCampaignId ?? "");
   const [automations, setAutomations] = useState<Paginable<FieldAutomationDetailed> | null>(null);
 
-  const isCampaignSelected = selectedCampaignId !== -1
+  const isCampaignSelected = selectedCampaignId !== ""
 
-  const { fetchParams, changeHandlers } = useOrderSeachList(DEFAULT_FIELDS)
+  const { fetchParams, changeHandlers } = useOrderSeachList("automations", undefined, DEFAULT_FIELDS)
 
   const { fetchPage, pageSize, refresh, pageComponentProps } = useListPagination(automations);
 
@@ -71,10 +73,10 @@ export const AutomationList = () => {
   useEffect(() => { fetchCmpLoad() }, [fetchCmpLoad]);
 
 
-  const fetchAutomations = useCallback((fetchPage: number, pageSize: number, selectedCampaignId: number) => {
+  const fetchAutomations = useCallback((fetchPage: number, pageSize: number, selectedCampaignId: string) => {
     return getFieldAutomations({
       detailed: true, page_size: pageSize, page: fetchPage,
-      campaign_id: selectedCampaignId as number, ...fetchParams
+      campaign_id: selectedCampaignId, ...fetchParams
     })
       .then(setAutomations)
       .catch(e => showCommonErrorToast(e, "Error recuperando la lista de automatizaciones."));
@@ -88,10 +90,10 @@ export const AutomationList = () => {
     fetchAutoLoad(fetchPage, pageSize, selectedCampaignId)
   }, [fetchPage, refresh, pageSize, selectedCampaignId, fetchAutoLoad, isCampaignSelected]);
 
-  const handleCampaignChange = (id: number) => {
+  const handleCampaignChange = (id: string) => {
     setSelectedCampaignId(id);
-    if (id !== -1) {
-      setSearchParams({ campaign: id.toString() });
+    if (id !== "") {
+      setSearchParams({ campaign: id });
     } else {
       searchParams.delete('campaign');
       setSearchParams(searchParams);
@@ -101,7 +103,7 @@ export const AutomationList = () => {
   const handleDelete = useCallback((auto: FieldAutomationDetailed) => {
     return deleteFieldAutomation(auto.id).then(() => {
       // Refrescar la lista
-      fetchAutomations(fetchPage, pageSize, selectedCampaignId as number)
+      fetchAutomations(fetchPage, pageSize, selectedCampaignId)
     })
       .catch(e => showCommonErrorToast(e, "Error eliminando la automatización."));
   }, [fetchPage, pageSize, selectedCampaignId, fetchAutomations])
@@ -131,16 +133,11 @@ export const AutomationList = () => {
               } />
           </Stack>
           <Can permission="field_automation:create">
-            <CommonButton
-              actionType='CREATE'
-              onlyTooltip
+            <ListAddButton
               disabled={!isCampaignSelected}
               component={Link}
               to={`/automations/create?campaign=${selectedCampaignId}`}
-              sx={{ ml: "auto" }}
-            >
-              Nueva Automatización
-            </CommonButton>
+              sx={{ ml: "auto" }} />
           </Can>
         </Stack>
 

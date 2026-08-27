@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useRef, useState } from 'react'
+import { cloneElement, memo, useCallback, useEffect, useRef, useState } from 'react'
 import { LeadFilters } from '../leadListOptions/LeadFilters'
 import { ViewForm } from '../leadListOptions/LeadViewMenu'
 import PaginationComponent from 'shared/ui/lists/PaginationComponent'
@@ -11,11 +11,13 @@ import type { LeadFilter, LeadListParams, Paginable, DictionaryItem } from 'src/
 import {
     alpha, Box, Button, Collapse, IconButton,
     List, ListItem, ListItemButton, ListItemText, Stack,
-    ToggleButton, ToggleButtonGroup, Tooltip, Typography, useTheme
+    ToggleButton, ToggleButtonGroup, Toolbar, Tooltip, Typography, useTheme
 } from '@mui/material'
 import FilterAltIcon from '@mui/icons-material/FilterAlt'
 import TableChartIcon from '@mui/icons-material/TableChart'
 import ViewColumnIcon from '@mui/icons-material/ViewColumn'
+import ViewListIcon from '@mui/icons-material/ViewList'
+import StyleIcon from '@mui/icons-material/Style'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
@@ -26,6 +28,7 @@ import LockIcon from '@mui/icons-material/Lock'
 import SaveIcon from '@mui/icons-material/Save'
 import AddIcon from '@mui/icons-material/Add'
 import SortIcon from '@mui/icons-material/Sort'
+import ACTION_ICONS from 'src/components/ui/icons/ActionIcons'
 
 interface LeadSidebarProps {
     campaignId: number | string | null
@@ -41,15 +44,23 @@ interface LeadSidebarProps {
         loadView: (view: LeadView) => void
         currentView: LeadViewParams | undefined
     }
+    // Se necesita acá para poder abrir, desde "Opciones de Vista", los mismos modales
+    // (columns_selector / card_fields_selector) que se renderizan en LeadListPage -- controlados
+    // de forma centralizada vía useModal(), no hay estado propio del sidebar para esto.
+    modalProps: {
+        openModalId?: string
+        handleOpen: (idModal: string) => void
+        handleClose: () => void
+    }
     onToggle: () => void
     formResetKey?: number
 }
 
 // ── Grupos de visibilidad ─────────────────────────────────────────────────
 const VISIBILITY_GROUPS = [
-    { code: 'PUBLIC',  label: 'Públicas',  icon: PublicIcon,  color: '#16a34a' },  // green
-    { code: 'TEAM',    label: 'Equipo',    icon: PeopleIcon,  color: '#2563eb' },  // blue
-    { code: 'PRIVATE', label: 'Privadas',  icon: LockIcon,    color: '#d97706' },  // amber
+    { code: 'PUBLIC', label: 'Públicas', icon: PublicIcon, color: '#16a34a' },  // green
+    { code: 'TEAM', label: 'Equipo', icon: PeopleIcon, color: '#2563eb' },  // blue
+    { code: 'PRIVATE', label: 'Privadas', icon: LockIcon, color: '#d97706' },  // amber
 ] as const
 
 // ── Componente ViewGroup ──────────────────────────────────────────────────
@@ -58,7 +69,7 @@ interface ViewGroupProps {
     views: LeadView[]
     onLoad: (view: LeadView) => void
     onEdit: (view: LeadView) => void
-    onDelete: (viewId: number) => void
+    onDelete: (viewId: string) => void
     visibilities: DictionaryItem[]
 }
 
@@ -147,7 +158,7 @@ const ViewGroup = memo(({ group, views, onLoad, onEdit, onDelete }: ViewGroupPro
 // ── Sidebar principal ─────────────────────────────────────────────────────
 export const LeadSidebar = memo(({
     campaignId, filters, headers, setFiltersAndHeaders,
-    presentationProps, viewUpdateProps, onToggle, formResetKey
+    presentationProps, viewUpdateProps, modalProps, onToggle, formResetKey
 }: LeadSidebarProps) => {
 
     const { palette } = useTheme()
@@ -159,7 +170,9 @@ export const LeadSidebar = memo(({
 
     const fetchLeadViews = useCallback((page: number) => {
         if (!campaignId) return Promise.resolve()
-        return getLeadViews({ only_active: true, page_size: pageSize, page, campaign_id: Number(campaignId) })
+        // campaignId antes se forzaba a Number(); eso mandaba NaN como filtro y la lista de
+        // "Vistas Guardadas" del sidebar nunca cargaba nada.
+        return getLeadViews({ only_active: true, page_size: pageSize, page, campaign_id: String(campaignId) })
             .then(setCurrentViews)
     }, [campaignId, pageSize])
 
@@ -168,7 +181,7 @@ export const LeadSidebar = memo(({
         getDictionaries(['lead_view_visibilities']).then(res => setVisibilities(res.lead_view_visibilities ?? []))
     }, [])
 
-    const handleDeleteView = useCallback((viewId: number) => {
+    const handleDeleteView = useCallback((viewId: string) => {
         deleteView(viewId).then(() => fetchLeadViews(fetchPage))
     }, [fetchLeadViews, fetchPage])
 
@@ -212,26 +225,20 @@ export const LeadSidebar = memo(({
         <Stack sx={{ height: '100%', overflow: 'hidden', bgcolor: 'background.paper' }}>
 
             {/* ── Header ── */}
-            <Stack direction="row"
-                sx={{ justifyContent: 'space-between', alignItems: 'center', px: 2, py: 1.5, borderBottom: `1px solid ${palette.divider}`, flexShrink: 0 }}>
+            <Toolbar sx={{ borderBottom: `1px solid ${palette.divider}` }} >
                 <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-                    <FilterAltIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-                    <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                    {cloneElement(ACTION_ICONS.FILTER, { sx: { color: "text.secondary" } })}
+                    <Typography variant="body2" sx={{ fontWeight: 600, lineHeight: 1 }}>
                         Filtros y Vistas
                     </Typography>
+
                 </Stack>
-                <Tooltip title="Ocultar panel" placement="right">
-                    <IconButton size="small" onClick={onToggle}
-                        sx={{ color: 'text.secondary', '&:hover': { color: 'text.primary' } }}>
-                        <ChevronRightIcon sx={{ fontSize: 18, transform: 'rotate(180deg)' }} />
-                    </IconButton>
-                </Tooltip>
-            </Stack>
+            </Toolbar>
 
             {/* ── Tipo de Vista ── */}
             <Box sx={{ px: 2, py: 1.5, borderBottom: `1px solid ${palette.divider}`, flexShrink: 0 }}>
                 <Typography variant="caption"
-                    sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.7, color: 'text.disabled', display: 'block', mb: 1 }}>
+                    sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.7, color: 'text.secondary', display: 'block', mb: 1 }}>
                     Tipo de Vista
                 </Typography>
                 <ToggleButtonGroup
@@ -256,6 +263,32 @@ export const LeadSidebar = memo(({
                 </ToggleButtonGroup>
             </Box>
 
+            {/* ── Opciones de Vista ──
+                Tabla: selector de columnas (siempre existió, reubicado acá desde el toolbar
+                superior). Tablero: selector de elementos de la tarjeta (nuevo). Un solo botón,
+                condicional al modo -- no tiene sentido mostrar los dos a la vez. */}
+            <Box sx={{ px: 2, py: 1.5, borderBottom: `1px solid ${palette.divider}`, flexShrink: 0 }}>
+                <Typography variant="caption"
+                    sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.7, color: 'text.disabled', display: 'block', mb: 1 }}>
+                    Opciones de Vista
+                </Typography>
+                {presentationProps.presentationMode === 'TABLE' ? (
+                    <Button variant="outlined" size="small" fullWidth
+                        startIcon={<ViewListIcon sx={{ fontSize: 16 }} />}
+                        onClick={() => modalProps.handleOpen('columns_selector')}
+                        sx={{ justifyContent: 'flex-start', color: 'text.secondary', borderColor: 'divider' }}>
+                        Campos a Mostrar
+                    </Button>
+                ) : (
+                    <Button variant="outlined" size="small" fullWidth
+                        startIcon={<StyleIcon sx={{ fontSize: 16 }} />}
+                        onClick={() => modalProps.handleOpen('card_fields_selector')}
+                        sx={{ justifyContent: 'flex-start', color: 'text.secondary', borderColor: 'divider' }}>
+                        Elementos de la Tarjeta
+                    </Button>
+                )}
+            </Box>
+
             {/* ── Área scrollable ── */}
             <Box sx={{ flex: 1, overflowY: 'auto' }}>
 
@@ -264,7 +297,7 @@ export const LeadSidebar = memo(({
                     <Stack ref={saveViewRef} direction="row"
                         sx={{ justifyContent: 'space-between', alignItems: 'center', px: 2, pb: 0.75 }}>
                         <Typography variant="caption"
-                            sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.7, color: 'text.disabled' }}>
+                            sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.7, color: 'text.secondary' }}>
                             Vistas Guardadas
                         </Typography>
                         <Tooltip title="Guardar vista actual">
@@ -314,13 +347,12 @@ export const LeadSidebar = memo(({
                         <LeadFilters
                             applyFilters={applyFilters}
                             filters={{ filters, headers }}
-                            campaignId={Number(campaignId)}
+                            campaignId={String(campaignId)}
                             onClose={() => { }}
                             showCancelButton={false}
                             showTitle={false}
                             showHeaders={false}
                             showSectionHeader
-                            activeFilterCount={filters.length}
                             formResetKey={formResetKey}
                         />
                     ) : (
@@ -345,6 +377,6 @@ export const LeadSidebar = memo(({
                 handleClose={handleCloseForm}
                 handleCreate={handleSaveView}
             />
-        </Stack>
+        </Stack >
     )
 })

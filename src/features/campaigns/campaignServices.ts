@@ -10,8 +10,12 @@ export const getCampaigns = async<T extends CampaignParams>(params?: T):
     return campaigns.data
 }
 
-export const getCampaign = async (id: number): Promise<CampaignDetailed> => {
-    const campaign = await axiosCRM.get(`/campaigns/${id}`)
+export const getCampaign = async (id: string): Promise<CampaignDetailed> => {
+    // detailed: true es obligatorio: sin él el backend devuelve CampaignResponse (sin
+    // creator/updater, que solo existen en CampaignDetailedResponse) y el front cae al
+    // fallback "Sistema" en DetailsMetadata aunque la campaña sí tenga creador/editor
+    // reales. Mismo patrón de bug ya resuelto antes en getFieldAutomation (ver ese archivo).
+    const campaign = await axiosCRM.get(`/campaigns/${id}`, { params: { detailed: true } })
     return campaign.data
 }
 
@@ -20,17 +24,17 @@ export const createCampaign = async (body: CampaignPost): Promise<CampaignDetail
     return campaign.data
 }
 
-export const updateCampaign = async (body: CampaignPost, id: number): Promise<CampaignDetailed> => {
+export const updateCampaign = async (body: CampaignPost, id: string): Promise<CampaignDetailed> => {
     const campaign = await axiosCRM.put(`/campaigns/${id}`, body)
     return campaign.data
 }
 
-export const disableCampaign = async (id: number): Promise<DeleteResponse> => {
+export const disableCampaign = async (id: string): Promise<DeleteResponse> => {
     const cmp = await axiosCRM.delete(`/campaigns/${id}`)
     return cmp.data
 }
 
-export const enableCampaign = async (id: number): Promise<EnableResponse> => {
+export const enableCampaign = async (id: string): Promise<EnableResponse> => {
     const cmp = await axiosCRM.put(`/campaigns/activate/${id}`)
     return cmp.data
 }

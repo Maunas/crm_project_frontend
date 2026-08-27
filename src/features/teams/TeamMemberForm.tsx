@@ -19,7 +19,7 @@ import ACTION_ICONS from "shared/ui/icons/ActionIcons"
 interface TeamMemberFormSidebarProps {
     team: TeamDetailed,
     existingMember?: TeamMemberDetailed,
-    excludedUserIds: number[],
+    excludedUserIds: string[],
     closeSidebar: () => void,
     updateEntityOnList: (entity: TeamMemberDetailed) => void,
 }
@@ -55,13 +55,14 @@ export const TeamMemberFormSidebar = ({ team, existingMember, excludedUserIds, c
 interface TeamMemberFormProps {
     team: TeamDetailed,
     existingMember?: TeamMemberDetailed,
-    excludedUserIds: number[],
+    excludedUserIds: string[],
     submit: (data: TeamMemberPost | TeamMemberUpdate) => Promise<void>,
     onCancel: () => void
 }
 
 interface FormValues {
-    user_id: number | null,
+    // uuid de User (UserPublic.id ya lo devuelve así, aunque su tipo declarado diga number).
+    user_id: string | null,
     role: string
 }
 
@@ -89,7 +90,7 @@ export const TeamMemberForm = ({ team, existingMember, excludedUserIds, submit, 
     const onSubmit = (data: FormValues) => {
         const payload = existingMember
             ? { role: data.role as "MANAGER" | "AGENT" }
-            : { team_id: team.id, user_id: data.user_id as number, role: data.role as "MANAGER" | "AGENT" }
+            : { team_id: team.id, user_id: data.user_id as string, role: data.role as "MANAGER" | "AGENT" }
         return submit(payload)
             .catch(e => setFormErrors(e, setError))
     }

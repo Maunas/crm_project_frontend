@@ -28,9 +28,12 @@ import { useUserContext } from "src/stores/UserContext"
 interface LeadFieldSectionsProps {
     lead: LeadDetailed,
     updateLeadInfo: (lead: LeadDetailed, reloadAudits?: boolean) => void
+    //Ver LeadInfo (LeadDetails.tsx) -- true desde el sidebar de detalle rápido: todas las secciones
+    //quedan desplegadas y dejan de poder plegarse (no se pasa onChange ni expandIcon al Accordion).
+    forceExpanded?: boolean
 }
 
-export const LeadFieldSections = ({ lead, updateLeadInfo }: LeadFieldSectionsProps) => {
+export const LeadFieldSections = ({ lead, updateLeadInfo, forceExpanded = false }: LeadFieldSectionsProps) => {
 
     //Para datos que necesitan un modal
     const { modalProps } = useModal()
@@ -105,9 +108,9 @@ export const LeadFieldSections = ({ lead, updateLeadInfo }: LeadFieldSectionsPro
     return (
         <Box>
             {fieldValuesBySection.map((section, idx) =>
-                <Accordion expanded={expanded === idx} onChange={onExpand(idx)} key={`section-${idx}`}
+                <Accordion expanded={forceExpanded || expanded === idx} onChange={forceExpanded ? undefined : onExpand(idx)} key={`section-${idx}`}
                     component={GenericPaper} elevation={0} sx={{ p: 0 }}>
-                    <ColoredAccordionSummary expandIcon={<ArrowDropDownIcon />}
+                    <ColoredAccordionSummary expandIcon={forceExpanded ? undefined : <ArrowDropDownIcon />}
                         color={section?.sectionData?.color} isFirst={idx === 0} isLast={idx === fieldValuesBySection.length - 1}
                         aria-controls={`panel${idx + 1}-content`} id={`panel${idx + 1}-header`}>
                         {editingSectionId === section.id ? (
@@ -128,6 +131,11 @@ export const LeadFieldSections = ({ lead, updateLeadInfo }: LeadFieldSectionsPro
                                     }
                                     if (e.key === "Escape") {
                                         e.preventDefault()
+                                        // stopPropagation: sin esto, Escape también burbujeaba hasta el
+                                        // listener global que cierra LeadDetailsSidebar (el panel embebido
+                                        // del listado de leads) -- cancelar el renombre de una sección no
+                                        // debería cerrar todo el panel de paso.
+                                        e.stopPropagation()
                                         cancelEditingSectionName()
                                     }
                                 }}
@@ -230,8 +238,15 @@ export const LeadFieldContent = (props: LeadFieldProps) => {
             //para cargar." de más abajo, igual que BOOL/DATE/FILE.
             case "STRING": return value ? <StringValue value={`${value}`} idModal={`${fieldValue?.field_id}-${fieldValue?.id}`}
                 modalProps={modalProps} subtype={subtypeCode ?? undefined} /> : undefined
-            case "NUMBER": return <NumberValue value={typeof value === "string" ? Number(value) : undefined}
-                subtype={subtypeCode!} ratingCounter />
+            // Bug real encontrado 2026-08-11: antes esto siempre devolvía un elemento <NumberValue/>
+            // (nunca undefined), a diferencia de STRING/BOOL/DATE de arriba/abajo -- así que el
+            // placeholder "Sin valor. Clic para cargar." nunca aparecía para un NUMBER vacío
+            // (ej. Calificación Estrellas sin cargar), y sin nada visible tampoco quedaba claro
+            // dónde hacer clic para editarlo.
+            case "NUMBER": return (value !== null && value !== undefined && value !== "")
+                ? <NumberValue value={typeof value === "string" ? Number(value) : undefined}
+                    subtype={subtypeCode!} ratingCounter />
+                : undefined
 
             //A diferencia de StringValue/NumberValue (que ya devuelven nada si no hay valor cargado),
             //BoolValue/DateValue/ModalValue no se autoguardan contra un valor vacío: sin este chequeo,
@@ -418,9 +433,21 @@ const InlineFieldEdit = ({ fieldValue, lead, updateLeadInfo, children, editing, 
         onEditingChange(false)
     }
 
+    //Al hacer clic sobre un elemento no focuseable del grupo (ej. los íconos de estrella de un campo
+    //Rating), el navegador dispara el blur con relatedTarget = null ANTES de mover el foco al input asociado al label 
+    // Este ref marca que el próximo blur proviene de un mousedown dentro
+    //del grupo, y handleGroupBlur lo ignora. Se limpia solo vía timeout porque el blur puede no
+    //dispararse (si nada tenía el foco) y el flag no debe quedar "pegado".
+    const pointerDownInsideRef = useRef(false)
+    const handlePointerDown = () => {
+        pointerDownInsideRef.current = true
+        window.setTimeout(() => { pointerDownInsideRef.current = false }, 0)
+    }
+
     //Blur del grupo entero: si el foco se movió a otro campo DENTRO del mismo grupo (ej. del
     //selector padre a su hijo dependiente), no se considera una salida real y no se guarda todavía.
     const handleGroupBlur = (e: FocusEvent<HTMLDivElement>) => {
+        if (pointerDownInsideRef.current) return
         if (containerRef.current?.contains(e.relatedTarget as Node)) return
         handleSubmit(submitLoad)()
     }
@@ -457,7 +484,7 @@ const InlineFieldEdit = ({ fieldValue, lead, updateLeadInfo, children, editing, 
     }
 
     return (
-        <Box ref={containerRef} onBlur={handleGroupBlur} onKeyDown={onKeyDown}>
+        <Box ref={containerRef} onBlur={handleGroupBlur} onKeyDown={onKeyDown} onPointerDown={handlePointerDown}>
             <Stack spacing={1.5}>
                 <LeadFormFieldType register={register} control={control} setValue={setValue} name="values.0.value"
                     leadField={fieldData} lead={lead} size="small" errorMessage={errors?.values?.[0]?.value?.message} />

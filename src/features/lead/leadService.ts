@@ -15,8 +15,11 @@ export const getFilteredLeads = async <T extends ListParams>(body: { filters: Le
   return lead.data;
 };
 
-export const getLead = async (id: number): Promise<LeadDetailed> => {
-  const lead = await axiosCRM.get(`leads/${id}`);
+// detailed=true es necesario: sin él la respuesta no trae lead_field_section en cada
+// LeadFieldValueResponse.field, y el detalle del lead depende de esa propiedad para
+// agrupar los campos en secciones.
+export const getLead = async (id: string): Promise<LeadDetailed> => {
+  const lead = await axiosCRM.get(`leads/${id}`, { params: { detailed: true } });
   return lead.data;
 };
 export const simulateCreateLead = async (body: FormData): Promise<Lead> => {
@@ -29,26 +32,27 @@ export const createLead = async (body: FormData): Promise<LeadDetailed> => {
   return lead.data;
 };
 
-export const updateLead = async (body: FormData, id: number): Promise<Lead> => {
+export const updateLead = async (body: FormData, id: string): Promise<Lead> => {
   const lead = await axiosCRM.put(`leads/${id}`, body);
   return lead.data;
 };
 
-export const enableLead = async (id: number): Promise<EnableResponse> => {
+export const enableLead = async (id: string): Promise<EnableResponse> => {
   const lead = await axiosCRM.put(`leads/active/${id}`);
   return lead.data;
 };
-export const disableLead = async (id: number): Promise<DeleteResponse> => {
+export const disableLead = async (id: string): Promise<DeleteResponse> => {
   const lead = await axiosCRM.delete(`leads/${id}`);
   return lead.data;
 };
 
-export const bulkDeleteLead = async (body: { ids: number[] }): Promise<BulkDeleteResponse> => {
+export const bulkDeleteLead = async (body: { ids: string[] }): Promise<BulkDeleteResponse> => {
   const res = await axiosCRM.post(`leads/bulk-delete`, body);
   return res.data;
 };
 
-export const updateLeadTags = async (ids: number[], leadId: number): Promise<Lead> => {
+// ids son tag ids: la API espera el id interno de Tag (no el uuid). leadId es el id del lead.
+export const updateLeadTags = async (ids: number[], leadId: string): Promise<Lead> => {
   const lead = await axiosCRM.put(`leads/${leadId}`, { tag_ids: ids });
   return lead.data;
 };
@@ -59,7 +63,7 @@ export const getLeadViews = async <T extends LeadListParams>(params?: T)
   return view.data;
 };
 
-export const getLeadView = async (id: number): Promise<LeadViewDetailed> => {
+export const getLeadView = async (id: string): Promise<LeadViewDetailed> => {
   const view = await axiosCRM.get(`lead_views/${id}`);
   return view.data;
 };
@@ -69,22 +73,27 @@ export const createView = async (body: LeadViewPost): Promise<LeadViewDetailed> 
   return view.data;
 };
 
-export const updateView = async (body: LeadViewPost, id: number): Promise<LeadView> => {
+export const updateView = async (body: LeadViewPost, id: string): Promise<LeadView> => {
   const view = await axiosCRM.put(`lead_views/${id}`, body);
   return view.data;
 };
 
-export const enableView = async (id: number): Promise<EnableResponse> => {
+export const enableView = async (id: string): Promise<EnableResponse> => {
   const view = await axiosCRM.put(`lead_views/active/${id}`);
   return view.data;
 };
-export const deleteView = async (id: number): Promise<DeleteResponse> => {
+export const deleteView = async (id: string): Promise<DeleteResponse> => {
   const view = await axiosCRM.delete(`lead_views/${id}`);
   return view.data;
 };
 
-export const exportLeads = async (campaignId: number): Promise<void> => {
-  const response = await axiosCRM.get(`export/${campaignId}`, {
+// Bug real encontrado 2026-08-11 (reportado por el usuario -- "al exportar el excel no aplica los
+// filtros"): antes este endpoint era GET sin body, así que siempre exportaba TODOS los leads de
+// la campaña sin importar los filtros/búsqueda aplicados en el listado. Ahora es POST y manda los
+// mismos filtros que ya usa getFilteredLeads (/leads/search), más el texto libre buscado.
+export const exportLeads = async (campaignId: string, filters: LeadFilter[] = [], query?: string): Promise<void> => {
+  const response = await axiosCRM.post(`export/${campaignId}`, { filters }, {
+    params: { query },
     responseType: 'blob', // Crucial para archivos
   });
 
@@ -126,16 +135,18 @@ export const detectImportHeaders = async (file: File): Promise<{ headers: string
 };
 
 //Procesa import
-export const processImport = async (campaignId: number, file: File, mapping: Record<string, string>): Promise<unknown> => {
+export const processImport = async (campaignId: string, file: File, mapping: Record<string, string>): Promise<unknown> => {
   const formData = new FormData();
-  formData.append("campaign_id", campaignId.toString());
+  formData.append("campaign_id", campaignId);
   formData.append("mapping", JSON.stringify(mapping));
   formData.append("file", file);
   const res = await axiosCRM.post(`import/process`, formData);
   return res.data;
 }
 
-export const changeStateLead = async (lead_id: number, state_id: number): Promise<LeadDetailed> => {
+// state_id es el id de LeadState (Ciclo de Vida), que en types/leadFlow.ts sigue declarado
+// como number -- por eso el tipo es string | number (la API acepta ambos).
+export const changeStateLead = async (lead_id: string, state_id: string | number): Promise<LeadDetailed> => {
   const body = { "new_state_id": state_id }
   const response = await axiosCRM.post(`leads/${lead_id}/change_state`, body);
   return response.data;
@@ -148,7 +159,7 @@ export const bulkAssignLeads = async (body: BulkAssignRequest): Promise<Lead[]> 
   return response.data;
 };
 
-export const changeContactStateLead = async (lead_id: number, state_id: number): Promise<LeadDetailed> => {
+export const changeContactStateLead = async (lead_id: string, state_id: string): Promise<LeadDetailed> => {
   // Antes usaba PUT /leads/{id} (el mismo que cualquier campo genérico) y no dejaba
   // ningún rastro de auditoría. Ahora usa el endpoint dedicado, igual que changeStateLead.
   const body = { "new_contact_state_id": state_id }

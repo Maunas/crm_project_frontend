@@ -31,7 +31,7 @@ const HeaderMenu = memo(() => {
     const fullName = user ? [user.name, user.last_name].filter(Boolean).join(" ") : ""
     const roleLabel = useRoleLabel(user, activeOrg)
 
-    // Solo owners y superusers pueden invitar (no aplica a Panel Global id=1)
+    // Solo owners y superusers pueden invitar (no aplica a Panel Global, is_system)
     const canInvite = user?.is_superuser || (
         activeOrg && user?.organizations_access.some(
             a => a.organization_id === activeOrg.id && a.is_owner
@@ -148,7 +148,7 @@ const HeaderMenu = memo(() => {
                 <ListItemIcon><PersonOutlined fontSize="small" /></ListItemIcon>
                 <ListItemText>Mi perfil</ListItemText>
             </MenuItem>
-            {canInvite && activeOrg && activeOrg.id !== 1 && (
+            {canInvite && activeOrg && !activeOrg.is_system && (
                 <MenuItem dense onClick={() => { handleMenuClose(); setInviteOpen(true) }}>
                     <ListItemIcon><PersonAddOutlined fontSize="small" /></ListItemIcon>
                     <ListItemText>Invitar a la organizacion</ListItemText>

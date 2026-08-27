@@ -146,15 +146,16 @@ showCommonErrorToast(error, "Error al guardar")
 ```
 
 ### Paginación + búsqueda + orden
-Usar `useListPagination`, `useOrderSearchList`, y los componentes `PaginationComponent`, `SearchInput`, `OrderMenu`, `OrderSearchMenu`:
+Usar `useListPagination`, `useOrderSeachList`, y los componentes `PaginationComponent`, `SearchInput`, `OrderMenu`, `OrderSearchMenu`:
 ```tsx
 const { fetchPage, pageSize, goToPageOne, pageComponentProps } = useListPagination(list)
-const { fetchParams, changeHandlers } = useOrderSearchList()
+const { fetchParams, changeHandlers } = useOrderSeachList("leads")
 // fetch({ page: fetchPage, page_size: pageSize, ...fetchParams })
 // ...
 <OrderSearchMenu {...changeHandlers} />
 <PaginationComponent {...pageComponentProps} />
 ```
+> `useOrderSeachList(entityName, id?, defaultValues?)` persiste los filtros avanzados en `sessionStorage` por entidad y organización activa (ver `docs/hooks_y_utilidades/hooks.md`).
 
 ### Listas responsivas con acciones
 Usar `ResponsiveListItem` para listas con hover actions (escritorio) que se convierten en menú contextual (táctil):
@@ -189,6 +190,16 @@ El header `X-Organization-Id` se toma de `localStorage.selected_org`. El `UserCo
 - Usar `theme.palette` en vez de colores hardcodeados
 - Para colores dinámicos del backend, usar `getColorShades(colorName | hex, theme)` que devuelve `{ LIGHTER, LIGHT, MAIN, DARK, DARKER }`
 - Los componentes `CustomChip`, `ChipSelect`, `CustomAvatar`, `GenericPaperColoredSection` aceptan `color` como prop y derivan los shades automáticamente
+
+### Sistema tipográfico
+La app usa un sistema centralizado de tipografía definido en `src/theme/typographyTheme.tsx`:
+
+- **`FONT_FAMILY`** — fuentes `display` (Sora, para títulos destacados) y `body` (Inter, para el resto)
+- **`FONT_SIZES`** — escala de tamaños `xs`/`sm`/`md`/`lg`/`xl`
+- **`TITLE_LINE_HEIGHT`** — line-height fijo para headings (`1.2`)
+- **`textTheme`** — agrupa `root`, `title` (h1-h6 con fontSize+fontWeight+lineHeight) y `variants` (body1/body2/subtitle/caption/overline/button)
+
+**Regla:** no usar `fontSize` ni `fontWeight` inline en componentes. Usar los `variant` de MUI (`h1`-`h6`, `body1`, `subtitle2`, etc.) que ya traen los valores del theme. Para texto display (títulos de stat cards, hero headers), usar `CommonCRMTitle` con `font="display"`. Para body text con tamaño personalizado, usar `CommonCRMText` con `size`.
 
 ### Texto en español
 - Todo texto visible al usuario (labels, botones, toasts, mensajes de validación) va en español
