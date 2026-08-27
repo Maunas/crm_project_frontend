@@ -5,13 +5,13 @@ import axiosCRM from "src/lib/axios";
 
 export const getLeads = async <T extends ListParams>(params?: T)
   : Promise<Paginable<T["detailed"] extends true ? LeadDetailed : Lead>> => {
-  const lead = await axiosCRM.get(`leads`, { params });
+  const lead = await axiosCRM.get(`leads/`, { params });
   return lead.data;
 };
 
 export const getFilteredLeads = async <T extends ListParams>(body: { filters: LeadFilter[] }, params?: T)
   : Promise<Paginable<T["detailed"] extends true ? LeadDetailed : Lead>> => {
-  const lead = await axiosCRM.post(`leads/search`, body, { params });
+  const lead = await axiosCRM.post(`leads/search/`, body, { params });
   return lead.data;
 };
 
@@ -23,12 +23,12 @@ export const getLead = async (id: string): Promise<LeadDetailed> => {
   return lead.data;
 };
 export const simulateCreateLead = async (body: FormData): Promise<Lead> => {
-  const lead = await axiosCRM.post(`leads/simulate`, body);
+  const lead = await axiosCRM.post(`leads/simulate/`, body);
   return lead.data;
 };
 
 export const createLead = async (body: FormData): Promise<LeadDetailed> => {
-  const lead = await axiosCRM.post(`leads`, body);
+  const lead = await axiosCRM.post(`leads/`, body);
   return lead.data;
 };
 
@@ -59,7 +59,7 @@ export const updateLeadTags = async (ids: number[], leadId: string): Promise<Lea
 
 export const getLeadViews = async <T extends LeadListParams>(params?: T)
   : Promise<Paginable<T["detailed"] extends true ? LeadViewDetailed : LeadView>> => {
-  const view = await axiosCRM.get(`lead_views`, { params });
+  const view = await axiosCRM.get(`lead_views/`, { params });
   return view.data;
 };
 
@@ -69,7 +69,7 @@ export const getLeadView = async (id: string): Promise<LeadViewDetailed> => {
 };
 
 export const createView = async (body: LeadViewPost): Promise<LeadViewDetailed> => {
-  const view = await axiosCRM.post(`lead_views`, body);
+  const view = await axiosCRM.post(`lead_views/`, body);
   return view.data;
 };
 
