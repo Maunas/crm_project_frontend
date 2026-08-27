@@ -3,7 +3,7 @@ import axios from "axios"
 import { tokenStore } from "./tokenStore"
 import type { SimpleErrorBody } from "src/types/shared"
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000"
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "https://crm-project-backend-jpwd.onrender.com/"
 
 export const axiosCRM = axios.create({
     baseURL: API_BASE_URL,
