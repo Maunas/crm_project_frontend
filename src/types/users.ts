@@ -23,7 +23,7 @@ export interface TokenResponse {
 
 // Versión reducida de usuario, usada para selects dentro de una organización (GET /users/in-org/members)
 export interface UserPublic {
-    id: number,
+    id: string,
     name: string,
     last_name: string | null,
     email: string,
@@ -31,7 +31,7 @@ export interface UserPublic {
 }
 
 export interface UserData extends Metadata {
-    id: number,
+    id: string,
     name: string,
     last_name: string | null,
     email: string,
@@ -47,7 +47,7 @@ export interface OrganizationAccess extends Metadata {
     is_owner: boolean,
     roles: Role[],
     // Codenames de todos los permisos que tiene el usuario en esta organización (unión de sus roles).
-    // Viene de GET/PUT /auth/me (UserDetailedResponse), ver backend/AGENTS.md §8.
+    // Viene de GET/PUT /auth/me (UserDetailedResponse).
     permission_objects: Permission[]
 }
 

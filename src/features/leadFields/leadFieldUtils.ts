@@ -72,7 +72,7 @@ export const getTypeOrSpecialTemplates = (typeCode: string, templateCode?: strin
 
 //Separa los fieldValues por sección
 export const getFieldsBySections = <T extends LeadFieldValue | LeadField>(fields: T[]) => {
-    const sections = new Map<number, LeadFieldsBySection<T>>()
+    const sections = new Map<string, LeadFieldsBySection<T>>()
     fields.forEach(field => {
         const section = "field" in field ? field.field?.lead_field_section : field?.lead_field_section
         if (!section) return []
@@ -92,7 +92,7 @@ export const orderFieldsBySections = <T extends LeadFieldValue | LeadField>(fiel
 
 //Separa los fields de LeadForm por sección, agregando un globalIdx para el formulario (UseFieldArray)
 export const getLeadFormFieldsBySections = (fields: FieldArrayWithId<LeadPostForm, "values", "id">[]) => {
-    const sections = new Map<number, LeadFieldsBySection<FieldArrayWithId<LeadPostForm, "values", "id">>>()
+    const sections = new Map<string, LeadFieldsBySection<FieldArrayWithId<LeadPostForm, "values", "id">>>()
     fields.forEach(field => {
         const section = field.fieldData.lead_field_section
         if (!section) return []
@@ -120,7 +120,7 @@ export interface FieldSelectorGroup<T> {
 }
 
 type SectionableField = {
-    id: number,
+    id: string | number,
     lead_field_section?: { name: string } | null
 }
 
@@ -133,7 +133,7 @@ type SectionableField = {
  * selector de campo de la app).
  */
 export const getFieldSelectorGroupName = (field: SectionableField): string =>
-    (field.id < 0 ? getNativeFieldSectionName(field.id) : undefined) ?? field.lead_field_section?.name ?? 'Otros'
+    ((!isNaN(Number(field.id)) && Number(field.id) < 0) ? getNativeFieldSectionName(Number(field.id)) : undefined) ?? field.lead_field_section?.name ?? 'Otros'
 
 /**
  * Agrupa una lista de campos (nativos + custom mezclados) en secciones contiguas, preservando el

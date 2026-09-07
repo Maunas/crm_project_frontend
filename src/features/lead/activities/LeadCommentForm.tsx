@@ -14,7 +14,7 @@ import { useUserContext } from "src/stores/UserContext"
 import { formatUserFullName } from "src/utils/formatters"
 
 interface CommentFromNoteProps {
-    leadId: number,
+    leadId: string,
     existingComment: LeadComment,
     onUpdate: (com: LeadComment) => void,
     onClose: () => void,
@@ -38,7 +38,7 @@ export const UpdateCommentFromNote = ({ existingComment, leadId, onUpdate, onClo
 }
 
 interface CommentWrapperProps {
-    leadId: number,
+    leadId: string,
     onCreate: (com: LeadComment) => void,
 }
 
@@ -72,7 +72,7 @@ export const CreateCommentWrapper = ({ leadId, onCreate }: CommentWrapperProps) 
 
 interface CommentFormProps {
     existingComment?: LeadComment,
-    leadId: number,
+    leadId: string,
     submit: (data: LeadCommentPost) => Promise<void>,
     onClose?: () => void,
     size?: "small" | "medium",

@@ -16,7 +16,7 @@ const Navbar = memo(({ open }: NavbarProps) => {
   const { activeOrg, hasPermission } = useUserContext()
 
   const options = useMemo(() =>
-    (activeOrg?.id === 1 ? GLOBAL_NAVBAR : REGULAR_NAVBAR)
+    (activeOrg?.is_system ? GLOBAL_NAVBAR : REGULAR_NAVBAR)
       .filter(op => !op.permission || (Array.isArray(op.permission) ? op.permission.some(hasPermission) : hasPermission(op.permission))),
     [activeOrg, hasPermission]
   )

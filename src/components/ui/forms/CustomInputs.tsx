@@ -1,11 +1,10 @@
 import { useState, type ReactNode } from "react";
 import NumberField, { NumberSpinner } from "./NumberField";
 import { FormErrorMessage } from "./FormFeedback";
-import { ChipTooltip } from "../details/ChipTooltip";
 import { Controller, type Control, type FieldValues, type Path, type PathValue, type UseFormRegister, } from "react-hook-form";
 import { Box, Checkbox, FormControl, FormControlLabel, FormLabel, Grid, IconButton, InputAdornment, InputLabel, OutlinedInput, Rating, Slider, Stack, Switch, TextField, Typography, useColorScheme, type InputProps, type TextFieldProps, } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import { CommonCRMText } from "../details/CommonText";
 
 interface BasicFormInput<T extends FieldValues> {
   label?: string;
@@ -77,7 +76,7 @@ export const ControlledSlider = <T extends FieldValues>
   ({ control, label, name, required = false, errorMessage, min = 0, max, defaultValue = 0, step = 1, type = "slider", size = "medium", ...props }: ControlledSliderProps<T>) => {
   return (
     <Controller name={name} control={control} render={({ field }) => (
-      <FormControl error={!!errorMessage} fullWidth size={size}>
+      <FormControl error={!!errorMessage} fullWidth size={size} onClick={(e) => e.stopPropagation()}>
         <Stack direction="row" spacing={1} sx={{ alignItems: "center", px: 1 }}>
           {props.startAdornment}
           <Stack sx={{ flexGrow: 1 }}>
@@ -90,14 +89,33 @@ export const ControlledSlider = <T extends FieldValues>
               <Grid size="grow" sx={{ alignItems: "center", minWidth: "7rem", maxWidth: "20rem" }}>
                 {type === "slider" && (
                   <Box>
-                    <Slider {...field}
+                    {/* Bug real encontrado 2026-08-11: {...field} le pasaba a Slider el onChange
+                        de react-hook-form directo. MUI llama onChange(event, value) y RHF ignora
+                        el segundo argumento, leyendo en cambio event.target.value del input nativo
+                        -- que no siempre coincide con el valor real que Slider calculó/mostró. Se
+                        cablea explícito como ya hace NumberSpinner acá abajo. */}
+                    <Slider {...field} onChange={(_, value) => field.onChange(value)}
                       value={Number(field.value) || Number(defaultValue)} size="medium"
                       color="secondary" min={min} max={max} step={step}
                     />
                   </Box>
                 )}
                 {type === "rating" && (
+                  // Bug real encontrado 2026-08-11 (reportado por Franco: clic en una estrella no
+                  // guardaba el valor nuevo). El fix anterior (pasar el 2do argumento de onChange,
+                  // igual que Slider) NO alcanza para Rating: en su handleChange interno, MUI le da
+                  // prioridad al mouse sobre el radio clickeado ("Give mouse priority over
+                  // keyboard", ver Rating.js) y sobreescribe el valor real por uno calculado a
+                  // partir de la posición X del cursor contra getBoundingClientRect() del
+                  // contenedor. Confirmado con un test aislado (React Testing Library + MUI Rating
+                  // real): clickeando el radio de valor "3" con precision={.5}, ese 2do argumento
+                  // llegó a ser 0.5 (equivocado) mientras que event.target.value (el radio
+                  // realmente clickeado) fue "3" (correcto) -- por eso el fix correcto es ignorar
+                  // el 2do argumento de onChange y leer directo del evento nativo, como abajo.
                   <Rating {...field}
+                    onChange={(event) => field.onChange(
+                      event.target.value === "" ? null : Number(event.target.value)
+                    )}
                     value={Number(field.value) || Number(defaultValue)}
                     max={max} precision={step} size="medium" sx={{ pl: 1 }}
                   />
@@ -165,16 +183,12 @@ interface ControlledCheckboxProps<T extends FieldValues> extends ControlFormInpu
 }
 
 export const ControlledCheckbox = <T extends FieldValues>
-  ({ control, label, name, required = false, errorMessage, title, tooltip }: ControlledCheckboxProps<T>) => {
+  ({ control, label, name, required = false, errorMessage, title }: ControlledCheckboxProps<T>) => {
   return (
     <FormControl error={!!errorMessage} variant="standard" >
       <FormLabel error={!!errorMessage}>{title}</FormLabel>
-      <FormControlLabel required={required}
-        label={<Stack direction="row" spacing={.5} sx={{ alignItems: "center" }}>
-          <Typography>{label}</Typography>
-          {tooltip &&
-            <ChipTooltip title={tooltip} color="info"><InfoOutlinedIcon fontSize="small" color="disabled" /></ChipTooltip>}
-        </Stack>}
+      <FormControlLabel required={required} sx={{ m: 0, textDecoration: "inherit" }}
+        label={<CommonCRMText size="sm">{label}</CommonCRMText>}
         control={
           <Controller name={name} control={control}
             render={({ field }) => (

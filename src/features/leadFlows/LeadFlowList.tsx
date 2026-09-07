@@ -38,7 +38,7 @@ export const LeadFlowList = () => {
 
     const { fetchPage, pageSize, pageComponentProps } = useListPagination(flows, 12)
 
-    const { fetchParams, changeHandlers } = useOrderSeachList()
+    const { fetchParams, changeHandlers } = useOrderSeachList("lead_flows")
 
     const fetchFlows = useCallback((fetchPage: number, pageSize: number) => getLeadFlows({
         page: fetchPage || 1, page_size: pageSize, detailed: true, ...fetchParams
@@ -84,7 +84,7 @@ export const LeadFlowListData = ({ flows, updateList }: { flows: LeadFlowDetaile
 
     const [disableFlow, setDisableFlow] = useState<LeadFlowDetailed | null>(null)
 
-    const handleEnableDisable = (id: number, isActive: boolean) => {
+    const handleEnableDisable = (id: string, isActive: boolean) => {
         if (!isActive) {
             return enableLeadFlow(id)
                 .then(() => {

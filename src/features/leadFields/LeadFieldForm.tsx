@@ -27,6 +27,7 @@ import { FormControl, InputLabel, OutlinedInput, FormHelperText, } from "@mui/ma
 import { createFieldSection, getFieldSections } from "../orgProperties/fieldSections/fieldSectionsServices";
 import { InlineColorPickerButton } from "src/components/ui/forms/ColorPicker";
 import type { LeadFieldSection } from "src/types/orgProperties";
+import { InfoTextBox } from "src/components/ui/forms/InfoBox";
 
 //Mismo color neutro por defecto que usa el picker de color libre de etiquetas nuevas (LeadTagsMenu.tsx),
 //para que el selector de color de una sección nueva arranque igual en toda la app.
@@ -59,7 +60,7 @@ export const LeadFieldFormSidebar = ({ existingLF, campaign, leadFields, updateE
         else updateInfo(res)
       })
     } else {
-      return updateLeadField(data, existingLF.id).then(res => {
+      return updateLeadField(data, `${existingLF.id}`).then(res => {
         showToast(`El campo "${res.name}" se ha actualizado con éxito`)
         updateInfo(res)
       })
@@ -117,7 +118,10 @@ export const LeadFieldForm = ({ existingLF, campaign, leadFields, submit, onCanc
     {
       campaign_id: campaign.id,
       name: existingLF?.name ?? null,
-      lead_field_section_id: existingLF?.lead_field_section?.id ?? 1,
+      // existingLF.lead_field_section es un objeto anidado con su uuid real -- a diferencia de
+      // depends_on_field_id, sí sirve tal cual acá. El fallback numérico "1" que había antes ya
+      // no es válido (el backend espera un uuid, no un id interno viejo).
+      lead_field_section_id: existingLF?.lead_field_section?.id ?? null,
       field_type_code: existingLF?.field_type_code ?? "STRING",
       field_subtype_code: existingLF?.field_subtype_code ?? "NULL",
       calculation_expression: existingLF?.calculation_expression ?? null,
@@ -125,7 +129,10 @@ export const LeadFieldForm = ({ existingLF, campaign, leadFields, submit, onCanc
       input_mask: existingLF?.input_mask ?? null,
       nomenclator_id: existingLF?.nomenclator?.id ?? null,
       related_campaign_id: existingLF?.related_campaign?.id ?? null,
-      depends_on_field_id: existingLF?.depends_on_field_id ?? null,
+      // existingLF.depends_on_field es el objeto anidado con el uuid real del campo del que
+      // depende -- antes no existía y se forzaba a null para obligar a reelegir; ahora se puede
+      // precargar igual que lead_field_section.
+      depends_on_field_id: existingLF?.depends_on_field?.id ?? null,
       required: existingLF?.required ?? false,
       is_primary: existingLF?.is_primary ?? false,
       is_visible: existingLF?.is_visible ?? true,
@@ -192,7 +199,7 @@ export const LeadFieldForm = ({ existingLF, campaign, leadFields, submit, onCanc
           addSection={section => setFieldSections(prev => [...prev, section])}
           nomenclators={nomenclators} campaigns={campaigns} types={fieldTypes} leadFields={leadFields ?? []}
           errors={errors} control={control} maskTemplates={maskTemplates}
-          existingLFId={existingLF?.id} formulas={excelFormulas} setValue={setValue} getValues={getValues}
+          existingLFId={existingLF?.id ? `${existingLF?.id}` : undefined} formulas={excelFormulas} setValue={setValue} getValues={getValues}
         />
       </SidebarContentActionsWrapper>
     </form >
@@ -210,7 +217,7 @@ interface LeadFieldFormFieldsProps {
   leadFields: LeadFieldDetailed[];
   control: Control<LeadFieldPostCreation>;
   errors: FieldErrors<LeadFieldPostCreation>;
-  existingLFId?: number;
+  existingLFId?: string;
   formulas: ExcelFormulaTemplate[];
   setValue: UseFormSetValue<LeadFieldPostCreation>;
   getValues: UseFormGetValues<LeadFieldPostCreation>;
@@ -369,27 +376,30 @@ const LeadFieldFormFields = ({ templates, maskTemplates, sections, addSection, t
         </Grid>
         <Grid size="grow" sx={{ minWidth: "20rem", justifyContent: "center" }} >
           <FormGroup row sx={{ my: .5, mx: 1, justifyContent: "space-evenly" }}>
-            <ControlledCheckbox
-              control={control}
-              name="required"
-              label="Obligatorio"
-              errorMessage={errors?.required?.message}
-              tooltip={`El campo ${required ? "no" : ""} podrá estar vacio.`}
-            />
-            <ControlledCheckbox
-              control={control}
-              name="is_primary"
-              label="Único"
-              errorMessage={errors?.is_primary?.message}
-              tooltip={`El valor ${primary ? "no" : ""}  podrá repetirse entre leads.`}
-            />
-            <ControlledCheckbox
-              control={control}
-              name="is_visible"
-              label="Visible"
-              errorMessage={errors?.is_visible?.message}
-              tooltip={`El campo ${!visible ? "no" : ""}  se verá en formularios.`}
-            />
+            <InfoTextBox infoText={`El campo ${required ? "no" : ""} podrá estar vacio.`}>
+              <ControlledCheckbox
+                control={control}
+                name="required"
+                label="Obligatorio"
+                errorMessage={errors?.required?.message}
+              />
+            </InfoTextBox>
+            <InfoTextBox infoText={`El valor ${primary ? "no" : ""}  podrá repetirse entre leads.`}>
+              <ControlledCheckbox
+                control={control}
+                name="is_primary"
+                label="Único"
+                errorMessage={errors?.is_primary?.message}
+              />
+            </InfoTextBox>
+            <InfoTextBox infoText={`El campo ${!visible ? "no" : ""}  se verá en formularios.`}>
+              <ControlledCheckbox
+                control={control}
+                name="is_visible"
+                label="Visible"
+                errorMessage={errors?.is_visible?.message}
+              />
+            </InfoTextBox>
           </FormGroup>
         </Grid>
       </Grid>

@@ -3,7 +3,7 @@ import { getFilteredLeads, getLeads } from 'features/lead/leadService';
 import type { LeadFilter, LeadListParams } from 'src/types/shared';
 
 interface NavState {
-  leadIds: number[];
+  leadIds: string[];
   filters: LeadFilter[];
   baseParams: LeadListParams | null;
   minPageLoaded: number;
@@ -12,19 +12,19 @@ interface NavState {
 }
 
 interface LeadNavigationContextProps {
-  leadIds: number[];
+  leadIds: string[];
   isLoadingNavigation: boolean;
   setListContext: (
-    ids: number[],
+    ids: string[],
     params: LeadListParams,
     filters: LeadFilter[],
     totalPages: number
   ) => void;
-  getNextLeadId: (currentId: number) => Promise<number | null>;
-  getPrevLeadId: (currentId: number) => Promise<number | null>;
-  isFirstItem: (currentId: number) => boolean;
-  isLastItem: (currentId: number) => boolean;
-  isNavigationValid: (currentId: number) => boolean;
+  getNextLeadId: (currentId: string) => Promise<string | null>;
+  getPrevLeadId: (currentId: string) => Promise<string | null>;
+  isFirstItem: (currentId: string) => boolean;
+  isLastItem: (currentId: string) => boolean;
+  isNavigationValid: (currentId: string) => boolean;
 }
 
 const LeadNavigationContext = createContext<LeadNavigationContextProps | undefined>(undefined);
@@ -67,7 +67,7 @@ export const LeadNavigationProvider = ({ children }: { children: ReactNode }) =>
 
   // Sincronizar desde la tabla (LeadListPage)
   const setListContext = useCallback((
-    ids: number[],
+    ids: string[],
     params: LeadListParams,
     filters: LeadFilter[],
     totalPages: number
@@ -82,7 +82,7 @@ export const LeadNavigationProvider = ({ children }: { children: ReactNode }) =>
     });
   }, []);
 
-  const fetchAdjacentPage = async (pageToFetch: number, direction: 'next' | 'prev'): Promise<number[]> => {
+  const fetchAdjacentPage = async (pageToFetch: number, direction: 'next' | 'prev'): Promise<string[]> => {
     if (!navState.baseParams) return [];
 
     setIsLoadingNavigation(true);
@@ -113,7 +113,7 @@ export const LeadNavigationProvider = ({ children }: { children: ReactNode }) =>
   };
 
 
-  const getNextLeadId = async (currentId: number): Promise<number | null> => {
+  const getNextLeadId = async (currentId: string): Promise<string | null> => {
     const currentIndex = navState.leadIds.indexOf(currentId);
     if (currentIndex === -1) return null;
 
@@ -130,7 +130,7 @@ export const LeadNavigationProvider = ({ children }: { children: ReactNode }) =>
     return null; // No hay más leads ni más páginas
   };
 
-  const getPrevLeadId = async (currentId: number): Promise<number | null> => {
+  const getPrevLeadId = async (currentId: string): Promise<string | null> => {
     const currentIndex = navState.leadIds.indexOf(currentId);
     if (currentIndex === -1) return null;
 
@@ -150,19 +150,19 @@ export const LeadNavigationProvider = ({ children }: { children: ReactNode }) =>
 
 
   // Funcionalidades para el front end
-  const isFirstItem = useCallback((currentId: number) => {
+  const isFirstItem = useCallback((currentId: string) => {
     const currentIdx = navState.leadIds.indexOf(currentId);
     if (currentIdx === -1 || navState.minPageLoaded > 1) return false
     return currentIdx === 0
   }, [navState.minPageLoaded, navState.leadIds])
 
-  const isLastItem = useCallback((currentId: number) => {
+  const isLastItem = useCallback((currentId: string) => {
     const currentIdx = navState.leadIds.indexOf(currentId);
     if (currentIdx === -1 || navState.maxPageLoaded < navState.totalPages) return false
     return currentIdx === navState.leadIds.length - 1
   }, [navState.leadIds, navState.maxPageLoaded, navState.totalPages])
 
-  const isNavigationValid = useCallback((currentId: number) => {
+  const isNavigationValid = useCallback((currentId: string) => {
     const currentIdx = navState.leadIds.indexOf(currentId);
     return currentIdx !== -1;
   }, [navState.leadIds])

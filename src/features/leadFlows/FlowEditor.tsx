@@ -155,6 +155,7 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
 
     const newState: FlowEditorState = {
       tempId: uuidv4(),
+      isNew: true,
       name: isInitial ? 'Inicial' : 'Nueva Etapa',
       category,
       is_initial: isInitial,
@@ -189,6 +190,7 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
     else {
       const newState: FlowEditorState = {
         tempId: uuidv4(),
+        isNew: true,
         name: stateData.name ?? (stateData.is_initial ? 'Inicial' : 'Nueva Etapa'),
         category: stateData.category ?? "OPEN",
         is_initial: stateData.is_initial ?? false,
@@ -233,8 +235,8 @@ export default function FlowEditor({ initialFlowName = '', initialFlowDescriptio
     const source = connection.source
     const target = connection.target
     if (!source || !target) return;
-    const newTransition: FlowEditorTransition = { tempId: uuidv4(), fromStateId: source, toStateId: target };
-    const newReverseTransition: FlowEditorTransition = { tempId: uuidv4(), fromStateId: target, toStateId: source };
+    const newTransition: FlowEditorTransition = { tempId: uuidv4(), isNew: true, fromStateId: source, toStateId: target };
+    const newReverseTransition: FlowEditorTransition = { tempId: uuidv4(), isNew: true, fromStateId: target, toStateId: source };
     setTransitions(prev => {
       //Si no encuentra una igual, se crea
       if (!prev.find(t => t.fromStateId === source && t.toStateId === target)) {

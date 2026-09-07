@@ -4,12 +4,8 @@ import HandleActiveButton from "shared/ui/buttons/HandleActiveButton"
 import DetailsMetadata from "shared/ui/details/DetailsMetadata"
 import CommonButton from "shared/ui/buttons/CommonButton"
 import { RoutingConditionRow } from "./RoutingConditionRow"
-import type { LeadRoutingPolicyDetailed } from "src/types/routing"
-import type { Team } from "src/types/teams"
-import type { Campaign } from "src/types/campaigns"
+import type { LeadRoutingConditionPost, LeadRoutingPolicyDetailed } from "src/types/routing"
 import type { LeadField } from "src/types/leadFields"
-import { getTeams } from "src/features/teams/teamServices"
-import { getCampaigns } from "src/features/campaigns/campaignServices"
 import { getLeadFields } from "src/features/leadFields/leadFieldServices"
 import { ButtonGroup, Chip, Divider, Stack, Typography } from "@mui/material"
 import ROUTE_ICONS from "src/components/ui/icons/RouteIcons"
@@ -25,19 +21,17 @@ interface RoutingPolicyDetailsProps {
 
 export const RoutingPolicyDetails = ({ policy, closeSidebar, handleSidebar, handleToggleActive, handleDeleteForever }: RoutingPolicyDetailsProps) => {
 
-    const [team, setTeam] = useState<Team | null>(null)
-    const [campaign, setCampaign] = useState<Campaign | null>(null)
     const [leadFields, setLeadFields] = useState<LeadField[]>([])
 
     useEffect(() => {
         if (!policy) return
-        getTeams({ only_active: false, page_size: 0 }).then(res => setTeam(res.items.find(t => t.id === policy.target_team_id) ?? null))
-        if (policy.campaign_id) {
-            getCampaigns({ only_active: false, page_size: 0 }).then(res => setCampaign(res.items.find(c => c.id === policy.campaign_id) ?? null))
-            getLeadFields({ campaign_id: policy.campaign_id, only_active: false, page_size: 0 }).then(res => setLeadFields(res.items))
+        // policy.target_team/campaign son los objetos anidados con el uuid real (Fase 4, ver
+        // backend/AGENTS.md §18) -- ya no hace falta traer el catálogo completo de equipos/
+        // campañas solo para resolver el nombre.
+        if (policy.campaign) {
+            getLeadFields({ campaign_id: policy.campaign.id, only_active: false, page_size: 0 }).then(res => setLeadFields(res.items))
         } else {
             // eslint-disable-next-line react-hooks/set-state-in-effect
-            setCampaign(null)
             setLeadFields([])
         }
     }, [policy])
@@ -67,8 +61,8 @@ export const RoutingPolicyDetails = ({ policy, closeSidebar, handleSidebar, hand
                 }
                 <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: "wrap" }}>
                     <Chip size="small" label={`Prioridad ${policy.priority}`} />
-                    <Chip size="small" color="info" label={campaign ? `Campaña: ${campaign.name}` : "Política Global"} />
-                    <Chip size="small" color="primary" label={`Equipo destino: ${team?.name ?? policy.target_team_id}`} />
+                    <Chip size="small" color="info" label={policy.campaign ? `Campaña: ${policy.campaign.name}` : "Política Global"} />
+                    <Chip size="small" color="primary" label={`Equipo destino: ${policy.target_team_id}`} />
                     <Chip size="small" label={policy.logical_operator === "AND" ? "Se deben cumplir TODAS" : "Alcanza con UNA"} />
                 </Stack>
                 <DetailsMetadata entity={policy} />
@@ -76,7 +70,7 @@ export const RoutingPolicyDetails = ({ policy, closeSidebar, handleSidebar, hand
                 <Typography variant="h3">Condiciones</Typography>
                 <Stack spacing={1.5}>
                     {policy.conditions.length > 0 ? policy.conditions.map(cond => (
-                        <RoutingConditionRow key={cond.id} condition={cond} campaignId={policy.campaign_id ?? null}
+                        <RoutingConditionRow key={cond.id} condition={cond as LeadRoutingConditionPost} campaignId={policy.campaign?.id ?? null}
                             fields={leadFields} isOnly readOnly
                             onUpdate={() => { }} onDelete={() => { }} />
                     )) : (

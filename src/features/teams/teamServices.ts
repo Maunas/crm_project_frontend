@@ -20,7 +20,7 @@ export const getTeams = async <T extends TeamParams>(params?: T):
     return teams.data
 }
 
-export const getTeam = async (id: number): Promise<TeamDetailed> => {
+export const getTeam = async (id: string): Promise<TeamDetailed> => {
     const team = await axiosCRM.get(`/teams/${id}`)
     return team.data
 }
@@ -30,17 +30,17 @@ export const createTeam = async (body: TeamPost): Promise<TeamDetailed> => {
     return team.data
 }
 
-export const updateTeam = async (body: TeamPost, id: number): Promise<TeamDetailed> => {
+export const updateTeam = async (body: TeamPost, id: string): Promise<TeamDetailed> => {
     const team = await axiosCRM.put(`/teams/${id}`, body)
     return team.data
 }
 
-export const disableTeam = async (id: number): Promise<DeleteResponse> => {
+export const disableTeam = async (id: string): Promise<DeleteResponse> => {
     const team = await axiosCRM.delete(`/teams/${id}`)
     return team.data
 }
 
-export const enableTeam = async (id: number): Promise<EnableResponse> => {
+export const enableTeam = async (id: string): Promise<EnableResponse> => {
     const team = await axiosCRM.put(`/teams/active/${id}`)
     return team.data
 }
@@ -48,8 +48,8 @@ export const enableTeam = async (id: number): Promise<EnableResponse> => {
 /******************************** Team Members ************************************/
 
 interface TeamMemberParams extends ListParams {
-    team_id?: number,
-    user_id?: number,
+    team_id?: string,
+    user_id?: string,
     role?: string,
 }
 
@@ -64,12 +64,12 @@ export const createTeamMember = async (body: TeamMemberPost): Promise<TeamMember
     return member.data
 }
 
-export const updateTeamMember = async (body: TeamMemberUpdate, id: number): Promise<TeamMemberDetailed> => {
+export const updateTeamMember = async (body: TeamMemberUpdate, id: string): Promise<TeamMemberDetailed> => {
     const member = await axiosCRM.put(`/team_members/${id}`, body)
     return member.data
 }
 
-export const deleteTeamMember = async (id: number): Promise<{ detail: string }> => {
+export const deleteTeamMember = async (id: string): Promise<{ detail: string }> => {
     const member = await axiosCRM.delete(`/team_members/${id}`)
     return member.data
 }
@@ -77,8 +77,8 @@ export const deleteTeamMember = async (id: number): Promise<{ detail: string }> 
 /******************************** Team Workspace Access ************************************/
 
 interface TeamWorkspaceAccessParams extends ListParams {
-    team_id?: number,
-    workspace_id?: number,
+    team_id?: string,
+    workspace_id?: string,
 }
 
 export const getTeamWorkspaceAccess = async <T extends TeamWorkspaceAccessParams>(params?: T):
@@ -92,7 +92,7 @@ export const createTeamWorkspaceAccess = async (body: TeamWorkspaceAccessPost): 
     return access.data
 }
 
-export const deleteTeamWorkspaceAccess = async (id: number) => {
+export const deleteTeamWorkspaceAccess = async (id: string) => {
     const access = await axiosCRM.delete(`/team_workspace_access/${id}`)
     return access.data
 }
@@ -100,8 +100,8 @@ export const deleteTeamWorkspaceAccess = async (id: number) => {
 /******************************** Team Campaign Access ************************************/
 
 interface TeamCampaignAccessParams extends ListParams {
-    team_id?: number,
-    campaign_id?: number,
+    team_id?: string,
+    campaign_id?: string,
 }
 
 export const getTeamCampaignAccess = async <T extends TeamCampaignAccessParams>(params?: T):
@@ -115,7 +115,7 @@ export const createTeamCampaignAccess = async (body: TeamCampaignAccessPost): Pr
     return access.data
 }
 
-export const deleteTeamCampaignAccess = async (id: number) => {
+export const deleteTeamCampaignAccess = async (id: string) => {
     const access = await axiosCRM.delete(`/team_campaign_access/${id}`)
     return access.data
 }

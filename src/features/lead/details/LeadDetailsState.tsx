@@ -76,29 +76,8 @@ export const LeadDetailsState = ({ lead, contactState, flowState, updateLeadInfo
 
     return (
         <Stack spacing={2} sx={{ width: "100%" }}>
-            <Stack spacing={.5}>
-                <Typography variant="caption" color="text.secondary" sx={SECTION_LABEL_SX}>
-                    Etapa del Ciclo de Vida
-                </Typography>
-                <FlowStateChips currentState={flowState} nextStates={nextFlowStates}
-                    onSelectState={(state, anchor) => { setStepperTarget(state); setStepperAnchor(anchor) }} />
-                <Popover
-                    id="flow-state-path-popover"
-                    open={Boolean(stepperAnchor)}
-                    anchorEl={stepperAnchor}
-                    onClose={closeStepperPopover}
-                    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-                    transformOrigin={{ vertical: 'top', horizontal: 'center' }}
-                >
-                    {stepperTarget &&
-                        <StateChangeList key={stepperTarget.id} title="Actualizar Etapa" leadId={lead.id}
-                            options={[]} initialSelected={stepperTarget}
-                            onClose={closeStepperPopover} onChange={handleFlowChange} submit={changeFlowState} />
-                    }
-                </Popover>
-            </Stack>
 
-            <Stack spacing={.5} sx={{ alignItems: "start" }}>
+            <Stack direction="row" spacing={1.25} sx={{ alignItems: "center" }}>
                 <Typography variant="caption" color="text.secondary" sx={SECTION_LABEL_SX}>
                     Estado
                 </Typography>
@@ -124,6 +103,29 @@ export const LeadDetailsState = ({ lead, contactState, flowState, updateLeadInfo
                         onClose={() => setContactAnchor(null)} onChange={handleContactChange} submit={changeContactState} />
                 </Popover>
             </Stack>
+            <Stack spacing={.5}>
+                <Typography variant="caption" color="text.secondary" sx={SECTION_LABEL_SX}>
+                    Etapa del Ciclo de Vida
+                </Typography>
+                <FlowStateChips currentState={flowState} nextStates={nextFlowStates}
+                    onSelectState={(state, anchor) => { setStepperTarget(state); setStepperAnchor(anchor) }} />
+                <Popover
+                    id="flow-state-path-popover"
+                    open={Boolean(stepperAnchor)}
+                    anchorEl={stepperAnchor}
+                    onClose={closeStepperPopover}
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                    transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+                >
+                    {stepperTarget &&
+                        <StateChangeList key={stepperTarget.id} title="Actualizar Etapa" leadId={lead.id}
+                            options={[]} initialSelected={stepperTarget}
+                            onClose={closeStepperPopover} onChange={handleFlowChange} submit={changeFlowState} />
+                    }
+                </Popover>
+            </Stack>
+
+            
         </Stack>
     )
 }
@@ -189,20 +191,22 @@ const FlowStateChips = ({ currentState, nextStates, onSelectState }: FlowStateCh
     )
 }
 
+// id: string | number porque cubre tanto LeadContactState.id (uuid, string) como
+// LeadState.id (todavía number en types/leadFlow.ts).
 interface StateOption {
-    id: number,
+    id: string | number,
     name: string,
     color?: string | null,
 }
 
 interface StateChangeListProps {
     title: string,
-    leadId: number,
+    leadId: string,
     options: StateOption[],
     initialSelected?: StateOption | null,
     onClose: () => void,
     onChange: (lead: LeadDetailed) => void,
-    submit: (leadId: number, stateId: number, notes?: string) => Promise<LeadDetailed>,
+    submit: (leadId: string, stateId: string | number, notes?: string) => Promise<LeadDetailed>,
 }
 
 /**

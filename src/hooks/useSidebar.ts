@@ -27,7 +27,7 @@ const deleteParam = (setParam: SetURLSearchParams) => {
 
 //Se recibe el setParams para que el padre pueda manejar parámetros no relacionados a sidebar.
 export const useSidebar = <T>(entityIdField?: keyof T, params?: URLSearchParams, setParams?: SetURLSearchParams,
-    callback?: (id: number) => Promise<T>, detailsModeName?: string
+    callback?: (id: string) => Promise<T>, detailsModeName?: string
 ) => {
     //setParams, al ser recibido como prop, es inestable y causa re-renders innecesarios.
     //Al convertirlo a un ref, se mantiene estable
@@ -66,7 +66,7 @@ export const useSidebar = <T>(entityIdField?: keyof T, params?: URLSearchParams,
         if (initFlag.current || !params) return
         const selectedId = params?.get("selected")
         if (selectedId && callback && detailsModeName) {
-            callback(Number(selectedId)).then(res => {
+            callback(selectedId).then(res => {
                 handleSidebar(detailsModeName, res)
             })
         }

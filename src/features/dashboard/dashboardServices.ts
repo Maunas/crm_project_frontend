@@ -15,10 +15,11 @@ export interface LeadsByContactState {
 }
 
 export interface RecentActivity {
-    id: number
+    // uuid real de la entidad, no el id interno. entity_id también es un uuid.
+    id: string
     action: string
     entity_type: string
-    entity_id: number
+    entity_id: string
     user_name: string | null
     created_at: string
 }

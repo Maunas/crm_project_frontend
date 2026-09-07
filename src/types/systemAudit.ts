@@ -1,10 +1,11 @@
 import type { Creator } from "./shared";
 
 export interface SystemAuditLog {
-  id: number;
+  id: string;
   organization_id: number | null;
   entity_type: string;
-  entity_id: number;
+  // uuid real de la entidad auditada (no el id interno).
+  entity_id: string;
   action: string;
   changes: Record<string, unknown> | null;
   created_at: string;

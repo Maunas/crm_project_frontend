@@ -26,7 +26,7 @@ interface RoutingConditionRowProps {
     onDelete: () => void,
     isOnly: boolean,
     fields: LeadField[],
-    campaignId: number | null,
+    campaignId: string | null,
     readOnly?: boolean,
 }
 
@@ -64,7 +64,7 @@ export const RoutingConditionRow = ({ condition, onUpdate, onDelete, isOnly, fie
             })
         } else {
             onUpdate({
-                ...condition, native_field: null, lead_field_id: allowedFields[0]?.id ?? null,
+                ...condition, native_field: null, lead_field_id: allowedFields[0]?.id ? `${allowedFields[0]?.id}` : null,
                 operator: "eq", value_str: "", value_list: null, operator_min: null, value_min: null, operator_max: null, value_max: null,
             })
         }
@@ -76,7 +76,7 @@ export const RoutingConditionRow = ({ condition, onUpdate, onDelete, isOnly, fie
     }
 
     // ── Cambiar el campo dinámico elegido ─────────────────────────────────
-    const handleDynamicFieldChange = (lead_field_id: number) => {
+    const handleDynamicFieldChange = (lead_field_id: string) => {
         onUpdate({ ...condition, lead_field_id, operator: "eq", value_str: "", value_list: null, operator_min: null, value_min: null, operator_max: null, value_max: null })
     }
 
@@ -129,7 +129,7 @@ export const RoutingConditionRow = ({ condition, onUpdate, onDelete, isOnly, fie
                         disabled={readOnly || !campaignId}
                         disableClearable
                         value={condition.lead_field_id ?? null}
-                        onChange={(fieldId) => { if (fieldId !== null) handleDynamicFieldChange(fieldId) }}
+                        onChange={(fieldId) => { if (fieldId !== null) handleDynamicFieldChange(`${fieldId}`) }}
                     />
                     {!campaignId && <Typography variant="caption" color="text.secondary">Elegí una campaña para usar campos personalizados.</Typography>}
                 </Box>
@@ -239,7 +239,7 @@ const RoutingConditionValueInput = ({ condition, onUpdate, nativeField, selected
 
     useEffect(() => {
         if (isSelector && selectedField?.nomenclator_id) {
-            getNomenclatorItems({ nomenclator_id: selectedField.nomenclator_id, page_size: 0, only_active: true })
+            getNomenclatorItems({ nomenclator_id: `${selectedField.nomenclator_id}`, page_size: 0, only_active: true })
                 .then(res => setNomenclatorItems(res.items))
         } else {
             // eslint-disable-next-line react-hooks/set-state-in-effect

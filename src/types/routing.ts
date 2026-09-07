@@ -1,4 +1,6 @@
 import type { Metadata } from "./shared";
+import type { Team } from "./teams";
+import type { Campaign } from "./campaigns";
 
 // -----------------------------------------------------------------------
 // Constantes (reflejan app/models/lead_routing_policy.py)
@@ -75,7 +77,7 @@ export type ConditionMode = "simple" | "list" | "range";
 
 export interface LeadRoutingConditionPost {
   position: number;
-  lead_field_id?: number | null;
+  lead_field_id?: string | null;
   native_field?: NativeField | null;
 
   operator?: string | null;
@@ -89,9 +91,22 @@ export interface LeadRoutingConditionPost {
   value_max?: string | null;
 }
 
-export interface LeadRoutingCondition extends LeadRoutingConditionPost {
+export interface LeadRoutingCondition extends Omit<LeadRoutingConditionPost, "lead_field_id"> {
   id: number;
   policy_id: number;
+  lead_field_id: number | null; // FK embebida: la respuesta trae el id interno, no el public_uuid
+  // Objeto anidado con el uuid real de LeadField. Preferir lead_field?.id sobre
+  // lead_field_id de arriba.
+  lead_field?: {
+    id: string;
+    active: boolean;
+    name: string;
+    order: number;
+    field_type_code?: string | null;
+    field_subtype_code?: string | null;
+    title_order?: number | null;
+    subtitle_order?: number | null;
+  } | null;
 }
 
 // -----------------------------------------------------------------------
@@ -103,8 +118,8 @@ export interface LeadRoutingPolicyBase {
   description?: string | null;
   priority: number;
   logical_operator: "AND" | "OR";
-  target_team_id: number;
-  campaign_id?: number | null;
+  target_team_id: string;
+  campaign_id?: string | null;
 }
 
 export interface LeadRoutingPolicyPost extends LeadRoutingPolicyBase {
@@ -115,9 +130,15 @@ export interface LeadRoutingPolicyUpdate extends Partial<LeadRoutingPolicyBase> 
   conditions?: LeadRoutingConditionPost[];
 }
 
-export interface LeadRoutingPolicy extends LeadRoutingPolicyBase {
-  id: number;
+export interface LeadRoutingPolicy extends Omit<LeadRoutingPolicyBase, "target_team_id" | "campaign_id"> {
+  id: string;
   organization_id: number;
+  target_team_id: number; // FK embebida: la respuesta trae el id interno, no el public_uuid
+  campaign_id?: number | null; // FK embebida: la respuesta trae el id interno, no el public_uuid
+  // Objeto anidado con el uuid real. Preferir target_team.id/campaign.id sobre
+  // target_team_id/campaign_id de arriba.
+  target_team: Team;
+  campaign?: Campaign | null;
 }
 
 export interface LeadRoutingPolicyDetailed extends LeadRoutingPolicy, Metadata {
@@ -129,8 +150,8 @@ export interface LeadRoutingPolicyDetailed extends LeadRoutingPolicy, Metadata {
 // -----------------------------------------------------------------------
 
 export interface LeadRoutingPolicyValidateRequest {
-  campaign_id?: number | null;
-  target_team_id: number;
+  campaign_id?: string | null;
+  target_team_id: string;
   logical_operator: "AND" | "OR";
   conditions: LeadRoutingConditionPost[];
 }

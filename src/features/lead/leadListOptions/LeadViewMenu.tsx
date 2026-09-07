@@ -5,11 +5,11 @@ import { FormErrorMessage } from "shared/ui/forms/FormFeedback";
 import { ChipTooltip } from 'shared/ui/details/ChipTooltip';
 import CommonButton from 'shared/ui/buttons/CommonButton';
 import { useListPagination } from "src/hooks/useListPagination";
-import { type DictionaryItem, type Paginable } from 'src/types/shared';
+import { type Paginable, type DictionaryItem } from 'src/types/shared';
 import type { LeadView, LeadViewParams } from 'src/types/leads';
 import { setFormErrors } from "src/utils/forms";
 import { deleteView, getLeadViews } from "../leadService";
-import { getDictionaries } from 'src/services/generalService';
+import { useDictionaryContext } from 'src/stores/DictionaryContext';
 import { useForm, useWatch } from 'react-hook-form';
 import { IconButton, TextField, List, ListItem, ListItemButton, ListItemText, Popover, Stack, Typography, Box } from '@mui/material';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
@@ -27,7 +27,8 @@ interface LeadViewMenuProps {
     saveView: (name: string, visibility: string, existingView?: LeadView) => Promise<unknown>;
     loadView: (view: LeadView) => void;
     currentView: LeadViewParams | undefined;
-    campaignId: number
+    // Se usa solo como filtro de getLeadViews, que el backend ya resuelve de forma genérica.
+    campaignId: string
 }
 
 export const LeadViewMenu = ({ saveView, loadView, campaignId }: LeadViewMenuProps) => {
@@ -54,7 +55,7 @@ export const LeadViewMenu = ({ saveView, loadView, campaignId }: LeadViewMenuPro
         fetchLeadViews(fetchPage)
     }, [fetchPage, fetchLeadViews])
 
-    const handleDelete = (viewId: number) => {
+    const handleDelete = (viewId: string) => {
         if (!currentViews || currentViews.items.length === 0) return
         deleteView(viewId)
             .then(() => fetchLeadViews(fetchPage))
@@ -68,10 +69,8 @@ export const LeadViewMenu = ({ saveView, loadView, campaignId }: LeadViewMenuPro
 
     const [viewFormAnchor, setViewFormAnchor] = React.useState<null | HTMLElement>(null);
 
-    const [visibilities, setVisibilities] = useState<DictionaryItem[]>([])
-    useEffect(() => {
-        getDictionaries(['lead_view_visibilities']).then(res => setVisibilities(res.lead_view_visibilities!))
-    }, [])
+    const { dictionaries } = useDictionaryContext()
+    const visibilities = useMemo(() => dictionaries.lead_view_visibilities ?? [], [dictionaries.lead_view_visibilities])
 
     const [editView, setEditView] = useState<undefined | LeadView>(undefined)
     const handleEditView = (view: LeadView) => {

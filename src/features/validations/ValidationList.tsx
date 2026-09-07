@@ -4,6 +4,7 @@ import type { LeadFieldDetailed } from 'src/types/leadFields'
 import { List, ListItem, ListItemText, Paper, Stack, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { Can } from 'src/components/auth/Can'
+import { ListAddButton } from 'src/components/ui/buttons/ExpandingButton'
 
 interface ValidationListProps {
     leadField: LeadFieldDetailed,
@@ -16,12 +17,10 @@ export const ValidationList = ({ leadField, handleSidebar }: ValidationListProps
 
     if (leadField.validation_rules.length === 0) {
         return (
-            <Stack spacing={2} sx={{ justifyContent: "center" }}>
+            <Stack spacing={2} sx={{ justifyContent: "center", alignItems: "center" }}>
                 <Typography variant="h4" sx={{ textAlign: "center" }}>No hay validaciones cargadas</Typography>
                 <Can permission="validation_rule:create">
-                    <CommonButton actionType='CREATE' variant='contained' onClick={() => handleSidebar("UPDATE_VAL", leadField)}>
-                        Agregar
-                    </CommonButton>
+                    <ListAddButton variant='contained' expanded onClick={() => handleSidebar("UPDATE_VAL", leadField)} />
                 </Can>
             </Stack>
         )

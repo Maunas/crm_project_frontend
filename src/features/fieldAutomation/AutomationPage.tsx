@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useMemo, useState, useRef, useCallback } from 'react';
 import { Can } from 'src/components/auth/Can';
 import { useUserContext } from 'src/stores/UserContext';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
@@ -14,6 +14,7 @@ import { getLeadFlowStates } from '../leadFlows/leadFlowServices/FlowService';
 import { getTeams } from '../lead/teamService';
 import { getUsersInOrg } from 'src/features/auth/userServices';
 import { getCampaign } from 'src/features/campaigns/campaignServices';
+import { useDictionaryContext } from 'src/stores/DictionaryContext';
 import { showCommonErrorToast } from 'src/utils/feedback';
 import { useLoading } from 'src/hooks/useLoading';
 import GenericPaper from 'src/components/layout/container/GenericPaper';
@@ -33,10 +34,14 @@ export const AutomationPage = () => {
 
   const [searchParams] = useSearchParams();
   const campaignQueryParam = searchParams.get('campaign');
-  const campaignId = campaignQueryParam ? Number(campaignQueryParam) : undefined;
+  const campaignId = campaignQueryParam ?? undefined;
   const duplicateFromId = searchParams.get('duplicate_from');
 
-  const isEditing = Boolean(id && !isNaN(Number(id)));
+  // La ruta es "/automations/:id", con "create" como valor literal para "nueva automatización"
+  // (ver routes.tsx). Antes se usaba isNaN(Number(id)) para distinguir un id real de "create",
+  // pero ahora los ids reales son UUID strings, que también fallan Number() -- ya no sirve
+  // para distinguir. Se compara directo contra el literal "create".
+  const isEditing = Boolean(id && id !== 'create');
   const isDuplicating = Boolean(duplicateFromId);
 
   // Sin el permiso correspondiente (según se esté creando o editando), el formulario
@@ -46,20 +51,27 @@ export const AutomationPage = () => {
 
   const [readOnly, setReadOnly] = useState(isEditing && searchParams.get('edit') !== 'true');
   const effectiveReadOnly = readOnly || !canEdit
+
+  const { dictionaries } = useDictionaryContext()
   const [initialData, setInitialData] = useState<FieldAutomationDetailed | null>(null);
 
   const [fields, setFields] = useState<LeadField[]>([]);
   const [nativeOptions, setNativeOptions] = useState<NativeFieldOptions>({ contactStates: [], leadStates: [], teams: [], users: [] });
+  // Qué operadores/tipos de acción tiene sentido ofrecer según el tipo del campo elegido en
+  // cada condición/acción (ver ConditionRow/ActionRow) -- viene del backend
+  // (AUTOMATION_COMPATIBILITY_MATRIX) para no duplicar esa regla acá y que quede desactualizada
+  // como pasó hasta ahora (ver comentarios en types/automation.ts, 2026-08-15).
+  const compatibilityMatrix = useMemo(() => dictionaries.automation_compatibility_matrix ?? {}, [dictionaries.automation_compatibility_matrix]);
 
   const formSubmitRef = useRef<() => void>(null);
 
   const initialLoad = useCallback(async () => {
     if (isEditing) {
-      await getFieldAutomation(Number(id))
+      await getFieldAutomation(id!)
         .then(setInitialData)
         .catch(e => showCommonErrorToast(e))
     } else if (isDuplicating) {
-      await getFieldAutomation(Number(duplicateFromId))
+      await getFieldAutomation(duplicateFromId!)
         .then(data => {
           setInitialData({ ...data, name: `Copia de ${data.name}` });
         })
@@ -108,7 +120,7 @@ export const AutomationPage = () => {
   const handleSaveToApi = async (payload: FieldAutomationPost) => {
     if (!canEdit) return
     try {
-      if (isEditing) await updateFieldAutomation(payload, Number(id));
+      if (isEditing) await updateFieldAutomation(payload, id!);
       else await createFieldAutomation(payload);
       navigate(`/automations${campaignId ? `?campaign=${campaignId}` : ""}`);
     } catch (error) {
@@ -120,7 +132,7 @@ export const AutomationPage = () => {
 
   return (
     <LoadingScreenWrapper loading={initialFetchLoading}>
-      {(campaignId && !isNaN(campaignId)) ?
+      {campaignId ?
         <GenericContainer noPaper sx={{ bgcolor: 'transparent', minHeight: '100vh' }}>
           <GenericPaper
             elevation={0}
@@ -179,6 +191,7 @@ export const AutomationPage = () => {
             onSave={handleSaveLoad}
             fields={fields}
             nativeOptions={nativeOptions}
+            compatibilityMatrix={compatibilityMatrix}
             readOnly={effectiveReadOnly}
             isDuplicating={isDuplicating}
             submitRef={formSubmitRef}

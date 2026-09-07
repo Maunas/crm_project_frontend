@@ -13,12 +13,12 @@ export const createTag = async (body: LeadTagPost): Promise<LeadTagDetailed> => 
     return tag.data;
 };
 
-export const updateTag = async (body: LeadTagPost, id: number): Promise<LeadTagDetailed> => {
+export const updateTag = async (body: LeadTagPost, id: string): Promise<LeadTagDetailed> => {
     const tag = await axiosCRM.put(`tags/${id}`, body);
     return tag.data;
 };
 
-export const deleteTag = async (id: number): Promise<DeleteResponse> => {
+export const deleteTag = async (id: string): Promise<DeleteResponse> => {
     const tag = await axiosCRM.delete(`tags/${id}`);
     return tag.data;
 };

@@ -2,6 +2,8 @@ import { useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import LayoutSidebar from 'shared/layout/sidebar/Sidebar';
 import { LeadNavigationProvider } from 'src/features/lead/stores/LeadNavigationContext';
+import { LayoutSidebarProvider } from 'src/stores/LayoutSidebarContext';
+import { DictionaryProvider } from 'src/stores/DictionaryContext';
 import { useUserContext } from 'src/stores/UserContext';
 import LoadingScreenWrapper from 'src/components/ui/feedback/LoadingScreen';
 import { usePageTitle } from 'src/hooks/usePageTitle';
@@ -39,10 +41,14 @@ export default function MainLayout() {
     if (!user) return null
 
     return (
-        <LayoutSidebar>
-            <LeadNavigationProvider>
-                <Outlet />
-            </LeadNavigationProvider>
-        </LayoutSidebar>
+        <DictionaryProvider>
+            <LayoutSidebarProvider>
+                <LayoutSidebar>
+                    <LeadNavigationProvider>
+                        <Outlet />
+                    </LeadNavigationProvider>
+                </LayoutSidebar>
+            </LayoutSidebarProvider>
+        </DictionaryProvider>
     )
 }

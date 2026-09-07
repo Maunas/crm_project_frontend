@@ -3,7 +3,7 @@ import type { DeleteResponse, ListParams, Paginable } from "src/types/shared";
 import axiosCRM from "src/lib/axios";
 
 interface CommentParams extends ListParams {
-    lead_id: number
+    lead_id: string
 }
 
 export const getComments = async (params?: CommentParams): Promise<Paginable<LeadComment>> => {
@@ -16,11 +16,11 @@ export const createComment = async (data: LeadCommentPost) => {
     return com.data
 }
 
-export const updateComment = async (data: LeadCommentPost, id: number): Promise<LeadComment> => {
+export const updateComment = async (data: LeadCommentPost, id: string): Promise<LeadComment> => {
     const com = await axiosCRM.put(`lead_comments/${id}`, data)
     return com.data
 }
-export const deleteComment = async (id: number): Promise<DeleteResponse> => {
+export const deleteComment = async (id: string): Promise<DeleteResponse> => {
     const com = await axiosCRM.delete(`lead_comments/${id}`)
     return com.data
 }

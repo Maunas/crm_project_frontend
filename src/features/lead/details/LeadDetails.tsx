@@ -6,13 +6,13 @@ import { DisableConfirmDialog } from "src/components/ui/feedback/ConfirmationDia
 import LoadingScreenWrapper from "src/components/ui/feedback/LoadingScreen.tsx"
 import GenericPaper from "shared/layout/container/GenericPaper"
 import { ListActionMenu, type ListItemAction } from "shared/ui/lists/CustomListItem"
+import ReferenceChip from "shared/ui/details/ReferenceChip"
 import { useLoading } from "src/hooks/useLoading.ts"
 import type { Lead, LeadDetailed, LeadTeam } from "src/types/leads.ts"
 import type { Campaign } from "src/types/campaigns.ts"
 import type { BulkAssignRequest } from "src/types/teams.ts"
 import type { UserPublic } from "src/types/users.ts"
 import { bulkAssignLeads, disableLead, enableLead, getLead } from "../leadService.ts"
-import { getCampaign } from "src/features/campaigns/campaignServices.ts"
 import { getLeadTitleArray, getLeadSubtitleArray } from "../leadUtils.ts"
 import { LeadTitleConfigSidebar } from "src/features/lead/leadTitleConfig/LeadTitleConfigSidebar"
 import { showCommonErrorToast, showToast } from "src/utils/feedback.ts"
@@ -43,13 +43,7 @@ export const LeadDetailsLayout = () => {
 
     const { id } = useParams()
 
-
-    const numId = useMemo(() => {
-        if (id === undefined) return id
-        const numId = parseInt(id)
-        if (isNaN(numId)) return undefined
-        return numId
-    }, [id])
+    const numId = id
 
     const [lead, setLead] = useState<LeadDetailed | null>(null)
     const [campaign, setCampaign] = useState<Campaign | null>(null)
@@ -91,14 +85,18 @@ export const LeadDetailsLayout = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [numId]);
 
-    const fetchLeads = useCallback(async (numId: number) => {
+    const fetchLeads = useCallback(async (numId: string) => {
         try {
             if (numId === undefined) return
             await getLead(numId).then(async (lead) => {
                 setLead(prev => prev?.id !== lead.id ? lead : prev)
-                if (!lead.campaign_id) return
-                if (lead.campaign_id === campaign?.id) return
-                await getCampaign(lead.campaign_id).then(setCampaign)
+                // lead.campaign es el objeto anidado con el uuid real (Fase 4, ver
+                // backend/AGENTS.md §18) -- lead.campaign_id sigue siendo la FK embebida (id
+                // interno). Antes se intentaba getCampaign(lead.campaign_id), que nunca podía
+                // funcionar (getCampaign espera uuid, campaign_id es int) -- ya no hace falta
+                // ni siquiera pedirlo aparte, viene incluido en la respuesta del lead.
+                if (!lead.campaign || lead.campaign.id === campaign?.id) return
+                setCampaign(lead.campaign)
             })
         } catch (e) {
             showCommonErrorToast(e)
@@ -250,9 +248,13 @@ interface LeadInfoProps {
     leadSubtitle?: (string | undefined)[] | null,
     updateLeadInfo: (lead: LeadDetailed, reloadAudits?: boolean) => void
     onOpenTitleConfig?: () => void
+    //Usado desde el sidebar de detalle rápido (LeadDetailsSidebar): ahí las secciones de campos
+    //deben mostrarse siempre desplegadas y no poder plegarse. En el detalle de página completa
+    //queda sin usar, así que el acordeón se comporta igual que siempre.
+    forceExpandSections?: boolean
 }
 
-export const LeadInfo = ({ lead, leadTitle, leadSubtitle, handleActive, updateLeadInfo, onOpenTitleConfig }: LeadInfoProps) => {
+export const LeadInfo = ({ lead, leadTitle, leadSubtitle, handleActive, updateLeadInfo, onOpenTitleConfig, forceExpandSections }: LeadInfoProps) => {
 
     const titleText = (leadTitle && leadTitle?.length > 0) ? leadTitle?.join(" ") : "Título no encontrado"
     const subtitleText = (leadSubtitle && leadSubtitle.length > 0) ? leadSubtitle.join(" ") : null
@@ -308,13 +310,18 @@ export const LeadInfo = ({ lead, leadTitle, leadSubtitle, handleActive, updateLe
                             }
                         </Stack>
                     </Stack>
+
                     <LeadQuickActions />
                     <LeadDetailsState lead={lead} updateLeadInfo={updateLeadInfo} contactState={lead.contact_state} flowState={lead.current_state} />
                     <LeadTags lead={lead} updateLeadInfo={updateLeadInfo} />
                     <LeadMetaInfo lead={lead} updateLeadInfo={updateLeadInfo} />
+
+
+                    {lead.reference &&
+                        <ReferenceChip reference={lead.reference} />}
                 </Stack>
             </GenericPaper>
-            <LeadFieldSections lead={lead} updateLeadInfo={updateLeadInfo} />
+            <LeadFieldSections lead={lead} updateLeadInfo={updateLeadInfo} forceExpanded={forceExpandSections} />
         </Stack>
     )
 }
@@ -344,7 +351,7 @@ const LeadQuickActions = () => {
 // Opción genérica para los selectores de Usuario/Equipo asignado. id: null representa
 // "Sin asignar" (para poder desasignar, ver bulk_assign/clear_team/clear_user en el backend).
 interface AssignOption {
-    id: number | null
+    id: string | null
     label: string
 }
 const UNASSIGNED_OPTION: AssignOption = { id: null, label: "Sin asignar" }
@@ -391,14 +398,22 @@ const LeadMetaInfo = ({ lead, updateLeadInfo }: { lead: LeadDetailed, updateLead
 
     const [assigning, setAssigning] = useState(false)
 
-    const handleAssign = useCallback((body: Omit<BulkAssignRequest, "lead_ids">, merge: (updated: Lead) => Partial<LeadDetailed>) => {
+    const handleAssign = useCallback((body: Omit<BulkAssignRequest, "lead_ids">, merge: (updated: Lead) => Partial<LeadDetailed>, successMsg: string) => {
         setAssigning(true)
         bulkAssignLeads({ lead_ids: [lead.id], ...body })
             .then(res => {
                 const updated = res[0]
                 //El timeline del lead registra un evento LEAD_REASSIGNED (ver lead_service.bulk_assign),
                 //así que recargamos la pestaña de Auditoría igual que al cambiar etapa/estado.
-                if (updated) updateLeadInfo({ ...lead, ...merge(updated) }, true)
+                //Bug real encontrado 2026-08-11: merge(updated) solo copiaba los campos puntuales
+                //(assigned_to_user_id/team_id), descartando updated_at/updater de la respuesta --
+                //"Modificado por" se quedaba con el valor viejo hasta refrescar la página (mismo
+                //patrón ya arreglado en getUpdatedLead para la edición de campos custom). Tampoco
+                //había ningún toast de éxito acá, a diferencia del resto de las ediciones del detalle.
+                if (updated) {
+                    updateLeadInfo({ ...lead, ...merge(updated), updated_at: updated.updated_at, updater: updated.updater }, true)
+                    showToast(successMsg)
+                }
             })
             .catch(e => showCommonErrorToast(e))
             .finally(() => setAssigning(false))
@@ -409,6 +424,7 @@ const LeadMetaInfo = ({ lead, updateLeadInfo }: { lead: LeadDetailed, updateLead
         handleAssign(
             option.id === null ? { clear_user: true } : { target_user_id: option.id },
             updated => ({ assigned_to_user_id: updated.assigned_to_user_id, assigned_to_user: updated.assigned_to_user }),
+            "Usuario asignado actualizado con éxito.",
         )
     }
 
@@ -417,6 +433,7 @@ const LeadMetaInfo = ({ lead, updateLeadInfo }: { lead: LeadDetailed, updateLead
         handleAssign(
             option.id === null ? { clear_team: true } : { target_team_id: option.id },
             updated => ({ team_id: updated.team_id, team: updated.team }),
+            "Equipo asignado actualizado con éxito.",
         )
     }
 

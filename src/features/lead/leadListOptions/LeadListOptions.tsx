@@ -19,10 +19,10 @@ import ViewColumnIcon from '@mui/icons-material/ViewColumn';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
 interface LeadCampaignSelectorsProps {
-    workspaceId: string | number | null,
-    handleWorkspaceChange: (id: string | number | null) => void,
-    campaignId: string | number | null,
-    handleCampaignChange: (id: string | number | null) => void,
+    workspaceId: string | null,
+    handleWorkspaceChange: (id: string | null) => void,
+    campaignId: string | null,
+    handleCampaignChange: (id: string | null) => void,
 }
 
 export const LeadCampaignSelector = memo(({ workspaceId, handleWorkspaceChange, campaignId, handleCampaignChange }: LeadCampaignSelectorsProps) => {
@@ -40,24 +40,26 @@ export const LeadCampaignSelector = memo(({ workspaceId, handleWorkspaceChange, 
                 handleWorkspaceChange(null)
                 return
             }
-            //Si hay un workspaceId en params, y es parte de la lista obtenida, lo setea, si no toma el primer elemento
-            const newWorkspaceId = (workspaceId && wsps.items.map(i => i.id).includes(Number(workspaceId))) ? workspaceId : wsps.items[0].id
+            // Workspace.id es string (uuid); antes se comparaba contra Number(workspaceId), lo
+            // que nunca matcheaba (string !== number) y hacía que el workspaceId de la URL se
+            // ignorara siempre, cayendo al primer elemento.
+            const newWorkspaceId = (workspaceId && wsps.items.map(i => i.id).includes(String(workspaceId))) ? workspaceId : wsps.items[0].id
             handleWorkspaceChange(newWorkspaceId)
 
-            getCampaigns({ only_active: true, workspace_id: newWorkspaceId as number, page_size: 0 }).then(cmps => {
+            getCampaigns({ only_active: true, workspace_id: newWorkspaceId as string, page_size: 0 }).then(cmps => {
                 setCampaigns(cmps.items)
                 if (cmps.items.length === 0) {
                     handleCampaignChange(null)
                     return
                 }
-                const newCampaignId = (campaignId && cmps.items.map(i => i.id).includes(Number(campaignId))) ? campaignId : cmps.items[0].id
+                const newCampaignId = (campaignId && cmps.items.map(i => i.id).includes(String(campaignId))) ? campaignId : cmps.items[0].id
                 handleCampaignChange(newCampaignId)
             })
         })
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeOrg])
 
-    const onWorkspaceChange = useCallback((newWorkspaceId: number | null) => {
+    const onWorkspaceChange = useCallback((newWorkspaceId: string | null) => {
         if (!newWorkspaceId) return
         handleWorkspaceChange(newWorkspaceId)
         getCampaigns({ only_active: true, workspace_id: newWorkspaceId, page_size: 0 }).then(res => {
@@ -69,8 +71,11 @@ export const LeadCampaignSelector = memo(({ workspaceId, handleWorkspaceChange, 
     const [workspaceAnchor, setWorkspaceAnchor] = useState<null | HTMLElement>(null)
     const [campaignAnchor, setCampaignAnchor] = useState<null | HTMLElement>(null)
 
-    const selectedWorkspace = workspaces.find(ws => ws.id === Number(workspaceId))
-    const selectedCampaign = campaigns.find(c => c.id === Number(campaignId))
+    // Antes comparaba contra Number(workspaceId)/Number(campaignId): ws.id/c.id ya son string
+    // (uuid), así que esa comparación nunca era true y el botón nunca mostraba el nombre
+    // seleccionado (quedaba siempre en el fallback "Espacio de Trabajo"/"Campaña").
+    const selectedWorkspace = workspaces.find(ws => ws.id === workspaceId)
+    const selectedCampaign = campaigns.find(c => c.id === campaignId)
 
     return (
         <Stack direction="row" spacing={0} sx={{ alignItems: 'center' }}>
@@ -93,7 +98,7 @@ export const LeadCampaignSelector = memo(({ workspaceId, handleWorkspaceChange, 
                 {workspaces.map(ws => (
                     <MenuItem
                         key={ws.id}
-                        selected={ws.id === Number(workspaceId)}
+                        selected={ws.id === workspaceId}
                         onClick={() => { onWorkspaceChange(ws.id); setWorkspaceAnchor(null) }}
                         dense
                     >
@@ -124,7 +129,7 @@ export const LeadCampaignSelector = memo(({ workspaceId, handleWorkspaceChange, 
                 {campaigns.map(c => (
                     <MenuItem
                         key={c.id}
-                        selected={c.id === Number(campaignId)}
+                        selected={c.id === campaignId}
                         onClick={() => { handleCampaignChange(c.id); setCampaignAnchor(null) }}
                         dense
                     >
@@ -138,15 +143,15 @@ export const LeadCampaignSelector = memo(({ workspaceId, handleWorkspaceChange, 
 
 interface LeadListOptionsProps {
     areThereLeads: boolean,
-    campaignId: number | string | null,
+    campaignId: string | null,
     filters: LeadFilter[],
     headers: LeadListParams,
     setFiltersAndHeaders: (filters: LeadFilter[], headers: LeadListParams) => Promise<unknown>,
     campaignSelectorProps: {
-        workspaceId: string | number | null;
-        campaignId: string | number | null;
-        handleWorkspaceChange: (id: string | number | null) => void;
-        handleCampaignChange: (id: string | number | null) => void;
+        workspaceId: string | null;
+        campaignId: string | null;
+        handleWorkspaceChange: (id: string | null) => void;
+        handleCampaignChange: (id: string | null) => void;
     },
     presentationProps: {
         presentationMode: string;
@@ -227,7 +232,7 @@ export const LeadListOptions = memo(({ areThereLeads, campaignId, filters, heade
                         </ChipTooltip>
                     }
                     {campaignSelectorProps?.campaignId &&
-                        <LeadViewMenu {...viewUpdateProps} campaignId={Number(campaignSelectorProps.campaignId)} />}
+                        <LeadViewMenu {...viewUpdateProps} campaignId={String(campaignSelectorProps.campaignId)} />}
                     {selectCheckboxProps.checkedItems.size > 0 &&
                         <Can permission="lead:delete">
                             <ChipTooltip title='Eliminar Seleccionados' color="error">
@@ -238,7 +243,7 @@ export const LeadListOptions = memo(({ areThereLeads, campaignId, filters, heade
                 </ButtonGroup>
                 <GenericModal idModal="lead_filters" {...modalProps} buttonText="Aplicar Filtros" maxWidth="md" fullWidth
                     btnProps={{ actionType: 'FILTER' }} color='secondary' showButton={false} >
-                    <LeadFilters applyFilters={applyFilters} filters={{ filters, headers }} campaignId={Number(campaignId)}
+                    <LeadFilters applyFilters={applyFilters} filters={{ filters, headers }} campaignId={String(campaignId)}
                         onClose={() => modalProps.handleClose()} />
                 </GenericModal>
             </Grid >

@@ -9,7 +9,7 @@ export const getOrganizations = async<T extends ListParams>(params?: T):
     return org.data
 }
 
-export const getOrganization = async (id: number): Promise<OrganizationDetailed> => {
+export const getOrganization = async (id: string): Promise<OrganizationDetailed> => {
     const org = await axiosCRM.get(`/organizations/${id}`)
     return org.data
 }
@@ -19,17 +19,17 @@ export const createOrganization = async (body: OrganizationPost): Promise<Organi
     return org.data
 }
 
-export const updateOrganization = async (body: OrganizationPost, id: number): Promise<OrganizationDetailed> => {
+export const updateOrganization = async (body: OrganizationPost, id: string): Promise<OrganizationDetailed> => {
     const org = await axiosCRM.put(`/organizations/${id}`, body)
     return org.data
 }
 
-export const disableOrganization = async (id: number): Promise<DeleteResponse> => {
+export const disableOrganization = async (id: string): Promise<DeleteResponse> => {
     const org = await axiosCRM.delete(`/organizations/${id}`)
     return org.data
 }
 
-export const enableOrganization = async (id: number): Promise<EnableResponse> => {
+export const enableOrganization = async (id: string): Promise<EnableResponse> => {
     const org = await axiosCRM.put(`/organizations/activate/${id}`)
     return org.data
 }

@@ -6,21 +6,23 @@ import { SelectableTableRow } from "shared/ui/lists/CustomTableRow"
 import type { LeadField, LeadFieldValue } from "src/types/leadFields"
 import type { Lead } from "src/types/leads"
 import { useNavigate } from "react-router-dom"
-import { Box, Chip, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, useTheme, Checkbox, TableSortLabel, Tooltip } from "@mui/material"
+import { Box, Chip, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, useTheme, Checkbox, TableSortLabel, Tooltip, IconButton } from "@mui/material"
+import OpenInNewIcon from "@mui/icons-material/OpenInNew"
 import type { Palette } from "@mui/material/styles"
 import { getTypeIconAndColor } from "../../leadFields/LeadFieldTypeIcon"
 import { formatUserFullName } from "src/utils/formatters"
+import ReferenceChip from "shared/ui/details/ReferenceChip"
 
 // Tipos semánticos para los campos nativos (id < 0)
 const NATIVE_KEY_TYPES: Record<string, { type: string; subtype?: string }> = {
-    contact_state_id:    { type: 'SELECTOR', subtype: 'SELECTOR_SIMPLE' },
-    current_state_id:    { type: 'SELECTOR', subtype: 'SELECTOR_SIMPLE' },
-    team_id:             { type: 'LEAD' },
+    contact_state_id: { type: 'SELECTOR', subtype: 'SELECTOR_SIMPLE' },
+    current_state_id: { type: 'SELECTOR', subtype: 'SELECTOR_SIMPLE' },
+    team_id: { type: 'LEAD' },
     assigned_to_user_id: { type: 'LEAD' },
-    created_at:          { type: 'DATE' },
-    updated_at:          { type: 'DATE' },
-    created_by:          { type: 'LEAD' },
-    updated_by:          { type: 'LEAD' },
+    created_at: { type: 'DATE' },
+    updated_at: { type: 'DATE' },
+    created_by: { type: 'LEAD' },
+    updated_by: { type: 'LEAD' },
 }
 
 const TABLE_SX = {
@@ -99,28 +101,33 @@ interface LeadTablePresentationProps {
         dragStyles: (idx: number, palette: Palette, direction?: "column" | "row") => object;
     },
     selectCheckboxProps: {
-        checkedItems: Map<number, Lead>;
+        checkedItems: Map<string, Lead>;
         addItem: (item: Lead | Lead[]) => void;
         removeItem: (item: Lead) => void;
         removeAllItems: () => void;
-    }
+    },
+    // Clic simple: abre el sidebar de detalle rápido. Ir al detalle completo ahora es siempre
+    // explícito, con el ícono de la última columna (ver más abajo) -- ya no hay doble clic.
+    // Si no se pasa (uso fuera de LeadListPage, si lo hubiera), se cae al comportamiento viejo.
+    onLeadClick?: (id: string) => void,
 }
 
 export const LeadTablePresentation = memo(({ leads, selectedColumns, modalProps, orderProps,
     dragProps: { dragEvents, dragStyles },
-    selectCheckboxProps: { checkedItems, addItem, removeItem, removeAllItems } }: LeadTablePresentationProps) => {
+    selectCheckboxProps: { checkedItems, addItem, removeItem, removeAllItems },
+    onLeadClick }: LeadTablePresentationProps) => {
 
     const nav = useNavigate()
     const { palette } = useTheme()
 
     const areAllItemsChecked = useMemo(() => checkedItems.size === leads.length, [checkedItems, leads])
-    const onRowClick = useCallback((id: number) => nav(`/leads/${id}`), [nav])
+    const onRowClick = useCallback((id: string) => onLeadClick ? onLeadClick(id) : nav(`/leads/${id}`), [nav, onLeadClick])
 
     // ── Scroll horizontal sincronizado arriba/abajo ───────────────────────────
     const tableContainerRef = useRef<HTMLDivElement>(null)
-    const topScrollRef      = useRef<HTMLDivElement>(null)
-    const spacerRef         = useRef<HTMLDivElement>(null)
-    const syncing           = useRef(false)
+    const topScrollRef = useRef<HTMLDivElement>(null)
+    const spacerRef = useRef<HTMLDivElement>(null)
+    const syncing = useRef(false)
 
     // Mantiene el ancho del spacer igual al scrollWidth del TableContainer
     useEffect(() => {
@@ -165,7 +172,7 @@ export const LeadTablePresentation = memo(({ leads, selectedColumns, modalProps,
                     // Scrollbar siempre visible, color neutro (anula el acento de Windows)
                     scrollbarWidth: 'thin',
                     scrollbarColor: 'rgba(128,128,128,0.5) rgba(0,0,0,0.06)',
-                    '&::-webkit-scrollbar':       { height: '10px' },
+                    '&::-webkit-scrollbar': { height: '10px' },
                     '&::-webkit-scrollbar-track': { background: 'rgba(0,0,0,0.06)', borderRadius: '99px' },
                     '&::-webkit-scrollbar-thumb': { background: 'rgba(128,128,128,0.5)', borderRadius: '99px' },
                     '&::-webkit-scrollbar-thumb:hover': { background: 'rgba(128,128,128,0.8)' },
@@ -179,7 +186,7 @@ export const LeadTablePresentation = memo(({ leads, selectedColumns, modalProps,
                     overflowX: 'auto',
                     scrollbarWidth: 'thin',
                     scrollbarColor: 'rgba(128,128,128,0.5) rgba(0,0,0,0.06)',
-                    '&::-webkit-scrollbar':       { height: '10px' },
+                    '&::-webkit-scrollbar': { height: '10px' },
                     '&::-webkit-scrollbar-track': { background: 'rgba(0,0,0,0.06)', borderRadius: '99px' },
                     '&::-webkit-scrollbar-thumb': { background: 'rgba(128,128,128,0.5)', borderRadius: '99px' },
                     '&::-webkit-scrollbar-thumb:hover': { background: 'rgba(128,128,128,0.8)' },
@@ -194,6 +201,12 @@ export const LeadTablePresentation = memo(({ leads, selectedColumns, modalProps,
                                     onChange={(_, checked) => checked ? addItem(leads) : removeAllItems()}
                                 />
                             </TableCell>
+                            {/* Columna fija después del checkbox -- ícono para ir al detalle completo,
+                                separado del clic de la fila (que ahora solo abre el sidebar). */}
+                            <TableCell padding="checkbox" />
+                            {/* Columna fija de referencia (ej. "L-0001") -- siempre primera de las
+                                columnas de datos, no es parte de las columnas custom seleccionables/reordenables. */}
+                            <TableCell align="left" sx={{ fontWeight: 600 }}>Referencia</TableCell>
                             {selectedColumns.map((column, idx) =>
                                 <LeadTableHeaderRow key={column.id} column={column} idx={idx} orderProps={orderProps}
                                     dragStyles={dragStyles} dragEvents={dragEvents} palette={palette} />
@@ -213,6 +226,16 @@ export const LeadTablePresentation = memo(({ leads, selectedColumns, modalProps,
                                             else removeItem(lead)
                                         }}
                                     />
+                                </TableCell>
+                                <TableCell padding="checkbox" onClick={e => e.stopPropagation()}>
+                                    <Tooltip title="Ver detalle completo">
+                                        <IconButton size="small" onClick={() => nav(`/leads/${lead.id}`)}>
+                                            <OpenInNewIcon fontSize="small" />
+                                        </IconButton>
+                                    </Tooltip>
+                                </TableCell>
+                                <TableCell align="left" sx={{ whiteSpace: 'nowrap' }}>
+                                    {lead.reference ? <ReferenceChip reference={lead.reference} /> : '—'}
                                 </TableCell>
                                 <LeadTableBodyRow key={lead.id} lead={lead} modalProps={modalProps} selectedColumns={selectedColumns} />
                             </SelectableTableRow>
@@ -252,7 +275,7 @@ export const LeadTableHeaderRow = memo(({ column, idx, orderProps, dragStyles, d
     }), [dragStyles, idx, palette])
 
     const typeIcon = useMemo(() => {
-        if (column.id < 0 && column.nativeKey) {
+        if (Number(column.id) < 0 && column.nativeKey) {
             const t = NATIVE_KEY_TYPES[column.nativeKey]
             return t ? getTypeIconAndColor(t.type, t.subtype ?? null) : null
         }
@@ -294,16 +317,25 @@ export const LeadTableBodyRow = memo(({ lead, selectedColumns, modalProps }: Lea
 
     // Evita O(leads*columnas*field_values.find) en cada render:
     // lookup por columna para esta fila.
+    //
+    // Bug real encontrado 2026-08-01: la clave usada acá era fv.field_id, el id interno crudo
+    // del campo (LeadFieldValueResponse.field_id: int -- FK embebida sin migrar). Pero
+    // column.id (LeadField.id) es el uuid del campo -- nunca matcheaban, así que TODAS las
+    // columnas custom del listado quedaban vacías aunque los leads sí tuvieran valores
+    // cargados (se veían bien en el detalle, que indexa por el objeto anidado fv.field.id, no
+    // por fv.field_id). Se corrige indexando por fv.field?.id, que sí es el uuid real.
     const fieldValueByFieldId = useMemo(() => {
-        const map = new Map<number, LeadFieldValue>()
-        for (const fv of lead.field_values) map.set(fv.field_id, fv)
+        const map = new Map<string, LeadFieldValue>()
+        for (const fv of lead.field_values) {
+            if (fv.field?.id) map.set(`${fv.field.id}`, fv)
+        }
         return map
     }, [lead.field_values])
 
     return (
         selectedColumns.map((column) => {
             // ── Columnas nativas (id negativo) ────────────────────────────
-            if (column.id < 0) {
+            if (Number(column.id) < 0) {
                 return (
                     <TableCell component="td" scope="row" align="left" key={`${lead.id}-${column.id}`}>
                         <NativeCellValue lead={lead} nativeKey={column.nativeKey ?? ''} />
@@ -311,7 +343,7 @@ export const LeadTableBodyRow = memo(({ lead, selectedColumns, modalProps }: Lea
                 )
             }
             // ── Columnas custom (EAV) ────────────────────────────────────
-            const leadValue = fieldValueByFieldId.get(column.id)
+            const leadValue = fieldValueByFieldId.get(`${column.id}`)
             return (
                 <TableCell component="td" scope="row" align="left" key={`${lead.id}-${column.id}`}>
                     <LeadListCellValue leadId={lead.id} fieldValue={leadValue} {...modalProps}

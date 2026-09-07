@@ -5,11 +5,10 @@ import { FormErrorMessage } from "shared/ui/forms/FormFeedback"
 import CommonButton from "shared/ui/buttons/CommonButton"
 import { useLoading } from "src/hooks/useLoading"
 import type { TeamDetailed, TeamMemberDetailed, TeamMemberPost, TeamMemberUpdate } from "src/types/teams"
-import type { DictionaryItem } from "src/types/shared"
 import type { UserPublic } from "src/types/users"
 import { createTeamMember, updateTeamMember } from "./teamServices"
 import { getUsersInOrg } from "src/features/auth/userServices"
-import { getDictionaries } from "src/services/generalService"
+import { useDictionaryContext } from "src/stores/DictionaryContext"
 import { setFormErrors } from "src/utils/forms"
 import { showToast } from "src/utils/feedback"
 import { useForm } from "react-hook-form"
@@ -19,7 +18,7 @@ import ACTION_ICONS from "shared/ui/icons/ActionIcons"
 interface TeamMemberFormSidebarProps {
     team: TeamDetailed,
     existingMember?: TeamMemberDetailed,
-    excludedUserIds: number[],
+    excludedUserIds: string[],
     closeSidebar: () => void,
     updateEntityOnList: (entity: TeamMemberDetailed) => void,
 }
@@ -55,24 +54,25 @@ export const TeamMemberFormSidebar = ({ team, existingMember, excludedUserIds, c
 interface TeamMemberFormProps {
     team: TeamDetailed,
     existingMember?: TeamMemberDetailed,
-    excludedUserIds: number[],
+    excludedUserIds: string[],
     submit: (data: TeamMemberPost | TeamMemberUpdate) => Promise<void>,
     onCancel: () => void
 }
 
 interface FormValues {
-    user_id: number | null,
+    // uuid de User (UserPublic.id ya lo devuelve así, aunque su tipo declarado diga number).
+    user_id: string | null,
     role: string
 }
 
 export const TeamMemberForm = ({ team, existingMember, excludedUserIds, submit, onCancel }: TeamMemberFormProps) => {
 
     const [users, setUsers] = useState<UserPublic[]>([])
-    const [roles, setRoles] = useState<DictionaryItem[]>([])
+    const { dictionaries } = useDictionaryContext()
+    const roles = useMemo(() => dictionaries.team_roles ?? [], [dictionaries.team_roles])
 
     useEffect(() => {
         if (!existingMember) getUsersInOrg().then(setUsers)
-        getDictionaries(["team_roles"]).then(res => setRoles(res.team_roles ?? []))
     }, [existingMember])
 
     const availableUsers = useMemo(() =>
@@ -89,7 +89,7 @@ export const TeamMemberForm = ({ team, existingMember, excludedUserIds, submit, 
     const onSubmit = (data: FormValues) => {
         const payload = existingMember
             ? { role: data.role as "MANAGER" | "AGENT" }
-            : { team_id: team.id, user_id: data.user_id as number, role: data.role as "MANAGER" | "AGENT" }
+            : { team_id: team.id, user_id: data.user_id as string, role: data.role as "MANAGER" | "AGENT" }
         return submit(payload)
             .catch(e => setFormErrors(e, setError))
     }

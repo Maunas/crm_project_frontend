@@ -10,11 +10,13 @@ import { Stack, Typography, ButtonGroup } from "@mui/material"
 import FilterAltOffIcon from '@mui/icons-material/FilterAltOff'
 import { LeadBoardPresentation } from "./board/LeadBoardPresentation"
 import { Can } from "src/components/auth/Can"
+import type { BoardCardFieldCode } from "../boardCardFields"
 
 interface LeadListContentProps {
     leads: Lead[],
     leadFields: LeadField[],
-    selectedFieldIds: number[],
+    selectedFieldIds: string[],
+    cardFields: BoardCardFieldCode[],
     activeFilters: number,
     modalProps: {
         openModalId?: string;
@@ -26,32 +28,39 @@ interface LeadListContentProps {
         ascending: boolean;
         handleOrderList: (field: string | number | null) => void;
     },
-    handleSelectedFieldIds: (ids: number[], closeModal?: boolean) => void,
+    handleSelectedFieldIds: (ids: string[], closeModal?: boolean) => void,
     selectCheckboxProps: {
-        checkedItems: Map<number, Lead>;
+        checkedItems: Map<string, Lead>;
         addItem: (item: Lead | Lead[]) => void;
         removeItem: (item: Lead) => void;
         removeAllItems: () => void;
     },
     presentationMode: string,
-    workspaceId?: number,
+    // Acá solo se usan para armar un query string, no hace falta el id interno.
+    workspaceId?: string | number,
     campaignId?: number | string,
     filters: unknown[],
+    // Texto libre buscado (ya debounceado), para que el modo Tablero -- que carga sus propios
+    // leads por columna, no depende de este array `leads` -- también pueda filtrar por búsqueda.
+    searchQuery?: string,
     onClearFilters?: () => void,
+    // Clic simple: abre el sidebar de detalle rápido (LeadDetailsSidebar, ver LeadListPage). Ir al
+    // detalle completo es explícito, con el ícono de la fila/card -- ya no hay doble clic.
+    onLeadClick?: (id: string) => void,
 }
 
 /**
  * Wrapper del contenido, realiza la lógica de selectedColumns, y elige el modo de vista deseado.
  */
-export const LeadListContent = memo(({ leads, leadFields, selectedFieldIds, activeFilters = 0, modalProps, orderProps, handleSelectedFieldIds,
-    selectCheckboxProps, presentationMode, workspaceId, campaignId, filters, onClearFilters }: LeadListContentProps) => {
+export const LeadListContent = memo(({ leads, leadFields, selectedFieldIds, cardFields, activeFilters = 0, modalProps, orderProps, handleSelectedFieldIds,
+    selectCheckboxProps, presentationMode, workspaceId, campaignId, filters, searchQuery, onClearFilters, onLeadClick }: LeadListContentProps) => {
 
     //Filtra los objetos LeadField para seguir el orden del arreglo de ids.
     const selectedColumns = useMemo(() => {
         if (!leadFields || leadFields.length === 0) return []
         if (!selectedFieldIds || selectedFieldIds.length === 0) return []
-        return leadFields.filter(leadField => selectedFieldIds.includes(leadField.id))
-            .sort((a, b) => selectedFieldIds.indexOf(a.id) - selectedFieldIds.indexOf(b.id))
+        return leadFields.filter(leadField => selectedFieldIds.includes(`${leadField.id}`))
+            .sort((a, b) => selectedFieldIds.indexOf(`${a.id}`) - selectedFieldIds.indexOf(`${b.id}`))
     }, [leadFields, selectedFieldIds])
 
     //Da los estilos y funcionalidad del drag and drop de columnas, a través de sus ids.
@@ -62,6 +71,9 @@ export const LeadListContent = memo(({ leads, leadFields, selectedFieldIds, acti
         return <LeadBoardPresentation
             campaignId={campaignId}
             activeFilters={filters}
+            searchQuery={searchQuery}
+            cardFields={cardFields}
+            onLeadClick={onLeadClick}
         />
     }
 
@@ -109,6 +121,7 @@ export const LeadListContent = memo(({ leads, leadFields, selectedFieldIds, acti
         case "LIST": return <p>Lista</p>
         case "GRID": return <p>Grid</p>
         default: return <LeadTablePresentation leads={leads} selectedColumns={selectedColumns}
-            dragProps={dragProps} orderProps={orderProps} modalProps={modalProps} selectCheckboxProps={selectCheckboxProps} />
+            dragProps={dragProps} orderProps={orderProps} modalProps={modalProps} selectCheckboxProps={selectCheckboxProps}
+            onLeadClick={onLeadClick} />
     }
 })

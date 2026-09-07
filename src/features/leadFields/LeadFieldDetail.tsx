@@ -31,9 +31,10 @@ export const LeadFieldDetail = ({ leadField, updateEntity, handleSidebar, closeS
 
     const { hasPermission } = useUserContext()
 
-    const dependsOnField = leadField.depends_on_field_id
-        ? leadFields?.find(field => field.id === leadField.depends_on_field_id)
-        : undefined
+    // leadField.depends_on_field es el objeto anidado con el uuid real -- antes se buscaba por
+    // depends_on_field_id (FK embebida, id interno) contra field.id (uuid) en la lista
+    // leadFields, y nunca matcheaba: esta sección del detalle nunca se mostraba.
+    const dependsOnField = leadField.depends_on_field
 
     const handleActive = async (field: LeadFieldDetailed | null) => {
         if (!field || !field.id) return
