@@ -1,11 +1,10 @@
 import { useState, type ReactNode } from "react";
 import NumberField, { NumberSpinner } from "./NumberField";
 import { FormErrorMessage } from "./FormFeedback";
-import { ChipTooltip } from "../details/ChipTooltip";
 import { Controller, type Control, type FieldValues, type Path, type PathValue, type UseFormRegister, } from "react-hook-form";
 import { Box, Checkbox, FormControl, FormControlLabel, FormLabel, Grid, IconButton, InputAdornment, InputLabel, OutlinedInput, Rating, Slider, Stack, Switch, TextField, Typography, useColorScheme, type InputProps, type TextFieldProps, } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import { CommonCRMText } from "../details/CommonText";
 
 interface BasicFormInput<T extends FieldValues> {
   label?: string;
@@ -184,16 +183,12 @@ interface ControlledCheckboxProps<T extends FieldValues> extends ControlFormInpu
 }
 
 export const ControlledCheckbox = <T extends FieldValues>
-  ({ control, label, name, required = false, errorMessage, title, tooltip }: ControlledCheckboxProps<T>) => {
+  ({ control, label, name, required = false, errorMessage, title }: ControlledCheckboxProps<T>) => {
   return (
     <FormControl error={!!errorMessage} variant="standard" >
       <FormLabel error={!!errorMessage}>{title}</FormLabel>
-      <FormControlLabel required={required}
-        label={<Stack direction="row" spacing={.5} sx={{ alignItems: "center" }}>
-          <Typography>{label}</Typography>
-          {tooltip &&
-            <ChipTooltip title={tooltip} color="info"><InfoOutlinedIcon fontSize="small" color="disabled" /></ChipTooltip>}
-        </Stack>}
+      <FormControlLabel required={required} sx={{ m: 0, textDecoration: "inherit" }}
+        label={<CommonCRMText size="sm">{label}</CommonCRMText>}
         control={
           <Controller name={name} control={control}
             render={({ field }) => (
