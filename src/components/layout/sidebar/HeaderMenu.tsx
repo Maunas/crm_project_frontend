@@ -170,16 +170,11 @@ const HeaderMenu = memo(() => {
             open={isMobileMenuOpen}
             onClose={handleMobileMenuClose}
         >
-            <MenuItem onClick={handleProfileMenuOpen}>
-                <IconButton
-                    aria-label="account of current user"
-                    aria-controls="primary-search-account-menu"
-                    aria-haspopup="true"
-                    color="inherit"
-                >
-                    <UserAvatar name={fullName || user?.email || "?"} />
-                </IconButton>
-                <Stack>
+            <MenuItem onClick={handleProfileMenuOpen} aria-label="account of current user"
+                aria-controls="primary-search-account-menu"
+                aria-haspopup="true">
+                <UserAvatar name={fullName || user?.email || "?"} />
+                <Stack sx={{ ml: 1.5 }}>
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>{fullName || user?.email}</Typography>
                     <Typography variant="body2" color="text.secondary">{roleLabel}</Typography>
                 </Stack>
@@ -189,22 +184,17 @@ const HeaderMenu = memo(() => {
 
     if (user) return (
         <>
-            <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: "center" }}>
-                <Stack>
+            <Button color="inherit" sx={{ display: { xs: 'none', md: 'flex' }, alignItems: "center", px: 1.5 }}
+                aria-label="account of current user"
+                aria-controls={menuId}
+                aria-haspopup="true"
+                onClick={handleProfileMenuOpen}>
+                <Stack sx={{ mr: 1.5 }}>
                     <Typography variant="body2" sx={{ textAlign: "end", fontWeight: 600 }}>{fullName || user.email}</Typography>
                     <Typography variant="body2" sx={{ textAlign: "end" }} color="text.secondary">{roleLabel}</Typography>
                 </Stack>
-                <IconButton
-                    size="large"
-                    edge="end"
-                    aria-label="account of current user"
-                    aria-controls={menuId}
-                    aria-haspopup="true"
-                    onClick={handleProfileMenuOpen}
-                >
-                    <UserAvatar name={fullName || user.email} />
-                </IconButton>
-            </Box>
+                <UserAvatar name={fullName || user.email} />
+            </Button>
             <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
                 <IconButton
                     size="large"
