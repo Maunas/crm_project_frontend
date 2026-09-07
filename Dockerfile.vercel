@@ -4,9 +4,9 @@ ARG NODE_VERSION=24.11.1
 
 FROM node:${NODE_VERSION}-slim AS builder
 
-RUN corepack enable
-
 WORKDIR /app
+
+RUN npm install -g pnpm@10.15.0
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
