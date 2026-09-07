@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { Box, Divider, IconButton, Stack } from "@mui/material";
+import { Box, Button, Divider, IconButton, Stack } from "@mui/material";
 import { styled, useTheme, type CSSObject, type Theme } from "@mui/material/styles";
 import MuiDrawer from '@mui/material/Drawer';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
@@ -7,6 +7,8 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import Header from "./Header";
 import Navbar from "./Navbar";
 import { useLayoutSidebar } from "src/stores/LayoutSidebarContext";
+import { CommonCRMTitle } from "src/components/ui/details/CommonText";
+import { Link } from "react-router-dom";
 
 export const drawerWidth = "15"; //rem
 
@@ -37,7 +39,7 @@ const DrawerHeader = styled('div')(({ theme }) => ([{
     borderBottom: `1px solid ${theme.palette.divider}`,
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
     padding: theme.spacing(0, 1),
     color: theme.palette.contrast.contrastText,
     // necessary for content to be below app bar
@@ -115,6 +117,10 @@ export default function LayoutSidebar({ children }: SidebarProps) {
                         }
                     }}>
                     <DrawerHeader >
+                        {open &&
+                            <Button color="primary" sx={{ display: { xs: 'none', sm: 'block' }, px: 1.5 }} component={Link} to="/dashboard">
+                                <CommonCRMTitle titleLevel='h2' font='display' noWrap>MUI</CommonCRMTitle>
+                            </Button>}
                         <IconButton onClick={handleDrawerClose} color="inherit">
                             {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
                         </IconButton>

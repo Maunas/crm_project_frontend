@@ -184,7 +184,7 @@ const HeaderMenu = memo(() => {
 
     if (user) return (
         <>
-            <Button color="inherit" sx={{ display: { xs: 'none', md: 'flex' }, alignItems: "center", px: 1 }}
+            <Button color="inherit" sx={{ display: { xs: 'none', md: 'flex' }, alignItems: "center", px: 1.5 }}
                 aria-label="account of current user"
                 aria-controls={menuId}
                 aria-haspopup="true"
